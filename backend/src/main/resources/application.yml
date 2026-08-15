@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: portal
+
+  # Virtual threads for high-concurrency blocking I/O (Spring Boot 3.2+, Java 21)
+  threads:
+    virtual:
+      enabled: true
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # Flyway
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  # Jackson (Jackson 3 via spring-boot-starter-jackson)
+  # write-dates-as-timestamps is NOT set here: Jackson 3 moved that flag off
+  # SerializationFeature onto DateTimeFeature, and its default is already
+  # false — java.time values serialize as ISO-8601 strings.
+  jackson:
+    default-property-inclusion: non_null
+
+# JWT configuration — TEMPORARY STUB, coordinate with Johnson before merging
+lesuccess:
+  jwt:
+    # No default, deliberately. A fallback secret here would let dev and staging
+    # boot silently on a value committed to the repo, while only prod failed fast.
+    # Every non-test environment must supply JWT_SECRET explicitly — see .env.example.
+    secret: ${JWT_SECRET}
+    expiration-ms: 86400000  # 24 hours
+
+  # Rate limiting
+  rate-limit:
+    requests-per-hour: 5
+    trust-proxy: false
+    trusted-proxies: []
+
+  # CORS
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+
+  # Google Sheets sync
+  sheets:
+    enabled: false
+    spreadsheet-id: ${SHEETS_SPREADSHEET_ID:}
+    credentials-path: ${SHEETS_CREDENTIALS_PATH:}
+    sheet-name: Contact Messages
+
+# Logging
+logging:
+  level:
+    in.lesuccess.portal: INFO
+    org.springframework.security: INFO
