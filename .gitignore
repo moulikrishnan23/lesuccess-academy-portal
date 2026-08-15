@@ -1,3 +1,10 @@
 # OS files (applies to the whole repository)
 .DS_Store
 Thumbs.db
+
+# Local environment files — never commit real secrets.
+# .env.example is the committed template; .env is yours and stays local.
+.env
+.env.local
+.env.*.local
+lesuccess-portal-52f1ad1fc890.json
