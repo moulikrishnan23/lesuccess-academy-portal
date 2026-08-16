@@ -1,0 +1,47 @@
+# Production profile — all secrets via environment variables, never commit real values
+spring:
+  datasource:
+    # NOTE: schema creation is intentionally excluded here. Unlike the dev profile,
+    # this URL must never carry createDatabaseIfNotExist=true. Provisioning the
+    # production schema is a manual, ops-controlled step performed ahead of deploy —
+    # it must not be an application-startup side effect. An app that can create its
+    # own database can also silently create the *wrong* one after a typo or a bad
+    # DB_URL, masking a misconfiguration instead of failing fast. Flyway migrates an
+    # existing schema; it does not provision one.
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 60000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  jpa:
+    show-sql: false
+
+lesuccess:
+  jwt:
+    secret: ${JWT_SECRET}
+
+  rate-limit:
+    requests-per-hour: 5
+    trust-proxy: true
+    trusted-proxies:
+      - 127.0.0.1
+      # Add your load balancer / reverse proxy IPs here
+
+  cors:
+    allowed-origins:
+      - ${CORS_ALLOWED_ORIGIN:https://lesuccess.in}
+
+  sheets:
+    enabled: true
+    spreadsheet-id: ${SHEETS_SPREADSHEET_ID}
+    credentials-path: ${SHEETS_CREDENTIALS_PATH}
+
+logging:
+  level:
+    in.lesuccess.portal: INFO
+    org.springframework.security: WARN
