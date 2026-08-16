@@ -14,13 +14,13 @@ const Navbar = () => {
   const mobileNavLinkClass = ({ isActive }) =>
     `w-full border-b border-gray-100 pb-3 text-sm font-medium transition ${
       isActive
-        ? "text-[#ff3348] active-link"
+        ? "text-[#ff3348]"
         : "text-gray-800 hover:text-[#ff3348]"
     }`;
 
   return (
     <nav className="w-full border-b border-gray-200 bg-white">
-      <div className="mx-auto flex min-h-19.5 max-w-300 items-center justify-between px-6 lg:px-8">
+      <div className="mx-auto flex min-h-19.5 max-w-360 items-center justify-between px-6 lg:px-8">
 
         {/* Logo */}
         <div className="flex items-center">

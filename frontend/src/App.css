@@ -1,3 +1,17 @@
+/* Navbar */
+
+@keyframes underlineSlide {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* home page - ChooseYourPath.jsx*/
+
 .active-link::after {
   content: "";
   position: absolute;
@@ -10,14 +24,22 @@
   animation: underlineSlide 0.5s ease-out forwards;
 }
 
-@keyframes underlineSlide {
-  from {
-    transform: scaleX(0);
+@keyframes moveCourses {
+  0% {
+    transform: translateX(0);
   }
 
-  to {
-    transform: scaleX(1);
+  50% {
+    transform: translateX(10px);
   }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.courselogo {
+  animation: moveCourses 3s ease-in-out infinite;
 }
 
 
