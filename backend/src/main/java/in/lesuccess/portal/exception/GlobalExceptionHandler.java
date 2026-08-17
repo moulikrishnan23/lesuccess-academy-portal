@@ -1,6 +1,5 @@
 package in.lesuccess.portal.exception;
 
-
 import in.lesuccess.portal.dto.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;

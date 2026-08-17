@@ -1,6 +1,5 @@
 package in.lesuccess.portal.event;
 
-
 import in.lesuccess.portal.model.ContactMessage;
 
 import lombok.Getter;

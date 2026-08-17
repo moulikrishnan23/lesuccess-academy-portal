@@ -1,6 +1,5 @@
 package in.lesuccess.portal.security;
 
-
 import in.lesuccess.portal.config.CorsConfig;
 import in.lesuccess.portal.config.SecurityConfig;
 import in.lesuccess.portal.controller.ContactController;

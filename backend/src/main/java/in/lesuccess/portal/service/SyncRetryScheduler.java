@@ -1,6 +1,5 @@
 package in.lesuccess.portal.service;
 
-
 import in.lesuccess.portal.model.ContactMessage;
 import in.lesuccess.portal.model.SyncFailure;
 import in.lesuccess.portal.repository.ContactMessageRepository;

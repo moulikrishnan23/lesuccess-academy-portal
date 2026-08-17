@@ -1,6 +1,5 @@
 package in.lesuccess.portal.repository;
 
-
 import in.lesuccess.portal.model.SyncFailure;
 
 import org.springframework.data.jpa.repository.JpaRepository;

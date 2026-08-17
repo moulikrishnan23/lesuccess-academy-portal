@@ -1,6 +1,5 @@
 package in.lesuccess.portal.service;
 
-
 import in.lesuccess.portal.event.ContactMessageCreatedEvent;
 import in.lesuccess.portal.event.ContactMessageStatusUpdatedEvent;
 import in.lesuccess.portal.model.ContactMessage;

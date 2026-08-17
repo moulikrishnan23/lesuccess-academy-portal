@@ -1,6 +1,5 @@
 package in.lesuccess.portal.dto;
 
-
 import in.lesuccess.portal.model.ContactMessageStatus;
 
 import jakarta.validation.constraints.NotNull;
