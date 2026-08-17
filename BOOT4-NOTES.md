@@ -333,3 +333,5 @@ DbMigrate    : Successfully applied 2 migrations to schema `lesuccess_test`, now
 Tests run: 37, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
+
+2026-08-17: Package structure changed from feature-based (`common`, `contact`, `integration.sheets`) to layer-based (`controller`, `service`, `repository`, `model`, `dto`, `event`, `exception`, `config`, `security`). Structural only — no behavior or test assertions changed.
