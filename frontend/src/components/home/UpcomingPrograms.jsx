@@ -6,7 +6,6 @@ import {
   Clock3,
   Video,
   Award,
-  UserRound,
   BriefcaseBusiness,
 } from "lucide-react";
 

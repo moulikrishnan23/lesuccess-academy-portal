@@ -1,4 +1,3 @@
-import React from 'react'
 import HeroVideo from '../components/home/HeroVideo'
 import AboutSection from '../components/home/AboutSection'
 import ChooseYourPath from '../components/home/ChooseYourPath'
