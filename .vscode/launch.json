@@ -1,0 +1,21 @@
+{
+  // Launching PortalApplication without these two settings fails during context
+  // refresh: envFile supplies JWT_SECRET / DB_* (Spring itself never reads .env),
+  // and the dev profile supplies spring.datasource.url, which exists nowhere else.
+  //
+  // envFile is a feature of the Java debugger, not of Spring — it works here and
+  // does nothing for `mvnw spring-boot:run`. Use scripts\run-dev.ps1 for that.
+  "version": "0.2.0",
+  "configurations": [
+    
+    {
+      "type": "java",
+      "name": "PortalApplication (dev)",
+      "request": "launch",
+      "mainClass": "in.lesuccess.portal.PortalApplication",
+      "projectName": "portal",
+      "envFile": "${workspaceFolder}/.env",
+      "vmArgs": "-Dspring.profiles.active=dev"
+    }
+  ]
+}
