@@ -1,6 +1,5 @@
 package in.lesuccess.portal.controller;
 
-
 import in.lesuccess.portal.config.CorsConfig;
 import in.lesuccess.portal.config.SecurityConfig;
 import in.lesuccess.portal.dto.ContactMessageRequest;
@@ -8,7 +7,6 @@ import in.lesuccess.portal.dto.ContactMessageResponse;
 import in.lesuccess.portal.dto.ContactMessageStatusUpdateRequest;
 import in.lesuccess.portal.dto.PageResponse;
 import in.lesuccess.portal.exception.GlobalExceptionHandler;
-import in.lesuccess.portal.exception.ResourceNotFoundException;
 import in.lesuccess.portal.model.ContactMessageStatus;
 import in.lesuccess.portal.security.JwtAuthenticationFilter;
 import in.lesuccess.portal.security.JwtTokenProvider;

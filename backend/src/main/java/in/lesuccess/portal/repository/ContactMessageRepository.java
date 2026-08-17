@@ -1,6 +1,5 @@
 package in.lesuccess.portal.repository;
 
-
 import in.lesuccess.portal.model.ContactMessage;
 import in.lesuccess.portal.model.ContactMessageStatus;
 

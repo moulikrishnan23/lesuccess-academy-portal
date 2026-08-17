@@ -1,6 +1,5 @@
 package in.lesuccess.portal.dto;
 
-
 import in.lesuccess.portal.model.ContactMessage;
 import in.lesuccess.portal.model.ContactMessageStatus;
 
