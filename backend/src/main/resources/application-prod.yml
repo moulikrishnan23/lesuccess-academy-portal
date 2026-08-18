@@ -39,7 +39,13 @@ lesuccess:
   sheets:
     enabled: true
     spreadsheet-id: ${SHEETS_SPREADSHEET_ID}
-    credentials-path: ${SHEETS_CREDENTIALS_PATH}
+    # Base64-encoded service account JSON, decoded in memory at startup — never written to disk.
+    # No default, same fail-fast contract as JWT_SECRET above: a missing key must stop the deploy,
+    # not silently disable the sync. Deliberately NOT credentials-path: shipping a key file inside
+    # a Docker image layer means anyone with image access can extract it, published or not.
+    # LESUCCESS_SHEETS_CREDENTIALS_BASE64 also resolves here via relaxed binding, and takes
+    # precedence over this line because environment variables outrank application-*.yml.
+    credentials-base64: ${SHEETS_CREDENTIALS_BASE64}
 
 logging:
   level:
