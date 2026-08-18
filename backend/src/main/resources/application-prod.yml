@@ -1,0 +1,53 @@
+# Production profile — all secrets via environment variables, never commit real values
+spring:
+  datasource:
+    # NOTE: schema creation is intentionally excluded here. Unlike the dev profile,
+    # this URL must never carry createDatabaseIfNotExist=true. Provisioning the
+    # production schema is a manual, ops-controlled step performed ahead of deploy —
+    # it must not be an application-startup side effect. An app that can create its
+    # own database can also silently create the *wrong* one after a typo or a bad
+    # DB_URL, masking a misconfiguration instead of failing fast. Flyway migrates an
+    # existing schema; it does not provision one.
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 60000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  jpa:
+    show-sql: false
+
+lesuccess:
+  jwt:
+    secret: ${JWT_SECRET}
+
+  rate-limit:
+    requests-per-hour: 5
+    trust-proxy: true
+    trusted-proxies:
+      - 127.0.0.1
+      # Add your load balancer / reverse proxy IPs here
+
+  cors:
+    allowed-origins:
+      - ${CORS_ALLOWED_ORIGIN:https://lesuccess.in}
+
+  sheets:
+    enabled: true
+    spreadsheet-id: ${SHEETS_SPREADSHEET_ID}
+    # Base64-encoded service account JSON, decoded in memory at startup — never written to disk.
+    # No default, same fail-fast contract as JWT_SECRET above: a missing key must stop the deploy,
+    # not silently disable the sync. Deliberately NOT credentials-path: shipping a key file inside
+    # a Docker image layer means anyone with image access can extract it, published or not.
+    # LESUCCESS_SHEETS_CREDENTIALS_BASE64 also resolves here via relaxed binding, and takes
+    # precedence over this line because environment variables outrank application-*.yml.
+    credentials-base64: ${SHEETS_CREDENTIALS_BASE64}
+
+logging:
+  level:
+    in.lesuccess.portal: INFO
+    org.springframework.security: WARN

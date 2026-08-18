@@ -52,6 +52,7 @@
   }
 
   body {
+    margin: 0;
     background-color: var(--color-surface);
     color: var(--color-ink-soft);
     font-family: var(--font-sans);
@@ -171,4 +172,56 @@
   to {
     background-position: -200% 0;
   }
+}
+
+/*
+  Ported from src/App.css when that file was folded into this one during the
+  dev merge. Both rules are live — Navbar.jsx adds `active-link` to the current
+  route, and ChooseYourPath.jsx uses `courselogo`.
+
+  Left unlayered, as they were in App.css: unlayered rules outrank @layer ones,
+  so wrapping them in @layer components would quietly change the cascade.
+
+  TODO(design): #ff3348 here is a third red, close to but not the same as
+  --color-brand (#ee3b4b). One of the two is wrong — worth settling before more
+  components pick a side.
+*/
+@keyframes underlineSlide {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.active-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 2px;
+  background-color: #ff3348;
+  transform-origin: left;
+  animation: underlineSlide 0.5s ease-out forwards;
+}
+
+@keyframes moveCourses {
+  0% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(10px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.courselogo {
+  animation: moveCourses 3s ease-in-out infinite;
 }
