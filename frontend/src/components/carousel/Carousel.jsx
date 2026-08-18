@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronIcon } from '../ui/icons.jsx'
 import { CAROUSEL_TRANSITION } from '../../animations/variants.js'
@@ -56,32 +56,37 @@ export default function Carousel({
   const maxIndex = Math.max(0, items.length - perView)
   const isInteractive = maxIndex > 0
 
-  // A narrowing viewport can leave the index past the end.
-  useEffect(() => {
-    setIndex((current) => Math.min(current, maxIndex))
-  }, [maxIndex])
+  /*
+   * A widening viewport raises perView, which lowers maxIndex and can leave the
+   * stored index past the end. That used to be corrected by an effect that
+   * clamped `index` after the fact; clamping on read does the same job in one
+   * render instead of two, and keeps the effect out of the way of
+   * react-hooks/set-state-in-effect. The stored value catches up on the next
+   * goTo(), which clamps before it writes.
+   */
+  const activeIndex = Math.min(index, maxIndex)
 
   const goTo = useCallback(
     (next) => setIndex(Math.min(Math.max(next, 0), maxIndex)),
     [maxIndex],
   )
 
-  const offset = -(index * (slideWidth + GAP_PX))
+  const offset = -(activeIndex * (slideWidth + GAP_PX))
 
   const handleDragEnd = (_event, info) => {
     // Commit to a slide change on either a decisive throw or a half-slide drag.
     const throwDistance = info.offset.x + info.velocity.x * 0.2
     const steps = Math.round(-throwDistance / (slideWidth + GAP_PX))
-    goTo(index + steps)
+    goTo(activeIndex + steps)
   }
 
   const handleKeyDown = (event) => {
     if (event.key === 'ArrowRight') {
       event.preventDefault()
-      goTo(index + 1)
+      goTo(activeIndex + 1)
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault()
-      goTo(index - 1)
+      goTo(activeIndex - 1)
     }
   }
 
@@ -137,15 +142,15 @@ export default function Carousel({
         <>
           <CarouselButton
             label="Previous"
-            disabled={index === 0}
-            onClick={() => goTo(index - 1)}
+            disabled={activeIndex === 0}
+            onClick={() => goTo(activeIndex - 1)}
             direction="left"
             className="left-0"
           />
           <CarouselButton
             label="Next"
-            disabled={index === maxIndex}
-            onClick={() => goTo(index + 1)}
+            disabled={activeIndex === maxIndex}
+            onClick={() => goTo(activeIndex + 1)}
             direction="right"
             className="right-0"
           />
