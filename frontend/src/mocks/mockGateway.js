@@ -24,6 +24,7 @@ export function isMockEnabled() {
  *   ?mockState=empty   course resolves, but with no modules/stack/testimonials
  *                      and no role copy, so the role section's hidden branch
  *                      is reachable too
+ *   ?mockState=emptyCatalog  /courses resolves with no courses at all
  */
 function forcedState() {
   if (typeof window === 'undefined') return null
@@ -44,6 +45,14 @@ async function settle(value) {
   }
 
   return value
+}
+
+export async function mockGetCourses() {
+  // `empty` is about a course's own collections, not the catalog — an empty
+  // catalog is its own state, reachable with ?mockState=emptyCatalog.
+  if (forcedState() === 'emptyCatalog') return settle([])
+
+  return settle(COURSES)
 }
 
 export async function mockGetCourseBySlug(slug) {
