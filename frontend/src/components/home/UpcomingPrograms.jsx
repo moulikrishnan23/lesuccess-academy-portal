@@ -90,7 +90,7 @@ const UpcomingPrograms = () => {
             <div className="w-full text-center">
 
               <div className="flex justify-center">
-                <span className="rounded-lg bg-green-300 px-4 py-2 text-xs font-semibold text-green-800">
+                <span className="rounded-lg bg-green-300 px-4 py-2 text-xs font-semibold text-green-800 transition animate-pulse">
                   {program.badge}
                 </span>
               </div>
