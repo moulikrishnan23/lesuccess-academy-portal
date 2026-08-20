@@ -4,8 +4,8 @@ import OfferHeader from './components/OfferHeader'
 import PublicLayout from './components/layout/PublicLayout.jsx'
 import Home from './pages/Home'
 import Contact from './pages/Contact'
+import CourseCatalogPage from './pages/Courses/CourseCatalogPage.jsx'
 import CourseDetailPage from './pages/CourseDetail/[slug]/CourseDetailPage.jsx'
-import DevIndex from './pages/DevIndex.jsx'
 
 /**
  * Only the course detail route is owned by this task. The home, catalog and
@@ -27,11 +27,8 @@ export default function App() {
         <Route path="/contact" element={<Contact />} />
 
         <Route element={<PublicLayout />}>
+          <Route path="/courses" element={<CourseCatalogPage />} />
           <Route path="/courses/:slug" element={<CourseDetailPage />} />
-          {/* Dev-only index of the seeded catalog. Was the `*` catch-all until
-              dev's real home route landed; nothing links to it. Delete this
-              route and the file once a real catalog page exists. */}
-          <Route path="/dev" element={<DevIndex />} />
         </Route>
       </Routes>
     </>

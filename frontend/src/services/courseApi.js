@@ -1,5 +1,9 @@
 import apiClient from './apiClient.js'
-import { isMockEnabled, mockGetCourseBySlug } from '../mocks/mockGateway.js'
+import {
+  isMockEnabled,
+  mockGetCourseBySlug,
+  mockGetCourses,
+} from '../mocks/mockGateway.js'
 
 /**
  * Sort helper — the contract says modules and tech stack arrive ordered by
@@ -133,6 +137,31 @@ export function normalizeCourseDetail(raw) {
 }
 
 /**
+ * The catalog list. Same course fields as the detail response, without the
+ * nested modules and tech stack — a card needs the summary, not the syllabus.
+ *
+ * A paginated payload arrives as `{ content: [...] }`, matching the shape
+ * normalizeTestimonials already handles, so both are read here.
+ */
+export function normalizeCourseList(raw) {
+  const list = Array.isArray(raw) ? raw : (raw?.content ?? [])
+  return list.map(normalizeCourse)
+}
+
+/**
+ * GET /api/courses
+ * @returns {Promise<Object[]>} Published courses, in catalog order.
+ */
+export async function getAll({ signal } = {}) {
+  if (isMockEnabled()) {
+    return normalizeCourseList(await mockGetCourses())
+  }
+
+  const { data } = await apiClient.get('/api/courses', { signal })
+  return normalizeCourseList(data)
+}
+
+/**
  * GET /api/courses/{slug}
  * @returns {Promise<{course: Object, modules: Object[], techStack: Object[]}>}
  * @throws {import('../utils/apiError.js').ApiError} 404 when the slug is unknown.
@@ -148,4 +177,4 @@ export async function getBySlug(slug, { signal } = {}) {
   return normalizeCourseDetail(data)
 }
 
-export default { getBySlug, normalizeCourseDetail }
+export default { getAll, getBySlug, normalizeCourseDetail, normalizeCourseList }

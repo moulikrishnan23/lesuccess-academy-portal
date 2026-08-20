@@ -1,7 +1,7 @@
 # Dev fixtures
 
 These exist because the course detail page was built before
-`/api/courses`, `/api/testimonials`, `/api/leads` and `/api/settings` were
+`/api/courses`, `/api/courses/{slug}`, `/api/testimonials`, `/api/leads` and `/api/settings` were
 implemented on the Spring Boot side.
 
 ## How it works
@@ -21,7 +21,7 @@ order the groups should render.
 
 | URL | What you get |
 | --- | --- |
-| `/` | Dev index listing every seeded course |
+| `/courses` | Catalog page — every seeded course, each card linking to its detail page |
 | `/courses/python-full-stack-development` | The Course_Page.pdf reference course — five tech groups, ten modules, 30% off |
 | `/courses/full-stack-java` | Five tech groups and a two-column role section |
 | `/courses/tally` | Four groups and a one-column role section |
@@ -30,6 +30,7 @@ order the groups should render.
 | `?mockState=slow` | 5s delay → skeletons |
 | `?mockState=error` | 500 → error state with retry; lead form returns a 400 with field errors |
 | `?mockState=empty` | Course with no modules, tech stack, role copy or testimonials |
+| `?mockState=emptyCatalog` | `/courses` resolves with no courses at all |
 
 ## Removing this
 
