@@ -40,6 +40,7 @@ public class CourseRequest {
     @Size(max = 255, message = "Enroll URL must not exceed 255 characters")
     private String enrollUrl;
 
+    @lombok.Builder.Default
     private boolean isActive = true;
 
     @Min(value = 0, message = "Display order must be 0 or greater")

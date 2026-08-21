@@ -1,8 +1,8 @@
 package in.lesuccess.portal.controller;
 
-import in.lesuccess.portal.dto.ApiResponse;
-import in.lesuccess.portal.dto.ContactMessageRequest;
-import in.lesuccess.portal.repository.ContactMessageRepository;
+import in.lesuccess.portal.shared.dto.ApiResponse;
+import in.lesuccess.portal.contact.ContactMessageRequest;
+import in.lesuccess.portal.contact.ContactMessageRepository;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;

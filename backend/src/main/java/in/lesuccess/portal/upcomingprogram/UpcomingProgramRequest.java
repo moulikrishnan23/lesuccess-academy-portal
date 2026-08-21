@@ -45,5 +45,6 @@ public class UpcomingProgramRequest {
     private String meetLink;
 
     private boolean certificateIncluded;
+    @lombok.Builder.Default
     private boolean isActive = true;
 }

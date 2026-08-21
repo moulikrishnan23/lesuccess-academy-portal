@@ -2,15 +2,16 @@ package in.lesuccess.portal.controller;
 
 import in.lesuccess.portal.config.CorsConfig;
 import in.lesuccess.portal.config.SecurityConfig;
-import in.lesuccess.portal.dto.ContactMessageRequest;
-import in.lesuccess.portal.dto.ContactMessageResponse;
-import in.lesuccess.portal.dto.ContactMessageStatusUpdateRequest;
-import in.lesuccess.portal.dto.PageResponse;
-import in.lesuccess.portal.exception.GlobalExceptionHandler;
-import in.lesuccess.portal.model.ContactMessageStatus;
+import in.lesuccess.portal.contact.ContactController;
+import in.lesuccess.portal.contact.ContactMessageRequest;
+import in.lesuccess.portal.contact.ContactMessageResponse;
+import in.lesuccess.portal.contact.ContactMessageStatus;
+import in.lesuccess.portal.contact.ContactMessageStatusUpdateRequest;
+import in.lesuccess.portal.contact.ContactService;
+import in.lesuccess.portal.shared.dto.PageResponse;
+import in.lesuccess.portal.shared.exception.GlobalExceptionHandler;
 import in.lesuccess.portal.security.JwtAuthenticationFilter;
 import in.lesuccess.portal.security.JwtTokenProvider;
-import in.lesuccess.portal.service.ContactService;
 
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
@@ -299,7 +300,7 @@ class ContactControllerTest {
         @WithMockUser(roles = "ADMIN")
         void nonExistentId_shouldReturn404() throws Exception {
             when(contactService.getContactMessage(999L))
-                    .thenThrow(new in.lesuccess.portal.exception.ResourceNotFoundException("Contact message", 999L));
+                    .thenThrow(new in.lesuccess.portal.shared.exception.ResourceNotFoundException("Contact message", 999L));
 
             mockMvc.perform(get(BASE_URL + "/999"))
                     .andExpect(status().isNotFound())
@@ -315,18 +316,18 @@ class ContactControllerTest {
         @DisplayName("Valid status update → 200")
         @WithMockUser(roles = "ADMIN")
         void validUpdate_shouldReturn200() throws Exception {
-            ContactMessageStatusUpdateRequest req = new ContactMessageStatusUpdateRequest(ContactMessageStatus.READ);
+            ContactMessageStatusUpdateRequest req = new ContactMessageStatusUpdateRequest(ContactMessageStatus.IN_PROGRESS);
             ContactMessageResponse response = buildResponse(1L);
-            response.setStatus(ContactMessageStatus.READ);
+            response.setStatus(ContactMessageStatus.IN_PROGRESS);
 
-            when(contactService.updateStatus(eq(1L), eq(ContactMessageStatus.READ)))
+            when(contactService.updateStatus(eq(1L), eq(ContactMessageStatus.IN_PROGRESS)))
                     .thenReturn(response);
 
             mockMvc.perform(put(BASE_URL + "/1/status")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.status").value("READ"));
+                    .andExpect(jsonPath("$.data.status").value("IN_PROGRESS"));
         }
 
         @Test
