@@ -1,9 +1,10 @@
 import apiClient from './apiClient.js'
 import { isMockEnabled, mockSubmitLead } from '../mocks/mockGateway.js'
 
-/** Where a lead came from. The course page only ever sends the first one. */
+/** Where a lead came from. Each form sends its own. */
 export const LEAD_SOURCE = {
   COURSE_ENROLL_FORM: 'COURSE_ENROLL_FORM',
+  SERVICE_CTA_FORM: 'SERVICE_CTA_FORM',
 }
 
 /**
@@ -13,11 +14,14 @@ export const LEAD_SOURCE = {
 function toRequestBody({ name, mobile, email, courseId, lookingFor, source }) {
   const body = {
     name: name.trim(),
-    mobile: mobile.trim(),
-    courseId,
     source: source ?? LEAD_SOURCE.COURSE_ENROLL_FORM,
   }
 
+  // Mobile is required by the enroll card and absent from the service enquiry
+  // form, so it is sent only when there is one. courseId likewise: a service
+  // enquiry is not about a course.
+  if (mobile?.trim()) body.mobile = mobile.trim()
+  if (courseId !== null && courseId !== undefined) body.courseId = courseId
   if (email?.trim()) body.email = email.trim()
   if (lookingFor?.trim()) body.lookingFor = lookingFor.trim()
 

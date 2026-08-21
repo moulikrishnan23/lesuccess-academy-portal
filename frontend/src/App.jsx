@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Contact from './pages/Contact'
 import CourseCatalogPage from './pages/Courses/CourseCatalogPage.jsx'
 import CourseDetailPage from './pages/CourseDetail/[slug]/CourseDetailPage.jsx'
+import ServicePage from './pages/Services/ServicePage.jsx'
 
 /**
  * Only the course detail route is owned by this task. The home, catalog and
@@ -29,6 +30,8 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/courses" element={<CourseCatalogPage />} />
           <Route path="/courses/:slug" element={<CourseDetailPage />} />
+          {/* Path matches the navbar's existing "Service" link. */}
+          <Route path="/service" element={<ServicePage />} />
         </Route>
       </Routes>
     </>

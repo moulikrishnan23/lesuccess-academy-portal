@@ -103,6 +103,43 @@
   }
 
   /*
+    Navy wash for a band that sits on a photograph: darkest at the top, easing
+    off through the middle so the picture reads, then closing down again at the
+    foot. Built from --color-navy-900 via color-mix so the overlay tracks the
+    theme instead of hardcoding an rgba().
+  */
+  .band-overlay-navy {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-navy-900) 78%, transparent) 0%,
+      color-mix(in srgb, var(--color-navy-900) 84%, transparent) 100%
+    );
+  }
+
+  /*
+    The same two brand stops as .bg-brand-gradient, run corner to corner. The
+    process-step cards are large surfaces where a 90deg fill reads as flat, so
+    they take the diagonal; buttons keep the horizontal one. Same tokens, so
+    the two can never drift apart.
+  */
+  .bg-brand-gradient-diagonal {
+    background-image: linear-gradient(
+      135deg,
+      var(--color-brand) 0%,
+      var(--color-brand-deep) 100%
+    );
+  }
+
+  /*
+    Card elevation for surfaces that sit on a photograph or a dark band, where
+    a border alone does not separate the card from what is behind it. Hover
+    elevation is Framer's cardHover variant — this is only the resting state.
+  */
+  .shadow-card {
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-navy-900) 15%, transparent);
+  }
+
+  /*
     Admin-authored rich text (course.description). Markup is sanitized in
     utils/sanitize.js — keep the allowlist there in step with the tags styled
     here. The reference page renders this as plain grey body copy.
