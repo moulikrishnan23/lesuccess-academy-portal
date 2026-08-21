@@ -1,6 +1,6 @@
 package in.lesuccess.portal.security;
 
-import in.lesuccess.portal.dto.ApiResponse;
+import in.lesuccess.portal.shared.dto.ApiResponse;
 
 import tools.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
