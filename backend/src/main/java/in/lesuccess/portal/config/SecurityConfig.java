@@ -50,9 +50,20 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/announcements/active").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/courses", "/api/courses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/upcoming-programs", "/api/upcoming-programs/**").permitAll()
+                        // Public: Service page + site-wide content reads.
+                        // Exact-path GETs only — /api/services/{id} is an admin route
+                        // (it exposes DRAFT rows), so it must NOT be covered here.
+                        .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/process-steps").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/settings").permitAll()
                         // Admin: all /api/admin/** and remaining contact-message routes require auth
                         .requestMatchers("/api/admin/**").authenticated()
                         .requestMatchers("/api/contact-messages/**").authenticated()
+                        // Everything else on the new content routes is admin-only.
+                        // Listed after the public GETs above: the first matcher wins.
+                        .requestMatchers("/api/services", "/api/services/**").authenticated()
+                        .requestMatchers("/api/process-steps", "/api/process-steps/**").authenticated()
+                        .requestMatchers("/api/settings", "/api/settings/**").authenticated()
                         // Everything else — permit for now; tighten as new modules are added
                         .anyRequest().permitAll()
                 )
