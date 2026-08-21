@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,6 +39,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    /**
+     * Service-layer validation failure — see {@link InvalidRequestException}.
+     * Declared ahead of the IllegalArgumentException handler below so the
+     * caller keeps the specific message and field list instead of the generic
+     * "Invalid request".
+     */
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidRequest(InvalidRequestException ex) {
+        log.warn("Invalid request: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ex.getFieldErrors().isEmpty()
+                        ? ApiResponse.error(ex.getMessage())
+                        : ApiResponse.error(ex.getMessage(), ex.getFieldErrors()));
     }
 
     @ExceptionHandler(RateLimitExceededException.class)
@@ -83,6 +99,23 @@ public class GlobalExceptionHandler {
         log.warn("Parameter type mismatch on '{}': {}", ex.getName(), ex.getMessage());
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error("Invalid parameter value"));
+    }
+
+    /**
+     * A known path called with a method it does not expose — e.g. POST to
+     * /api/process-steps, which is GET-only by design.
+     *
+     * <p>Same ordering rationale as {@link #handleUnreadable}: without this,
+     * HttpRequestMethodNotSupportedException reaches the catch-all below and
+     * every 405 in the application is reported as a 500.</p>
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex) {
+
+        log.warn("Method not supported: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ApiResponse.error("Request method not supported for this endpoint"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -2,11 +2,11 @@ package in.lesuccess.portal.contact;
 
 import in.lesuccess.portal.shared.dto.PageResponse;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
+import in.lesuccess.portal.shared.support.LeadCaptureSupport;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Safelist;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,22 +24,31 @@ public class ContactService {
     private final ContactMessageRepository repository;
     private final ApplicationEventPublisher eventPublisher;
 
-    private static final int DUPLICATE_WINDOW_MINUTES = 5;
+    /**
+     * Externalised from a hardcoded constant so it can be tuned per environment.
+     *
+     * <p>The {@code = 5} initialiser is load-bearing, not decoration: this is a
+     * field rather than a constructor argument precisely so that
+     * Mockito-constructed instances in ContactServiceTest keep the original
+     * five-minute behaviour, while Spring overrides it from configuration at
+     * runtime. Widening the constructor instead would have broken those tests.</p>
+     */
+    @Value("${lesuccess.lead-capture.duplicate-window-minutes:5}")
+    private int duplicateWindowMinutes = 5;
 
     @Transactional
     public ContactSubmitResult createContactMessage(ContactMessageRequest request, String ipAddress) {
-        if (request.getWebsite() != null && !request.getWebsite().isBlank()) {
-            log.warn("Honeypot triggered from IP: {}. Honeypot value: '{}'", ipAddress, request.getWebsite());
+        if (LeadCaptureSupport.isHoneypotTriggered(request.getWebsite(), ipAddress)) {
             return ContactSubmitResult.honeypot();
         }
 
-        String cleanPhone = request.getPhone().replaceAll("\\s+", "");
+        String cleanPhone = LeadCaptureSupport.normalizeMobile(request.getPhone());
 
         Optional<ContactMessage> existingDuplicate = repository.findRecentDuplicate(
                 request.getEmail().trim(),
                 cleanPhone,
                 request.getMessage().trim(),
-                LocalDateTime.now().minusMinutes(DUPLICATE_WINDOW_MINUTES)
+                LeadCaptureSupport.duplicateWindowStart(duplicateWindowMinutes)
         );
 
         if (existingDuplicate.isPresent()) {
@@ -47,7 +56,7 @@ public class ContactService {
             return ContactSubmitResult.success(ContactMessageResponse.from(existingDuplicate.get()));
         }
 
-        String sanitizedMessage = Jsoup.clean(request.getMessage(), Safelist.none());
+        String sanitizedMessage = LeadCaptureSupport.sanitizeText(request.getMessage());
 
         ContactMessage entity = ContactMessage.builder()
                 .name(request.getName().trim())

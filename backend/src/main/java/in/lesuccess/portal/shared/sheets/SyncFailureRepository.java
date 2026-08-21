@@ -1,4 +1,4 @@
-package in.lesuccess.portal.contact;
+package in.lesuccess.portal.shared.sheets;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

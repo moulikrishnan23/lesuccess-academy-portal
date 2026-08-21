@@ -25,7 +25,17 @@ lesuccess:
   rate-limit:
     requests-per-hour: 100
     trust-proxy: false
-    trusted-proxies: []
+    # Comma-separated scalar, not a YAML list — see application.yml.
+    trusted-proxies: ""
+    # Mirrors application.yml so tests exercise the real protected set.
+    protected-paths: /api/contact-messages,/api/leads
+
+  lead-capture:
+    duplicate-window-minutes: 5
+
+  leads:
+    # Comma-separated for the same @Value reason as protected-paths above.
+    accepted-sources: SERVICE_CTA_FORM
 
   cors:
     allowed-origins:
