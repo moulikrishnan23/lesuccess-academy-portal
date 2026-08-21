@@ -97,7 +97,7 @@ const TeamCard = ({ member, featured = false }) => {
             : "min-h-24.5 px-3 py-4"
         } ${
           featured && member.name === "Rathinavel Rajagopal"
-            ? "border-[#074a68] bg-[#07506f] text-white"
+            ? "border-[#074a68] bg-[#07506f] text-[#084b68]"
             : ""
         }`}
       >
@@ -108,7 +108,7 @@ const TeamCard = ({ member, featured = false }) => {
               : "text-[18px]"
           } ${
             featured && member.name === "Rathinavel Rajagopal"
-              ? "text-white"
+              ? "text-[#084b68]"
               : "text-[#084b68]"
           }`}
         >
@@ -120,7 +120,7 @@ const TeamCard = ({ member, featured = false }) => {
             featured ? "text-[18px]" : "text-[16px]"
           } ${
             featured && member.name === "Rathinavel Rajagopal"
-              ? "text-white/80"
+              ? "text-[#084b68]"
               : "text-gray-600"
           }`}
         >
@@ -132,7 +132,7 @@ const TeamCard = ({ member, featured = false }) => {
             featured ? "text-[14px]" : "text-[12px]"
           } ${
             featured && member.name === "Rathinavel Rajagopal"
-              ? "text-white"
+              ? "text-[#084b68]"
               : "text-gray-500"
           }`}
         >
