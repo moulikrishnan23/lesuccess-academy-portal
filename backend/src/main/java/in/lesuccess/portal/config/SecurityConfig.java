@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/contact-messages").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/demo-bookings").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/upcoming-programs/*/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/leads").permitAll()
                         // Public: home page data reads
                         .requestMatchers(HttpMethod.GET, "/api/announcements/active").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/courses", "/api/courses/**").permitAll()
@@ -64,6 +65,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/services", "/api/services/**").authenticated()
                         .requestMatchers("/api/process-steps", "/api/process-steps/**").authenticated()
                         .requestMatchers("/api/settings", "/api/settings/**").authenticated()
+                        // Leads: public POST above, everything else admin-only.
+                        .requestMatchers("/api/leads", "/api/leads/**").authenticated()
                         // Everything else — permit for now; tighten as new modules are added
                         .anyRequest().permitAll()
                 )

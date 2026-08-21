@@ -21,13 +21,18 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Servlet filter that rate-limits POST requests to /api/contact-messages.
+ * Servlet filter that rate-limits POST requests to the configured public
+ * form-submission endpoints.
+ * <p>
+ * The protected paths come from {@code lesuccess.rate-limit.protected-paths}
+ * rather than a hardcoded constant, so adding a public form is a config change.
  * <p>
  * Keyed by client IP. Only applies to POST — admin GET/PUT/DELETE on the
- * same path are not throttled.
+ * same paths are not throttled.
  * <p>
  * X-Forwarded-For is only honored when trust-proxy is enabled and the
  * immediate client IP is in the trusted-proxies list (config-driven).
@@ -40,6 +45,7 @@ public class RateLimitFilter implements Filter {
     private final int requestsPerHour;
     private final boolean trustProxy;
     private final List<String> trustedProxies;
+    private final Set<String> protectedPaths;
     private final ObjectMapper objectMapper;
     private final Cache<String, Bucket> bucketCache;
 
@@ -47,10 +53,13 @@ public class RateLimitFilter implements Filter {
             @Value("${lesuccess.rate-limit.requests-per-hour:5}") int requestsPerHour,
             @Value("${lesuccess.rate-limit.trust-proxy:false}") boolean trustProxy,
             @Value("${lesuccess.rate-limit.trusted-proxies:}") List<String> trustedProxies,
+            @Value("${lesuccess.rate-limit.protected-paths:/api/contact-messages}") List<String> protectedPaths,
             ObjectMapper objectMapper) {
         this.requestsPerHour = requestsPerHour;
         this.trustProxy = trustProxy;
         this.trustedProxies = trustedProxies;
+        // Set for O(1) exact-match lookup on every request.
+        this.protectedPaths = Set.copyOf(protectedPaths);
         this.objectMapper = objectMapper;
         this.bucketCache = Caffeine.newBuilder()
                 .maximumSize(10_000)
@@ -65,7 +74,7 @@ public class RateLimitFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-        // Only rate-limit POST on the contact-messages endpoint
+        // Only rate-limit POST on the configured public form endpoints
         if (!isRateLimitedRequest(request)) {
             chain.doFilter(request, response);
             return;
@@ -77,7 +86,7 @@ public class RateLimitFilter implements Filter {
         if (bucket.tryConsume(1)) {
             chain.doFilter(request, response);
         } else {
-            log.warn("Rate limit exceeded for IP: {} on POST /api/contact-messages", clientIp);
+            log.warn("Rate limit exceeded for IP: {} on POST {}", clientIp, request.getRequestURI());
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             ApiResponse<Void> errorResponse = ApiResponse.error("Too many requests. Please try again later.");
@@ -86,12 +95,16 @@ public class RateLimitFilter implements Filter {
     }
 
     /**
-     * Only apply rate limiting to POST /api/contact-messages.
-     * GET/PUT/DELETE on the same base path (admin routes) are not throttled.
+     * Only apply rate limiting to POST on a configured protected path.
+     * GET/PUT/DELETE on those same paths (admin routes) are not throttled.
+     * <p>
+     * Exact match rather than prefix match, deliberately: a prefix would also
+     * catch admin sub-paths such as POST /api/leads/123/notes, throttling staff
+     * at the public form's rate.
      */
     private boolean isRateLimitedRequest(HttpServletRequest request) {
         return "POST".equals(request.getMethod())
-                && "/api/contact-messages".equals(request.getRequestURI());
+                && protectedPaths.contains(request.getRequestURI());
     }
 
     /**

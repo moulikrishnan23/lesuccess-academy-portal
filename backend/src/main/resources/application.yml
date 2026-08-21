@@ -42,6 +42,30 @@ lesuccess:
     requests-per-hour: 5
     trust-proxy: false
     trusted-proxies: []
+    # Public form endpoints to throttle. Exact paths, POST only — add a new
+    # public form here rather than editing RateLimitFilter.
+    # NOTE: @Value cannot bind a YAML sequence — Boot flattens a list into indexed
+    # keys (protected-paths[0], [1]) and the un-indexed key does not exist, so
+    # @Value would silently fall back to its default. These must stay
+    # comma-separated scalars unless the filter moves to @ConfigurationProperties.
+    # (The same applies to trusted-proxies below; it is only harmless while empty.)
+    protected-paths: /api/contact-messages,/api/leads
+
+  # Shared lead-capture protections (Contact form and Leads form alike)
+  lead-capture:
+    # How far back a submission counts as a duplicate rather than a new enquiry.
+    duplicate-window-minutes: 5
+
+  leads:
+    # Lead sources POST /api/leads will accept. Narrow on purpose: only forms
+    # that actually exist should be able to write. Add a value here when its
+    # form ships — no code change required.
+    #
+    # NOTE: the frontend already has a course enrolment form posting
+    # COURSE_ENROLL_FORM (frontend/src/services/leadApi.js). Add that value the
+    # moment that page goes live, or those submissions will 400.
+    # Comma-separated for the same @Value reason as protected-paths above.
+    accepted-sources: SERVICE_CTA_FORM
 
   # CORS
   cors:

@@ -1,8 +1,12 @@
 package in.lesuccess.portal.controller;
 
+import in.lesuccess.portal.lead.LeadRepository;
+import in.lesuccess.portal.lead.LeadRequest;
+import in.lesuccess.portal.lead.LeadSource;
 import in.lesuccess.portal.processstep.ProcessStepRepository;
 import in.lesuccess.portal.serviceoffering.ServiceOfferingRepository;
 import in.lesuccess.portal.shared.dto.ApiResponse;
+import in.lesuccess.portal.shared.sheets.SyncFailureRepository;
 import in.lesuccess.portal.sitesetting.SiteSettingRepository;
 
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +16,7 @@ import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +33,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Proves V8-V10 apply cleanly on top of V1-V7 against a real MySQL, that
+ * Proves V8-V12 apply cleanly on top of V1-V7 against a real MySQL, that
  * Hibernate's {@code ddl-auto: validate} accepts the resulting schema, and that
  * the seeded rows are readable over the public endpoints.
  *
@@ -80,6 +85,12 @@ class ContentIntegrationTest {
 
     @Autowired
     private ServiceOfferingRepository serviceOfferingRepository;
+
+    @Autowired
+    private LeadRepository leadRepository;
+
+    @Autowired
+    private SyncFailureRepository syncFailureRepository;
 
     private static final ParameterizedTypeReference<ApiResponse<List<Map<String, Object>>>> LIST_RESPONSE =
             new ParameterizedTypeReference<>() {};
@@ -150,6 +161,57 @@ class ContentIntegrationTest {
     }
 
     @Test
+    @DisplayName("V11 creates lead_capture and V12 renames the sync-failure queue")
+    void leadAndSyncFailureSchemaAreValid() {
+        // Executing these counts at all is the check: each runs a real query
+        // against the migrated schema, and ddl-auto: validate has already
+        // verified the entity mappings against it. Deliberately not asserting
+        // zero — this class has no @TestMethodOrder, so the lead-capture test
+        // below may already have run.
+        assertThat(leadRepository.count()).isNotNegative();
+        assertThat(syncFailureRepository.count()).isNotNegative();
+    }
+
+    @Test
+    @DisplayName("POST /api/leads is public and persists a SERVICE_CTA_FORM lead")
+    void postLead_shouldPersist() {
+        long before = leadRepository.count();
+
+        LeadRequest request = LeadRequest.builder()
+                .name("Integration Lead")
+                .mobile("+919876543211")
+                .email("lead@test.com")
+                .lookingFor("Corporate Training")
+                .source(LeadSource.SERVICE_CTA_FORM)
+                .build();
+
+        ResponseEntity<ApiResponse<Map<String, Object>>> response = restTemplate.exchange(
+                "/api/leads", HttpMethod.POST, new HttpEntity<>(request),
+                new ParameterizedTypeReference<>() {});
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(leadRepository.count()).isEqualTo(before + 1);
+    }
+
+    @Test
+    @DisplayName("A source with no form yet is rejected with 400, nothing persisted")
+    void postLead_unacceptedSource_shouldReturn400() {
+        long before = leadRepository.count();
+
+        LeadRequest request = LeadRequest.builder()
+                .name("Too Early")
+                .mobile("+919876543212")
+                .source(LeadSource.HOME_DEMO_FORM)
+                .build();
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/leads", HttpMethod.POST, new HttpEntity<>(request), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(leadRepository.count()).isEqualTo(before);
+    }
+
+    @Test
     @DisplayName("Admin routes on the new modules reject anonymous callers")
     void adminRoutesRequireAuth() {
         assertThat(restTemplate.getForEntity("/api/services/1", String.class).getStatusCode())
@@ -157,8 +219,11 @@ class ContentIntegrationTest {
 
         ResponseEntity<String> put = restTemplate.exchange(
                 "/api/settings", HttpMethod.PUT,
-                new org.springframework.http.HttpEntity<>(Map.of("phone_primary", "+919000000000")),
+                new HttpEntity<>(Map.of("phone_primary", "+919000000000")),
                 String.class);
         assertThat(put.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        assertThat(restTemplate.getForEntity("/api/leads", String.class).getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }
