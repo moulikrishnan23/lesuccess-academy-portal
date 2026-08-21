@@ -44,3 +44,35 @@ export function validateEnrollForm({ name, mobile, email }) {
 
   return errors
 }
+
+/**
+ * Validate the service enquiry form.
+ *
+ * Different fields from the enroll card, same rules and the same voice: this
+ * form asks for a name, an email and what the enquiry is about, and has no
+ * mobile field at all.
+ *
+ * @returns {Object} { field: message } — empty when the form is valid.
+ */
+export function validateServiceEnquiryForm({ name, email, lookingFor }) {
+  const errors = {}
+
+  if (!name?.trim()) {
+    errors.name = 'Enter your name.'
+  } else if (name.trim().length < 2) {
+    errors.name = 'Enter your full name.'
+  }
+
+  // Required here, unlike the enroll card — it is the only way back to you.
+  if (!email?.trim()) {
+    errors.email = 'Enter your email id.'
+  } else if (!EMAIL_PATTERN.test(email.trim())) {
+    errors.email = 'Enter a valid email address.'
+  }
+
+  if (!lookingFor?.trim()) {
+    errors.lookingFor = 'Choose what you are looking for.'
+  }
+
+  return errors
+}
