@@ -43,7 +43,11 @@ class ProcessStepServiceTest {
 
         List<ProcessStepResponse> result = service.listAll();
 
-        assertThat(result).extracting(ProcessStepResponse::getTitle)
+        // Lambda rather than the ProcessStepResponse::getTitle method reference:
+        // an unbound method reference supplies the receiver as the functional
+        // parameter, which Eclipse's null analysis reports as an unchecked
+        // conversion because this DTO carries no nullness annotations.
+        assertThat(result.stream().map(step -> step.getTitle()).toList())
                 .containsExactly("Evaluate", "Customize", "Empower", "Launch");
     }
 

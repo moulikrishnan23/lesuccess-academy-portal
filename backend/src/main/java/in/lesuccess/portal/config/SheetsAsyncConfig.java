@@ -1,7 +1,6 @@
 package in.lesuccess.portal.config;
 
 import in.lesuccess.portal.shared.sheets.SheetsRejectedExecutionHandler;
-import in.lesuccess.portal.shared.sheets.SyncFailureRecorder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +28,7 @@ import java.util.concurrent.Executor;
 public class SheetsAsyncConfig {
 
     @Bean(name = "sheetsSyncExecutor")
-    public Executor sheetsSyncExecutor(SyncFailureRecorder failureRecorder) {
+    public Executor sheetsSyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(5);
@@ -37,8 +36,9 @@ public class SheetsAsyncConfig {
         executor.setThreadNamePrefix("sheets-sync-");
         // Without an explicit handler this defaults to AbortPolicy: at saturation the
         // submission throws, the exception is swallowed by the caller, and the write is
-        // lost with no sync_failure row to retry from. Record it instead.
-        executor.setRejectedExecutionHandler(new SheetsRejectedExecutionHandler(failureRecorder));
+        // lost with no sync_failure row to retry from. Record it instead. The handler is
+        // stateless — it records through the rejected task's own SyncFailureRecorder.
+        executor.setRejectedExecutionHandler(new SheetsRejectedExecutionHandler());
         // Let in-flight Sheets calls finish on shutdown rather than losing a write.
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(30);

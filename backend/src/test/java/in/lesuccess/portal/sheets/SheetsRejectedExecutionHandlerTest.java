@@ -47,7 +47,7 @@ class SheetsRejectedExecutionHandlerTest {
     @Test
     @DisplayName("Rejected sync task -> failure recorded with the entity's identity")
     void rejectedSyncTask_shouldRecordReplayableFailure() {
-        SheetsRejectedExecutionHandler handler = new SheetsRejectedExecutionHandler(failureRecorder);
+        SheetsRejectedExecutionHandler handler = new SheetsRejectedExecutionHandler();
 
         SheetRow row = new SheetRow(SPEC, SyncEntityType.LEAD, 42L, List.of(42L, "Ravi", "NEW"));
         SheetSyncTask task = SheetSyncTask.append(sheetsService, failureRecorder, row);
@@ -67,7 +67,7 @@ class SheetsRejectedExecutionHandlerTest {
     @Test
     @DisplayName("Rejected status-update task records the target status in the operation")
     void rejectedStatusUpdate_shouldRecordOperationDetail() {
-        SheetsRejectedExecutionHandler handler = new SheetsRejectedExecutionHandler(failureRecorder);
+        SheetsRejectedExecutionHandler handler = new SheetsRejectedExecutionHandler();
 
         SheetSyncTask task = SheetSyncTask.statusUpdate(
                 sheetsService, failureRecorder, SPEC, SyncEntityType.CONTACT_MESSAGE, 7L, "RESOLVED");
@@ -82,7 +82,7 @@ class SheetsRejectedExecutionHandlerTest {
     @Test
     @DisplayName("Unrecognised task -> logged, not recorded as an unreplayable row")
     void unknownTask_shouldNotRecordFailure() {
-        SheetsRejectedExecutionHandler handler = new SheetsRejectedExecutionHandler(failureRecorder);
+        SheetsRejectedExecutionHandler handler = new SheetsRejectedExecutionHandler();
 
         handler.rejectedExecution(() -> { /* not one of ours */ }, saturatedExecutor());
 

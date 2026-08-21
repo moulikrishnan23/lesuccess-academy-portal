@@ -1,8 +1,8 @@
 package in.lesuccess.portal.shared.sheets;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -21,12 +21,15 @@ import java.util.concurrent.ThreadPoolExecutor;
  * on it would stall request handling and worsen the very backlog that triggered
  * the rejection. Recording the failure is cheap, local and replayable — the
  * retry scheduler picks it up within 15 minutes.</p>
+ *
+ * <p>Stateless: the recording goes through the rejected {@link SheetSyncTask},
+ * which already carries the {@link SyncFailureRecorder} it was built with. This
+ * class deliberately holds no recorder of its own — a second reference would be
+ * the same singleton bean threaded through {@code SheetsAsyncConfig} for no
+ * gain.</p>
  */
 @Slf4j
-@RequiredArgsConstructor
 public class SheetsRejectedExecutionHandler implements RejectedExecutionHandler {
-
-    private final SyncFailureRecorder failureRecorder;
 
     @Override
     public void rejectedExecution(Runnable task, ThreadPoolExecutor executor) {
@@ -35,7 +38,9 @@ public class SheetsRejectedExecutionHandler implements RejectedExecutionHandler 
                     executor.getQueue().size(), executor.getActiveCount(),
                     syncTask.entityType(), syncTask.entityId());
 
-            syncTask.recordAsFailed(0, new java.util.concurrent.RejectedExecutionException(
+            // attemptCount 0: no Sheets call was ever made, so the retry scheduler
+            // gets this row with its full attempt budget intact.
+            syncTask.recordAsFailed(0, new RejectedExecutionException(
                     "Sheets sync executor saturated; task queued for scheduled retry"));
             return;
         }
