@@ -1,6 +1,6 @@
 package in.lesuccess.portal.config;
 
-import in.lesuccess.portal.dto.ApiResponse;
+import in.lesuccess.portal.shared.dto.ApiResponse;
 import in.lesuccess.portal.security.JwtAuthenticationFilter;
 
 import tools.jackson.databind.ObjectMapper;
@@ -42,11 +42,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public: POST contact messages
+                        // Public: form submissions
                         .requestMatchers(HttpMethod.POST, "/api/contact-messages").permitAll()
-                        // Admin: all other contact-message routes
+                        .requestMatchers(HttpMethod.POST, "/api/demo-bookings").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/upcoming-programs/*/register").permitAll()
+                        // Public: home page data reads
+                        .requestMatchers(HttpMethod.GET, "/api/announcements/active").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/courses", "/api/courses/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/upcoming-programs", "/api/upcoming-programs/**").permitAll()
+                        // Admin: all /api/admin/** and remaining contact-message routes require auth
+                        .requestMatchers("/api/admin/**").authenticated()
                         .requestMatchers("/api/contact-messages/**").authenticated()
-                        // Everything else — permit for now; tighten when Johnson adds shared auth
+                        // Everything else — permit for now; tighten as new modules are added
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex
