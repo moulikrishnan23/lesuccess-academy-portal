@@ -41,14 +41,14 @@ lesuccess:
   rate-limit:
     requests-per-hour: 5
     trust-proxy: false
-    trusted-proxies: []
+    # NOTE: every list below MUST stay a comma-separated scalar. @Value cannot bind
+    # a YAML sequence — Boot flattens a list into indexed keys (foo[0], foo[1]) and
+    # the un-indexed key does not exist, so @Value silently falls back to its
+    # default and the configured values are ignored with no error. Only change
+    # these to YAML lists if RateLimitFilter moves to @ConfigurationProperties.
+    trusted-proxies: ""
     # Public form endpoints to throttle. Exact paths, POST only — add a new
     # public form here rather than editing RateLimitFilter.
-    # NOTE: @Value cannot bind a YAML sequence — Boot flattens a list into indexed
-    # keys (protected-paths[0], [1]) and the un-indexed key does not exist, so
-    # @Value would silently fall back to its default. These must stay
-    # comma-separated scalars unless the filter moves to @ConfigurationProperties.
-    # (The same applies to trusted-proxies below; it is only harmless while empty.)
     protected-paths: /api/contact-messages,/api/leads
 
   # Shared lead-capture protections (Contact form and Leads form alike)

@@ -208,11 +208,14 @@ class ContactServiceTest {
             entity.setStatus(ContactMessageStatus.NEW);
 
             when(repository.findById(1L)).thenReturn(Optional.of(entity));
-            when(repository.save(any())).thenReturn(entity);
+            // saveAndFlush, not save: updateStatus flushes so the status is visible to
+            // the AFTER_COMMIT Sheets listener. Stubbing save() left saveAndFlush()
+            // unstubbed, returning null, and the test NPE'd on the response mapping.
+            when(repository.saveAndFlush(any())).thenReturn(entity);
 
             contactService.updateStatus(1L, ContactMessageStatus.IN_PROGRESS);
 
-            verify(repository).save(any());
+            verify(repository).saveAndFlush(any());
             verify(eventPublisher).publishEvent(any(ContactMessageStatusUpdatedEvent.class));
         }
     }
