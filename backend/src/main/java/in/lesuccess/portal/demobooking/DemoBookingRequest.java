@@ -1,7 +1,9 @@
 package in.lesuccess.portal.demobooking;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +18,13 @@ import lombok.NoArgsConstructor;
 public class DemoBookingRequest {
 
     private Long courseId;
+
+    @Size(max = 120, message = "Name must not exceed 120 characters")
+    private String name;
+
+    @Email(message = "Please provide a valid email address")
+    @Size(max = 160, message = "Email must not exceed 160 characters")
+    private String email;
 
     @Getter(AccessLevel.NONE)
     private String mobileNumber;

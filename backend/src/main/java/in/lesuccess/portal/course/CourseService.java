@@ -18,6 +18,8 @@ import java.util.List;
 public class CourseService {
 
     private final CourseRepository repository;
+    private final CourseModuleRepository moduleRepository;
+    private final TestimonialRepository testimonialRepository;
 
     @Transactional(readOnly = true)
     public List<CourseResponse> listActive() {
@@ -100,5 +102,99 @@ public class CourseService {
     public Course findOrThrow(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course", id));
+    }
+
+    // ── Modules ──────────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<CourseModuleResponse> listModules(Long courseId) {
+        findOrThrow(courseId);
+        return moduleRepository.findByCourseIdOrderByDisplayOrderAsc(courseId)
+                .stream().map(CourseModuleResponse::from).toList();
+    }
+
+    @Transactional
+    public CourseModuleResponse createModule(Long courseId, CourseModuleRequest request) {
+        Course course = findOrThrow(courseId);
+        CourseModule entity = CourseModule.builder()
+                .course(course)
+                .title(request.getTitle().trim())
+                .content(request.getContent())
+                .displayOrder(request.getDisplayOrder())
+                .build();
+        CourseModule saved = moduleRepository.save(entity);
+        log.info("Course module created: id={}, courseId={}", saved.getId(), courseId);
+        return CourseModuleResponse.from(saved);
+    }
+
+    @Transactional
+    public CourseModuleResponse updateModule(Long moduleId, CourseModuleRequest request) {
+        CourseModule entity = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course module", moduleId));
+        entity.setTitle(request.getTitle().trim());
+        entity.setContent(request.getContent());
+        entity.setDisplayOrder(request.getDisplayOrder());
+        CourseModule saved = moduleRepository.saveAndFlush(entity);
+        log.info("Course module updated: id={}", moduleId);
+        return CourseModuleResponse.from(saved);
+    }
+
+    @Transactional
+    public void deleteModule(Long moduleId) {
+        if (!moduleRepository.existsById(moduleId)) {
+            throw new ResourceNotFoundException("Course module", moduleId);
+        }
+        moduleRepository.deleteById(moduleId);
+        log.info("Course module deleted: id={}", moduleId);
+    }
+
+    // ── Testimonials ─────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<TestimonialResponse> listTestimonials(Long courseId) {
+        findOrThrow(courseId);
+        return testimonialRepository.findByCourseIdAndIsActiveTrueOrderByDisplayOrderAsc(courseId)
+                .stream().map(TestimonialResponse::from).toList();
+    }
+
+    @Transactional
+    public TestimonialResponse createTestimonial(Long courseId, TestimonialRequest request) {
+        Course course = findOrThrow(courseId);
+        Testimonial entity = Testimonial.builder()
+                .course(course)
+                .studentName(request.getStudentName().trim())
+                .reviewText(request.getReviewText().trim())
+                .rating(request.getRating())
+                .photoUrl(request.getPhotoUrl())
+                .displayOrder(request.getDisplayOrder())
+                .isActive(request.isActive())
+                .build();
+        Testimonial saved = testimonialRepository.save(entity);
+        log.info("Testimonial created: id={}, courseId={}", saved.getId(), courseId);
+        return TestimonialResponse.from(saved);
+    }
+
+    @Transactional
+    public TestimonialResponse updateTestimonial(Long id, TestimonialRequest request) {
+        Testimonial entity = testimonialRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Testimonial", id));
+        entity.setStudentName(request.getStudentName().trim());
+        entity.setReviewText(request.getReviewText().trim());
+        entity.setRating(request.getRating());
+        entity.setPhotoUrl(request.getPhotoUrl());
+        entity.setDisplayOrder(request.getDisplayOrder());
+        entity.setActive(request.isActive());
+        Testimonial saved = testimonialRepository.saveAndFlush(entity);
+        log.info("Testimonial updated: id={}", id);
+        return TestimonialResponse.from(saved);
+    }
+
+    @Transactional
+    public void deleteTestimonial(Long id) {
+        Testimonial entity = testimonialRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Testimonial", id));
+        entity.setDeletedAt(LocalDateTime.now());
+        testimonialRepository.save(entity);
+        log.info("Testimonial soft-deleted: id={}", id);
     }
 }
