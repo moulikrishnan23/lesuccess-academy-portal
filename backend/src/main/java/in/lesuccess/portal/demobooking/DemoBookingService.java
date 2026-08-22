@@ -29,6 +29,8 @@ public class DemoBookingService {
 
         DemoBooking entity = DemoBooking.builder()
                 .course(course)
+                .name(request.getName())
+                .email(request.getEmail())
                 .mobileNumber(request.getMobileNumber())
                 .status(DemoBookingStatus.PENDING)
                 .ipAddress(ipAddress)

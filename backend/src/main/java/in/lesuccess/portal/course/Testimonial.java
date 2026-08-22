@@ -1,6 +1,4 @@
-package in.lesuccess.portal.demobooking;
-
-import in.lesuccess.portal.course.Course;
+package in.lesuccess.portal.course;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,39 +7,40 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "demo_booking")
+@Table(name = "testimonial")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DemoBooking {
+public class Testimonial {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // nullable: course may be soft-deleted after a booking is created
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "course_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(length = 120)
-    private String name;
+    @Column(name = "student_name", nullable = false, length = 120)
+    private String studentName;
 
-    @Column(length = 160)
-    private String email;
+    @Column(name = "review_text", nullable = false, columnDefinition = "TEXT")
+    private String reviewText;
 
-    @Column(name = "mobile_number", nullable = false, length = 20)
-    private String mobileNumber;
+    @Column(nullable = false)
+    private int rating;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private DemoBookingStatus status;
+    @Column(name = "photo_url", length = 255)
+    private String photoUrl;
 
-    @Column(name = "ip_address", length = 45)
-    private String ipAddress;
+    @Column(name = "display_order", nullable = false)
+    private int displayOrder;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -57,9 +56,6 @@ public class DemoBooking {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
-        if (this.status == null) {
-            this.status = DemoBookingStatus.PENDING;
-        }
     }
 
     @PreUpdate

@@ -16,6 +16,8 @@ public class DemoBookingResponse {
     private Long id;
     private Long courseId;
     private String courseName;
+    private String name;
+    private String email;
     private String mobileNumber;
     private DemoBookingStatus status;
     private LocalDateTime createdAt;
@@ -26,6 +28,8 @@ public class DemoBookingResponse {
                 .id(entity.getId())
                 .courseId(entity.getCourse() != null ? entity.getCourse().getId() : null)
                 .courseName(entity.getCourse() != null ? entity.getCourse().getName() : null)
+                .name(entity.getName())
+                .email(entity.getEmail())
                 .mobileNumber(entity.getMobileNumber())
                 .status(entity.getStatus())
                 .createdAt(entity.getCreatedAt())
