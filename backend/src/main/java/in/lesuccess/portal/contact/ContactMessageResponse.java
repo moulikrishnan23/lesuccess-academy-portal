@@ -7,10 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * Admin-facing view of a contact message.
- * Excludes ipAddress (internal-only) and deletedAt.
- */
 @Data
 @Builder
 @NoArgsConstructor

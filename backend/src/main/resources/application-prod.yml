@@ -28,9 +28,13 @@ lesuccess:
   rate-limit:
     requests-per-hour: 5
     trust-proxy: true
-    trusted-proxies:
-      - 127.0.0.1
-      # Add your load balancer / reverse proxy IPs here
+    # MUST be a comma-separated scalar, not a YAML list — @Value cannot bind a
+    # sequence, so the list form here was being silently ignored: trustedProxies
+    # bound to the empty default, X-Forwarded-For was never honoured, and every
+    # client behind the load balancer shared one rate-limit bucket keyed on the
+    # proxy's own IP.
+    # Add your load balancer / reverse proxy IPs here, comma-separated.
+    trusted-proxies: 127.0.0.1
 
   cors:
     allowed-origins:
@@ -39,7 +43,13 @@ lesuccess:
   sheets:
     enabled: true
     spreadsheet-id: ${SHEETS_SPREADSHEET_ID}
-    credentials-path: ${SHEETS_CREDENTIALS_PATH}
+    # Base64-encoded service account JSON, decoded in memory at startup — never written to disk.
+    # No default, same fail-fast contract as JWT_SECRET above: a missing key must stop the deploy,
+    # not silently disable the sync. Deliberately NOT credentials-path: shipping a key file inside
+    # a Docker image layer means anyone with image access can extract it, published or not.
+    # LESUCCESS_SHEETS_CREDENTIALS_BASE64 also resolves here via relaxed binding, and takes
+    # precedence over this line because environment variables outrank application-*.yml.
+    credentials-base64: ${SHEETS_CREDENTIALS_BASE64}
 
 logging:
   level:

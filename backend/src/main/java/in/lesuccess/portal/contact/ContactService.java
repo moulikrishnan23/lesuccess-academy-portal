@@ -1,11 +1,12 @@
 package in.lesuccess.portal.contact;
 
-import in.lesuccess.portal.common.PageResponse;
-import in.lesuccess.portal.common.ResourceNotFoundException;
+import in.lesuccess.portal.shared.dto.PageResponse;
+import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
+import in.lesuccess.portal.shared.support.LeadCaptureSupport;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Safelist;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,32 +24,31 @@ public class ContactService {
     private final ContactMessageRepository repository;
     private final ApplicationEventPublisher eventPublisher;
 
-    /** Duration window for duplicate detection (minutes). */
-    private static final int DUPLICATE_WINDOW_MINUTES = 5;
-
     /**
-     * Processes a public contact form submission.
+     * Externalised from a hardcoded constant so it can be tuned per environment.
      *
-     * @return the response DTO, or a "fake" success response if honeypot triggered
-     *         or a duplicate was detected within the window.
+     * <p>The {@code = 5} initialiser is load-bearing, not decoration: this is a
+     * field rather than a constructor argument precisely so that
+     * Mockito-constructed instances in ContactServiceTest keep the original
+     * five-minute behaviour, while Spring overrides it from configuration at
+     * runtime. Widening the constructor instead would have broken those tests.</p>
      */
+    @Value("${lesuccess.lead-capture.duplicate-window-minutes:5}")
+    private int duplicateWindowMinutes = 5;
+
     @Transactional
     public ContactSubmitResult createContactMessage(ContactMessageRequest request, String ipAddress) {
-        // 1. Honeypot check — silent discard, looks like success to the caller
-        if (request.getWebsite() != null && !request.getWebsite().isBlank()) {
-            log.warn("Honeypot triggered from IP: {}. Honeypot value: '{}'", ipAddress, request.getWebsite());
+        if (LeadCaptureSupport.isHoneypotTriggered(request.getWebsite(), ipAddress)) {
             return ContactSubmitResult.honeypot();
         }
 
-        // 2. Strip whitespace from phone before any further processing
-        String cleanPhone = request.getPhone().replaceAll("\\s+", "");
+        String cleanPhone = LeadCaptureSupport.normalizeMobile(request.getPhone());
 
-        // 3. Duplicate detection — same (email, phone, message) within 5 minutes
         Optional<ContactMessage> existingDuplicate = repository.findRecentDuplicate(
                 request.getEmail().trim(),
                 cleanPhone,
                 request.getMessage().trim(),
-                LocalDateTime.now().minusMinutes(DUPLICATE_WINDOW_MINUTES)
+                LeadCaptureSupport.duplicateWindowStart(duplicateWindowMinutes)
         );
 
         if (existingDuplicate.isPresent()) {
@@ -56,10 +56,8 @@ public class ContactService {
             return ContactSubmitResult.success(ContactMessageResponse.from(existingDuplicate.get()));
         }
 
-        // 4. Sanitize message — strip all HTML tags (defense in depth)
-        String sanitizedMessage = Jsoup.clean(request.getMessage(), Safelist.none());
+        String sanitizedMessage = LeadCaptureSupport.sanitizeText(request.getMessage());
 
-        // 5. Build and persist entity
         ContactMessage entity = ContactMessage.builder()
                 .name(request.getName().trim())
                 .email(request.getEmail().trim())
@@ -75,15 +73,11 @@ public class ContactService {
         ContactMessage saved = repository.save(entity);
         log.info("Contact message created: id={}, email={}", saved.getId(), saved.getEmail());
 
-        // 6. Publish event for async listeners (Sheets sync, etc.)
         eventPublisher.publishEvent(new ContactMessageCreatedEvent(this, saved));
 
         return ContactSubmitResult.success(ContactMessageResponse.from(saved));
     }
 
-    /**
-     * Paginated admin list — filterable by status, searchable by name/email.
-     */
     @Transactional(readOnly = true)
     public PageResponse<ContactMessageResponse> listContactMessages(
             ContactMessageStatus status, String search, Pageable pageable) {
@@ -103,26 +97,15 @@ public class ContactService {
         return PageResponse.from(page.map(ContactMessageResponse::from));
     }
 
-    /**
-     * Get a single contact message by ID.
-     */
     @Transactional(readOnly = true)
     public ContactMessageResponse getContactMessage(Long id) {
-        ContactMessage entity = findOrThrow(id);
-        return ContactMessageResponse.from(entity);
+        return ContactMessageResponse.from(findOrThrow(id));
     }
 
-    /**
-     * Update the status of a contact message.
-     */
     @Transactional
     public ContactMessageResponse updateStatus(Long id, ContactMessageStatus newStatus) {
         ContactMessage entity = findOrThrow(id);
         entity.setStatus(newStatus);
-        // saveAndFlush, not save: @PreUpdate only fires when Hibernate flushes, which
-        // otherwise happens at commit — after the response DTO has been built. That
-        // made the returned updatedAt the *pre-update* timestamp while the database
-        // held the correct one. Flushing here runs the callback before we read it.
         ContactMessage saved = repository.saveAndFlush(entity);
 
         log.info("Contact message status updated: id={}, newStatus={}", id, newStatus);
@@ -131,9 +114,6 @@ public class ContactService {
         return ContactMessageResponse.from(saved);
     }
 
-    /**
-     * Soft-delete a contact message by setting deletedAt.
-     */
     @Transactional
     public void softDelete(Long id) {
         ContactMessage entity = findOrThrow(id);
@@ -147,10 +127,6 @@ public class ContactService {
                 .orElseThrow(() -> new ResourceNotFoundException("Contact message", id));
     }
 
-    /**
-     * Encapsulates the result of a contact submission attempt,
-     * distinguishing between honeypot discard and genuine success.
-     */
     public record ContactSubmitResult(boolean isHoneypot, ContactMessageResponse response) {
         public static ContactSubmitResult honeypot() {
             return new ContactSubmitResult(true, null);

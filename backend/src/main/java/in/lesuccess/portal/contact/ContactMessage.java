@@ -6,11 +6,6 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
-/**
- * JPA entity for the contact_message table.
- * Soft delete via deletedAt — the @SQLRestriction ensures default queries
- * exclude soft-deleted rows automatically.
- */
 @Entity
 @Table(name = "contact_message")
 @SQLRestriction("deleted_at IS NULL")
