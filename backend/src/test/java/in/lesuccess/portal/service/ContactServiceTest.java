@@ -1,11 +1,12 @@
 package in.lesuccess.portal.service;
 
-import in.lesuccess.portal.dto.ContactMessageRequest;
-import in.lesuccess.portal.event.ContactMessageCreatedEvent;
-import in.lesuccess.portal.event.ContactMessageStatusUpdatedEvent;
-import in.lesuccess.portal.model.ContactMessage;
-import in.lesuccess.portal.model.ContactMessageStatus;
-import in.lesuccess.portal.repository.ContactMessageRepository;
+import in.lesuccess.portal.contact.ContactMessageRequest;
+import in.lesuccess.portal.contact.ContactMessageCreatedEvent;
+import in.lesuccess.portal.contact.ContactMessageStatusUpdatedEvent;
+import in.lesuccess.portal.contact.ContactMessage;
+import in.lesuccess.portal.contact.ContactMessageStatus;
+import in.lesuccess.portal.contact.ContactMessageRepository;
+import in.lesuccess.portal.contact.ContactService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -207,11 +208,14 @@ class ContactServiceTest {
             entity.setStatus(ContactMessageStatus.NEW);
 
             when(repository.findById(1L)).thenReturn(Optional.of(entity));
-            when(repository.save(any())).thenReturn(entity);
+            // saveAndFlush, not save: updateStatus flushes so the status is visible to
+            // the AFTER_COMMIT Sheets listener. Stubbing save() left saveAndFlush()
+            // unstubbed, returning null, and the test NPE'd on the response mapping.
+            when(repository.saveAndFlush(any())).thenReturn(entity);
 
-            contactService.updateStatus(1L, ContactMessageStatus.READ);
+            contactService.updateStatus(1L, ContactMessageStatus.IN_PROGRESS);
 
-            verify(repository).save(any());
+            verify(repository).saveAndFlush(any());
             verify(eventPublisher).publishEvent(any(ContactMessageStatusUpdatedEvent.class));
         }
     }

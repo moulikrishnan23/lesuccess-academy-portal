@@ -28,9 +28,13 @@ lesuccess:
   rate-limit:
     requests-per-hour: 5
     trust-proxy: true
-    trusted-proxies:
-      - 127.0.0.1
-      # Add your load balancer / reverse proxy IPs here
+    # MUST be a comma-separated scalar, not a YAML list — @Value cannot bind a
+    # sequence, so the list form here was being silently ignored: trustedProxies
+    # bound to the empty default, X-Forwarded-For was never honoured, and every
+    # client behind the load balancer shared one rate-limit bucket keyed on the
+    # proxy's own IP.
+    # Add your load balancer / reverse proxy IPs here, comma-separated.
+    trusted-proxies: 127.0.0.1
 
   cors:
     allowed-origins:

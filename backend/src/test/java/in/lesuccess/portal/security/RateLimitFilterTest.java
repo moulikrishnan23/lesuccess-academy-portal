@@ -2,12 +2,12 @@ package in.lesuccess.portal.security;
 
 import in.lesuccess.portal.config.CorsConfig;
 import in.lesuccess.portal.config.SecurityConfig;
-import in.lesuccess.portal.controller.ContactController;
-import in.lesuccess.portal.dto.ContactMessageRequest;
-import in.lesuccess.portal.dto.ContactMessageResponse;
-import in.lesuccess.portal.exception.GlobalExceptionHandler;
-import in.lesuccess.portal.model.ContactMessageStatus;
-import in.lesuccess.portal.service.ContactService;
+import in.lesuccess.portal.contact.ContactController;
+import in.lesuccess.portal.contact.ContactMessageRequest;
+import in.lesuccess.portal.contact.ContactMessageResponse;
+import in.lesuccess.portal.contact.ContactMessageStatus;
+import in.lesuccess.portal.contact.ContactService;
+import in.lesuccess.portal.shared.exception.GlobalExceptionHandler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
