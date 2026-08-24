@@ -18,6 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CourseController {
 
+    // ── Course CRUD ───────────────────────────────────────────────────────────
+
     private final CourseService service;
 
     /** Public — active courses ordered by displayOrder (home page cards + booking dropdown). */
@@ -76,6 +78,70 @@ public class CourseController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.softDelete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Modules ───────────────────────────────────────────────────────────────
+
+    /** Public — syllabus accordion for a course page. */
+    @GetMapping("/api/courses/{id}/modules")
+    public ResponseEntity<ApiResponse<List<CourseModuleResponse>>> listModules(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success("Modules retrieved successfully", service.listModules(id)));
+    }
+
+    @PostMapping("/api/admin/courses/{id}/modules")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<CourseModuleResponse>> createModule(
+            @PathVariable Long id,
+            @Valid @RequestBody CourseModuleRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Module created successfully", service.createModule(id, request)));
+    }
+
+    @PutMapping("/api/admin/modules/{moduleId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<CourseModuleResponse>> updateModule(
+            @PathVariable Long moduleId,
+            @Valid @RequestBody CourseModuleRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Module updated successfully", service.updateModule(moduleId, request)));
+    }
+
+    @DeleteMapping("/api/admin/modules/{moduleId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Void> deleteModule(@PathVariable Long moduleId) {
+        service.deleteModule(moduleId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Testimonials ──────────────────────────────────────────────────────────
+
+    /** Public — testimonial carousel for a course page. */
+    @GetMapping("/api/courses/{id}/testimonials")
+    public ResponseEntity<ApiResponse<List<TestimonialResponse>>> listTestimonials(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success("Testimonials retrieved successfully", service.listTestimonials(id)));
+    }
+
+    @PostMapping("/api/admin/courses/{id}/testimonials")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<TestimonialResponse>> createTestimonial(
+            @PathVariable Long id,
+            @Valid @RequestBody TestimonialRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Testimonial created successfully", service.createTestimonial(id, request)));
+    }
+
+    @PutMapping("/api/admin/testimonials/{testimonialId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<TestimonialResponse>> updateTestimonial(
+            @PathVariable Long testimonialId,
+            @Valid @RequestBody TestimonialRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Testimonial updated successfully", service.updateTestimonial(testimonialId, request)));
+    }
+
+    @DeleteMapping("/api/admin/testimonials/{testimonialId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Void> deleteTestimonial(@PathVariable Long testimonialId) {
+        service.deleteTestimonial(testimonialId);
         return ResponseEntity.noContent().build();
     }
 }
