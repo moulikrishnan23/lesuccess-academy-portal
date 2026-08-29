@@ -28,13 +28,21 @@ public class LeadSheetRowSource implements SheetRowSource {
 
     private static final DateTimeFormatter DT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /** Columns A-I; status lives in I. */
+    /**
+     * Columns A-I; status lives in I.
+     *
+     * <p>Mobile (D) is written but hidden: it is optional on the capture form since
+     * V18, so it is mostly blank and only clutters the view. Keeping the column in
+     * place rather than removing it holds every other column at its current letter,
+     * which matters because existing rows are already laid out this way.</p>
+     */
     public static final SheetSpec SPEC = new SheetSpec(
             "Leads",
             List.of("ID", "Created At", "Name", "Mobile", "Email",
                     "Course ID", "Looking For", "Source", "Status"),
             "A",
-            "I");
+            "I",
+            List.of("D"));
 
     @Override
     public SyncEntityType entityType() {
@@ -56,7 +64,10 @@ public class LeadSheetRowSource implements SheetRowSource {
                 lead.getId(),
                 lead.getCreatedAt().format(DT_FORMAT),
                 lead.getName(),
-                lead.getMobile(),
+                // Mobile is optional since V18. A raw null is dropped during JSON
+                // serialisation rather than written as a blank cell, which shifts
+                // every following value one column left — so coerce it like the rest.
+                lead.getMobile() == null ? "" : lead.getMobile(),
                 lead.getEmail() == null ? "" : lead.getEmail(),
                 lead.getCourseId() == null ? "" : lead.getCourseId(),
                 lead.getLookingFor() == null ? "" : lead.getLookingFor(),

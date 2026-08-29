@@ -88,7 +88,10 @@ export default function LeadCaptureForm({
   const isRow = layout === 'row'
   const baseId = useId()
   const reduced = useReducedMotion()
-  const { submit, isSubmitting, isSuccess, error, fieldErrors, reset } = useLeadSubmit()
+  // live: this CTA posts for real; the mock gateway still serves everything else.
+  const { submit, isSubmitting, isSuccess, error, fieldErrors, reset } = useLeadSubmit({
+    live: true,
+  })
 
   const [values, setValues] = useState(EMPTY_FORM)
   const [clientErrors, setClientErrors] = useState({})
@@ -169,6 +172,7 @@ export default function LeadCaptureForm({
           />
         )}
       </FieldShell>
+
 
       <FieldShell
         id={`${baseId}-email`}

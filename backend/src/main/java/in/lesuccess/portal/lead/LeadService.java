@@ -67,18 +67,31 @@ public class LeadService {
         }
 
         assertSourceAccepted(request.getSource());
+        assertMobilePresentWhereRequired(request);
 
         String cleanMobile = LeadCaptureSupport.normalizeMobile(request.getMobile());
 
-        Optional<Lead> existingDuplicate = repository.findRecentDuplicate(
-                cleanMobile,
-                request.getSource(),
-                LeadCaptureSupport.duplicateWindowStart(duplicateWindowMinutes));
+        /*
+         * Duplicate detection is keyed on mobile, and SQL equality against NULL
+         * is never true — so for a lead with no mobile the query can only miss.
+         * Skipping it is the same outcome without the round trip, and says so.
+         *
+         * The cost is that mobile-less sources (the Service CTA) have no
+         * duplicate protection: a double-clicked submit creates two rows. The
+         * honeypot and the per-IP rate limit still apply. Revisit by keying on
+         * (email, source) when mobile is absent, if that turns out to matter.
+         */
+        if (cleanMobile != null) {
+            Optional<Lead> existingDuplicate = repository.findRecentDuplicate(
+                    cleanMobile,
+                    request.getSource(),
+                    LeadCaptureSupport.duplicateWindowStart(duplicateWindowMinutes));
 
-        if (existingDuplicate.isPresent()) {
-            log.info("Duplicate lead submission detected from IP: {} for source: {}",
-                    ipAddress, request.getSource());
-            return LeadSubmitResult.success(LeadResponse.from(existingDuplicate.get()));
+            if (existingDuplicate.isPresent()) {
+                log.info("Duplicate lead submission detected from IP: {} for source: {}",
+                        ipAddress, request.getSource());
+                return LeadSubmitResult.success(LeadResponse.from(existingDuplicate.get()));
+            }
         }
 
         Lead entity = Lead.builder()
@@ -136,6 +149,31 @@ public class LeadService {
      * backend drops on the floor would look like a working integration while
      * losing every lead.
      */
+    /**
+     * Sources that cannot be actioned without a phone number.
+     *
+     * <p>This is not on {@code LeadRequest.mobile} as a {@code @NotBlank}
+     * because the requirement is per-source: the course enrolment form exists to
+     * get someone a call back, while the Service page CTA asks only for a name,
+     * an email and a subject. A field-level annotation cannot see the source, so
+     * enforcing it there made the Service form unsubmittable.</p>
+     */
+    private static final Set<LeadSource> MOBILE_REQUIRED_SOURCES =
+            Set.of(LeadSource.COURSE_ENROLL_FORM);
+
+    /**
+     * Rejected as a field error on {@code mobile}, so it lands on the same input
+     * a {@code @NotBlank} would have — the form maps {@code fieldErrors} straight
+     * onto its controls and cannot tell the two apart.
+     */
+    private void assertMobilePresentWhereRequired(LeadRequest request) {
+        if (MOBILE_REQUIRED_SOURCES.contains(request.getSource())
+                && request.getMobile() == null) {
+            throw new InvalidRequestException("Validation failed", List.of(
+                    InvalidRequestException.fieldError("mobile", "Mobile number is required")));
+        }
+    }
+
     private void assertSourceAccepted(LeadSource source) {
         if (!Set.copyOf(acceptedSources).contains(source)) {
             throw new InvalidRequestException("Validation failed", List.of(

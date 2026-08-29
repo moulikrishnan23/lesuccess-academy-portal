@@ -1,4 +1,4 @@
--- V8: Course syllabus modules (accordion on course page)
+-- V14: Course syllabus modules (accordion on course page)
 CREATE TABLE course_module (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     course_id     BIGINT        NOT NULL,
