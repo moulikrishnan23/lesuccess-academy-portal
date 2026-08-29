@@ -29,5 +29,12 @@ public class TestimonialRequest {
     @Min(value = 0, message = "Display order must be 0 or greater")
     private int displayOrder;
 
+    // @Builder.Default, not a bare initialiser: @Builder generates its own field
+    // initialisation and ignores the expression entirely, so builder().build()
+    // would yield false — the opposite of the intended default. Jackson binding
+    // is unaffected (it goes through the no-args constructor, where the
+    // initialiser does apply), which is what makes the builder path easy to miss.
+    // Matches CourseRequest and UpcomingProgramRequest.
+    @lombok.Builder.Default
     private boolean isActive = true;
 }

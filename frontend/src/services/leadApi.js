@@ -33,10 +33,19 @@ function toRequestBody({ name, mobile, email, courseId, lookingFor, source }) {
  * A 400 rejects with an ApiError carrying `fieldErrors`, which the form maps
  * straight onto its inputs.
  */
-export async function submit(payload, { signal } = {}) {
+export async function submit(payload, { signal, live = false } = {}) {
   const body = toRequestBody(payload)
 
-  if (isMockEnabled()) {
+  /*
+   * `live` opts a single caller out of the mock gateway.
+   *
+   * The Service page CTA posts for real while VITE_USE_MOCKS stays 'true' for
+   * the rest of the app. Flipping that flag globally would take the Home and
+   * Course pages live at the same time, which is out of scope — and their
+   * services do not yet unwrap the ApiResponse envelope, so they would render
+   * empty rather than fail loudly.
+   */
+  if (!live && isMockEnabled()) {
     return mockSubmitLead(body)
   }
 

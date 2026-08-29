@@ -1,4 +1,4 @@
--- V9: Student testimonials per course (carousel on course page)
+-- V15: Student testimonials per course (carousel on course page)
 CREATE TABLE testimonial (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     course_id     BIGINT        NOT NULL,

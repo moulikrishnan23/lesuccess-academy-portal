@@ -7,10 +7,14 @@ import leadApi from '../services/leadApi.js'
  * Deliberately does not navigate, reload, or toast — the caller decides what
  * success looks like. The enroll form swaps itself for a confirmation panel.
  *
+ * @param {Object}  [options]
+ * @param {boolean} [options.live] Bypass the mock gateway for this caller only.
+ *   The Service page CTA sets it so the form posts for real while
+ *   VITE_USE_MOCKS stays 'true' for the rest of the app.
  * @returns {{submit: Function, isSubmitting: boolean, isSuccess: boolean,
  *   error: Object|null, fieldErrors: Object, reset: Function}}
  */
-export default function useLeadSubmit() {
+export default function useLeadSubmit({ live = false } = {}) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState(null)
@@ -46,7 +50,7 @@ export default function useLeadSubmit() {
     setError(null)
 
     try {
-      await leadApi.submit(payload)
+      await leadApi.submit(payload, { live })
       if (isMountedRef.current) {
         setIsSuccess(true)
         setIsSubmitting(false)
@@ -61,7 +65,7 @@ export default function useLeadSubmit() {
     } finally {
       inFlightRef.current = false
     }
-  }, [])
+  }, [live])
 
   return {
     submit,

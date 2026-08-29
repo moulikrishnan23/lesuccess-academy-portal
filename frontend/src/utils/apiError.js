@@ -26,7 +26,24 @@ const NETWORK_MESSAGE =
 function readFieldErrors(body) {
   if (!body || typeof body !== 'object') return {}
 
-  if (body.errors && typeof body.errors === 'object' && !Array.isArray(body.errors)) {
+  /*
+   * The live shape, confirmed against the running backend:
+   *   { success:false, message:"Validation failed",
+   *     errors:[{ field:"mobile", message:"Mobile number is required" }] }
+   *
+   * This must be tested before the object branch: an array is also
+   * `typeof 'object'`, and the old code's !Array.isArray guard meant a real 400
+   * fell through to the fieldErrors branch, which the backend never sends — so
+   * server-side field errors were silently dropped and never reached an input.
+   */
+  if (Array.isArray(body.errors)) {
+    return body.errors.reduce((acc, item) => {
+      if (item?.field) acc[item.field] = item.message || item.defaultMessage || 'Invalid value'
+      return acc
+    }, {})
+  }
+
+  if (body.errors && typeof body.errors === 'object') {
     return body.errors
   }
 
