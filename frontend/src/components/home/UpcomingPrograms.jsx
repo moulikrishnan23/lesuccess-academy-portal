@@ -6,7 +6,6 @@ import {
   Clock3,
   Video,
   Award,
-  UserRound,
   BriefcaseBusiness,
 } from "lucide-react";
 
@@ -17,7 +16,7 @@ const programs = {
     date: "Saturday",
     timing: "5:00PM - 6:30PM",
     platform: "Google Meet",
-    image: "/home/webinar.png",
+    image: "/home/webinarHost.jpg",
     badge: "Free Webinar",
   },
 
@@ -91,7 +90,7 @@ const UpcomingPrograms = () => {
             <div className="w-full text-center">
 
               <div className="flex justify-center">
-                <span className="rounded-lg bg-green-300 px-4 py-2 text-xs font-semibold text-green-800">
+                <span className="rounded-lg bg-green-300 px-4 py-2 text-xs font-semibold text-green-800 transition animate-pulse">
                   {program.badge}
                 </span>
               </div>

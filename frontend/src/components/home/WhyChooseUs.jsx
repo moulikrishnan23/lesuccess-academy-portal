@@ -6,7 +6,6 @@ import {
   Rocket,
   UsersRound,
   BadgeCheck,
-  Bold,
 } from "lucide-react";
 
 const features = [
