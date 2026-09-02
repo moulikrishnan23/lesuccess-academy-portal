@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { Mail, Phone, MapPin, MessageCircle, Send } from "lucide-react";
-
-import {FaInstagram, FaFacebook, FaLinkedin, FaYoutube} from "react-icons/fa"
+import { Mail, Phone, MapPin, Instagram, Facebook, Linkedin, Youtube, MessageCircle, Send } from "lucide-react";
 
 const SOCIALS = [
-  { icon: FaInstagram, href: "#", label: "Instagram" },
-  { icon: FaFacebook, href: "#", label: "Facebook" },
-  { icon: FaLinkedin, href: "#", label: "LinkedIn" },
+  { icon: Instagram, href: "#", label: "Instagram" },
+  { icon: Facebook, href: "#", label: "Facebook" },
+  { icon: Linkedin, href: "#", label: "LinkedIn" },
   { icon: MessageCircle, href: "#", label: "WhatsApp" },
-  { icon: FaYoutube, href: "#", label: "YouTube" },
+  { icon: Youtube, href: "#", label: "YouTube" },
 ];
 
 const initialForm = {
@@ -21,7 +19,7 @@ const initialForm = {
   message: "",
 };
 
-export default function Contact() {
+export default function GetInTouch() {
   const [form, setForm] = useState(initialForm);
 
   const handleChange = (e) => {
@@ -32,13 +30,13 @@ export default function Contact() {
   const handleSend = () => {
     if (!form.name || !form.mobile || !form.email) return;
     // wire up to your submit endpoint here
-    console.log("Contact form submission:", form);
+    console.log("Get in touch submission:", form);
   };
 
   return (
-    <section className="w-full bg-slate-50 py-12 px-4 md:px-10 lg:px-16">
-      <div className="w-full max-w-none">
-        <div className="text-center mb-8">
+    <section className="w-full bg-slate-50 py-12 px-4 md:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-6">
           <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 flex items-center justify-center gap-2">
             Get in Touch <span aria-hidden="true">👋</span>
           </h2>
@@ -48,7 +46,7 @@ export default function Contact() {
         </div>
 
         {/* Form card */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-6 w-full">
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field
               label="Name"
@@ -131,7 +129,7 @@ export default function Contact() {
         </div>
 
         {/* Info + Map */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-[#0f3f4f] rounded-2xl p-6 text-white flex flex-col gap-5">
             <div className="flex gap-3">
               <Mail size={18} className="mt-0.5 shrink-0 text-rose-300" />
@@ -180,7 +178,7 @@ export default function Contact() {
               className="w-full h-full min-h-[260px]"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.355940175046!2d76.98265240945942!3d11.011898454763381!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba837c0178b0805%3A0x27b8de4c436b2d9d!2sLeSuccess!5e0!3m2!1sen!2sin!4v1787855865609!5m2!1sen!2sin"
+              src="https://maps.google.com/maps?q=Tristar%20Tower%20Avinashi%20Road%20Coimbatore&output=embed"
             />
           </div>
         </div>

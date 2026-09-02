@@ -16,7 +16,7 @@ const programs = {
     date: "Saturday",
     timing: "5:00PM - 6:30PM",
     platform: "Google Meet",
-    image: "/home/webinar.png",
+    image: "/home/webinarHost.jpg",
     badge: "Free Webinar",
   },
 
