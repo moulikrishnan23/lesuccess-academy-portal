@@ -2,6 +2,12 @@ package in.lesuccess.portal.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+// Imported explicitly: this type lives in io.jsonwebtoken.security, which the
+// wildcard above does not cover. Without it, "catch (SecurityException)" binds
+// to java.lang.SecurityException — which JJWT never throws — and a bad-signature
+// token escapes validateToken as an unhandled exception, surfacing as a raw 500
+// instead of the intended 401.
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -88,8 +94,13 @@ public class JwtTokenProvider {
             log.warn("Unsupported JWT: {}", ex.getMessage());
         } catch (IllegalArgumentException ex) {
             log.warn("JWT claims string is empty: {}", ex.getMessage());
-        } catch (SecurityException ex) {
+        } catch (SignatureException ex) {
             log.warn("JWT signature validation failed: {}", ex.getMessage());
+        } catch (JwtException ex) {
+            // Catch-all for every other JJWT failure. This filter must never let
+            // an exception escape: anything uncaught here bypasses the 401 path
+            // and Spring renders a bare 500 for what is really a bad credential.
+            log.warn("Invalid JWT: {}", ex.getMessage());
         }
         return false;
     }

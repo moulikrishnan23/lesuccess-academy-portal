@@ -50,7 +50,7 @@ export function validateEnrollForm({ name, mobile, email }) {
  *
  * Different fields from the enroll card, same rules and the same voice: this
  * form asks for a name, an email and what the enquiry is about, and has no
- * mobile field at all.
+ * mobile field — LeadRequest.mobile is optional for this source.
  *
  * @returns {Object} { field: message } — empty when the form is valid.
  */
