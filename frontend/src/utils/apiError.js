@@ -30,6 +30,14 @@ function readFieldErrors(body) {
     return body.errors
   }
 
+  // Backend returns errors as [{ field, message }]
+  if (Array.isArray(body.errors)) {
+    return body.errors.reduce((acc, item) => {
+      if (item?.field) acc[item.field] = item.message || 'Invalid value'
+      return acc
+    }, {})
+  }
+
   if (Array.isArray(body.fieldErrors)) {
     return body.fieldErrors.reduce((acc, item) => {
       if (item?.field) acc[item.field] = item.defaultMessage || item.message || 'Invalid value'

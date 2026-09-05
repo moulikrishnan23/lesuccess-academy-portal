@@ -1,7 +1,5 @@
 package in.lesuccess.portal.demobooking;
 
-import in.lesuccess.portal.course.Course;
-import in.lesuccess.portal.course.CourseRepository;
 import in.lesuccess.portal.shared.dto.PageResponse;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
 
@@ -18,22 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DemoBookingService {
 
     private final DemoBookingRepository repository;
-    private final CourseRepository courseRepository;
 
     @Transactional
-    public DemoBookingResponse create(DemoBookingRequest request, String ipAddress) {
-        Course course = null;
-        if (request.getCourseId() != null) {
-            course = courseRepository.findById(request.getCourseId()).orElse(null);
-        }
-
+    public DemoBookingResponse create(DemoBookingRequest request) {
         DemoBooking entity = DemoBooking.builder()
-                .course(course)
-                .name(request.getName())
-                .email(request.getEmail())
+                .courseName(request.getCourseName())
                 .mobileNumber(request.getMobileNumber())
                 .status(DemoBookingStatus.PENDING)
-                .ipAddress(ipAddress)
                 .build();
 
         DemoBooking saved = repository.save(entity);
@@ -42,18 +31,10 @@ public class DemoBookingService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<DemoBookingResponse> listAll(Long courseId, DemoBookingStatus status, Pageable pageable) {
-        Page<DemoBooking> page;
-
-        if (courseId != null && status != null) {
-            page = repository.findByCourseIdAndStatus(courseId, status, pageable);
-        } else if (courseId != null) {
-            page = repository.findByCourseId(courseId, pageable);
-        } else if (status != null) {
-            page = repository.findByStatus(status, pageable);
-        } else {
-            page = repository.findAll(pageable);
-        }
+    public PageResponse<DemoBookingResponse> listAll(DemoBookingStatus status, Pageable pageable) {
+        Page<DemoBooking> page = status != null
+                ? repository.findByStatus(status, pageable)
+                : repository.findAll(pageable);
 
         return PageResponse.from(page.map(DemoBookingResponse::from));
     }

@@ -158,7 +158,8 @@ export async function getAll({ signal } = {}) {
   }
 
   const { data } = await apiClient.get('/api/courses', { signal })
-  return normalizeCourseList(data)
+  // Backend wraps in ApiResponse<T>; real list/page is in data.data
+  return normalizeCourseList(data?.data ?? data)
 }
 
 /**
@@ -174,7 +175,7 @@ export async function getBySlug(slug, { signal } = {}) {
   const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(slug)}`, {
     signal,
   })
-  return normalizeCourseDetail(data)
+  return normalizeCourseDetail(data?.data ?? data)
 }
 
 export default { getAll, getBySlug, normalizeCourseDetail, normalizeCourseList }

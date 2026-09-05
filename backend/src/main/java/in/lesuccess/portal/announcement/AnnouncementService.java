@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -22,6 +23,14 @@ public class AnnouncementService {
     @Transactional(readOnly = true)
     public Optional<AnnouncementResponse> getActive() {
         return repository.findByIsActiveTrue().map(AnnouncementResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AnnouncementResponse> getAllActive() {
+        return repository.findAllByIsActiveTrueOrderByCreatedAtAsc()
+                .stream()
+                .map(AnnouncementResponse::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -58,7 +67,6 @@ public class AnnouncementService {
     @Transactional
     public AnnouncementResponse activate(Long id) {
         Announcement entity = findOrThrow(id);
-        repository.deactivateAllExcept(id);
         entity.setActive(true);
 
         Announcement saved = repository.saveAndFlush(entity);
