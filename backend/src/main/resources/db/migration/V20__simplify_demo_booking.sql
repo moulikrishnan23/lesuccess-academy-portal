@@ -1,4 +1,4 @@
--- V17: Remove unused columns from demo_booking (course_id FK, name, email, ip_address, updated_at)
+-- V20: Remove unused columns from demo_booking (course_id FK, name, email, ip_address, updated_at)
 ALTER TABLE demo_booking
     DROP FOREIGN KEY fk_demo_booking_course,
     DROP INDEX idx_course_id,
