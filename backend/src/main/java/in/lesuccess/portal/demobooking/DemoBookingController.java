@@ -3,7 +3,6 @@ package in.lesuccess.portal.demobooking;
 import in.lesuccess.portal.shared.dto.ApiResponse;
 import in.lesuccess.portal.shared.dto.PageResponse;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -23,19 +22,17 @@ public class DemoBookingController {
     /** Public — submit a demo booking from the home page form. */
     @PostMapping("/api/demo-bookings")
     public ResponseEntity<ApiResponse<DemoBookingResponse>> create(
-            @Valid @RequestBody DemoBookingRequest request,
-            HttpServletRequest httpRequest) {
+            @Valid @RequestBody DemoBookingRequest request) {
 
-        DemoBookingResponse response = service.create(request, httpRequest.getRemoteAddr());
+        DemoBookingResponse response = service.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Demo booking submitted successfully", response));
     }
 
-    /** Admin — paginated list, filterable by courseId and/or status. */
+    /** Admin — paginated list, filterable by status. */
     @GetMapping("/api/admin/demo-bookings")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<DemoBookingResponse>>> listAll(
-            @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) DemoBookingStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -46,7 +43,7 @@ public class DemoBookingController {
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return ResponseEntity.ok(ApiResponse.success("Demo bookings retrieved successfully", service.listAll(courseId, status, pageable)));
+        return ResponseEntity.ok(ApiResponse.success("Demo bookings retrieved successfully", service.listAll(status, pageable)));
     }
 
     /** Admin — single booking. */

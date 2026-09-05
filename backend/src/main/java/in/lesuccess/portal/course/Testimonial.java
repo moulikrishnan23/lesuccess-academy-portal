@@ -30,7 +30,7 @@ public class Testimonial {
     @Column(name = "review_text", nullable = false, columnDefinition = "TEXT")
     private String reviewText;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TINYINT")
     private int rating;
 
     @Column(name = "photo_url", length = 255)

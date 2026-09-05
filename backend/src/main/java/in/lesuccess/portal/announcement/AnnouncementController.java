@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class AnnouncementController {
@@ -25,6 +27,12 @@ public class AnnouncementController {
         return service.getActive()
                 .map(a -> ResponseEntity.ok(ApiResponse.success("Active announcement retrieved", a)))
                 .orElse(ResponseEntity.ok(ApiResponse.success("No active announcement")));
+    }
+
+    /** Public — returns all active announcements for the cycling ticker. */
+    @GetMapping("/api/announcements/active-all")
+    public ResponseEntity<ApiResponse<List<AnnouncementResponse>>> getAllActive() {
+        return ResponseEntity.ok(ApiResponse.success("Active announcements retrieved", service.getAllActive()));
     }
 
     /** Admin — paginated list of all announcements. */

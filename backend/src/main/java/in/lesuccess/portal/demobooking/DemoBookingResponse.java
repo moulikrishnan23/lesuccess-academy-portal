@@ -14,26 +14,18 @@ import java.time.LocalDateTime;
 public class DemoBookingResponse {
 
     private Long id;
-    private Long courseId;
     private String courseName;
-    private String name;
-    private String email;
     private String mobileNumber;
     private DemoBookingStatus status;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     public static DemoBookingResponse from(DemoBooking entity) {
         return DemoBookingResponse.builder()
                 .id(entity.getId())
-                .courseId(entity.getCourse() != null ? entity.getCourse().getId() : null)
-                .courseName(entity.getCourse() != null ? entity.getCourse().getName() : null)
-                .name(entity.getName())
-                .email(entity.getEmail())
+                .courseName(entity.getCourseName())
                 .mobileNumber(entity.getMobileNumber())
                 .status(entity.getStatus())
                 .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 }

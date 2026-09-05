@@ -1,16 +1,9 @@
 # Dev profile — local MySQL, debug logging, permissive defaults
 spring:
   datasource:
-    # createDatabaseIfNotExist: dev-only convenience so a fresh clone boots without
-    # a manual CREATE DATABASE. Deliberately absent from application.yml and
-    # application-prod.yml — see the note in application-prod.yml.
     url: jdbc:mysql://localhost:3306/lesuccess_dev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata
-    # No defaults, deliberately — same pattern as JWT_SECRET in application.yml.
-    # A literal credential here would be committed the moment this file is staged,
-    # and a fallback default would let dev boot on a guessable one. Supply these
-    # via a git-ignored .env or your shell; see .env.example.
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:admin@123}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
@@ -27,8 +20,13 @@ spring:
     baseline-on-migrate: true
 
 lesuccess:
+  jwt:
+    # Dev-only fallback so the app boots without setting JWT_SECRET in the environment.
+    # This value must never be used in production.
+    secret: ${JWT_SECRET:dev-local-insecure-secret-at-least-256-bits-long-do-not-use-in-prod!!}
+
   rate-limit:
-    requests-per-hour: 50  # relaxed for dev testing
+    requests-per-hour: 50
     trust-proxy: false
 
   cors:

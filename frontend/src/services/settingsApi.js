@@ -25,7 +25,8 @@ export async function getAll({ signal } = {}) {
   }
 
   const { data } = await apiClient.get('/api/settings', { signal })
-  return normalizeSettings(data)
+  // Backend wraps in ApiResponse<T>; real settings are in data.data
+  return normalizeSettings(data?.data ?? data)
 }
 
 export default { getAll, normalizeSettings }

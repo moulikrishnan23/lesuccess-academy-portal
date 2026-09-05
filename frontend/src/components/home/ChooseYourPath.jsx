@@ -17,11 +17,13 @@ import { formatDuration } from "../../utils/formatters.js";
  * duration the page it links to disagrees with. Curate this row by editing the
  * slugs.
  */
+// Slugs are derived by CourseResponse.toSlug(name) on the backend.
+// These must match exactly what that method produces for the DB course names.
 const FEATURED_SLUGS = [
-  "python-full-stack-development",
+  "python-full-stack-development-course-in-coimbatore",
   "full-stack-java",
   "data-analytics",
-  "aws-and-devops",
+  "aws-devops",
 ];
 
 /*
@@ -30,13 +32,13 @@ const FEATURED_SLUGS = [
  * course from the admin dashboard, and this map goes away.
  */
 const LOGO_BY_SLUG = {
-  "python-full-stack-development":
+  "python-full-stack-development-course-in-coimbatore":
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvygkXP-NDi1MJ-wTvQVnJokpXQgwPFmZ4yJsz3tq_sA&s=10",
   "full-stack-java":
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQClSrSy94fg7Y6VBv-HfVvCjzl17kfQTea2fOVE5oDAuSUA4wrpvxTEMY&s=10",
   "data-analytics":
     "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/New_Power_BI_Logo.svg/960px-New_Power_BI_Logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20210102182532",
-  "aws-and-devops":
+  "aws-devops":
     "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/3840px-Amazon_Web_Services_Logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
 };
 
