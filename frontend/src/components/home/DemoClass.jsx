@@ -77,7 +77,7 @@ const DemoClass = () => {
     <section className="w-full bg-[#084b66] px-6 py-16 text-white sm:px-10 lg:px-20">
       <div className="mx-auto max-w-300 text-center">
 
-        <h2 className="text-3xl font-bold sm:text-4xl">
+        <h2 className="text-3xl font-bold sm:text-4xl text-white">
           Book Your{" "}
           <span className="text-[#ef334c] transition animate-pulse">
             Demo Class

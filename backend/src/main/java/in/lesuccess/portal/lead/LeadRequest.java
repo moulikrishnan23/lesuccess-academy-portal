@@ -46,13 +46,26 @@ public class LeadRequest {
      * Normalised at binding time so "+91 98765 43210" and "+919876543210" are
      * the same value by the time validation and duplicate detection see it —
      * matching ContactMessageRequest#getPhone, which solved the same problem.
+     *
+     * <p>Optional. The Service page CTA collects a name, an email and a subject
+     * but no phone number, so a blank mobile is a valid submission there.
+     * {@link LeadService} still requires one for {@code COURSE_ENROLL_FORM},
+     * where a caller-back number is the point of the form — the rule is
+     * per-source, which a field-level annotation cannot express.</p>
+     *
+     * <p>Blank collapses to null rather than passing "" through: {@code @Pattern}
+     * skips a null but rejects an empty string, so returning "" would fail
+     * validation for a field that is meant to be omittable.</p>
      */
-    @NotBlank(message = "Mobile number is required")
     @Pattern(
             regexp = "^(\\+91[6-9]\\d{9}|[6-9]\\d{9})$",
             message = "Mobile must be a valid Indian mobile number (+91XXXXXXXXXX or 10 digits starting with 6-9)"
     )
     public String getMobile() {
-        return mobile == null ? null : mobile.replaceAll("\\s+", "");
+        if (mobile == null) {
+            return null;
+        }
+        String stripped = mobile.replaceAll("\\s+", "");
+        return stripped.isEmpty() ? null : stripped;
     }
 }

@@ -66,30 +66,24 @@ const OfferHeader = () => {
           {text}
         </p>
 
-        {href ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-md bg-white px-5 py-2 text-sm font-semibold text-[#e51d48] transition hover:bg-gray-100 animate-pulse"
-            style={{
-              opacity: visible ? 1 : 0,
-              transition: `opacity ${FADE_MS}ms ease-in-out`,
-            }}
-          >
-            {label}
-          </a>
-        ) : (
-          <button
-            className="rounded-md bg-white px-5 py-2 text-sm font-semibold text-[#e51d48] transition hover:bg-gray-100 animate-pulse"
-            style={{
-              opacity: visible ? 1 : 0,
-              transition: `opacity ${FADE_MS}ms ease-in-out`,
-            }}
-          >
-            {label}
-          </button>
-        )}
+        <button
+          type="button"
+          className="
+            animate-pulse
+            rounded-md
+            bg-white
+            px-5
+            py-2
+            text-sm
+            font-semibold
+            text-[#e51d48]
+            transition
+            duration-200
+            hover:bg-gray-100
+          "
+        >
+          Enroll Now
+        </button>
       </div>
     </div>
   );

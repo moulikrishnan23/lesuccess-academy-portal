@@ -31,10 +31,13 @@ public class SheetsHeaderInitialiser {
             SheetSpec spec = source.spec();
             try {
                 sheetsService.ensureHeaderRow(spec);
+                // ensureHeaderRow only hides columns on a tab it just created, so an
+                // existing tab picks up a newly declared hidden column here.
+                sheetsService.applyHiddenColumns(spec);
             } catch (Exception ex) {
-                // Appends are unaffected by a missing header, so a failure here must
-                // not stop startup or the other tabs.
-                log.error("Could not ensure header row on sheet '{}'. Appends are unaffected; "
+                // Appends are unaffected by a missing header or a visible column, so a
+                // failure here must not stop startup or the other tabs.
+                log.error("Could not prepare sheet '{}'. Appends are unaffected; "
                         + "will retry on next startup.", spec.tabName(), ex);
             }
         }

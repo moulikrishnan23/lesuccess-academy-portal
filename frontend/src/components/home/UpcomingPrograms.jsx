@@ -22,11 +22,11 @@ const FALLBACK = {
     displayDate: "Saturday",
     displayTime: "5:00PM - 6:30PM",
     platform: "Google Meet",
-    meetLink: null,
-    certificateIncluded: true,
-  }],
-  INTERNSHIP: [{
-    label: "Limited Seats",
+    image: "/home/webinarHost.jpg",
+    badge: "Free Webinar",
+  },
+
+  internship: {
     title: "Full Stack Internship Program",
     topic: "Build real-world projects and gain practical industry experience.",
     displayDate: "Monday",
@@ -169,8 +169,8 @@ const UpcomingPrograms = () => {
             <div className="w-full text-center">
 
               <div className="flex justify-center">
-                <span className="rounded-lg bg-green-300 px-4 py-2 text-xs font-semibold text-green-800">
-                  {program.label}
+                <span className="rounded-lg bg-green-300 px-4 py-2 text-xs font-semibold text-green-800 transition animate-pulse">
+                  {program.badge}
                 </span>
               </div>
 
