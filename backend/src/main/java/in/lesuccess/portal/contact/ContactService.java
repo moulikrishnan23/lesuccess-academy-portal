@@ -47,7 +47,7 @@ public class ContactService {
         Optional<ContactMessage> existingDuplicate = repository.findRecentDuplicate(
                 request.getEmail().trim(),
                 cleanPhone,
-                request.getMessage().trim(),
+                trimToEmpty(request.getMessage()),
                 LeadCaptureSupport.duplicateWindowStart(duplicateWindowMinutes)
         );
 
@@ -56,15 +56,15 @@ public class ContactService {
             return ContactSubmitResult.success(ContactMessageResponse.from(existingDuplicate.get()));
         }
 
-        String sanitizedMessage = LeadCaptureSupport.sanitizeText(request.getMessage());
+        String sanitizedMessage = trimToEmpty(LeadCaptureSupport.sanitizeText(request.getMessage()));
 
         ContactMessage entity = ContactMessage.builder()
                 .name(request.getName().trim())
                 .email(request.getEmail().trim())
                 .phone(cleanPhone)
-                .whoYouAre(request.getWhoYouAre().trim())
-                .lookingFor(request.getLookingFor().trim())
-                .location(request.getLocation().trim())
+                .whoYouAre(trimToEmpty(request.getWhoYouAre()))
+                .lookingFor(trimToEmpty(request.getLookingFor()))
+                .location(trimToEmpty(request.getLocation()))
                 .message(sanitizedMessage)
                 .status(ContactMessageStatus.NEW)
                 .ipAddress(ipAddress)
@@ -120,6 +120,20 @@ public class ContactService {
         entity.setDeletedAt(LocalDateTime.now());
         repository.save(entity);
         log.info("Contact message soft-deleted: id={}", id);
+    }
+
+    /**
+     * Null- and blank-safe trim for the four optional fields.
+     *
+     * <p>They stopped being @NotBlank so the Contact page's own required set
+     * (name, mobile, email) is the one the API enforces, which means they can
+     * now arrive null. Their columns are still NOT NULL, so an omitted field is
+     * stored as the empty string rather than propagating a null into the insert
+     * — "the visitor left it blank" and "the visitor typed only spaces" are the
+     * same fact, and both read as empty in the admin list and the synced sheet.</p>
+     */
+    private static String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private ContactMessage findOrThrow(Long id) {

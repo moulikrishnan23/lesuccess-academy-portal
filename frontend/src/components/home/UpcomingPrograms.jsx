@@ -15,26 +15,33 @@ const IMAGES = {
 };
 
 const FALLBACK = {
-  WEBINAR: [{
-    label: "Free Webinar",
-    title: "Communication Masterclass",
-    topic: "Topic: common interview mistakes that cost you your dream job.",
-    displayDate: "Saturday",
-    displayTime: "5:00PM - 6:30PM",
-    platform: "Google Meet",
-    image: "/home/webinarHost.jpg",
-    badge: "Free Webinar",
-  },
+  WEBINAR: [
+    {
+      label: "Free Webinar",
+      title: "Communication Masterclass",
+      topic: "Topic: common interview mistakes that cost you your dream job.",
+      displayDate: "Saturday",
+      displayTime: "5:00PM - 6:30PM",
+      platform: "Google Meet",
+      image: "/home/webinarHost.jpg",
+      badge: "Free Webinar",
+    },
+  ],
 
-  internship: {
-    title: "Full Stack Internship Program",
-    topic: "Build real-world projects and gain practical industry experience.",
-    displayDate: "Monday",
-    displayTime: "10:00AM - 4:00PM",
-    platform: "LeSuccess Campus",
-    meetLink: null,
-    certificateIncluded: true,
-  }],
+  INTERNSHIP: [
+    {
+      label: "Internship Program",
+      title: "Full Stack Internship Program",
+      topic: "Build real-world projects and gain practical industry experience.",
+      displayDate: "Monday",
+      displayTime: "10:00AM - 4:00PM",
+      platform: "LeSuccess Campus",
+      image: "/home/webinarHost.jpg",
+      badge: "Internship",
+      meetLink: null,
+      certificateIncluded: true,
+    },
+  ],
 };
 
 const INTERVAL_MS = 7000;
