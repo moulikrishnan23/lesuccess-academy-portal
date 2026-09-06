@@ -1,5 +1,3 @@
-import React from "react";
-
 const companiesRow1 = [
   { name: "Lavendel Consulting", logo: "/assets/companies/lavendel.png" },
   { name: "Kovan Labs", logo: "/assets/companies/kovan.png" },

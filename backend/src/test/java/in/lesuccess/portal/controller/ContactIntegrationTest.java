@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 // Required in Boot 4: TestRestTemplate lives in the spring-boot-resttestclient module
 // and is no longer registered by @SpringBootTest alone — it must be opted into.
 @AutoConfigureTestRestTemplate
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ContactIntegrationTest {

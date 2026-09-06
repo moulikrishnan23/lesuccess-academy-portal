@@ -31,7 +31,36 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public CourseResponse getById(Long id) {
-        return CourseResponse.from(findOrThrow(id));
+        Course course = findOrThrow(id);
+        List<CourseModuleResponse> modules = listModules(course.getId());
+        return CourseResponse.from(course, modules);
+    }
+
+    @Transactional(readOnly = true)
+    public CourseResponse getByIdOrSlug(String idOrSlug) {
+        Course course = findByIdOrSlug(idOrSlug);
+        List<CourseModuleResponse> modules = listModules(course.getId());
+        return CourseResponse.from(course, modules);
+    }
+
+    public Course findByIdOrSlug(String idOrSlug) {
+        if (idOrSlug == null || idOrSlug.isBlank()) {
+            throw new ResourceNotFoundException("Course not found: " + idOrSlug);
+        }
+        try {
+            Long id = Long.parseLong(idOrSlug.trim());
+            return repository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Course", id));
+        } catch (NumberFormatException ignored) {
+            // Not a numeric ID, search by slug or name
+        }
+
+        String targetSlug = idOrSlug.trim().toLowerCase();
+        return repository.findAll().stream()
+                .filter(c -> CourseResponse.toSlug(c.getName()).equalsIgnoreCase(targetSlug)
+                        || c.getName().equalsIgnoreCase(idOrSlug.trim()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + idOrSlug));
     }
 
     @Transactional(readOnly = true)
@@ -108,9 +137,16 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public List<CourseModuleResponse> listModules(Long courseId) {
-        findOrThrow(courseId);
         return moduleRepository.findByCourseIdOrderByDisplayOrderAsc(courseId)
-                .stream().map(CourseModuleResponse::from).toList();
+                .stream()
+                .map(CourseModuleResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseModuleResponse> listModules(String idOrSlug) {
+        Course course = findByIdOrSlug(idOrSlug);
+        return listModules(course.getId());
     }
 
     @Transactional
@@ -155,6 +191,12 @@ public class CourseService {
         findOrThrow(courseId);
         return testimonialRepository.findByCourseIdAndIsActiveTrueOrderByDisplayOrderAsc(courseId)
                 .stream().map(TestimonialResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TestimonialResponse> listTestimonials(String idOrSlug) {
+        Course course = findByIdOrSlug(idOrSlug);
+        return listTestimonials(course.getId());
     }
 
     @Transactional

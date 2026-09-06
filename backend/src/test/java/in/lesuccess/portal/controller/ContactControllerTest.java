@@ -330,9 +330,9 @@ class ContactControllerTest {
         }
 
         @Test
-        @DisplayName("CONTENT_ADMIN role → 200")
-        @WithMockUser(roles = "CONTENT_ADMIN")
-        void contentAdminRole_shouldReturn200() throws Exception {
+        @DisplayName("MANAGER role → 200")
+        @WithMockUser(roles = "MANAGER")
+        void managerRole_shouldReturn200() throws Exception {
             PageResponse<ContactMessageResponse> pageResponse = PageResponse.<ContactMessageResponse>builder()
                     .content(List.of())
                     .page(0).size(20).totalElements(0).totalPages(0)

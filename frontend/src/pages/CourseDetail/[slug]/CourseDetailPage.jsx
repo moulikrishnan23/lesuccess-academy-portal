@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import CourseHero from '../../../components/sections/CourseHero.jsx'
 import CourseTabs from '../../../components/sections/CourseTabs.jsx'
 import { DEFAULT_TABS } from '../../../components/sections/courseTabs.constants.js'
@@ -68,6 +68,7 @@ function CenteredPanel({ children }) {
  */
 export default function CourseDetailPage() {
   const { slug } = useParams()
+  const location = useLocation()
   const reduced = useReducedMotion()
 
   const { course, modules, techStack, isLoading, error, notFound, refetch } =
@@ -111,6 +112,16 @@ export default function CourseDetailPage() {
       node.querySelector('input')?.focus({ preventScroll: true })
     }, reduced ? 0 : 400)
   }, [reduced])
+
+  // Automatically scroll to the Enroll Form if the URL contains #enroll
+  useEffect(() => {
+    if (location.hash === '#enroll' && !isLoading && course) {
+      const timer = window.setTimeout(() => {
+        scrollToEnroll()
+      }, 150)
+      return () => window.clearTimeout(timer)
+    }
+  }, [location.hash, isLoading, course, scrollToEnroll])
 
   // Drop the testimonials tab when that section hides itself, so no tab points
   // at a section that isn't in the document.

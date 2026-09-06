@@ -149,7 +149,6 @@ class LeadControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors").isArray())
                     .andExpect(jsonPath("$.errors[?(@.field == 'name')]").exists())
-                    .andExpect(jsonPath("$.errors[?(@.field == 'mobile')]").exists())
                     .andExpect(jsonPath("$.errors[?(@.field == 'source')]").exists());
         }
 

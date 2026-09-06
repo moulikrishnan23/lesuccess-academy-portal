@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -38,10 +39,16 @@ public class CourseResponse {
     private boolean isActive;
     private int     displayOrder;
 
+    private List<CourseModuleResponse> modules;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static CourseResponse from(Course entity) {
+        return from(entity, null);
+    }
+
+    public static CourseResponse from(Course entity, List<CourseModuleResponse> modules) {
         String name = entity.getName();
         String slug = toSlug(name);
 
@@ -63,6 +70,7 @@ public class CourseResponse {
                 .enrollUrl(entity.getEnrollUrl())
                 .isActive(entity.isActive())
                 .displayOrder(entity.getDisplayOrder())
+                .modules(modules)
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -72,7 +80,7 @@ public class CourseResponse {
      * Converts a course name to a URL-safe slug.
      * "Python : Full Stack Development" → "python-full-stack-development"
      */
-    static String toSlug(String name) {
+    public static String toSlug(String name) {
         if (name == null) return "";
         return name.toLowerCase()
                 .replaceAll("[^a-z0-9\\s-]", "")   // strip punctuation
