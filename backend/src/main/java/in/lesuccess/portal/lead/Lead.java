@@ -41,7 +41,7 @@ public class Lead {
     @Column(nullable = false, length = 120)
     private String name;
 
-    // Nullable since V18: the Service page CTA captures a name, an email and a
+    // Nullable since V20: the Service page CTA captures a name, an email and a
     // subject but no phone number. LeadService still requires one for
     // COURSE_ENROLL_FORM, where a number to call back on is the point.
     @Column(length = 20)

@@ -3,6 +3,9 @@ package in.lesuccess.portal.sheets;
 import in.lesuccess.portal.contact.ContactMessage;
 import in.lesuccess.portal.contact.ContactMessageSheetRowSource;
 import in.lesuccess.portal.contact.ContactMessageStatus;
+import in.lesuccess.portal.demobooking.DemoBooking;
+import in.lesuccess.portal.demobooking.DemoBookingSheetRowSource;
+import in.lesuccess.portal.demobooking.DemoBookingStatus;
 import in.lesuccess.portal.lead.Lead;
 import in.lesuccess.portal.lead.LeadSheetRowSource;
 import in.lesuccess.portal.lead.LeadSource;
@@ -142,7 +145,7 @@ class SheetRowSourceAlignmentTest {
 
         /**
          * Only the two columns the schema actually requires. Mobile has been optional
-         * since V18, and email, course id and looking-for have always been nullable.
+         * since V20, and email, course id and looking-for have always been nullable.
          */
         private Lead minimalLead() {
             return Lead.builder()
@@ -212,7 +215,7 @@ class SheetRowSourceAlignmentTest {
             List<Object> values = LeadSheetRowSource.toRow(minimalLead()).values();
 
             assertThat(values.get(spec.headers().indexOf("Mobile")))
-                    .as("Mobile is optional since V18").isEqualTo("");
+                    .as("Mobile is optional since V20").isEqualTo("");
             assertThat(values.get(spec.headers().indexOf("Email")))
                     .as("Email is nullable on lead_capture").isEqualTo("");
             assertThat(values.get(spec.headers().indexOf("Course ID")))
@@ -233,6 +236,98 @@ class SheetRowSourceAlignmentTest {
         }
     }
 
+    @Nested
+    @DisplayName("Demo Bookings tab")
+    class DemoBookings {
+
+        /** Every optional column filled, so column order can be checked by value. */
+        private DemoBooking populatedBooking() {
+            return DemoBooking.builder()
+                    .id(2044L)
+                    .createdAt(LocalDateTime.of(2026, 9, 5, 18, 12, 30))
+                    .courseName("Full Stack Development")
+                    .mobileNumber("9840012345")
+                    .status(DemoBookingStatus.PENDING)
+                    .build();
+        }
+
+        /**
+         * Course name is the only column demo_booking leaves nullable: V17 added it at
+         * length 200 without NOT NULL so a booking survives its course being renamed or
+         * deleted. Mobile, status and created-at are NOT NULL on the table, so nulling
+         * them here would test a row the database cannot hold.
+         */
+        private DemoBooking bookingWithoutCourseName() {
+            return DemoBooking.builder()
+                    .id(2045L)
+                    .createdAt(LocalDateTime.of(2026, 9, 5, 18, 20, 1))
+                    .courseName(null)
+                    .mobileNumber("9840067890")
+                    .status(DemoBookingStatus.CONTACTED)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("row aligns with its spec")
+        void rowAlignsWithSpec() {
+            assertLayoutHolds(DemoBookingSheetRowSource.SPEC,
+                    DemoBookingSheetRowSource.toRow(populatedBooking()));
+        }
+
+        @Test
+        @DisplayName("row still aligns when the optional course name is null")
+        void rowAlignsWithNullCourseName() {
+            assertLayoutHolds(DemoBookingSheetRowSource.SPEC,
+                    DemoBookingSheetRowSource.toRow(bookingWithoutCourseName()));
+        }
+
+        @Test
+        @DisplayName("spans columns A-E and tags the row for replay")
+        void spansExpectedRange() {
+            SheetSpec spec = DemoBookingSheetRowSource.SPEC;
+            SheetRow row = DemoBookingSheetRowSource.toRow(populatedBooking());
+
+            assertThat(spec.headers()).hasSize(5);
+            assertThat(spec.appendRange()).isEqualTo("Demo Bookings!A:E");
+            assertThat(spec.headerRange()).isEqualTo("Demo Bookings!A1:E1");
+            assertThat(row.entityType()).isEqualTo(SyncEntityType.DEMO_BOOKING);
+            assertThat(row.entityId()).isEqualTo(2044L);
+        }
+
+        @Test
+        @DisplayName("values sit under the headers they belong to")
+        void valuesMatchHeaderOrder() {
+            SheetSpec spec = DemoBookingSheetRowSource.SPEC;
+            List<Object> values = DemoBookingSheetRowSource.toRow(populatedBooking()).values();
+
+            assertThat(values.get(spec.headers().indexOf("ID"))).isEqualTo(2044L);
+            assertThat(values.get(spec.headers().indexOf("Created At"))).isEqualTo("2026-09-05 18:12:30");
+            assertThat(values.get(spec.headers().indexOf("Course Name"))).isEqualTo("Full Stack Development");
+            assertThat(values.get(spec.headers().indexOf("Mobile Number"))).isEqualTo("9840012345");
+            assertThat(values.get(spec.headers().indexOf("Status"))).isEqualTo("PENDING");
+        }
+
+        /**
+         * Checked by name rather than only through the no-nulls assertion, so a
+         * regression names the column that broke.
+         */
+        @Test
+        @DisplayName("a null course name becomes an empty cell, never null")
+        void nullCourseNameCoercesToEmptyString() {
+            SheetSpec spec = DemoBookingSheetRowSource.SPEC;
+            List<Object> values = DemoBookingSheetRowSource.toRow(bookingWithoutCourseName()).values();
+
+            assertThat(values.get(spec.headers().indexOf("Course Name")))
+                    .as("Course Name is nullable on demo_booking").isEqualTo("");
+        }
+
+        @Test
+        @DisplayName("every column is visible: this tab hides none")
+        void hidesNoColumns() {
+            assertThat(DemoBookingSheetRowSource.SPEC.hiddenColumns()).isEmpty();
+        }
+    }
+
     /**
      * Fails when a new entity starts syncing to Sheets without gaining coverage here.
      * {@code SyncEntityType} has exactly one constant per source by contract, so its
@@ -243,6 +338,7 @@ class SheetRowSourceAlignmentTest {
     void everySourceIsCovered() {
         assertThat(SyncEntityType.values())
                 .as("a new SheetRowSource was added — give it a @Nested block in this test")
-                .containsExactlyInAnyOrder(SyncEntityType.CONTACT_MESSAGE, SyncEntityType.LEAD);
+                .containsExactlyInAnyOrder(SyncEntityType.CONTACT_MESSAGE, SyncEntityType.LEAD,
+                        SyncEntityType.DEMO_BOOKING);
     }
 }
