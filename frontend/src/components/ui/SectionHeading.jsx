@@ -21,6 +21,14 @@ const TITLE_SIZES = {
 
 const TITLE_WEIGHTS = { semibold: 'font-semibold', bold: 'font-bold' }
 
+/*
+ * `dark` and `light` are the original two and keep every existing caller
+ * pixel-identical. `ink` is opt-in for the near-black heading the testimonials
+ * reference uses — it is deliberately not the default, because the rest of the
+ * site is navy.
+ */
+const TITLE_TONES = { dark: 'text-navy-800', light: 'text-white', ink: 'text-ink' }
+
 export default function SectionHeading({
   eyebrow,
   title,
@@ -51,7 +59,7 @@ export default function SectionHeading({
         id={id}
         className={`font-display leading-tight ${TITLE_WEIGHTS[weight]} ${
           TITLE_SIZES[size]
-        } ${isOnDark ? 'text-white' : 'text-navy-800'}`}
+        } ${TITLE_TONES[tone] ?? TITLE_TONES.dark}`}
       >
         {title}
       </Heading>

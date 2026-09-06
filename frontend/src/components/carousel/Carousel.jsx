@@ -101,7 +101,17 @@ export default function Carousel({
         aria-label={label}
         tabIndex={isInteractive ? 0 : -1}
         onKeyDown={isInteractive ? handleKeyDown : undefined}
-        className="overflow-hidden rounded-card"
+        /*
+          `relative` is load-bearing, not decoration. Slides can contain
+          absolutely positioned descendants — Tailwind's `sr-only` is
+          position:absolute, and StarRating renders one per card. An absolute
+          box is clipped only by ancestors in its containing-block chain, so
+          while this element was static the nearest positioned ancestor was the
+          carousel root *outside* this overflow, and the labels of off-screen
+          slides escaped the clip and gave the whole page horizontal scroll.
+          Making this a containing block brings them back under the clip.
+        */
+        className="relative overflow-hidden rounded-card"
       >
         <motion.ul
           className="flex list-none items-stretch p-0"
@@ -167,13 +177,13 @@ function CarouselButton({ label, disabled, onClick, direction, className = '' })
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className={`absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full shadow-md transition-colors ${
+      className={`absolute top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full shadow-md transition-colors ${
         disabled
           ? 'cursor-not-allowed border border-line bg-white text-ink-muted'
           : 'bg-navy-800 text-white hover:bg-navy-700'
       } ${className}`}
     >
-      <ChevronIcon size={15} direction={direction} />
+      <ChevronIcon size={18} direction={direction} />
     </button>
   )
 }

@@ -15,16 +15,19 @@ function RatingSummary({ rating, reviewCount }) {
   if (!rating && !reviewCount) return null
 
   return (
-    <div className="flex items-center gap-2.5">
-      <GoogleIcon size={26} />
+    <div className="flex items-center gap-3">
+      {/* The mark sits on its own white disc, as on the reference badge. */}
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_2px_8px_rgba(11,42,69,0.16)]">
+        <GoogleIcon size={24} />
+      </span>
       <span>
         {rating ? (
-          <span className="block font-display text-[0.9375rem] font-semibold text-navy-800">
+          <span className="block font-display text-[1rem] font-bold text-ink">
             Rated {rating}/5
           </span>
         ) : null}
         {reviewCount ? (
-          <span className="block text-[0.6875rem] text-ink-muted">
+          <span className="block text-[0.8125rem] text-navy-600">
             {reviewCount}+ Google Reviews
           </span>
         ) : null}
@@ -35,17 +38,17 @@ function RatingSummary({ rating, reviewCount }) {
 
 function TestimonialSkeleton() {
   return (
-    <div className="rounded-xl border-2 border-line bg-white p-5">
-      <div className="space-y-2.5 px-7 pt-6">
+    <div className="rounded-2xl border-2 border-line bg-white p-6">
+      <div className="space-y-2.5 px-9 pt-7">
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-full" />
         <Skeleton className="mx-auto h-3 w-2/3" />
       </div>
-      <div className="mt-5 flex items-center gap-3">
-        <Skeleton className="h-11 w-11" rounded="rounded-full" />
-        <div className="space-y-1.5">
-          <Skeleton className="h-3.5 w-24" />
-          <Skeleton className="h-2.5 w-16" />
+      <div className="mt-6 flex items-center gap-4">
+        <Skeleton className="h-15 w-15" rounded="rounded-xl" />
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-24" />
         </div>
       </div>
     </div>
@@ -90,8 +93,18 @@ export default function TestimonialCarousel({
         viewport={ONCE_IN_VIEW}
         className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:py-16"
       >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <SectionHeading id="testimonials-title" title="What Our Students Say" />
+        {/*
+          The badge sits beside the heading rather than pushed to the far edge
+          (no justify-between) — the two read as one title block, as in the
+          reference.
+        */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-9">
+          <SectionHeading
+            id="testimonials-title"
+            title="What Our Students Say"
+            tone="ink"
+            weight="bold"
+          />
           <RatingSummary rating={rating} reviewCount={reviewCount} />
         </div>
 
@@ -100,7 +113,7 @@ export default function TestimonialCarousel({
             <div
               aria-busy="true"
               aria-label="Loading student reviews"
-              className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+              className="grid gap-5 sm:grid-cols-2"
             >
               {Array.from({ length: 3 }, (_, index) => (
                 <TestimonialSkeleton key={index} />
@@ -116,7 +129,13 @@ export default function TestimonialCarousel({
             <Carousel
               items={testimonials}
               label="Student reviews"
-              breakpoints={{ sm: 2, lg: 3 }}
+              /*
+                Two per view, not three: the reference shows wider cards, and
+                with a typical three-review course it is what makes the track
+                scrollable at all — Carousel only renders arrows when
+                items.length exceeds perView.
+              */
+              breakpoints={{ sm: 2, lg: 2 }}
               renderItem={(testimonial) => (
                 <TestimonialCard testimonial={testimonial} />
               )}
