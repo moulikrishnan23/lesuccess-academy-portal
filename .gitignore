@@ -13,3 +13,10 @@ docs
 *-credentials*.json
 lesuccess-*.json
 service-account*.json
+
+# Local manual-test admin harness — private, throwaway. Never commit.
+# The offline admin UI, the node proxy that fronts it, and any dumps it produces.
+dev-admin/
+LeSuccess Admin (offline)*.html
+admin-local*.html
+.playwright-mcp
