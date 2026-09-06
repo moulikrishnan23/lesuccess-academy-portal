@@ -52,7 +52,7 @@ const DemoClass = () => {
     return (
       <section className="w-full bg-[#084b66] px-6 py-16 text-white sm:px-10 lg:px-20">
         <div className="mx-auto max-w-300 text-center">
-          <h2 className="text-3xl font-bold sm:text-4xl">
+          <h2 className="text-3xl text-[#ed334d] font-bold sm:text-4xl">
             Thank you! We&apos;ll contact you shortly.
           </h2>
           <p className="mt-5 text-base sm:text-lg">

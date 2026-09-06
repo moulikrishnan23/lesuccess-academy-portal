@@ -1,18 +1,45 @@
 import { useState } from "react";
+import apiClient from "../../services/apiClient.js";
 
 export default function ConnectWithUs() {
   const [form, setForm] = useState({ name: "", mobile: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
-    if (!form.name || !form.mobile || !form.email) return;
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!form.name || !form.mobile || !form.email || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      await apiClient.post("/api/leads", {
+        name: form.name,
+        mobile: form.mobile,
+        email: form.email,
+        source: "HOME_CONNECT_FORM",
+      });
+      setSubmitted(true);
+      setForm({ name: "", mobile: "", email: "" });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      const msg =
+        err?.fieldErrors?.mobile ||
+        err?.fieldErrors?.email ||
+        err?.fieldErrors?.name ||
+        err?.message ||
+        "Something went wrong. Please try again.";
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -55,14 +82,21 @@ export default function ConnectWithUs() {
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full md:w-auto md:min-w-[240px] bg-gradient-to-r from-rose-500 to-rose-700 text-white font-semibold py-3.5 px-10 rounded-full hover:opacity-90 transition-opacity shadow-lg"
+          disabled={isSubmitting}
+          className="w-full md:w-auto md:min-w-[240px] bg-gradient-to-r from-rose-500 to-rose-700 text-white font-semibold py-3.5 px-10 rounded-full hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50"
         >
-          Submit
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
 
         {submitted && (
           <p className="mt-4 text-sm text-emerald-300">
             Thanks! We'll be in touch shortly.
+          </p>
+        )}
+
+        {errorMessage && (
+          <p className="mt-4 text-sm text-rose-300">
+            {errorMessage}
           </p>
         )}
       </div>

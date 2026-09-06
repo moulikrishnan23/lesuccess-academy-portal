@@ -13,7 +13,7 @@ const MENU_SLUGS = [
   "cybersecurity",
 ];
 
-const Navbar = () => {
+const Navbar = ({ onOpenEnquiry }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [courseMenuOpen, setCourseMenuOpen] = useState(false);
 
@@ -245,6 +245,7 @@ const Navbar = () => {
         <div className="hidden items-center gap-4 lg:flex">
           <button
             type="button"
+            onClick={onOpenEnquiry}
             className="
               rounded-md
               bg-[#074a68]
@@ -403,7 +404,10 @@ const Navbar = () => {
 
           <button
             type="button"
-            onClick={closeMobileMenu}
+            onClick={() => {
+              closeMobileMenu();
+              onOpenEnquiry?.();
+            }}
             className="
               w-full
               rounded-md

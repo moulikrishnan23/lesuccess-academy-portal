@@ -8,3 +8,9 @@ Thumbs.db
 .env.local
 .env.*.local
 docs
+
+# Service account keys and local credentials
+*-credentials*.json
+lesuccess-*.json
+service-account*.json
+

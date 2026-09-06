@@ -9,5 +9,6 @@ package in.lesuccess.portal.shared.sheets;
  */
 public enum SyncEntityType {
     CONTACT_MESSAGE,
-    LEAD
+    LEAD,
+    DEMO_BOOKING
 }

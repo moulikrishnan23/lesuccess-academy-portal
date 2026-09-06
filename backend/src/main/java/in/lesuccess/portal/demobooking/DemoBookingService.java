@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DemoBookingService {
 
     private final DemoBookingRepository repository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public DemoBookingResponse create(DemoBookingRequest request) {
@@ -27,6 +28,7 @@ public class DemoBookingService {
 
         DemoBooking saved = repository.save(entity);
         log.info("Demo booking created: id={}, mobile={}", saved.getId(), saved.getMobileNumber());
+        eventPublisher.publishEvent(new DemoBookingCreatedEvent(this, saved));
         return DemoBookingResponse.from(saved);
     }
 
@@ -51,6 +53,7 @@ public class DemoBookingService {
 
         DemoBooking saved = repository.saveAndFlush(entity);
         log.info("Demo booking status updated: id={}, status={}", id, request.getStatus());
+        eventPublisher.publishEvent(new DemoBookingStatusUpdatedEvent(this, id, request.getStatus()));
         return DemoBookingResponse.from(saved);
     }
 

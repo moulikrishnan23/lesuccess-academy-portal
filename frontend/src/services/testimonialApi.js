@@ -7,7 +7,7 @@ import { isMockEnabled, mockGetTestimonialsByCourse } from '../mocks/mockGateway
  * do not paper over it with a client-side filter.
  */
 function normalizeTestimonial(raw) {
-  const rating = Number(raw.ratingValue ?? raw.rating_value)
+  const rating = Number(raw.ratingValue ?? raw.rating_value ?? raw.rating)
 
   return {
     id: raw.id,
@@ -16,7 +16,7 @@ function normalizeTestimonial(raw) {
     // Clamp: a star row that renders 7 stars because of bad data is worse than
     // one that renders 5.
     ratingValue: Number.isFinite(rating) ? Math.min(5, Math.max(0, rating)) : 0,
-    quoteText: raw.quoteText ?? raw.quote_text ?? '',
+    quoteText: raw.quoteText ?? raw.quote_text ?? raw.reviewText ?? raw.review_text ?? '',
     source: raw.source ?? 'WEBSITE',
     courseId: raw.courseId ?? raw.course_id ?? null,
     displayOrder: raw.displayOrder ?? raw.display_order ?? 0,
@@ -31,7 +31,7 @@ export function normalizeTestimonials(raw) {
 }
 
 /**
- * GET /api/testimonials?courseId={id}
+ * GET /api/courses/{courseId}/testimonials
  * @returns {Promise<Object[]>}
  */
 export async function getByCourse(courseId, { signal } = {}) {
@@ -39,11 +39,10 @@ export async function getByCourse(courseId, { signal } = {}) {
     return normalizeTestimonials(await mockGetTestimonialsByCourse(courseId))
   }
 
-  const { data } = await apiClient.get('/api/testimonials', {
-    params: { courseId },
+  const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(courseId)}/testimonials`, {
     signal,
   })
-  return normalizeTestimonials(data)
+  return normalizeTestimonials(data?.data ?? data)
 }
 
 export default { getByCourse, normalizeTestimonials }

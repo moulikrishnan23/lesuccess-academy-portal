@@ -46,8 +46,6 @@ export default function Testimonials() {
   const goNext = () => setStartIndex((i) => Math.min(maxStart, i + 1));
 
   const visible = TESTIMONIALS.slice(startIndex, startIndex + CARDS_PER_VIEW);
-  // pad with a peek of the next card if available, mimicking the faded 4th card
-  const peek = TESTIMONIALS[startIndex + CARDS_PER_VIEW];
 
   return (
     <section className="relative w-full bg-white py-16 px-6 md:px-12">

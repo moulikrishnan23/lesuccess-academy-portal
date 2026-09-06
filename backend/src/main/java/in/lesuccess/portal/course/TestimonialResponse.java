@@ -17,7 +17,9 @@ public class TestimonialResponse {
     private Long courseId;
     private String studentName;
     private String reviewText;
+    private String quoteText;   // alias for reviewText (frontend compatibility)
     private int rating;
+    private int ratingValue;    // alias for rating (frontend compatibility)
     private String photoUrl;
     private int displayOrder;
     private boolean isActive;
@@ -30,7 +32,9 @@ public class TestimonialResponse {
                 .courseId(entity.getCourse().getId())
                 .studentName(entity.getStudentName())
                 .reviewText(entity.getReviewText())
+                .quoteText(entity.getReviewText())
                 .rating(entity.getRating())
+                .ratingValue(entity.getRating())
                 .photoUrl(entity.getPhotoUrl())
                 .displayOrder(entity.getDisplayOrder())
                 .isActive(entity.isActive())

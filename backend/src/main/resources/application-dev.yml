@@ -3,7 +3,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/lesuccess_dev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:admin@123}
+    password: ${DB_PASSWORD:root}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
@@ -33,6 +33,12 @@ lesuccess:
     allowed-origins:
       - http://localhost:5173
       - http://localhost:3000
+
+  sheets:
+    enabled: ${LESUCCESS_SHEETS_ENABLED:true}
+    spreadsheet-id: ${SHEETS_SPREADSHEET_ID:1Cu0m1eIfJXKFiY-1TPPP5E3myawKgcqa-GjKw6GWtfU}
+    credentials-path: ${SHEETS_CREDENTIALS_PATH:C:/Users/mouli/OneDrive/Desktop/Le Landing web/lesuccess-academy-portal/lesuccess-portal-507808-ae617d22c951.json}
+
 
 logging:
   level:

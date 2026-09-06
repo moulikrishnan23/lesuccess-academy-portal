@@ -16,9 +16,13 @@ import Contact from "./pages/Contact";
 import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
 import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
 import ServicePage from "./pages/Services/ServicePage.jsx";
+import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
 
 
 const App = () => {
+  // Enquiry popup modal visibility (auto-opens on website visit)
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(true);
+
   /*
    * =========================================================
    * HEADER STATES
@@ -335,7 +339,7 @@ const App = () => {
           top: `${navbarTop}px`,
         }}
       >
-        <Navbar />
+        <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
       </div>
 
       {/* =====================================================
@@ -411,6 +415,14 @@ const App = () => {
       <div>
         <Footer/>
       </div>
+
+      {/* =====================================================
+          COURSE ENQUIRY POPUP MODAL
+      ===================================================== */}
+      <CourseEnquiryModal
+        isOpen={isEnquiryOpen}
+        onClose={() => setIsEnquiryOpen(false)}
+      />
     </div>
   );
 };

@@ -28,10 +28,10 @@ public class CourseController {
         return ResponseEntity.ok(ApiResponse.success("Courses retrieved successfully", service.listActive()));
     }
 
-    /** Public — single course detail. */
-    @GetMapping("/api/courses/{id}")
-    public ResponseEntity<ApiResponse<CourseResponse>> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success("Course retrieved successfully", service.getById(id)));
+    /** Public — single course detail by id or slug. */
+    @GetMapping("/api/courses/{idOrSlug}")
+    public ResponseEntity<ApiResponse<CourseResponse>> getByIdOrSlug(@PathVariable String idOrSlug) {
+        return ResponseEntity.ok(ApiResponse.success("Course retrieved successfully", service.getByIdOrSlug(idOrSlug)));
     }
 
     /** Admin — all courses (including inactive), paginated. */
@@ -84,9 +84,9 @@ public class CourseController {
     // ── Modules ───────────────────────────────────────────────────────────────
 
     /** Public — syllabus accordion for a course page. */
-    @GetMapping("/api/courses/{id}/modules")
-    public ResponseEntity<ApiResponse<List<CourseModuleResponse>>> listModules(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success("Modules retrieved successfully", service.listModules(id)));
+    @GetMapping("/api/courses/{idOrSlug}/modules")
+    public ResponseEntity<ApiResponse<List<CourseModuleResponse>>> listModules(@PathVariable String idOrSlug) {
+        return ResponseEntity.ok(ApiResponse.success("Modules retrieved successfully", service.listModules(idOrSlug)));
     }
 
     @PostMapping("/api/admin/courses/{id}/modules")
@@ -116,9 +116,9 @@ public class CourseController {
     // ── Testimonials ──────────────────────────────────────────────────────────
 
     /** Public — testimonial carousel for a course page. */
-    @GetMapping("/api/courses/{id}/testimonials")
-    public ResponseEntity<ApiResponse<List<TestimonialResponse>>> listTestimonials(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success("Testimonials retrieved successfully", service.listTestimonials(id)));
+    @GetMapping("/api/courses/{idOrSlug}/testimonials")
+    public ResponseEntity<ApiResponse<List<TestimonialResponse>>> listTestimonials(@PathVariable String idOrSlug) {
+        return ResponseEntity.ok(ApiResponse.success("Testimonials retrieved successfully", service.listTestimonials(idOrSlug)));
     }
 
     @PostMapping("/api/admin/courses/{id}/testimonials")
