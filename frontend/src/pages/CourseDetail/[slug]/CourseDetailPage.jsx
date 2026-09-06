@@ -199,7 +199,7 @@ export default function CourseDetailPage() {
 
       <ModulesAccordion modules={modules} isLoading={isLoading} />
 
-      <CertificateSection />
+      <CertificateSection course={course} />
 
       <TestimonialCarousel
         testimonials={testimonials}

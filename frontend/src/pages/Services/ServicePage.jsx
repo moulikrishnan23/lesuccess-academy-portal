@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion'
 import {
+  FileSearch,
+  HandFist,
   Handshake,
   MapPinned,
   MessagesSquare,
   Network,
   Presentation,
   Rocket,
-  Search,
-  SlidersHorizontal,
+  UserRoundCog,
   UsersRound,
-  Zap,
 } from 'lucide-react'
 import FeatureCard from '../../components/cards/FeatureCard.jsx'
 import ProcessStepCard from '../../components/cards/ProcessStepCard.jsx'
@@ -79,21 +79,21 @@ const CORPORATE_SERVICES = [
 const PROCESS_STEPS = [
   {
     step: '01',
-    icon: Search,
+    icon: FileSearch,
     title: 'Evaluate',
     description:
       'We identify skills, spot gaps, and align learning with career goals to build a strong foundation.',
   },
   {
     step: '02',
-    icon: SlidersHorizontal,
+    icon: UserRoundCog,
     title: 'Customize',
     description:
       'We design a focused, industry-aligned curriculum tailored to real-world demands and learner objectives.',
   },
   {
     step: '03',
-    icon: Zap,
+    icon: HandFist,
     title: 'Empower',
     description:
       'Hands-on training led by industry professionals using live projects, case studies, and practical tools.',
@@ -108,10 +108,16 @@ const PROCESS_STEPS = [
 ]
 
 /*
- * Vertical offsets for the four steps, in order: baseline, down, up, down.
- * Written out rather than computed so the shape of the row is readable here.
+ * Vertical offsets for the four steps: odd cards drop, even cards rise, so the
+ * row alternates evenly rather than wandering.
+ *
+ * Paired mb/mt rather than mt alone. The row is a stretch grid, so a lone
+ * `mt-10` is taken out of the card's own height and the dropped cards end up
+ * 40px shorter than their neighbours. Giving every card the same 40px — below
+ * on the risers, above on the droppers — costs them all equally and keeps the
+ * four boxes identical, which is what the reference shows.
  */
-const STEP_OFFSETS = ['', 'lg:mt-8', 'lg:-mt-4', 'lg:mt-8']
+const STEP_OFFSETS = ['lg:mb-10', 'lg:mt-10', 'lg:mb-10', 'lg:mt-10']
 
 /*
  * "You looking for?" options. The reference shows the control but not its
@@ -245,7 +251,11 @@ export default function ServicePage() {
           initial="hidden"
           whileInView="visible"
           viewport={ONCE_IN_VIEW}
-          className="grid list-none gap-6 p-0 sm:grid-cols-2"
+          /*
+            auto-rows-fr makes every row as tall as its tallest card, so the
+            boxes match across rows as well as within one.
+          */
+          className="grid list-none gap-6 p-0 sm:auto-rows-fr sm:grid-cols-2"
         >
           {INSTITUTION_SERVICES.map((service, index) => (
             <FeatureCard
@@ -253,10 +263,17 @@ export default function ServicePage() {
               icon={service.icon}
               title={service.title}
               description={service.description}
-              // Checkerboard: the second column drops, so adjacent cards never
-              // share a top edge. Collapses on one column, where an offset
-              // would just be an odd gap.
-              className={index % 2 === 1 ? 'sm:mt-10' : ''}
+              /*
+                Checkerboard offset that keeps every card the SAME height.
+                Grid stretches both cards in a row to one bottom edge, so a
+                lone `mt-10` would silently make the dropped card 40px shorter.
+                Giving each card the same 40px — below on the left column,
+                above on the right — costs both the same height and leaves them
+                staggered. Margin, not translate: FeatureCard's hover animates
+                `y`, and framer-motion's inline transform would wipe out a CSS
+                translate mid-hover.
+              */
+              className={index % 2 === 1 ? 'sm:mt-10' : 'sm:mb-10'}
             />
           ))}
         </motion.ul>
@@ -290,7 +307,8 @@ export default function ServicePage() {
           initial="hidden"
           whileInView="visible"
           viewport={ONCE_IN_VIEW}
-          className="grid list-none gap-6 p-0 md:grid-cols-2"
+          // Equal-size, staggered boxes — same technique as institutions above.
+          className="grid list-none gap-6 p-0 md:auto-rows-fr md:grid-cols-2"
         >
           {CORPORATE_SERVICES.map((service, index) => (
             <FeatureCard
@@ -298,10 +316,7 @@ export default function ServicePage() {
               icon={service.icon}
               title={service.title}
               description={service.description}
-              // Checkerboard: the second column drops, so adjacent cards never
-              // share a top edge. Collapses on one column, where an offset
-              // would just be an odd gap.
-              className={index % 2 === 1 ? 'md:mt-10' : ''}
+              className={index % 2 === 1 ? 'md:mt-10' : 'md:mb-10'}
             />
           ))}
         </motion.ul>
@@ -321,6 +336,8 @@ export default function ServicePage() {
           <SectionHeading
             id="process-title"
             align="center"
+            size="band"
+            weight="bold"
             title={
               <>
                 How LeSuccess <span className="text-brand">Drives Success</span>
@@ -335,7 +352,7 @@ export default function ServicePage() {
           initial="hidden"
           whileInView="visible"
           viewport={ONCE_IN_VIEW}
-          className="mt-12 grid list-none gap-6 p-0 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-12 grid list-none gap-6 p-0 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4"
         >
           {PROCESS_STEPS.map((item, index) => (
             <ProcessStepCard
@@ -344,8 +361,11 @@ export default function ServicePage() {
               icon={item.icon}
               title={item.title}
               description={item.description}
-              // Wave: baseline, down, up, down. Only from `lg`, where all four
-              // sit on one row and the offsets read as rhythm rather than mess.
+              // Staggered starts turn the shared drift into a travelling wave
+              // across the row instead of four cards bobbing in lockstep.
+              floatDelay={index * 0.45}
+              // Only from `lg`, where all four sit on one row and the offsets
+              // read as rhythm rather than mess.
               className={STEP_OFFSETS[index]}
             />
           ))}

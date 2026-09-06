@@ -50,6 +50,38 @@ export const cardHover = {
   },
 }
 
+/**
+ * Card entrance for a grid: rise, fade and settle.
+ *
+ * `visible` takes the card's column index through framer's `custom` prop, so a
+ * row cascades left to right instead of snapping in as a block.
+ */
+export const cardReveal = {
+  hidden: { opacity: 0, y: 24, scale: 0.97 },
+  visible: (column = 0) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: DURATION.entrance, ease: EASE_OUT, delay: column * 0.08 },
+  }),
+}
+
+/**
+ * Continuous idle drift for a row of cards.
+ *
+ * Returns an `animate` target rather than a variant on purpose: it has to sit
+ * on a nested element, because the card's entrance (fadeUp) and hover lift
+ * (cardHover) already own `y` on the outer element and the last writer would
+ * win. Nested transforms compose instead of competing.
+ *
+ * `delay` staggers the row so it undulates rather than moving as one block.
+ * Transform-only and infinite, so it stays on the compositor.
+ */
+export const floatLoop = (delay = 0) => ({
+  y: [0, -10, 0],
+  transition: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay },
+})
+
 /** Mobile sticky enroll bar rising into place the first time it is shown. */
 export const slideUpBar = {
   hidden: { opacity: 0, y: '100%' },
@@ -117,3 +149,18 @@ export function motionSafe(variants, reduced) {
 
 /** Viewport config for scroll entrances — play once, slightly before centre. */
 export const ONCE_IN_VIEW = { once: true, amount: 0.15, margin: '0px 0px -80px 0px' }
+
+/**
+ * Viewport for revealing the individual items of a long list.
+ *
+ * `amount` is a fraction of the *observed element*, which makes ONCE_IN_VIEW
+ * the wrong tool for a tall container: a 2000px grid has to put ~300px on
+ * screen before it counts as in view, so on a short viewport the entire list
+ * can sit at opacity 0 until the visitor scrolls. Observe each card instead and
+ * the threshold stays proportional to something card-sized — the first row
+ * reveals on arrival, later rows reveal as they are reached.
+ *
+ * No bottom margin here for the same reason: it delays the first row, which is
+ * the row that has to be visible the moment the page opens.
+ */
+export const ITEM_IN_VIEW = { once: true, amount: 0.2 }

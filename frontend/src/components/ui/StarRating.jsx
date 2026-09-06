@@ -3,7 +3,7 @@ import { useId } from 'react'
 const STAR_PATH =
   'M10 1.6l2.47 5.01 5.53.8-4 3.9.94 5.5L10 14.21l-4.94 2.6.94-5.5-4-3.9 5.53-.8z'
 
-function Star({ fill, size, clipId }) {
+function Star({ fill, size, clipId, fillClassName }) {
   // Partial fill via a clip over a second, coloured star — no half-star asset,
   // and 4.6 actually looks like 4.6 rather than rounding to 5.
   return (
@@ -20,7 +20,7 @@ function Star({ fill, size, clipId }) {
           <path
             d={STAR_PATH}
             fill="currentColor"
-            className="text-gold"
+            className={fillClassName}
             clipPath={`url(#${clipId})`}
           />
         </>
@@ -35,7 +35,15 @@ function Star({ fill, size, clipId }) {
  * The stars are decorative; the value is announced once as text, so a screen
  * reader hears "Rated 4.6 out of 5" instead of five separate graphics.
  */
-export default function StarRating({ value = 0, size = 16, className = '', label }) {
+export default function StarRating({
+  value = 0,
+  size = 16,
+  className = '',
+  label,
+  // Colour of the filled portion. Defaults to the site gold; testimonials pass
+  // the brighter yellow their reference uses.
+  fillClassName = 'text-gold',
+}) {
   const baseId = useId()
   const safe = Math.min(5, Math.max(0, Number(value) || 0))
 
@@ -47,6 +55,7 @@ export default function StarRating({ value = 0, size = 16, className = '', label
           key={index}
           size={size}
           clipId={`${baseId}-star-${index}`}
+          fillClassName={fillClassName}
           fill={Math.min(1, Math.max(0, safe - index))}
         />
       ))}
