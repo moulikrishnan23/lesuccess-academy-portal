@@ -7,6 +7,8 @@ import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,6 +38,11 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -44,31 +51,35 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     // Swagger / OpenAPI
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Public: Auth & File uploads
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         // Public: form submissions
                         .requestMatchers(HttpMethod.POST, "/api/contact-messages").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/demo-bookings").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/upcoming-programs/*/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/leads").permitAll()
-                        // Public: home page data reads
+                        // Public: home page & site data reads
                         .requestMatchers(HttpMethod.GET, "/api/announcements/active").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/courses", "/api/courses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/upcoming-programs", "/api/upcoming-programs/**").permitAll()
-                        // Public: Service page + site-wide content reads.
-                        // Exact-path GETs only — /api/services/{id} is an admin route
-                        // (it exposes DRAFT rows), so it must NOT be covered here.
+                        .requestMatchers(HttpMethod.GET, "/api/gallery", "/api/gallery/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/team-members", "/api/team-members/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/companies", "/api/companies/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/process-steps").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/settings").permitAll()
-                        // Admin: all /api/admin/** and remaining contact-message routes require auth
+                        // Role-specific protected endpoints
+                        .requestMatchers("/api/admin/gallery/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/admin/upcoming-programs/**").hasAnyRole("ADMIN", "MANAGER", "TRAINER")
+                        // Admin: general admin and contact-message routes require auth
                         .requestMatchers("/api/admin/**").authenticated()
                         .requestMatchers("/api/contact-messages/**").authenticated()
-                        // Everything else on the new content routes is admin-only.
-                        // Listed after the public GETs above: the first matcher wins.
                         .requestMatchers("/api/services", "/api/services/**").authenticated()
                         .requestMatchers("/api/process-steps", "/api/process-steps/**").authenticated()
                         .requestMatchers("/api/settings", "/api/settings/**").authenticated()
-                        // Leads: public POST above, everything else admin-only.
                         .requestMatchers("/api/leads", "/api/leads/**").authenticated()
+                        .requestMatchers("/api/auth/me").authenticated()
                         // Everything else — permit for now; tighten as new modules are added
                         .anyRequest().permitAll()
                 )

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Skeleton, { SkeletonText } from "../ui/Skeleton.jsx";
 import useCourses from "../../hooks/useCourses.js";
+import CourseBadge from "../ui/CourseBadge.jsx";
 import { formatDuration } from "../../utils/formatters.js";
 
 /*
@@ -112,10 +113,10 @@ const ChooseYourPath = () => {
                 className="relative rounded-2xl bg-white p-7 shadow-sm"
               >
 
-                {course.badgeLabel && (
-                  <span className="absolute right-7 top-0 -translate-y-1/2 rounded-md border border-green-300 bg-green-100 px-3 py-2 text-xs font-medium text-green-700">
-                    {course.badgeLabel}
-                  </span>
+                {(course.badge || course.badgeLabel || course.badgeText) && (
+                  <div className="absolute right-7 top-0 -translate-y-1/2">
+                    <CourseBadge badge={course.badge} badgeText={course.badgeLabel || course.badgeText} />
+                  </div>
                 )}
 
                 <div className="flex flex-col items-center">

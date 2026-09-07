@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Users } from "lucide-react";
+import apiClient from "../../services/apiClient.js";
+import { getImageUrl } from "../../utils/imageUtils.js";
 
-const teamMembers = [
+const DEFAULT_TEAM_MEMBERS = [
   // ==========================================================
   // FEATURED MEMBERS
   // ==========================================================
@@ -145,13 +147,19 @@ const TeamCard = ({ member, featured = false, index }) => {
           aspect-383/400
           overflow-hidden
           rounded-3xl
-          bg-[#e8edf2]
+          bg-cover
+          bg-center
+          bg-no-repeat
         "
+        style={{ backgroundImage: "url('/home/TeamBg.png')" }}
       >
         <img
-          src={member.image}
+          src={getImageUrl(member.image || member.imageUrl, "/home/team/dummy.png")}
           alt={member.name}
           draggable="false"
+          onError={(e) => {
+            e.target.src = "/home/team/dummy.png";
+          }}
           className={`
             h-full
             w-full
@@ -268,12 +276,32 @@ const OurTeam = () => {
   const dragCurrentX = useRef(0);
 
 
+  const [members, setMembers] = useState(DEFAULT_TEAM_MEMBERS);
+
+  useEffect(() => {
+    let active = true;
+    apiClient
+      .get("/api/team-members")
+      .then((res) => {
+        const data = res?.data?.data;
+        if (active && Array.isArray(data) && data.length > 0) {
+          setMembers(data);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load dynamic team members, using defaults:", err);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // ========================================================
   // GET FEATURED MEMBERS
   // ========================================================
 
-  const featuredMembers = teamMembers.filter(
-    (member) => member.featured
+  const featuredMembers = members.filter(
+    (member) => member.featured || member.isFeatured
   );
 
 
@@ -281,8 +309,8 @@ const OurTeam = () => {
   // GET OTHER MEMBERS
   // ========================================================
 
-  const otherMembers = teamMembers.filter(
-    (member) => !member.featured
+  const otherMembers = members.filter(
+    (member) => !member.featured && !member.isFeatured
   );
 
 

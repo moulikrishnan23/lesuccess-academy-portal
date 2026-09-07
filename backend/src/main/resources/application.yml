@@ -7,6 +7,13 @@ spring:
     virtual:
       enabled: true
 
+  # Multipart file upload configuration (allows camera & high-res image uploads up to 25MB per file, 200MB total batch)
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 25MB
+      max-request-size: 200MB
+
   # JPA / Hibernate
   jpa:
     hibernate:

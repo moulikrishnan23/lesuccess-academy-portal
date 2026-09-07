@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import SectionHeading from '../../components/ui/SectionHeading.jsx'
+import CourseBadge from '../../components/ui/CourseBadge.jsx'
 import Skeleton, { SkeletonText } from '../../components/ui/Skeleton.jsx'
 import ErrorState, { EmptyState } from '../../components/ui/ErrorState.jsx'
 import useCourses from '../../hooks/useCourses.js'
@@ -39,10 +40,8 @@ function CourseCard({ course, reduced }) {
             <span />
           )}
 
-          {course.badgeLabel ? (
-            <span className="rounded-md border border-green-soft bg-green-soft px-2.5 py-1 text-[0.6875rem] font-semibold text-green">
-              {course.badgeLabel}
-            </span>
+          {(course.badge || course.badgeLabel || course.badgeText) ? (
+            <CourseBadge badge={course.badge} badgeText={course.badgeLabel || course.badgeText} />
           ) : null}
         </div>
 

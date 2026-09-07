@@ -48,9 +48,9 @@ public class UpcomingProgramController {
                 .body(ApiResponse.success("Registration successful!", response));
     }
 
-    /** Admin — all programs (including past), paginated, optionally filtered by type. */
+    /** Admin/Trainer — all programs (including past), paginated, optionally filtered by type. */
     @GetMapping("/api/admin/upcoming-programs")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
     public ResponseEntity<ApiResponse<PageResponse<UpcomingProgramResponse>>> listAll(
             @RequestParam(required = false) UpcomingProgramType type,
             @RequestParam(defaultValue = "0") int page,
@@ -65,17 +65,17 @@ public class UpcomingProgramController {
         return ResponseEntity.ok(ApiResponse.success("Upcoming programs retrieved successfully", service.listAllForAdmin(type, pageable)));
     }
 
-    /** Admin — create a new program. */
+    /** Admin/Trainer — create a new program. */
     @PostMapping("/api/admin/upcoming-programs")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
     public ResponseEntity<ApiResponse<UpcomingProgramResponse>> create(@Valid @RequestBody UpcomingProgramRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Upcoming program created successfully", service.create(request)));
     }
 
-    /** Admin — update an existing program. */
+    /** Admin/Trainer — update an existing program. */
     @PutMapping("/api/admin/upcoming-programs/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
     public ResponseEntity<ApiResponse<UpcomingProgramResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpcomingProgramRequest request) {
@@ -83,17 +83,17 @@ public class UpcomingProgramController {
         return ResponseEntity.ok(ApiResponse.success("Upcoming program updated successfully", service.update(id, request)));
     }
 
-    /** Admin — soft delete. */
+    /** Admin/Trainer — soft delete. */
     @DeleteMapping("/api/admin/upcoming-programs/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.softDelete(id);
         return ResponseEntity.noContent().build();
     }
 
-    /** Admin — list all registrations for a specific program. */
+    /** Admin/Trainer — list all registrations for a specific program. */
     @GetMapping("/api/admin/upcoming-programs/{id}/registrations")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
     public ResponseEntity<ApiResponse<PageResponse<UpcomingProgramRegistrationResponse>>> listRegistrations(
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int page,

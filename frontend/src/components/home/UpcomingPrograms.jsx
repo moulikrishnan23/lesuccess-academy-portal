@@ -14,6 +14,7 @@ import { listUpcoming } from "../../services/upcomingProgramApi.js";
 
 const IMAGES = {
   WEBINAR: "/home/webinar.png",
+  WORKSHOP: "/home/webinarHost.jpg",
   INTERNSHIP: "/home/webinarHost.jpg",
 };
 
@@ -30,6 +31,21 @@ const FALLBACK = {
       badge: "Free Webinar",
       meetLink: null,
       certificateIncluded: false,
+    },
+  ],
+
+  WORKSHOP: [
+    {
+      label: "Hands-on Workshop",
+      title: "Full Stack Web & API Workshop",
+      topic: "Build and deploy live microservices and interactive React dashboards.",
+      displayDate: "Wednesday",
+      displayTime: "2:00 PM - 5:00 PM",
+      platform: "Google Meet",
+      image: "/home/webinarHost.jpg",
+      badge: "Hands-on Workshop",
+      meetLink: null,
+      certificateIncluded: true,
     },
   ],
 
@@ -75,6 +91,10 @@ function normalizeType(type) {
 
   if (normalized === "WEBINAR") {
     return "WEBINAR";
+  }
+
+  if (normalized === "WORKSHOP") {
+    return "WORKSHOP";
   }
 
   if (normalized === "INTERNSHIP") {
@@ -252,6 +272,7 @@ const UpcomingPrograms = () => {
 
   const [apiPrograms, setApiPrograms] = useState({
     WEBINAR: [],
+    WORKSHOP: [],
     INTERNSHIP: [],
   });
 
@@ -281,6 +302,7 @@ const UpcomingPrograms = () => {
 
         const grouped = {
           WEBINAR: [],
+          WORKSHOP: [],
           INTERNSHIP: [],
         };
 
@@ -457,7 +479,7 @@ const UpcomingPrograms = () => {
           <button
             type="button"
             onClick={() => changeTab("WEBINAR")}
-            className={`rounded-md px-7 py-2 text-sm font-medium transition sm:text-base ${
+            className={`rounded-md px-6 py-2 text-sm font-medium transition sm:text-base ${
               activeType === "WEBINAR"
                 ? "bg-[#d91b4d] text-white"
                 : "text-gray-800 hover:bg-gray-100"
@@ -466,12 +488,26 @@ const UpcomingPrograms = () => {
             Webinar
           </button>
 
+          {/* WORKSHOP TAB */}
+
+          <button
+            type="button"
+            onClick={() => changeTab("WORKSHOP")}
+            className={`rounded-md px-6 py-2 text-sm font-medium transition sm:text-base ${
+              activeType === "WORKSHOP"
+                ? "bg-[#d91b4d] text-white"
+                : "text-gray-800 hover:bg-gray-100"
+            }`}
+          >
+            Workshop
+          </button>
+
           {/* INTERNSHIP TAB */}
 
           <button
             type="button"
             onClick={() => changeTab("INTERNSHIP")}
-            className={`rounded-md px-7 py-2 text-sm font-medium transition sm:text-base ${
+            className={`rounded-md px-6 py-2 text-sm font-medium transition sm:text-base ${
               activeType === "INTERNSHIP"
                 ? "bg-[#d91b4d] text-white"
                 : "text-gray-800 hover:bg-gray-100"
