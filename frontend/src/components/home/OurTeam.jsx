@@ -59,70 +59,70 @@ const DEFAULT_TEAM_MEMBERS = [
     name: "Kirubakaran",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Saranya",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Naveen",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Dinesh",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Keerthana",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Employee Name",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Employee Name",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Employee Name",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Employee Name",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
   {
     name: "Employee Name",
     role: "Role",
     email: "email@lesuccess.in",
-    image: "/home/team/dummy.png",
+    image: "",
     featured: false,
   },
 ];
@@ -154,11 +154,11 @@ const TeamCard = ({ member, featured = false, index }) => {
         style={{ backgroundImage: "url('/home/TeamBg.png')" }}
       >
         <img
-          src={getImageUrl(member.image || member.imageUrl, "/home/team/dummy.png")}
+          src={getImageUrl(member.image || member.imageUrl, "")}
           alt={member.name}
           draggable="false"
           onError={(e) => {
-            e.target.src = "/home/team/dummy.png";
+            e.target.src = "";
           }}
           className={`
             h-full
