@@ -21,11 +21,48 @@ export default function CourseTabs({ tabs = DEFAULT_TABS }) {
   const [indicator, setIndicator] = useState({ x: 0, width: 0 })
 
   const listRef = useRef(null)
+  const navRef = useRef(null)
   const tabRefs = useRef({})
+
+  /*
+   * Publish this bar's height so the things that must clear it — the sticky
+   * enroll card, the scroll offset for in-page anchors — can be expressed
+   * against it instead of guessing. Cleared on unmount: the variable is only
+   * meaningful while a course page is mounted.
+   */
+  useLayoutEffect(() => {
+    const node = navRef.current
+    if (!node) return undefined
+
+    const root = document.documentElement
+    const publish = () =>
+      root.style.setProperty('--course-tabs-h', `${node.offsetHeight}px`)
+
+    publish()
+    const observer = new ResizeObserver(publish)
+    observer.observe(node)
+
+    return () => {
+      observer.disconnect()
+      root.style.removeProperty('--course-tabs-h')
+    }
+  }, [])
 
   // --- Scroll spy -----------------------------------------------------------
   useEffect(() => {
     const visible = new Set()
+
+    /*
+     * How much of the top of the viewport is covered by fixed chrome: the site
+     * header plus this bar. It used to be hardcoded to 96px, which stopped
+     * matching once the header grew — a section counted as "current" while it
+     * was still hidden behind the header.
+     */
+    const chromeHeight = () => {
+      const styles = getComputedStyle(document.documentElement)
+      const px = (name) => parseFloat(styles.getPropertyValue(name)) || 0
+      return px('--app-header-max') + px('--course-tabs-h')
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -34,9 +71,19 @@ export default function CourseTabs({ tabs = DEFAULT_TABS }) {
           else visible.delete(entry.target.id)
         })
 
-        // Several sections can be on screen at once; the highest one in
-        // document order is the one the reader is actually in.
-        const next = tabs.find((tab) => visible.has(tab.id))
+        /*
+          Several sections can be in the band at once, and the deepest one is
+          the one being entered.
+        
+          Taking the first instead meant a section could not become current
+          until the one above it had left the band entirely. Testimonials is
+          last on the page and sits directly under the certificate, so clicking
+          its tab scrolled correctly but left the underline on Certificate —
+          the certificate was still occupying the top of the band. Reading from
+          the end fixes that and keeps the ordinary scroll case unchanged,
+          since the deepest visible section is always the newest one.
+        */
+        const next = [...tabs].reverse().find((tab) => visible.has(tab.id))
         if (next) setActiveId(next.id)
       },
       {
@@ -50,7 +97,7 @@ export default function CourseTabs({ tabs = DEFAULT_TABS }) {
         // bottom-of-page override was tried and could not be verified in the
         // available browser environment, so it was left out rather than
         // shipped unproven. Revisit with a real device if it shows up.
-        rootMargin: '-96px 0px -60% 0px',
+        rootMargin: `-${chromeHeight()}px 0px -55% 0px`,
         threshold: 0,
       },
     )
@@ -78,9 +125,20 @@ export default function CourseTabs({ tabs = DEFAULT_TABS }) {
   }, [activeId])
 
   return (
+    /*
+      Sticks below the site header, not at the top of the viewport.
+
+      `top-0` put this bar underneath the fixed offer bar and navbar, which sit
+      above it in the stacking order — so it was pinned, but invisible from the
+      first scroll onward. --app-header tracks the header's real measured
+      height and shrinks while the navbar is hidden, so the bar rides up with
+      it; the duration matches the navbar's own transition.
+    */
     <nav
+      ref={navRef}
       aria-label="Course sections"
-      className="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur-sm"
+      className="sticky z-30 border-b border-line bg-white/95 backdrop-blur-sm transition-[top] duration-300 ease-in-out"
+      style={{ top: 'var(--app-header, 0px)' }}
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <ul

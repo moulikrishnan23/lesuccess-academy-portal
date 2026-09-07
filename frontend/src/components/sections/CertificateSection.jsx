@@ -327,7 +327,8 @@ export default function CertificateSection({ course, imageUrl }) {
     <section
       id="certificate"
       aria-labelledby="certificate-title"
-      className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:py-16"
+      /* ModulesAccordion above carries the gap, so no top padding here. */
+      className="pb-14 lg:pb-16"
     >
       <motion.div
         variants={motionSafe(fadeUp, reduced)}
