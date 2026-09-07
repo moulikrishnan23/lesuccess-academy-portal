@@ -49,12 +49,11 @@ export function validateEnrollForm({ name, mobile, email }) {
  * Validate the service enquiry form.
  *
  * Different fields from the enroll card, same rules and the same voice: this
- * form asks for a name, an email and what the enquiry is about, and has no
- * mobile field — LeadRequest.mobile is optional for this source.
+ * form asks for a name, an email, a phone number and what the enquiry is about.
  *
  * @returns {Object} { field: message } — empty when the form is valid.
  */
-export function validateServiceEnquiryForm({ name, email, lookingFor }) {
+export function validateServiceEnquiryForm({ name, email, mobile, lookingFor }) {
   const errors = {}
 
   if (!name?.trim()) {
@@ -68,6 +67,18 @@ export function validateServiceEnquiryForm({ name, email, lookingFor }) {
     errors.email = 'Enter your email id.'
   } else if (!EMAIL_PATTERN.test(email.trim())) {
     errors.email = 'Enter a valid email address.'
+  }
+
+  /*
+    Required here. The enroll card's rule is reused rather than restated —
+    normalizeMobile forgives a pasted +91 or spaces, so a number that is really
+    valid is not rejected over its formatting.
+  */
+  const normalizedMobile = normalizeMobile(mobile)
+  if (!normalizedMobile) {
+    errors.mobile = 'Enter your phone number.'
+  } else if (!MOBILE_PATTERN.test(normalizedMobile)) {
+    errors.mobile = 'Enter a 10-digit phone number starting with 6, 7, 8 or 9.'
   }
 
   if (!lookingFor?.trim()) {

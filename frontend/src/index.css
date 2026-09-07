@@ -47,8 +47,18 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    /* Sticky tab bar clearance for anchored sections. */
-    scroll-padding-top: 5.5rem;
+    /*
+      Clearance for anchored sections, measured rather than guessed.
+
+      --app-header-max is the fixed site header at full height and
+      --course-tabs-h the course page's section bar; both are published at
+      runtime by the components that own them, and both fall back to 0 on
+      pages that have neither. The flat 5.5rem here was smaller than the header
+      alone, so clicking a section tab landed its heading underneath it.
+    */
+    scroll-padding-top: calc(
+      var(--app-header-max, 0px) + var(--course-tabs-h, 0px) + 1.5rem
+    );
   }
 
   body {

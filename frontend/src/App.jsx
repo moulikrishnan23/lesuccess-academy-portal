@@ -287,6 +287,34 @@ const App = () => {
   const showNavbar =
     navbarVisible && !footerVisible;
 
+  /*
+   * =========================================================
+   * PUBLISH HEADER HEIGHTS TO CSS
+   * =========================================================
+   *
+   * The header is fixed and its height is measured at runtime, so anything
+   * that has to sit below it — the course page's section tabs, its sticky
+   * enroll card, the scroll offset for in-page anchors — cannot hardcode a
+   * number. Those all used their own guesses and ended up underneath it.
+   *
+   * --app-header      the header height right now, which drops to just the
+   *                   offer bar while the navbar is hidden. Anything sticky
+   *                   that should ride along with the navbar uses this.
+   * --app-header-max  the height with the navbar shown. Anything that must
+   *                   never be covered, whatever the navbar is doing, uses
+   *                   this.
+   */
+  useEffect(() => {
+    const root = document.documentElement;
+    const visible = offerHeaderHeight + (showNavbar ? navbarHeight : 0);
+
+    root.style.setProperty("--app-header", `${visible}px`);
+    root.style.setProperty(
+      "--app-header-max",
+      `${offerHeaderHeight + navbarHeight}px`
+    );
+  }, [offerHeaderHeight, navbarHeight, showNavbar]);
+
   return (
     <div className="min-h-screen">
 
