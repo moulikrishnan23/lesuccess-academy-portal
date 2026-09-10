@@ -121,7 +121,7 @@ export default function TechStackSection({ course, techStack, isLoading }) {
   return (
     <section
       aria-labelledby="stack-title"
-      className="mx-auto max-w-6xl px-5 pb-14 sm:px-8 lg:pb-16"
+      className="pb-14 lg:pb-16"
     >
       <motion.div
         variants={motionSafe(fadeUp, reduced)}

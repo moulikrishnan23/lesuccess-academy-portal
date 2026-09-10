@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import CourseHero from '../../../components/sections/CourseHero.jsx'
 import CourseTabs from '../../../components/sections/CourseTabs.jsx'
 import { DEFAULT_TABS } from '../../../components/sections/courseTabs.constants.js'
 import WhyLearnSection from '../../../components/sections/WhyLearnSection.jsx'
 import WhatYoullLearnToDoSection from '../../../components/sections/WhatYoullLearnToDoSection.jsx'
+import EnrollCourseForm from '../../../components/forms/EnrollCourseForm.jsx'
 import TechStackSection from '../../../components/sections/TechStackSection.jsx'
 import ModulesAccordion from '../../../components/sections/ModulesAccordion.jsx'
 import CertificateSection from '../../../components/sections/CertificateSection.jsx'
 import TestimonialCarousel from '../../../components/carousel/TestimonialCarousel.jsx'
 import MobileEnrollBar from '../../../components/forms/MobileEnrollBar.jsx'
+import { fadeUp, motionSafe, ONCE_IN_VIEW } from '../../../animations/variants.js'
 import ErrorState from '../../../components/ui/ErrorState.jsx'
 import Skeleton, { SkeletonText } from '../../../components/ui/Skeleton.jsx'
 import useCourseDetail from '../../../hooks/useCourseDetail.js'
@@ -185,30 +188,88 @@ export default function CourseDetailPage() {
 
       <CourseTabs tabs={tabs} />
 
-      {/* The role section is nested so the sticky enroll card floats alongside
-          both it and the course description, as it does in the reference. */}
-      <WhyLearnSection
-        course={course}
-        isLoading={isLoading}
-        enrollFormRef={enrollFormRef}
-      >
-        <WhatYoullLearnToDoSection course={course} />
-      </WhyLearnSection>
+      {/*
+        One grid, one sticky column, everything up to the testimonials.
 
-      <TechStackSection course={course} techStack={techStack} isLoading={isLoading} />
+        A sticky element can only travel inside its own container, so the span
+        of the enroll card is decided entirely by what lives in this left
+        column. It runs from the course description down to the certificate and
+        releases as the testimonials begin — the reader is weighing the course
+        for all of it, and that is exactly when the form should be in reach.
 
-      <ModulesAccordion modules={modules} isLoading={isLoading} />
+        The reviews are in the column too, and they are the reason the card
+        survives the certificate. A sticky element unpins once its container's
+        bottom reaches it, so it stops travelling one card-height before the
+        column ends. With the column ending at the certificate the card went
+        static half way through it; with the reviews below, the certificate is
+        no longer the end of the runway.
+      */}
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        {/*
+          The card widens only once there is room to spare. At exactly lg the
+          container is barely wider than the card plus the certificate's
+          side-by-side layout, and a 400px track squeezes the benefits list to
+          four wrapped lines; from xl there is room for the full width.
+        */}
+        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_400px]">
+          {/*
+            min-w-0 so a wide child cannot push the grid past its track.
 
-      <CertificateSection course={course} />
+            No bottom padding here, deliberately. A sticky element unpins once
+            its container's bottom reaches it, so padding the column is the only
+            way to keep the card fixed for longer — and it buys that time with
+            an equal amount of empty column. 542px of blank space beside a
+            floating card looks broken; the card releasing as the reviews
+            arrive does not. See the comment on the grid above.
+          */}
+          <div className="min-w-0">
+            <WhyLearnSection course={course} isLoading={isLoading} />
+            <WhatYoullLearnToDoSection course={course} />
+            <TechStackSection
+              course={course}
+              techStack={techStack}
+              isLoading={isLoading}
+            />
+            <ModulesAccordion modules={modules} isLoading={isLoading} />
+            <CertificateSection course={course} />
+            <TestimonialCarousel
+              testimonials={testimonials}
+              isLoading={isLoadingTestimonials}
+              error={testimonialsError}
+              onRetry={refetchTestimonials}
+              rating={settings.google_rating}
+              reviewCount={settings.google_review_count}
+            />
+          </div>
 
-      <TestimonialCarousel
-        testimonials={testimonials}
-        isLoading={isLoadingTestimonials}
-        error={testimonialsError}
-        onRetry={refetchTestimonials}
-        rating={settings.google_rating}
-        reviewCount={settings.google_review_count}
-      />
+          <motion.div
+            variants={motionSafe(fadeUp, reduced)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={ONCE_IN_VIEW}
+            /*
+              Pinned below both the site header and the course tab bar, using
+              the heights they publish rather than a fixed guess — top-24 was
+              96px against a header that measures 134, so the card sat partly
+              behind it. --app-header-max, not --app-header: the card should
+              not shuffle up and down as the navbar hides on scroll.
+
+              Below lg the card drops into the flow beneath the content and
+              MobileEnrollBar carries the CTA.
+            */
+            className="lg:sticky lg:self-start"
+            style={{
+              top: 'calc(var(--app-header-max, 0px) + var(--course-tabs-h, 0px) + 1rem)',
+            }}
+          >
+            <EnrollCourseForm
+              ref={enrollFormRef}
+              courseId={course?.id}
+              discountLabel={course?.discountLabel}
+            />
+          </motion.div>
+        </div>
+      </div>
 
       <MobileEnrollBar
         course={course}
