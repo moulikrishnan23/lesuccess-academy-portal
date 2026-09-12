@@ -60,10 +60,20 @@ export default function ModulesAccordion({ modules, isLoading }) {
   const items = modules ?? []
 
   return (
+    /*
+      A contained panel rather than a full-bleed band.
+
+      This section now sits in the left column of the page's two-column grid so
+      the enroll card can stay sticky beside it. A background that bleeds to the
+      viewport edge cannot be drawn from inside a max-width column without
+      100vw tricks, and those reintroduce horizontal scrolling on any platform
+      that reserves space for a scrollbar. The tint and its grid are kept,
+      clipped to a rounded panel instead.
+    */
     <section
       id="curriculum"
       aria-labelledby="curriculum-title"
-      className="relative bg-section"
+      className="relative mb-14 overflow-hidden rounded-card bg-section lg:mb-16"
     >
       {/* Faint grid, as in the reference section background. */}
       <div
@@ -76,7 +86,7 @@ export default function ModulesAccordion({ modules, isLoading }) {
         initial="hidden"
         whileInView="visible"
         viewport={ONCE_IN_VIEW}
-        className="relative mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:py-16"
+        className="relative px-6 py-12 sm:px-8 lg:py-14"
       >
         <SectionHeading id="curriculum-title" title="Topics You will Learn" />
 

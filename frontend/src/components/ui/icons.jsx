@@ -85,6 +85,18 @@ export function QuoteIcon({ size = 28, ...props }) {
   )
 }
 
+/**
+ * Slanted double-quote used on testimonial cards — two leaning bars rather
+ * than the blocky glyph of QuoteIcon. Rotate 180deg for the closing mark.
+ */
+export function SlashQuoteIcon({ size = 28, ...props }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M14 7l-5.5 18H2L7.5 7zm14 0l-5.5 18H16L21.5 7z" />
+    </svg>
+  )
+}
+
 /** Bullet marker for the certificate benefit list. */
 export function PlusMarker({ size = 16, ...props }) {
   return (

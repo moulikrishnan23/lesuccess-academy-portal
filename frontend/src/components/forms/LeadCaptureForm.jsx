@@ -8,17 +8,27 @@ import { crossFade, errorShake, motionSafe } from '../../animations/variants.js'
 import { validateServiceEnquiryForm } from '../../utils/validation.js'
 import { LEAD_SOURCE } from '../../services/leadApi.js'
 
-const EMPTY_FORM = { name: '', email: '', lookingFor: '' }
+const EMPTY_FORM = { name: '', email: '', mobile: '', lookingFor: '' }
 
 /** Field label above a bordered control, matching the enroll card's fields. */
-function FieldShell({ id, label, error, children, reduced, onDark }) {
+function FieldShell({ id, label, error, children, reduced, onDark, hideLabel }) {
   const errorId = `${id}-error`
 
   return (
     <div>
+      {/*
+        When the label is hidden the control carries the same words as its
+        placeholder. The <label> still ships, only visually hidden: a
+        placeholder is not an accessible name — it disappears on the first
+        keystroke and is not reliably announced.
+      */}
       <label
         htmlFor={id}
-        className={`mb-1.5 block text-[0.75rem] ${onDark ? 'text-white/75' : 'text-ink-muted'}`}
+        className={
+          hideLabel
+            ? 'sr-only'
+            : `mb-1.5 block text-[0.75rem] ${onDark ? 'text-white/75' : 'text-ink-muted'}`
+        }
       >
         {label}
       </label>
@@ -127,7 +137,7 @@ export default function LeadCaptureForm({
 
     if (Object.keys(validationErrors).length > 0) {
       // Send focus to the first problem rather than leaving it on the button.
-      const firstField = ['name', 'email', 'lookingFor'].find((f) => validationErrors[f])
+      const firstField = ['name', 'email', 'mobile', 'lookingFor'].find((f) => validationErrors[f])
       document.getElementById(`${baseId}-${firstField}`)?.focus()
       return
     }
@@ -135,6 +145,8 @@ export default function LeadCaptureForm({
     await submit({
       name: values.name,
       email: values.email,
+      // leadApi maps this to `mobile`, the field the backend already accepts.
+      mobile: values.mobile,
       lookingFor: values.lookingFor,
       source,
     })
@@ -156,6 +168,7 @@ export default function LeadCaptureForm({
         error={errors.name}
         reduced={reduced}
         onDark={isRow}
+        hideLabel={isRow}
       >
         {(errorId) => (
           <input
@@ -166,6 +179,7 @@ export default function LeadCaptureForm({
             onChange={(event) => setField('name')(event.target.value)}
             disabled={isSubmitting}
             autoComplete="name"
+            placeholder={isRow ? 'Enter Your Name' : undefined}
             aria-invalid={errors.name ? 'true' : undefined}
             aria-describedby={errors.name ? errorId : undefined}
             className={controlClass(errors.name, isRow)}
@@ -180,6 +194,7 @@ export default function LeadCaptureForm({
         error={errors.email}
         reduced={reduced}
         onDark={isRow}
+        hideLabel={isRow}
       >
         {(errorId) => (
           <input
@@ -190,9 +205,40 @@ export default function LeadCaptureForm({
             onChange={(event) => setField('email')(event.target.value)}
             disabled={isSubmitting}
             autoComplete="email"
+            placeholder={isRow ? 'Enter Email id' : undefined}
             aria-invalid={errors.email ? 'true' : undefined}
             aria-describedby={errors.email ? errorId : undefined}
             className={controlClass(errors.email, isRow)}
+          />
+        )}
+      </FieldShell>
+
+      <FieldShell
+        id={`${baseId}-mobile`}
+        label="Enter Phone Number"
+        error={errors.mobile}
+        reduced={reduced}
+        onDark={isRow}
+        hideLabel={isRow}
+      >
+        {(errorId) => (
+          <input
+            id={`${baseId}-mobile`}
+            /*
+              type="tel" rather than "number": a phone number is a string of
+              digits, not a quantity, so it must not gain spinners or lose a
+              leading zero. inputMode brings up the numeric keypad on mobile.
+            */
+            type="tel"
+            inputMode="numeric"
+            value={values.mobile}
+            onChange={(event) => setField('mobile')(event.target.value)}
+            disabled={isSubmitting}
+            autoComplete="tel"
+            placeholder={isRow ? 'Enter Phone Number' : undefined}
+            aria-invalid={errors.mobile ? 'true' : undefined}
+            aria-describedby={errors.mobile ? errorId : undefined}
+            className={controlClass(errors.mobile, isRow)}
           />
         )}
       </FieldShell>
@@ -203,6 +249,7 @@ export default function LeadCaptureForm({
         error={errors.lookingFor}
         reduced={reduced}
         onDark={isRow}
+        hideLabel={isRow}
       >
         {(errorId) => (
           /*
@@ -227,7 +274,7 @@ export default function LeadCaptureForm({
               {/* Option text inherits the OS menu surface, not the control, so
                   it is set explicitly rather than left white on white. */}
               <option value="" className="text-navy-800">
-                Select an option
+                {isRow ? 'You looking for?' : 'Select an option'}
               </option>
               {options.map((option) => (
                 <option key={option.value} value={option.value} className="text-navy-800">
@@ -305,8 +352,9 @@ export default function LeadCaptureForm({
   )
 
   /*
-   * Full-width band layout: three fields across the container, the button
-   * beneath them, and no card between the form and the section background.
+   * Full-width band layout: the fields laid out across the container, the
+   * button beneath them, and no card between the form and the section
+   * background.
    */
   if (isRow) {
     return (
@@ -324,7 +372,13 @@ export default function LeadCaptureForm({
               animate="visible"
               exit={reduced ? undefined : 'exit'}
             >
-              <div className="grid gap-5 md:grid-cols-3">{fields}</div>
+              {/*
+                Two across, not four. The band is max-w-4xl, so a single row of
+                four would leave each field about 195px — too narrow for
+                "Enter Your Name" and the select's caret. A 2x2 block keeps the
+                controls comfortable and stays centred under the heading.
+              */}
+              <div className="grid gap-5 md:grid-cols-2">{fields}</div>
 
               {requestError ? <div className="mt-5">{requestError}</div> : null}
 
@@ -332,7 +386,8 @@ export default function LeadCaptureForm({
                 type="submit"
                 variant="primary"
                 size="lg"
-                className="mt-6 w-full"
+                // Centred and narrower than the field row, per the reference.
+                className="mt-6 w-full sm:mx-auto sm:block sm:max-w-md"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Sending…' : 'Submit'}

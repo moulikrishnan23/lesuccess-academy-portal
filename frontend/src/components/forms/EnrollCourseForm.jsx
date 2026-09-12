@@ -30,7 +30,7 @@ function Field({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-[0.75rem] text-ink-muted">
+      <label htmlFor={id} className="mb-2 block text-[0.8125rem] font-medium text-ink-muted">
         {label}
       </label>
 
@@ -45,7 +45,7 @@ function Field({
         autoComplete={autoComplete}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? errorId : undefined}
-        className={`h-10 w-full rounded-md border bg-white px-3 text-[0.875rem] text-navy-800 transition-colors focus:outline-none disabled:opacity-60 ${
+        className={`h-12 w-full rounded-lg border bg-white px-3.5 text-[0.9375rem] text-navy-800 transition-colors focus:outline-none disabled:opacity-60 ${
           error ? 'border-danger' : 'border-line-strong focus:border-brand'
         }`}
       />
@@ -149,12 +149,22 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
       ref={ref}
       id="enroll"
       // scroll-mt keeps the card clear of the sticky tab bar when jumped to.
-      className={`scroll-mt-28 overflow-hidden rounded-card border border-line bg-white shadow-[0_10px_30px_-18px_rgba(18,58,92,0.45)] ${className}`}
-    >
-      {/* Navy cap, per the reference card. */}
-      <div aria-hidden="true" className="h-1.5 bg-navy-800" />
+      /*
+        Elevation instead of an outline.
 
-      <div className="p-6">
+        A 1px grey border and one flat shadow read as a boxed-off panel. Real
+        depth comes from stacking shadows the way light actually falls: a tight
+        contact shadow directly under the card, a mid shadow for its body, and a
+        wide, very soft one for the ambient cast. The hairline ring replaces the
+        border so the white card still holds an edge against a white page
+        without drawing a box around itself.
+      */
+      className={`scroll-mt-28 overflow-hidden rounded-2xl bg-white ring-1 ring-navy-900/[0.06] shadow-[0_1px_2px_rgba(18,58,92,0.05),0_8px_20px_-8px_rgba(18,58,92,0.14),0_28px_56px_-28px_rgba(18,58,92,0.30)] ${className}`}
+    >
+      {/* Brand cap — the reference card's navy bar, carrying the site gradient. */}
+      <div aria-hidden="true" className="bg-brand-gradient h-1.5" />
+
+      <div className="p-7">
         <AnimatePresence mode="wait" initial={false}>
           {isSuccess ? (
             <motion.div
@@ -194,20 +204,20 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
               animate="visible"
               exit={reduced ? undefined : 'exit'}
             >
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <h3 className="font-display text-lg font-semibold text-navy-800">
+              <div className="mb-6 flex items-center justify-between gap-3">
+                <h3 className="font-display text-[1.375rem] font-bold text-navy-800">
                   Enroll This Course
                 </h3>
 
                 {/* Per-course data — absent when there is no offer. */}
                 {discountLabel ? (
-                  <span className="shrink-0 rounded-md bg-green-soft px-2.5 py-1 text-[0.6875rem] font-semibold text-green">
+                  <span className="shrink-0 rounded-md bg-green-soft px-2.5 py-1 text-[0.75rem] font-semibold text-green">
                     {discountLabel}
                   </span>
                 ) : null}
               </div>
 
-              <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
+              <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 <Field
                   id={`${baseId}-name`}
                   label="Name"
@@ -259,8 +269,9 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                 <Button
                   type="submit"
                   variant="primary"
-                  size="md"
-                  className="w-full"
+                  // Matches the taller fields above it.
+                  size="lg"
+                  className="mt-1 w-full"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Sending…' : 'Enroll Now'}

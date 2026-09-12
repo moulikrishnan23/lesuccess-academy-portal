@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Button from '../ui/Button.jsx'
 import {
@@ -40,6 +41,22 @@ function StatPill({ label, Icon }) {
 }
 
 /**
+ * Where a course's hero backdrop lives.
+ *
+ * Looked up by slug, so `public/course/hero/<slug>.svg` is the whole contract —
+ * no data edit, no rebuild. Every course in the catalog ships one, generated
+ * from its own tech stack and subject; see that folder's README.
+ *
+ * An explicit `heroImageUrl` wins, which is how a photograph gets used once the
+ * backend supplies one. Only the .svg path is probed, so the common case costs
+ * no wasted request.
+ */
+function heroImageFor(course) {
+  if (course.heroImageUrl) return course.heroImageUrl
+  return course.slug ? `/course/hero/${course.slug}.svg` : null
+}
+
+/**
  * Hero band — dark navy, centre-aligned, per Course_Page.pdf.
  *
  * Above the fold, so the entrance runs on mount rather than on scroll.
@@ -48,6 +65,17 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
   const reduced = useReducedMotion()
   const duration = formatDuration(course.durationValue, course.durationUnit)
 
+  /*
+    The backdrop is looked up by convention, so whether it exists can only be
+    discovered at runtime. `onError` records the failure against the slug it
+    happened on, which means moving to another course clears it without an
+    effect — a course whose artwork is missing falls back to the patterned
+    navy, and must never show a broken image.
+  */
+  const [failedSlug, setFailedSlug] = useState(null)
+  const heroImage = heroImageFor(course)
+  const showImage = Boolean(heroImage) && failedSlug !== course.slug
+
   return (
     <section
       id="about"
@@ -55,24 +83,60 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
       className="relative overflow-hidden bg-navy-900"
     >
       {/*
-        The reference uses a photographic backdrop behind the navy band. No such
-        asset exists in the repo, so this falls back to the same navy with a
-        faint grid. A per-course heroImageUrl takes over when one is uploaded.
-        TODO(design): supply the hero background image used in Course_Page.pdf.
+        Per-course photographic backdrop. Decorative, so it is alt="" and hidden
+        from assistive tech — the headline beside it already names the course.
       */}
-      {course.heroImageUrl ? (
-        <img
-          src={course.heroImageUrl}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover opacity-25"
-        />
+      {showImage ? (
+        <>
+          <img
+            src={heroImage}
+            alt=""
+            aria-hidden="true"
+            onError={() => setFailedSlug(course.slug)}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+
+          {/*
+            Two-part navy scrim, shaped rather than flat.
+
+            A flat overlay heavy enough to guarantee contrast also flattens the
+            photograph into a colour field, which defeats the point of having
+            one. So the base stays light enough to read the artwork through at
+            the edges, and a radial pass concentrates the darkening under the
+            centred headline and pills where the white type actually sits.
+
+            Worked worst case, a pure-white photograph: centre lands at 0.81
+            effective alpha (#395268, 8.1:1 against white) and the outer edge of
+            the text block at 0.66 (#5E7284, 4.96:1). Both clear AA for normal
+            text, so any photograph is safe here. The figures ignore the blue
+            radial below, which only ever darkens further — they are a floor.
+          */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-[rgba(11,42,69,0.50)]"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-[radial-gradient(85%_120%_at_50%_50%,rgba(11,42,69,0.62)_0%,rgba(11,42,69,0.32)_60%,transparent_100%)]"
+          />
+        </>
       ) : null}
 
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:48px_48px]"
-      />
+      {/*
+        Fallback texture, and only that.
+
+        The grid exists to stop the band being a flat navy rectangle when a
+        course has no artwork. Over a backdrop it has nothing left to do — the
+        artwork is the texture — and a 48px rule drawn across it reads as a
+        screen door in front of the image. So it renders only when there is no
+        image behind it.
+      */}
+      {showImage ? null : (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:48px_48px]"
+        />
+      )}
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-[radial-gradient(90%_120%_at_50%_0%,rgba(37,106,158,0.55),transparent_65%)]"

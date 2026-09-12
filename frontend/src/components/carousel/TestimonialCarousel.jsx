@@ -15,16 +15,20 @@ function RatingSummary({ rating, reviewCount }) {
   if (!rating && !reviewCount) return null
 
   return (
-    <div className="flex items-center gap-2.5">
-      <GoogleIcon size={26} />
+    // shrink-0: the heading beside it must give up width first, not this.
+    <div className="flex shrink-0 items-center gap-3">
+      {/* The mark sits on its own white disc, as on the reference badge. */}
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_2px_8px_rgba(11,42,69,0.16)]">
+        <GoogleIcon size={24} />
+      </span>
       <span>
         {rating ? (
-          <span className="block font-display text-[0.9375rem] font-semibold text-navy-800">
+          <span className="block font-display text-[1rem] font-bold text-ink">
             Rated {rating}/5
           </span>
         ) : null}
         {reviewCount ? (
-          <span className="block text-[0.6875rem] text-ink-muted">
+          <span className="block whitespace-nowrap text-[0.8125rem] text-navy-600">
             {reviewCount}+ Google Reviews
           </span>
         ) : null}
@@ -35,17 +39,17 @@ function RatingSummary({ rating, reviewCount }) {
 
 function TestimonialSkeleton() {
   return (
-    <div className="rounded-xl border-2 border-line bg-white p-5">
-      <div className="space-y-2.5 px-7 pt-6">
+    <div className="rounded-2xl border-2 border-line bg-white p-6">
+      <div className="space-y-2.5 px-9 pt-7">
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-full" />
         <Skeleton className="mx-auto h-3 w-2/3" />
       </div>
-      <div className="mt-5 flex items-center gap-3">
-        <Skeleton className="h-11 w-11" rounded="rounded-full" />
-        <div className="space-y-1.5">
-          <Skeleton className="h-3.5 w-24" />
-          <Skeleton className="h-2.5 w-16" />
+      <div className="mt-6 flex items-center gap-4">
+        <Skeleton className="h-15 w-15" rounded="rounded-xl" />
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-24" />
         </div>
       </div>
     </div>
@@ -78,20 +82,56 @@ export default function TestimonialCarousel({
   if (hasNothingToShow) return null
 
   return (
+    /*
+      A contained panel rather than a full-bleed band: this section sits in the
+      left column of the course page's grid so the enroll card can stay fixed
+      all the way down to it. Same reason ModulesAccordion is a panel — a
+      background cannot bleed to the viewport edge from inside a max-width
+      column without 100vw, which reintroduces horizontal scrolling.
+    */
     <section
       id="testimonials"
       aria-labelledby="testimonials-title"
-      className="bg-section"
+      /*
+        Same three-layer elevation as the enroll card beside it, scaled down.
+
+        A panel this large carries a shadow differently from a 400px card: the
+        same opacities would read as a drop-shadow effect rather than as depth.
+        The contact and body layers are lightened and the ambient layer spread
+        wider, so the panel lifts off the white page at the same apparent height
+        as the card without shouting.
+      */
+      className="overflow-hidden rounded-card bg-section ring-1 ring-navy-900/[0.05] shadow-[0_1px_2px_rgba(18,58,92,0.04),0_10px_24px_-12px_rgba(18,58,92,0.10),0_36px_64px_-32px_rgba(18,58,92,0.22)]"
     >
       <motion.div
         variants={motionSafe(fadeUp, reduced)}
         initial="hidden"
         whileInView="visible"
         viewport={ONCE_IN_VIEW}
-        className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:py-16"
+        className="px-6 py-12 sm:px-8 lg:py-14"
       >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <SectionHeading id="testimonials-title" title="What Our Students Say" />
+        {/*
+          The badge sits beside the heading rather than pushed to the far edge
+          (no justify-between) — the two read as one title block, as in the
+          reference.
+        */}
+        {/*
+          Stacked, not side by side.
+
+          The reference puts the Google badge next to the title, but that was
+          drawn for a full-width band. This section now lives in the course
+          page's content column — about 704px — and a flex row there left the
+          title 358px, breaking "What Our Students Say" across two lines. The
+          badge sits under the title instead, which keeps the title on one line
+          and reads as one block either way.
+        */}
+        <div className="flex flex-col gap-4">
+          <SectionHeading
+            id="testimonials-title"
+            title="What Our Students Say"
+            tone="ink"
+            weight="bold"
+          />
           <RatingSummary rating={rating} reviewCount={reviewCount} />
         </div>
 
@@ -100,7 +140,7 @@ export default function TestimonialCarousel({
             <div
               aria-busy="true"
               aria-label="Loading student reviews"
-              className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+              className="grid gap-5 sm:grid-cols-2"
             >
               {Array.from({ length: 3 }, (_, index) => (
                 <TestimonialSkeleton key={index} />
@@ -116,7 +156,18 @@ export default function TestimonialCarousel({
             <Carousel
               items={testimonials}
               label="Student reviews"
-              breakpoints={{ sm: 2, lg: 3 }}
+              /*
+                One per view, not two.
+
+                The section now shares a row with the enroll card, so the column
+                is about 704px at every desktop width — max-w-6xl minus the card
+                and the gap. Two cards there would be 335px each, roughly 260px
+                of text once the padding is off, which turns every quote into a
+                tower. One card fills 704px, wider than the 545px each got when
+                two shared the full-width band, so the quotes read better even
+                though you see one at a time. The arrows page through the rest.
+              */
+              breakpoints={{ sm: 1, lg: 1 }}
               renderItem={(testimonial) => (
                 <TestimonialCard testimonial={testimonial} />
               )}
