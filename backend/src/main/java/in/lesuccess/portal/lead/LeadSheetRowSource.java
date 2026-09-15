@@ -31,18 +31,20 @@ public class LeadSheetRowSource implements SheetRowSource {
     /**
      * Columns A-I; status lives in I.
      *
-     * <p>Mobile (D) is written but hidden: it is optional on the capture form since
-     * V18, so it is mostly blank and only clutters the view. Keeping the column in
-     * place rather than removing it holds every other column at its current letter,
-     * which matters because existing rows are already laid out this way.</p>
+     * <p>Mobile (D) used to be hidden on the grounds that it is optional on the
+     * capture form since V20 and therefore mostly blank. It is shown now: the
+     * number is the only way to call back a lead who left one, so the times it is
+     * filled in matter far more than the clutter on the times it is not.</p>
+     *
+     * <p>No tab hides columns any more, but the {@code hiddenColumns} argument
+     * stays on {@link SheetSpec} for the next layout that needs it.</p>
      */
     public static final SheetSpec SPEC = new SheetSpec(
             "Leads",
             List.of("ID", "Created At", "Name", "Mobile", "Email",
                     "Course ID", "Looking For", "Source", "Status"),
             "A",
-            "I",
-            List.of("D"));
+            "I");
 
     @Override
     public SyncEntityType entityType() {
@@ -64,7 +66,7 @@ public class LeadSheetRowSource implements SheetRowSource {
                 lead.getId(),
                 lead.getCreatedAt().format(DT_FORMAT),
                 lead.getName(),
-                // Mobile is optional since V18. A raw null is dropped during JSON
+                // Mobile is optional since V20. A raw null is dropped during JSON
                 // serialisation rather than written as a blank cell, which shifts
                 // every following value one column left — so coerce it like the rest.
                 lead.getMobile() == null ? "" : lead.getMobile(),

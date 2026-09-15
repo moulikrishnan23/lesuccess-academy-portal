@@ -46,6 +46,43 @@ export function validateEnrollForm({ name, mobile, email }) {
 }
 
 /**
+ * Validate the Contact page form.
+ *
+ * The required set is name, mobile and email — deliberately the same three the
+ * backend enforces on ContactMessageRequest, so a form that passes here cannot
+ * come back with a 400 the UI has no field to attach. Everything else on that
+ * page (whoYouAre, lookingFor, location, message) is optional on both sides.
+ *
+ * @returns {Object} { field: message } — empty when the form is valid.
+ */
+export function validateContactForm({ name, mobile, email }) {
+  const errors = {}
+
+  if (!name?.trim()) {
+    errors.name = 'Enter your name.'
+  } else if (name.trim().length < 2) {
+    errors.name = 'Enter your full name.'
+  }
+
+  const normalizedMobile = normalizeMobile(mobile)
+  if (!normalizedMobile) {
+    errors.mobile = 'Enter your mobile number.'
+  } else if (!MOBILE_PATTERN.test(normalizedMobile)) {
+    errors.mobile = 'Enter a 10-digit mobile number starting with 6, 7, 8 or 9.'
+  }
+
+  // Required here, unlike the enroll card: ContactMessageRequest marks email
+  // @NotBlank @Email, so an empty one is a guaranteed 400.
+  if (!email?.trim()) {
+    errors.email = 'Enter your email id.'
+  } else if (!EMAIL_PATTERN.test(email.trim())) {
+    errors.email = 'Enter a valid email address.'
+  }
+
+  return errors
+}
+
+/**
  * Validate the service enquiry form.
  *
  * Different fields from the enroll card, same rules and the same voice: this

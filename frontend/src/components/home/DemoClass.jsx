@@ -17,6 +17,8 @@ const DemoClass = () => {
 
   const [selectedCourseName, setSelectedCourseName] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  // Honeypot. Never shown to a person, so anything in it came from a bot.
+  const [website, setWebsite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null); // "success" | "error"
   const [errorMessage, setErrorMessage] = useState("");
@@ -36,6 +38,13 @@ const DemoClass = () => {
       await apiClient.post("/api/demo-bookings", {
         mobileNumber: mobileNumber.trim(),
         courseName: selectedCourseName || null,
+        /*
+         * The backend treats a non-empty `website` as a bot and returns the same
+         * 201 and body shape as a real submission, so it must be sent even when
+         * empty — omitting it is fine (null is not a hit), but sending it keeps
+         * the decoy's presence obvious to anyone reading this payload.
+         */
+        website,
       });
       setSubmitStatus("success");
     } catch (err) {
@@ -89,6 +98,25 @@ const DemoClass = () => {
           Upgrade your decision-making skills with our trial lessons at
           LeSuccess.
         </p>
+
+        {/*
+          Honeypot: off-screen rather than display:none, and tabbable only by
+          something that ignores the label. A real visitor never sees it.
+          Matches the markup on Contact.jsx — a bot that filters on
+          `display: none` walks straight past that trick, so neither form uses it.
+        */}
+        <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+          <label htmlFor="demo-website">Leave this field empty</label>
+          <input
+            id="demo-website"
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </div>
 
         <div className="mx-auto mt-12 grid max-w-300 gap-20 md:grid-cols-3">
 

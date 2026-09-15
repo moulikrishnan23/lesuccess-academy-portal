@@ -28,7 +28,7 @@ lesuccess:
     # Comma-separated scalar, not a YAML list — see application.yml.
     trusted-proxies: ""
     # Mirrors application.yml so tests exercise the real protected set.
-    protected-paths: /api/contact-messages,/api/leads
+    protected-paths: /api/contact-messages,/api/leads,/api/course-enquiries,/api/demo-bookings
 
   lead-capture:
     duplicate-window-minutes: 5

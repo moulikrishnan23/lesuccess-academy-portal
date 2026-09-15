@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mail, Phone, MapPin, MessageCircle, Send } from "lucide-react";
 
 import {FaInstagram, FaFacebook, FaLinkedin, FaYoutube} from "react-icons/fa"
+
+import useContactSubmit from "../hooks/useContactSubmit.js";
+import { validateContactForm } from "../utils/validation.js";
 
 const SOCIALS = [
   { icon: FaInstagram, href: "#", label: "Instagram" },
@@ -19,20 +22,63 @@ const initialForm = {
   lookingFor: "",
   location: "",
   message: "",
+  // Honeypot. Never shown to a person, so anything in it came from a bot.
+  website: "",
 };
 
 export default function Contact() {
   const [form, setForm] = useState(initialForm);
+  const [clientErrors, setClientErrors] = useState({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  const { submit, isSubmitting, isSuccess, error, fieldErrors, reset } =
+    useContactSubmit();
+
+  const successRef = useRef(null);
+
+  // Server-side field errors sit alongside client ones; the server wins.
+  const errors = { ...clientErrors, ...fieldErrors };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      // Only re-validate live once the visitor has tried to send — otherwise a
+      // half-typed email is flagged as wrong while they are still typing it.
+      if (hasSubmitted) setClientErrors(validateContactForm(next));
+      return next;
+    });
   };
 
-  const handleSend = () => {
-    if (!form.name || !form.mobile || !form.email) return;
-    // wire up to your submit endpoint here
-    console.log("Contact form submission:", form);
+  // Move focus to the confirmation so screen reader users are told it worked.
+  useEffect(() => {
+    if (isSuccess) successRef.current?.focus();
+  }, [isSuccess]);
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    setHasSubmitted(true);
+
+    const validationErrors = validateContactForm(form);
+    setClientErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      // Send focus to the first problem rather than leaving it on the button.
+      const firstField = ["name", "mobile", "email"].find(
+        (f) => validationErrors[f]
+      );
+      document.getElementById(firstField)?.focus();
+      return;
+    }
+
+    const accepted = await submit(form);
+    if (accepted) setForm(initialForm);
+  };
+
+  const handleSendAnother = () => {
+    reset();
+    setClientErrors({});
+    setHasSubmitted(false);
   };
 
   return (
@@ -48,19 +94,84 @@ export default function Contact() {
         </div>
 
         {/* Form card */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-6 w-full">
+        {isSuccess ? (
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-6 w-full">
+            <div
+              ref={successRef}
+              tabIndex={-1}
+              role="status"
+              className="text-center py-6 focus:outline-none"
+            >
+              <p className="text-lg font-semibold text-slate-900">
+                Thank you for reaching out! 🎉
+              </p>
+              <p className="text-slate-500 text-sm mt-2">
+                We have received your message and will get back to you soon.
+              </p>
+              <button
+                type="button"
+                onClick={handleSendAnother}
+                className="mt-5 inline-flex items-center justify-center gap-2 border border-slate-300 text-slate-700 font-semibold py-2.5 px-6 rounded-md hover:border-rose-400 hover:text-rose-600 transition-colors"
+              >
+                Send another message
+              </button>
+            </div>
+          </div>
+        ) : (
+        <form
+          noValidate
+          onSubmit={handleSend}
+          className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-6 w-full"
+        >
+          {/*
+            Honeypot: off-screen rather than display:none, and tabbable only by
+            something that ignores the label. A real visitor never sees it.
+          */}
+          <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+            <label htmlFor="website">Leave this field empty</label>
+            <input
+              id="website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={form.website}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/*
+            A failure the fields cannot explain — network down, 429 from the rate
+            limiter, 500. Field-level 400s render under their own input instead.
+          */}
+          {error && !error.isValidation && (
+            <div
+              role="alert"
+              className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+            >
+              {error.message}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field
               label="Name"
               name="name"
               value={form.name}
               onChange={handleChange}
+              error={errors.name}
+              disabled={isSubmitting}
+              autoComplete="name"
             />
             <Field
               label="Mobile Number"
               name="mobile"
+              type="tel"
               value={form.mobile}
               onChange={handleChange}
+              error={errors.mobile}
+              disabled={isSubmitting}
+              autoComplete="tel"
             />
             <Field
               label="Email ID"
@@ -68,6 +179,9 @@ export default function Contact() {
               type="email"
               value={form.email}
               onChange={handleChange}
+              error={errors.email}
+              disabled={isSubmitting}
+              autoComplete="email"
             />
           </div>
 
@@ -77,6 +191,8 @@ export default function Contact() {
               name="whoYouAre"
               value={form.whoYouAre}
               onChange={handleChange}
+              error={errors.whoYouAre}
+              disabled={isSubmitting}
             />
 
             <div>
@@ -88,7 +204,8 @@ export default function Contact() {
                 name="lookingFor"
                 value={form.lookingFor}
                 onChange={handleChange}
-                className="w-full bg-slate-100 rounded-md px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                disabled={isSubmitting}
+                className="w-full bg-slate-100 rounded-md px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-rose-400 disabled:opacity-60"
               >
                 <option value="">You looking for?</option>
                 <option value="course">A course</option>
@@ -103,6 +220,8 @@ export default function Contact() {
               name="location"
               value={form.location}
               onChange={handleChange}
+              error={errors.location}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -116,19 +235,28 @@ export default function Contact() {
               rows={4}
               value={form.message}
               onChange={handleChange}
+              disabled={isSubmitting}
               placeholder="What help you want?"
-              className="w-full bg-slate-100 rounded-md px-4 py-3 text-sm text-slate-600 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-rose-400"
+              aria-invalid={errors.message ? "true" : undefined}
+              aria-describedby={errors.message ? "message-error" : undefined}
+              className="w-full bg-slate-100 rounded-md px-4 py-3 text-sm text-slate-600 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-rose-400 disabled:opacity-60"
             />
+            {errors.message && (
+              <p id="message-error" className="mt-1.5 text-xs text-rose-600">
+                {errors.message}
+              </p>
+            )}
           </div>
 
           <button
-            type="button"
-            onClick={handleSend}
-            className="mt-5 w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-500 to-rose-700 text-white font-semibold py-3 px-8 rounded-md hover:opacity-90 transition-opacity"
+            type="submit"
+            disabled={isSubmitting}
+            className="mt-5 w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-500 to-rose-700 text-white font-semibold py-3 px-8 rounded-md hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Send <Send size={16} />
+            {isSubmitting ? "Sending…" : "Send"} <Send size={16} />
           </button>
-        </div>
+        </form>
+        )}
 
         {/* Info + Map */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
@@ -189,7 +317,18 @@ export default function Contact() {
   );
 }
 
-function Field({ label, name, value, onChange, type = "text" }) {
+function Field({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  error,
+  disabled = false,
+  autoComplete,
+}) {
+  const errorId = `${name}-error`;
+
   return (
     <div>
       <label className="sr-only" htmlFor={name}>
@@ -201,9 +340,22 @@ function Field({ label, name, value, onChange, type = "text" }) {
         type={type}
         value={value}
         onChange={onChange}
+        disabled={disabled}
+        autoComplete={autoComplete}
         placeholder={label}
-        className="w-full bg-slate-100 rounded-md px-4 py-3 text-sm text-slate-600 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400"
+        aria-invalid={error ? "true" : undefined}
+        aria-describedby={error ? errorId : undefined}
+        className={`w-full rounded-md px-4 py-3 text-sm text-slate-600 placeholder-slate-400 focus:outline-none focus:ring-2 disabled:opacity-60 ${
+          error
+            ? "bg-rose-50 ring-1 ring-rose-300 focus:ring-rose-500"
+            : "bg-slate-100 focus:ring-rose-400"
+        }`}
       />
+      {error && (
+        <p id={errorId} className="mt-1.5 text-xs text-rose-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

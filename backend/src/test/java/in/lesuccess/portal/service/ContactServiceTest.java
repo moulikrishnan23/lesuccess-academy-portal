@@ -175,6 +175,48 @@ class ContactServiceTest {
     }
 
     @Nested
+    @DisplayName("Optional fields")
+    class OptionalFieldTests {
+
+        /**
+         * whoYouAre, lookingFor, location and message stopped being @NotBlank so
+         * the API's required set matches what the Contact page actually enforces.
+         * That makes them reachable as null here for the first time — and the
+         * service used to call .trim() on each one unguarded, relying on bean
+         * validation to have rejected null before it ever got this far. Their
+         * columns are still NOT NULL, so an omitted field has to land as "" and
+         * not as a null that fails at insert time.
+         */
+        @Test
+        @DisplayName("Null optional fields are stored as empty strings, not nulls")
+        void nullOptionalFields_shouldBeStoredAsEmptyStrings() {
+            validRequest.setWebsite(null);
+            validRequest.setWhoYouAre(null);
+            validRequest.setLookingFor(null);
+            validRequest.setLocation(null);
+            validRequest.setMessage(null);
+
+            when(repository.findRecentDuplicate(anyString(), anyString(), anyString(), any()))
+                    .thenReturn(Optional.empty());
+            when(repository.save(any())).thenReturn(buildSavedEntity(1L));
+
+            contactService.createContactMessage(validRequest, "1.2.3.4");
+
+            ArgumentCaptor<ContactMessage> captor = ArgumentCaptor.forClass(ContactMessage.class);
+            verify(repository).save(captor.capture());
+            ContactMessage entity = captor.getValue();
+            assertThat(entity.getWhoYouAre()).isEmpty();
+            assertThat(entity.getLookingFor()).isEmpty();
+            assertThat(entity.getLocation()).isEmpty();
+            assertThat(entity.getMessage()).isEmpty();
+            // The required three still arrive intact.
+            assertThat(entity.getName()).isEqualTo("Ravi Kumar");
+            assertThat(entity.getEmail()).isEqualTo("ravi@example.com");
+            assertThat(entity.getPhone()).isEqualTo("+919876543210");
+        }
+    }
+
+    @Nested
     @DisplayName("Event publishing")
     class EventTests {
 

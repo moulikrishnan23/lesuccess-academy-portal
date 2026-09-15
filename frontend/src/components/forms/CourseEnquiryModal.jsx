@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Send, X } from 'lucide-react'
-import apiClient from '../../services/apiClient.js'
+import courseEnquiryApi from '../../services/courseEnquiryApi.js'
 import useCourses from '../../hooks/useCourses.js'
-import { LEAD_SOURCE } from '../../services/leadApi.js'
 import { normalizeMobile } from '../../utils/validation.js'
 
 const CURRENTLY_YOU_ARE_OPTIONS = [
@@ -14,16 +13,21 @@ const CURRENTLY_YOU_ARE_OPTIONS = [
   'Other',
 ]
 
-const FALLBACK_COURSES = [
-  { id: 1, title: 'Python : Full Stack Development' },
-  { id: 2, title: 'Java : Full Stack Development' },
-  { id: 3, title: 'Data Analytics' },
-  { id: 4, title: 'AWS with DevOps' },
-]
-
 export default function CourseEnquiryModal({ isOpen, onClose }) {
+  /*
+   * The dropdown renders the live catalogue only. It used to fall back to four
+   * hardcoded courses with ids 1-4 when the catalogue had not loaded, which was
+   * harmless while courseId went unvalidated — but POST /api/course-enquiries now
+   * requires the id to name a published course, so a fallback id would either be
+   * rejected outright or, worse, file the enquiry against whichever real course
+   * happens to hold that id.
+   *
+   * Losing the fallback costs nothing the visitor cares about: the course is
+   * optional, so if the catalogue is unreachable the enquiry still sends on name
+   * and mobile alone and a counsellor asks which course on the call back.
+   */
   const { courses } = useCourses()
-  const availableCourses = courses.length > 0 ? courses : FALLBACK_COURSES
+  const availableCourses = courses
 
   const [form, setForm] = useState({
     name: '',
@@ -100,31 +104,35 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
     setErrorMessage('')
 
     try {
-      const selectedCourse = availableCourses.find(
-        (c) => String(c.id) === String(form.courseId),
-      )
-
-      const lookingForParts = []
-      if (form.currentlyYouAre) lookingForParts.push(form.currentlyYouAre)
-      if (form.location.trim()) lookingForParts.push(`Location: ${form.location.trim()}`)
-      if (selectedCourse?.title) lookingForParts.push(`Course: ${selectedCourse.title}`)
-
-      await apiClient.post('/api/leads', {
-        name: form.name.trim(),
-        mobile: normalizeMobile(form.mobile),
-        email: form.email.trim() || null,
-        courseId: form.courseId ? Number(form.courseId) : null,
-        lookingFor: lookingForParts.join(' | ') || null,
-        source: LEAD_SOURCE.COURSE_ENROLL_FORM,
+      /*
+       * Its own endpoint and its own table, not POST /api/leads.
+       *
+       * This form used to post as a COURSE_ENROLL_FORM lead, which meant every
+       * navbar enquiry was counted as a course enrolment, and location, role and
+       * course had to be flattened into one `lookingFor` string — they are real
+       * columns on course_enquiry now, so they travel as themselves.
+       */
+      await courseEnquiryApi.submit({
+        name: form.name,
+        mobile: form.mobile,
+        email: form.email,
+        location: form.location,
+        courseId: form.courseId,
+        currentStatus: form.currentlyYouAre,
       })
 
       setSubmitStatus('success')
     } catch (err) {
       setSubmitStatus('error')
+      const fieldErrors = err?.fieldErrors ?? {}
+      setErrors((prev) => ({ ...prev, ...fieldErrors }))
+
       const fieldMsg =
-        err?.fieldErrors?.mobile ||
-        err?.fieldErrors?.name ||
-        Object.values(err?.fieldErrors ?? {})[0]
+        fieldErrors.mobile ||
+        fieldErrors.name ||
+        fieldErrors.email ||
+        fieldErrors.courseId ||
+        Object.values(fieldErrors)[0]
       setErrorMessage(fieldMsg || err?.message || 'Something went wrong. Please try again.')
     } finally {
       setIsSubmitting(false)

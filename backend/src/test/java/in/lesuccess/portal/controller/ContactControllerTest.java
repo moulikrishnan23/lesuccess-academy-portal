@@ -210,6 +210,72 @@ class ContactControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors[?(@.field == 'phone')]").exists());
         }
+
+        /**
+         * The Contact page's state object names the field "mobile", not "phone"
+         * (frontend/src/pages/Contact.jsx). Before the @JsonAlias it bound to
+         * nothing, phone stayed null, and every real submission from that page
+         * failed @NotBlank — a 400 the form itself could never explain, because
+         * it had validated the field under its own name and found it filled in.
+         */
+        @Test
+        @DisplayName("Contact page payload naming the field 'mobile' → 201, bound as phone")
+        void mobileAlias_shouldBindToPhone() throws Exception {
+            String json = """
+                    {
+                      "name": "Ravi Kumar",
+                      "mobile": "9876543210",
+                      "email": "ravi@example.com",
+                      "whoYouAre": "Student",
+                      "lookingFor": "course",
+                      "location": "Chennai",
+                      "message": "I want to learn more about your courses."
+                    }
+                    """;
+
+            when(contactService.createContactMessage(any(), anyString()))
+                    .thenReturn(ContactService.ContactSubmitResult.success(buildResponse(1L)));
+
+            mockMvc.perform(post(BASE_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().isCreated());
+
+            ArgumentCaptor<ContactMessageRequest> captor =
+                    ArgumentCaptor.forClass(ContactMessageRequest.class);
+            verify(contactService).createContactMessage(captor.capture(), anyString());
+            assertThat(captor.getValue().getPhone()).isEqualTo("9876543210");
+        }
+
+        /**
+         * The form only guards name, mobile and email before submitting, so the
+         * API's required set must stop at those three. Everything else is
+         * recorded as supplied — including not at all.
+         */
+        @Test
+        @DisplayName("Optional fields omitted entirely → 201")
+        void optionalFieldsOmitted_shouldReturn201() throws Exception {
+            String json = """
+                    {
+                      "name": "Ravi Kumar",
+                      "mobile": "9876543210",
+                      "email": "ravi@example.com",
+                      "whoYouAre": "",
+                      "lookingFor": "",
+                      "location": "",
+                      "message": ""
+                    }
+                    """;
+
+            when(contactService.createContactMessage(any(), anyString()))
+                    .thenReturn(ContactService.ContactSubmitResult.success(buildResponse(1L)));
+
+            mockMvc.perform(post(BASE_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.success").value(true));
+        }
     }
 
     @Nested

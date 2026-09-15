@@ -3,6 +3,7 @@ package in.lesuccess.portal.demobooking;
 import in.lesuccess.portal.shared.dto.ApiResponse;
 import in.lesuccess.portal.shared.dto.PageResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -19,14 +20,32 @@ public class DemoBookingController {
 
     private final DemoBookingService service;
 
-    /** Public — submit a demo booking from the home page form. */
+    /**
+     * Public — submit a demo booking from the home page form.
+     *
+     * <p>Rate-limited (the path is listed in
+     * {@code lesuccess.rate-limit.protected-paths}), honeypot-protected and
+     * duplicate-detected, matching the other three public forms.</p>
+     *
+     * <p>A honeypot hit returns exactly the same 201 and body shape as a genuine
+     * submission, so a bot cannot tell that it was caught.</p>
+     */
     @PostMapping("/api/demo-bookings")
     public ResponseEntity<ApiResponse<DemoBookingResponse>> create(
-            @Valid @RequestBody DemoBookingRequest request) {
+            @Valid @RequestBody DemoBookingRequest request,
+            HttpServletRequest httpRequest) {
 
-        DemoBookingResponse response = service.create(request);
+        DemoBookingService.DemoBookingSubmitResult result =
+                service.create(request, httpRequest.getRemoteAddr());
+
+        String message = "Demo booking submitted successfully";
+
+        if (result.isHoneypot()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(message));
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Demo booking submitted successfully", response));
+                .body(ApiResponse.success(message, result.response()));
     }
 
     /** Admin — paginated list, filterable by status. */

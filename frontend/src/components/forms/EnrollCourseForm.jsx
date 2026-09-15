@@ -86,7 +86,13 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
 ) {
   const baseId = useId()
   const reduced = useReducedMotion()
-  const { submit, isSubmitting, isSuccess, error, fieldErrors, reset } = useLeadSubmit()
+  // live: this form posts for real; the mock gateway still serves everything
+  // else. Without it, useLeadSubmit defaults to live:false and every submission
+  // resolves via mockSubmitLead while VITE_USE_MOCKS is 'true' — showing the
+  // confirmation panel below without ever reaching the backend.
+  const { submit, isSubmitting, isSuccess, error, fieldErrors, reset } = useLeadSubmit({
+    live: true,
+  })
 
   const [values, setValues] = useState(EMPTY_FORM)
   const [clientErrors, setClientErrors] = useState({})
