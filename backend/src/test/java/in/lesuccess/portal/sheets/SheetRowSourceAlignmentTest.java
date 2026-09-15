@@ -3,6 +3,8 @@ package in.lesuccess.portal.sheets;
 import in.lesuccess.portal.contact.ContactMessage;
 import in.lesuccess.portal.contact.ContactMessageSheetRowSource;
 import in.lesuccess.portal.contact.ContactMessageStatus;
+import in.lesuccess.portal.courseenquiry.CourseEnquiry;
+import in.lesuccess.portal.courseenquiry.CourseEnquirySheetRowSource;
 import in.lesuccess.portal.demobooking.DemoBooking;
 import in.lesuccess.portal.demobooking.DemoBookingSheetRowSource;
 import in.lesuccess.portal.demobooking.DemoBookingStatus;
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
  * Guards the column layout every {@link in.lesuccess.portal.shared.sheets.SheetRowSource}
@@ -45,17 +48,26 @@ class SheetRowSourceAlignmentTest {
                 .as("one value per header, or every column after the gap shifts")
                 .hasSameSizeAs(spec.headers());
 
-        assertThat(SheetSpec.columnIndex(spec.statusColumn()))
-                .as("status column %s must be the last column of %s", spec.statusColumn(), spec.tabName())
-                .isEqualTo(spec.headers().size() - 1);
+        // An append-only tab declares neither letter: it is never located or
+        // rewritten row-by-row, so there is no id to scan for and no status cell
+        // to overwrite. Every positional invariant below still applies to it.
+        if (spec.supportsStatusUpdate()) {
+            assertThat(SheetSpec.columnIndex(spec.statusColumn()))
+                    .as("status column %s must be the last column of %s", spec.statusColumn(), spec.tabName())
+                    .isEqualTo(spec.headers().size() - 1);
 
-        assertThat(spec.headers().get(SheetSpec.columnIndex(spec.statusColumn())))
-                .as("the column declared as statusColumn must actually be the Status header")
-                .isEqualTo("Status");
+            assertThat(spec.headers().get(SheetSpec.columnIndex(spec.statusColumn())))
+                    .as("the column declared as statusColumn must actually be the Status header")
+                    .isEqualTo("Status");
 
-        assertThat(spec.headers().get(SheetSpec.columnIndex(spec.idColumn())))
-                .as("the column declared as idColumn must actually be the ID header")
-                .isEqualTo("ID");
+            assertThat(spec.headers().get(SheetSpec.columnIndex(spec.idColumn())))
+                    .as("the column declared as idColumn must actually be the ID header")
+                    .isEqualTo("ID");
+        } else {
+            assertThat(spec.headers())
+                    .as("an append-only tab must not carry a Status column it can never update")
+                    .doesNotContain("Status");
+        }
 
         assertThat(row.values())
                 .as("a null is dropped during serialisation and shifts later values one column left")
@@ -225,11 +237,19 @@ class SheetRowSourceAlignmentTest {
         }
 
         @Test
-        @DisplayName("hidden Mobile column is written, only collapsed from view")
-        void hiddenColumnStillCarriesItsValue() {
+        @DisplayName("Mobile is visible and still sits at column D")
+        void mobileColumnIsVisibleAndCarriesItsValue() {
             SheetSpec spec = LeadSheetRowSource.SPEC;
 
-            assertThat(spec.hiddenColumns()).containsExactly("D");
+            // Mobile was collapsed out of view on the grounds that it is optional
+            // and mostly blank. It is shown now: a number left by a lead is the
+            // only way to call them back, so the filled-in cases outweigh the
+            // clutter of the empty ones. No tab hides a column any more.
+            assertThat(spec.hiddenColumns()).isEmpty();
+
+            // Position stays pinned regardless of visibility. Rows already in the
+            // spreadsheet are laid out this way, so moving Mobile would misalign
+            // every one of them against the header.
             assertThat(spec.headers().get(SheetSpec.columnIndex("D"))).isEqualTo("Mobile");
             assertThat(LeadSheetRowSource.toRow(populatedLead()).values().get(SheetSpec.columnIndex("D")))
                     .isEqualTo("9791234567");
@@ -328,6 +348,138 @@ class SheetRowSourceAlignmentTest {
         }
     }
 
+    @Nested
+    @DisplayName("Course Enquiry tab")
+    class CourseEnquiries {
+
+        /** Every optional column filled, so column order can be checked by value. */
+        private CourseEnquiry populatedEnquiry() {
+            return CourseEnquiry.builder()
+                    .id(88L)
+                    .createdAt(LocalDateTime.of(2026, 9, 12, 11, 4, 9))
+                    .name("Divya Ramesh")
+                    .mobile("9884455667")
+                    .email("divya.ramesh@gmail.com")
+                    .location("Chennai")
+                    .courseId(3L)
+                    .currentStatus("Working Professional")
+                    .build();
+        }
+
+        /**
+         * Only the two columns course_enquiry requires. Email, location, course id
+         * and current status are all nullable per V22 — the modal marks only Name
+         * and Mobile Number as required.
+         */
+        private CourseEnquiry minimalEnquiry() {
+            return CourseEnquiry.builder()
+                    .id(89L)
+                    .createdAt(LocalDateTime.of(2026, 9, 12, 11, 9, 41))
+                    .name("Karthik S")
+                    .mobile("9003344556")
+                    .email(null)
+                    .location(null)
+                    .courseId(null)
+                    .currentStatus(null)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("row aligns with its spec")
+        void rowAlignsWithSpec() {
+            assertLayoutHolds(CourseEnquirySheetRowSource.SPEC,
+                    CourseEnquirySheetRowSource.toRow(populatedEnquiry(), "Data Analytics"));
+        }
+
+        @Test
+        @DisplayName("row still aligns when every optional field is null")
+        void rowAlignsWithNullOptionalFields() {
+            assertLayoutHolds(CourseEnquirySheetRowSource.SPEC,
+                    CourseEnquirySheetRowSource.toRow(minimalEnquiry(), null));
+        }
+
+        @Test
+        @DisplayName("writes to a tab named Course Enquiry, spanning columns A-G")
+        void spansExpectedRange() {
+            SheetSpec spec = CourseEnquirySheetRowSource.SPEC;
+            SheetRow row = CourseEnquirySheetRowSource.toRow(populatedEnquiry(), "Data Analytics");
+
+            assertThat(spec.tabName()).isEqualTo("Course Enquiry");
+            assertThat(spec.headers()).hasSize(7);
+            assertThat(spec.appendRange()).isEqualTo("Course Enquiry!A:G");
+            assertThat(spec.headerRange()).isEqualTo("Course Enquiry!A1:G1");
+            assertThat(row.entityType()).isEqualTo(SyncEntityType.COURSE_ENQUIRY);
+            assertThat(row.entityId()).isEqualTo(88L);
+        }
+
+        @Test
+        @DisplayName("header row is exactly the seven specified columns, in order")
+        void headersAreExactlyAsSpecified() {
+            assertThat(CourseEnquirySheetRowSource.SPEC.headers())
+                    .containsExactly("Name", "Mobile", "Email", "Location", "Course",
+                            "Currently You Are A", "Submitted At");
+        }
+
+        @Test
+        @DisplayName("values sit under the headers they belong to")
+        void valuesMatchHeaderOrder() {
+            SheetSpec spec = CourseEnquirySheetRowSource.SPEC;
+            List<Object> values =
+                    CourseEnquirySheetRowSource.toRow(populatedEnquiry(), "Data Analytics").values();
+
+            assertThat(values.get(spec.headers().indexOf("Name"))).isEqualTo("Divya Ramesh");
+            assertThat(values.get(spec.headers().indexOf("Mobile"))).isEqualTo("9884455667");
+            assertThat(values.get(spec.headers().indexOf("Email"))).isEqualTo("divya.ramesh@gmail.com");
+            assertThat(values.get(spec.headers().indexOf("Location"))).isEqualTo("Chennai");
+            assertThat(values.get(spec.headers().indexOf("Currently You Are A")))
+                    .isEqualTo("Working Professional");
+            assertThat(values.get(spec.headers().indexOf("Submitted At")))
+                    .isEqualTo("2026-09-12 11:04:09");
+        }
+
+        /**
+         * The Leads tab carries a raw "Course ID"; this one carries the name, so a
+         * counsellor reading the sheet does not have to look up what 3 means.
+         */
+        @Test
+        @DisplayName("the Course column holds the course name, not its id")
+        void courseColumnHoldsName() {
+            SheetSpec spec = CourseEnquirySheetRowSource.SPEC;
+            List<Object> values =
+                    CourseEnquirySheetRowSource.toRow(populatedEnquiry(), "Data Analytics").values();
+
+            assertThat(values.get(spec.headers().indexOf("Course"))).isEqualTo("Data Analytics");
+        }
+
+        @Test
+        @DisplayName("each nullable field becomes an empty cell, never null")
+        void nullableFieldsCoerceToEmptyString() {
+            SheetSpec spec = CourseEnquirySheetRowSource.SPEC;
+            List<Object> values = CourseEnquirySheetRowSource.toRow(minimalEnquiry(), null).values();
+
+            assertThat(values.get(spec.headers().indexOf("Email"))).isEqualTo("");
+            assertThat(values.get(spec.headers().indexOf("Location"))).isEqualTo("");
+            assertThat(values.get(spec.headers().indexOf("Course"))).isEqualTo("");
+            assertThat(values.get(spec.headers().indexOf("Currently You Are A"))).isEqualTo("");
+        }
+
+        /**
+         * The tab has no status to rewrite, and asking for a status cell must fail
+         * here rather than send Sheets a range built from a null column letter.
+         */
+        @Test
+        @DisplayName("append-only: locating or rewriting a row is refused outright")
+        void statusUpdateIsRefused() {
+            SheetSpec spec = CourseEnquirySheetRowSource.SPEC;
+
+            assertThat(spec.supportsStatusUpdate()).isFalse();
+            assertThatIllegalStateException().isThrownBy(() -> spec.statusCell(2))
+                    .withMessageContaining("append-only");
+            assertThatIllegalStateException().isThrownBy(spec::idColumnRange)
+                    .withMessageContaining("append-only");
+        }
+    }
+
     /**
      * Fails when a new entity starts syncing to Sheets without gaining coverage here.
      * {@code SyncEntityType} has exactly one constant per source by contract, so its
@@ -339,6 +491,6 @@ class SheetRowSourceAlignmentTest {
         assertThat(SyncEntityType.values())
                 .as("a new SheetRowSource was added — give it a @Nested block in this test")
                 .containsExactlyInAnyOrder(SyncEntityType.CONTACT_MESSAGE, SyncEntityType.LEAD,
-                        SyncEntityType.DEMO_BOOKING);
+                        SyncEntityType.DEMO_BOOKING, SyncEntityType.COURSE_ENQUIRY);
     }
 }

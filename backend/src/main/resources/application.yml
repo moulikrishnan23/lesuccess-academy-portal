@@ -49,7 +49,7 @@ lesuccess:
     trusted-proxies: ""
     # Public form endpoints to throttle. Exact paths, POST only — add a new
     # public form here rather than editing RateLimitFilter.
-    protected-paths: /api/contact-messages,/api/leads
+    protected-paths: /api/contact-messages,/api/leads,/api/course-enquiries,/api/demo-bookings
 
   # Shared lead-capture protections (Contact form and Leads form alike)
   lead-capture:
@@ -74,6 +74,28 @@ lesuccess:
     credentials-base64: ${SHEETS_CREDENTIALS_BASE64:}
     credentials-path: ${SHEETS_CREDENTIALS_PATH:}
     sheet-name: Contact Messages
+    # Socket timeouts for every Sheets call. The google-http-client default is
+    # 20000ms for both, which is what made an unreachable Sheets endpoint cost
+    # 20-40s per tab on startup. Raise these if a slow network is producing
+    # spurious sync failures; lower them to fail faster.
+    connect-timeout-ms: ${SHEETS_CONNECT_TIMEOUT_MS:5000}
+    read-timeout-ms: ${SHEETS_READ_TIMEOUT_MS:10000}
+    # Speak HTTP/2 to the Sheets API. GoogleNetHttpTransport is built on
+    # HttpURLConnection, which cannot do HTTP/2 at all; where HTTP/1.1 to
+    # sheets.googleapis.com stalls, every call dies on the read timeout while the
+    # same JVM reaches the same host over HTTP/2 in ~300ms. Falls back to HTTP/1.1
+    # by ALPN for any server that does not offer HTTP/2, so it is safe to leave on.
+    # Set false to restore the previous transport.
+    use-http2: ${SHEETS_USE_HTTP2:true}
+    # Total attempt budget per sync_failure row, across BOTH retry layers:
+    # SheetSyncTask burns 3 inside the original append, then SyncRetryScheduler
+    # counts up from there. 20 therefore buys ~17 scheduler passes. A row that
+    # exhausts it is marked ABANDONED and logged at ERROR, never silently resolved.
+    max-scheduler-attempts: ${SHEETS_MAX_SCHEDULER_ATTEMPTS:20}
+    # Minimum gap between two scheduler attempts on the same row. Must exceed the
+    # scheduler's own 15-minute tick to have any effect; at or below it, every
+    # pending row is eligible on every pass, which is the hammering this prevents.
+    retry-backoff-minutes: ${SHEETS_RETRY_BACKOFF_MINUTES:30}
 
 # Logging
 logging:

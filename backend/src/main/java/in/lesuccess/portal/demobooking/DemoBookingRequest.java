@@ -22,6 +22,9 @@ public class DemoBookingRequest {
     @Getter(AccessLevel.NONE)
     private String mobileNumber;
 
+    /** Honeypot field — must arrive empty. Never persisted. */
+    private String website;
+
     @NotBlank(message = "Mobile number is required")
     @Pattern(
             regexp = "^(\\+91[6-9]\\d{9}|[6-9]\\d{9})$",

@@ -26,6 +26,14 @@ public class DemoBooking {
     @Column(name = "mobile_number", nullable = false, length = 20)
     private String mobileNumber;
 
+    /**
+     * Restored in V23 after V18 dropped it. It was unused then because this
+     * module had no honeypot and no duplicate detection; both log against it now,
+     * matching Contact, Lead and CourseEnquiry.
+     */
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private DemoBookingStatus status;

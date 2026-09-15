@@ -46,6 +46,14 @@ public class SyncFailure {
     @Column(nullable = false, length = 500)
     private String reason;
 
+    /**
+     * Total attempts across both retry layers, not just the scheduler's.
+     *
+     * <p>A row is created by {@link SyncFailureRecorder} with this already set to
+     * {@code SheetSyncTask.MAX_RETRY_ATTEMPTS} (3), because the in-task retries
+     * ran first. {@link SyncRetryScheduler} increments from there, so its ceiling
+     * is a total budget, not a count of scheduler passes.</p>
+     */
     @Column(name = "attempt_count", nullable = false)
     @Builder.Default
     private int attemptCount = 0;
@@ -56,9 +64,16 @@ public class SyncFailure {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    /**
+     * Terminal state. Only {@link SyncStatus#PENDING} rows are retried.
+     *
+     * <p>Was a {@code resolved} boolean, which conflated "replayed successfully"
+     * with "gave up" — see {@link SyncStatus}.</p>
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
     @Builder.Default
-    private boolean resolved = false;
+    private SyncStatus status = SyncStatus.PENDING;
 
     @PrePersist
     protected void onCreate() {
