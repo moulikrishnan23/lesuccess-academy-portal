@@ -168,6 +168,7 @@ final class Http2SheetsTransport extends HttpTransport {
          * thread to pump {@link StreamingContent} into a pipe, which is not worth
          * it at these sizes.</p>
          */
+        @SuppressWarnings("deprecation")
         private HttpRequest.BodyPublisher bodyPublisher() throws IOException {
             StreamingContent content = getStreamingContent();
             if (content == null) {
