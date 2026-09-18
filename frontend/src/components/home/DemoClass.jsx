@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, GraduationCap, Phone } from "lucide-react";
+import { ChevronDown, GraduationCap, Phone, User, Mail, Sparkles } from "lucide-react";
 import apiClient from "../../services/apiClient.js";
 import useCourses from "../../hooks/useCourses.js";
 
@@ -15,8 +15,10 @@ const DemoClass = () => {
   const { courses } = useCourses();
   const dropdownCourses = courses.length > 0 ? courses : FALLBACK_COURSES;
 
-  const [selectedCourseName, setSelectedCourseName] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  const [selectedCourseName, setSelectedCourseName] = useState("");
   // Honeypot. Never shown to a person, so anything in it came from a bot.
   const [website, setWebsite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,10 +26,33 @@ const DemoClass = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSubmit() {
-    if (!mobileNumber.trim()) {
+    if (!name.trim()) {
+      setSubmitStatus("error");
+      setErrorMessage("Please enter your name.");
+      return;
+    }
+
+    const cleanMobile = mobileNumber.replace(/\s+/g, "");
+    if (!cleanMobile) {
       setSubmitStatus("error");
       setErrorMessage("Please enter your mobile number.");
       return;
+    }
+
+    const mobileRegex = /^(\+91[6-9]\d{9}|[6-9]\d{9})$/;
+    if (!mobileRegex.test(cleanMobile)) {
+      setSubmitStatus("error");
+      setErrorMessage("Please enter a valid 10-digit mobile number (+91 or starting with 6-9).");
+      return;
+    }
+
+    if (email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setSubmitStatus("error");
+        setErrorMessage("Please enter a valid email address.");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -36,21 +61,20 @@ const DemoClass = () => {
 
     try {
       await apiClient.post("/api/demo-bookings", {
-        mobileNumber: mobileNumber.trim(),
+        name: name.trim(),
+        email: email.trim() || null,
+        mobileNumber: cleanMobile,
         courseName: selectedCourseName || null,
-        /*
-         * The backend treats a non-empty `website` as a bot and returns the same
-         * 201 and body shape as a real submission, so it must be sent even when
-         * empty — omitting it is fine (null is not a hit), but sending it keeps
-         * the decoy's presence obvious to anyone reading this payload.
-         */
         website,
       });
       setSubmitStatus("success");
     } catch (err) {
       setSubmitStatus("error");
-      const fieldMsg = err?.fieldErrors?.mobileNumber
-        ?? Object.values(err?.fieldErrors ?? {})[0];
+      const fieldMsg =
+        err?.fieldErrors?.name ||
+        err?.fieldErrors?.email ||
+        err?.fieldErrors?.mobileNumber ||
+        Object.values(err?.fieldErrors ?? {})[0];
       setErrorMessage(fieldMsg ?? err?.message ?? "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -70,6 +94,8 @@ const DemoClass = () => {
           <button
             onClick={() => {
               setSubmitStatus(null);
+              setName("");
+              setEmail("");
               setMobileNumber("");
               setSelectedCourseName("");
             }}
@@ -94,17 +120,12 @@ const DemoClass = () => {
           Today!
         </h2>
 
-        <p className="mt-5 text-base sm:text-lg">
+        <p className="mt-5 text-base sm:text-lg text-gray-200">
           Upgrade your decision-making skills with our trial lessons at
           LeSuccess.
         </p>
 
-        {/*
-          Honeypot: off-screen rather than display:none, and tabbable only by
-          something that ignores the label. A real visitor never sees it.
-          Matches the markup on Contact.jsx — a bot that filters on
-          `display: none` walks straight past that trick, so neither form uses it.
-        */}
+        {/* Honeypot */}
         <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
           <label htmlFor="demo-website">Leave this field empty</label>
           <input
@@ -118,21 +139,66 @@ const DemoClass = () => {
           />
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-300 gap-20 md:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+          {/* Name */}
+          <div className="relative">
+            <User
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
+            />
+            <input
+              type="text"
+              placeholder="Your Full Name *"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-xl border border-white/70 bg-transparent py-4 pl-11 pr-4 text-white outline-none placeholder:text-gray-300 focus:border-[#ef334c] focus:ring-1 focus:ring-[#ef334c]"
+            />
+          </div>
+
+          {/* Email */}
+          <div className="relative">
+            <Mail
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
+            />
+            <input
+              type="email"
+              placeholder="Email Address (optional)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl border border-white/70 bg-transparent py-4 pl-11 pr-4 text-white outline-none placeholder:text-gray-300 focus:border-[#ef334c] focus:ring-1 focus:ring-[#ef334c]"
+            />
+          </div>
+
+          {/* Mobile Number */}
+          <div className="relative">
+            <Phone
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
+            />
+            <input
+              type="tel"
+              placeholder="Mobile Number *"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              className="w-full rounded-xl border border-white/70 bg-transparent py-4 pl-11 pr-4 text-white outline-none placeholder:text-gray-300 focus:border-[#ef334c] focus:ring-1 focus:ring-[#ef334c]"
+            />
+          </div>
 
           {/* Course Select */}
           <div className="relative">
             <GraduationCap
-              size={20}
+              size={19}
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
             />
 
             <select
               value={selectedCourseName}
               onChange={(e) => setSelectedCourseName(e.target.value)}
-              className="w-full appearance-none rounded-xl border border-white/70 bg-transparent py-5 pl-12 pr-12 text-gray-300 outline-none"
+              className="w-full appearance-none rounded-xl border border-white/70 bg-[#084b66] py-4 pl-11 pr-10 text-white outline-none focus:border-[#ef334c] focus:ring-1 focus:ring-[#ef334c]"
             >
-              <option value="" className="text-gray-800">
+              <option value="" className="text-gray-800 bg-white">
                 Select Course
               </option>
 
@@ -140,7 +206,7 @@ const DemoClass = () => {
                 <option
                   key={course.id ?? `fallback-${i}`}
                   value={course.title}
-                  className="text-gray-800"
+                  className="text-gray-800 bg-white"
                 >
                   {course.title}
                 </option>
@@ -148,40 +214,26 @@ const DemoClass = () => {
             </select>
 
             <ChevronDown
-              size={20}
+              size={18}
               className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"
             />
           </div>
 
-          {/* Mobile Number */}
-          <div className="relative">
-            <Phone
-              size={19}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
-            />
+        </div>
 
-            <input
-              type="tel"
-              placeholder="Enter Mobile Number"
-              value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
-              className="w-full rounded-xl border border-white/70 bg-transparent py-5 pl-12 pr-5 text-white outline-none placeholder:text-gray-300"
-            />
-          </div>
-
-          {/* Submit Button */}
+        {/* Submit Button */}
+        <div className="mt-8 flex justify-center">
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="rounded-xl bg-linear-to-r from-[#ff3b3f] to-[#cc0f4f] px-6 py-5 text-lg font-semibold transition hover:opacity-80 disabled:opacity-60"
+            className="w-full sm:w-auto min-w-[260px] rounded-xl bg-gradient-to-r from-[#ff3b3f] to-[#cc0f4f] px-8 py-4 text-base font-bold shadow-lg transition hover:opacity-90 disabled:opacity-60 cursor-pointer"
           >
-            {isSubmitting ? "Booking..." : "Book Demo"}
+            {isSubmitting ? "Booking Your Seat..." : "Book Demo Class"}
           </button>
-
         </div>
 
         {submitStatus === "error" && (
-          <p className="mt-4 text-sm text-red-300">{errorMessage}</p>
+          <p className="mt-4 text-sm font-medium text-red-300">{errorMessage}</p>
         )}
 
       </div>

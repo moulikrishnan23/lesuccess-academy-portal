@@ -78,6 +78,8 @@ class DemoBookingControllerTest {
 
     private static DemoBookingRequest.DemoBookingRequestBuilder validRequest() {
         return DemoBookingRequest.builder()
+                .name("Student User")
+                .email("student@example.com")
                 .courseName("Data Analytics")
                 .mobileNumber("9876543210")
                 .website("");
@@ -174,7 +176,8 @@ class DemoBookingControllerTest {
 
             mockMvc.perform(post(PUBLIC_URL)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"mobileNumber\":\"9876543210\",\"courseName\":\"Data Analytics\","
+                            .content("{\"name\":\"Student User\",\"email\":\"student@example.com\","
+                                    + "\"mobileNumber\":\"9876543210\",\"courseName\":\"Data Analytics\","
                                     + "\"website\":\"http://spam.example\"}"))
                     .andExpect(status().isCreated());
 

@@ -1,6 +1,6 @@
 import aboutImage from "../../assets/home/about.png"
 
-import {Award, UserStar, CalendarCheck} from "lucide-react"
+import {Award, UserStar, Briefcase} from "lucide-react"
 
 import { Link } from "react-router-dom";
 
@@ -74,13 +74,13 @@ const AboutSection = () => {
 
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#df3447] text-white">
-                <CalendarCheck />
+                <Briefcase size={20} />
               </div>
 
               <span className="text-sm font-medium text-gray-700">
-                365 Days
+                Practical Project
                 <br />
-                Support
+                Training
               </span>
             </div>
 
@@ -92,9 +92,12 @@ const AboutSection = () => {
               See Gallery
             </Link>
 
-            <button className="rounded-md border-2 border-[#074a68] px-7 py-3 text-sm font-semibold text-[#074a68] transition hover:bg-[#074a68] hover:text-white">
+            <Link
+              to="/about"
+              className="rounded-md border-2 border-[#074a68] px-7 py-3 text-sm font-semibold text-[#074a68] transition hover:bg-[#074a68] hover:text-white"
+            >
               Know More
-            </button>
+            </Link>
           </div>
         </div>
 

@@ -22,12 +22,12 @@ public class DemoBookingSheetRowSource implements SheetRowSource {
 
     private static final DateTimeFormatter DT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /** Columns A-E; status lives in E. */
+    /** Columns A-G; status lives in G. */
     public static final SheetSpec SPEC = new SheetSpec(
             "Demo Bookings",
-            List.of("ID", "Created At", "Course Name", "Mobile Number", "Status"),
+            List.of("ID", "Created At", "Name", "Email", "Course Name", "Mobile Number", "Status"),
             "A",
-            "E");
+            "G");
 
     @Override
     public SyncEntityType entityType() {
@@ -48,6 +48,8 @@ public class DemoBookingSheetRowSource implements SheetRowSource {
         List<Object> values = Arrays.asList(
                 booking.getId(),
                 booking.getCreatedAt() != null ? booking.getCreatedAt().format(DT_FORMAT) : "",
+                booking.getName() != null ? booking.getName() : "",
+                booking.getEmail() != null ? booking.getEmail() : "",
                 booking.getCourseName() != null ? booking.getCourseName() : "",
                 booking.getMobileNumber() != null ? booking.getMobileNumber() : "",
                 booking.getStatus() != null ? booking.getStatus().name() : "PENDING"

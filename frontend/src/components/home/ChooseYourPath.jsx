@@ -10,6 +10,7 @@ import Skeleton, { SkeletonText } from "../ui/Skeleton.jsx";
 import useCourses from "../../hooks/useCourses.js";
 import CourseBadge from "../ui/CourseBadge.jsx";
 import { formatDuration } from "../../utils/formatters.js";
+import { downloadSyllabus } from "../../utils/syllabusUtils.js";
 
 /*
  * The four courses this section leads with, in the order they appear. Titles,
@@ -162,8 +163,12 @@ const ChooseYourPath = () => {
 
                   <div className="mt-8 grid w-full max-w-lg grid-cols-2 gap-5">
 
-                    {/* Syllabus download is not wired up yet — unchanged. */}
-                    <button className="flex items-center justify-center gap-2 rounded-md border border-[#074a68] py-3 text-[#27627d]">
+                    <button
+                      type="button"
+                      onClick={() => downloadSyllabus(course)}
+                      className="flex items-center justify-center gap-2 rounded-md border border-[#074a68] py-3 text-[#27627d] transition-colors hover:bg-[#074a68] hover:text-white cursor-pointer"
+                      title={`Download ${course.title} Syllabus (PDF)`}
+                    >
                       <Download size={18} />
                       Syllabus
                     </button>

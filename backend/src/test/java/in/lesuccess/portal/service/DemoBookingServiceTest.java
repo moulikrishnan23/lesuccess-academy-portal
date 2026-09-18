@@ -55,6 +55,8 @@ class DemoBookingServiceTest {
     @BeforeEach
     void setUp() {
         validRequest = DemoBookingRequest.builder()
+                .name("Student User")
+                .email("student@example.com")
                 .courseName("Data Analytics")
                 .mobileNumber("9876543210")
                 .website("") // empty honeypot

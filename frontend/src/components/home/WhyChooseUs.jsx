@@ -78,13 +78,13 @@ const WhyChooseUs = () => {
             return (
               <div
                 key={feature.title}
-                className="flex flex-col items-center rounded-2xl border border-[#074a68] bg-[#f5f8fc] p-8 text-center"
+                className="group flex flex-col items-center rounded-2xl border border-[#074a68]/40 bg-[#f5f8fc] p-8 text-center transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#ef334c] hover:bg-white hover:shadow-xl cursor-default"
               >
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#ef334c]">
-                  <Icon size={30} />
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#ef334c] shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:bg-[#ef334c] group-hover:text-white group-hover:shadow-md">
+                  <Icon size={28} className="transition-transform duration-300 group-hover:rotate-3" />
                 </div>
 
-                <h3 className="mt-6 text-xl font-bold text-[#121a30]">
+                <h3 className="mt-6 text-xl font-bold text-[#121a30] transition-colors duration-200 group-hover:text-[#074a68]">
                   {feature.title}
                 </h3>
 
