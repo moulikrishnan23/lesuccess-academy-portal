@@ -49,7 +49,7 @@ lesuccess:
     trusted-proxies: ""
     # Public form endpoints to throttle. Exact paths, POST only — add a new
     # public form here rather than editing RateLimitFilter.
-    protected-paths: /api/contact-messages,/api/leads,/api/course-enquiries,/api/demo-bookings
+    protected-paths: /api/contact-messages,/api/leads,/api/course-enquiries,/api/connect-with-us,/api/demo-bookings
 
   # Shared lead-capture protections (Contact form and Leads form alike)
   lead-capture:
