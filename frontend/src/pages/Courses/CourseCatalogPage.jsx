@@ -55,7 +55,8 @@ function splitDuration(value, unit) {
  */
 function CourseCard({ course, column, reduced }) {
   const duration = splitDuration(course.durationValue, course.durationUnit)
-  const featured = Boolean(course.badgeLabel)
+  const badgeLabel = course.badgeLabel || course.badgeText || (course.badge ? course.badge.replace(/_/g, ' ') : null)
+  const featured = Boolean(badgeLabel)
 
   return (
     <motion.li
@@ -146,14 +147,14 @@ function CourseCard({ course, column, reduced }) {
           {course.shortDescription}
         </p>
 
-        {course.discountLabel || course.badgeLabel ? (
+        {course.discountLabel || badgeLabel ? (
           <div
             className={`relative mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-4 text-[0.8125rem] ${
               featured ? 'border-white/25' : 'border-line'
             }`}
           >
-            {course.badgeLabel ? (
-              <span className="font-semibold text-white">{course.badgeLabel}</span>
+            {badgeLabel ? (
+              <span className="font-semibold text-white">{badgeLabel}</span>
             ) : null}
             {course.discountLabel ? (
               <span className={featured ? 'text-white/85' : 'font-semibold text-green'}>

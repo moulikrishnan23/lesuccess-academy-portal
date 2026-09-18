@@ -4,7 +4,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import OfferHeader from "./components/OfferHeader";
@@ -17,11 +17,31 @@ import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
 import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
 import ServicePage from "./pages/Services/ServicePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
+import GalleryPage from "./pages/Gallery/GalleryPage.jsx";
+import LoginPage from "./pages/Auth/LoginPage.jsx";
+import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
+import TrainerDashboard from "./pages/Trainer/TrainerDashboard.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 
 
-const App = () => {
-  // Enquiry popup modal visibility (auto-opens on website visit)
-  const [isEnquiryOpen, setIsEnquiryOpen] = useState(true);
+const AppContent = () => {
+  const location = useLocation();
+  const isDashboard =
+    location.pathname.startsWith("/admin") ||
+    location.pathname.startsWith("/trainer");
+  const isLoginPage = location.pathname === "/login";
+
+  // Enquiry popup modal visibility (auto-opens on website visit, except on /login)
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(() => {
+    return window.location.pathname !== "/login";
+  });
+
+  useEffect(() => {
+    if (isLoginPage) {
+      setIsEnquiryOpen(false);
+    }
+  }, [isLoginPage]);
 
   /*
    * =========================================================
@@ -322,71 +342,70 @@ const App = () => {
           OFFER HEADER
       ===================================================== */}
 
-      <div
-        ref={offerHeaderRef}
-        className={`
-          fixed
-          left-0
-          top-0
-          z-60
-          w-full
-          transition-transform
-          duration-300
-          ease-in-out
-          ${
-            showOfferHeader
-              ? "translate-y-0"
-              : "-translate-y-full"
-          }
-        `}
-      >
-        <OfferHeader />
-      </div>
+      {!isDashboard && (
+        <div
+          ref={offerHeaderRef}
+          className={`
+            fixed
+            left-0
+            top-0
+            z-60
+            w-full
+            transition-transform
+            duration-300
+            ease-in-out
+            ${
+              showOfferHeader
+                ? "translate-y-0"
+                : "-translate-y-full"
+            }
+          `}
+        >
+          <OfferHeader />
+        </div>
+      )}
 
       {/* =====================================================
           NAVBAR
       ===================================================== */}
 
-      <div
-        ref={navbarRef}
-        className={`
-          fixed
-          left-0
-          z-50
-          w-full
-          transition-transform
-          duration-300
-          ease-in-out
-          ${
-            showNavbar
-              ? "translate-y-0"
-              : "-translate-y-full"
-          }
-        `}
-        style={{
-          top: `${navbarTop}px`,
-        }}
-      >
-        <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
-      </div>
+      {!isDashboard && (
+        <div
+          ref={navbarRef}
+          className={`
+            fixed
+            left-0
+            z-50
+            w-full
+            transition-transform
+            duration-300
+            ease-in-out
+            ${
+              showNavbar
+                ? "translate-y-0"
+                : "-translate-y-full"
+            }
+          `}
+          style={{
+            top: `${navbarTop}px`,
+          }}
+        >
+          <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
+        </div>
+      )}
 
       {/* =====================================================
           HEADER SPACE
-      =====================================================
-      
-      Keeps the page content from jumping underneath the
-      fixed OfferHeader + Navbar.
-      
-      Height is calculated dynamically.
-      
       ===================================================== */}
 
-      <div
-        aria-hidden="true"
-        style={{
-          height: `${totalHeaderHeight}px`,
-        }}
-      />
+      {!isDashboard && (
+        <div
+          aria-hidden="true"
+          style={{
+            height: `${totalHeaderHeight}px`,
+          }}
+        />
+      )}
 
       {/* =====================================================
           PAGE ROUTES
@@ -402,11 +421,47 @@ const App = () => {
             element={<Home />}
           />
 
+          {/* Gallery */}
+
+          <Route
+            path="/gallery"
+            element={<GalleryPage />}
+          />
+
+          {/* Login */}
+
+          <Route
+            path="/login"
+            element={<LoginPage />}
+          />
+
           {/* Contact */}
 
           <Route
             path="/contact"
             element={<Contact />}
+          />
+
+          {/* Protected Admin Dashboard */}
+
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRole="ADMIN">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected Trainer Dashboard */}
+
+          <Route
+            path="/trainer/dashboard"
+            element={
+              <ProtectedRoute allowedRole="TRAINER">
+                <TrainerDashboard />
+              </ProtectedRoute>
+            }
           />
 
           {/* Public Layout */}
@@ -440,18 +495,30 @@ const App = () => {
       </main>
 
 
-      <div>
-        <Footer/>
-      </div>
+      {!isDashboard && (
+        <div>
+          <Footer/>
+        </div>
+      )}
 
       {/* =====================================================
           COURSE ENQUIRY POPUP MODAL
       ===================================================== */}
-      <CourseEnquiryModal
-        isOpen={isEnquiryOpen}
-        onClose={() => setIsEnquiryOpen(false)}
-      />
+      {!isDashboard && !isLoginPage && (
+        <CourseEnquiryModal
+          isOpen={isEnquiryOpen}
+          onClose={() => setIsEnquiryOpen(false)}
+        />
+      )}
     </div>
+  );
+};
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

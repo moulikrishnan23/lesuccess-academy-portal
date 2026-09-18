@@ -2,6 +2,8 @@ import aboutImage from "../../assets/home/about.png"
 
 import {Award, UserStar, CalendarCheck} from "lucide-react"
 
+import { Link } from "react-router-dom";
+
 const AboutSection = () => {
   return (
     <section className="w-full bg-[#eef4fa] px-6 py-16 lg:px-10">
@@ -86,9 +88,9 @@ const AboutSection = () => {
 
           {/* Buttons */}
           <div className="mt-8 flex flex-wrap gap-4">
-            <button className="rounded-md bg-[#074a68] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#063c55]">
+            <Link className="rounded-md bg-[#074a68] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#063c55]" to="/gallery">
               See Gallery
-            </button>
+            </Link>
 
             <button className="rounded-md border-2 border-[#074a68] px-7 py-3 text-sm font-semibold text-[#074a68] transition hover:bg-[#074a68] hover:text-white">
               Know More

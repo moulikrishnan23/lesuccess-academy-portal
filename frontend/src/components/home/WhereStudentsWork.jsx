@@ -1,4 +1,8 @@
-const companiesRow1 = [
+import { useState, useEffect } from "react";
+import apiClient from "../../services/apiClient.js";
+import { getImageUrl } from "../../utils/imageUtils.js";
+
+const DEFAULT_COMPANIES_ROW1 = [
   { name: "Lavendel Consulting", logo: "/assets/companies/lavendel.png" },
   { name: "Kovan Labs", logo: "/assets/companies/kovan.png" },
   { name: "Memstech", logo: "/assets/companies/memstech.png" },
@@ -7,7 +11,7 @@ const companiesRow1 = [
   { name: "Aximsoft", logo: "/assets/companies/aximsoft.png" },
 ];
 
-const companiesRow2 = [
+const DEFAULT_COMPANIES_ROW2 = [
   { name: "Walvoil", logo: "/assets/companies/walvoil.png" },
   { name: "Techkay", logo: "/assets/companies/techkay.png" },
   { name: "Innoboon", logo: "/assets/companies/innoboon.png" },
@@ -19,7 +23,7 @@ const companiesRow2 = [
 const CompanyCard = ({ company }) => (
   <div className="inline-flex h-[84px] w-[194px] mx-2 shrink-0 items-center justify-center rounded-lg border border-[#d5dfe8] bg-white px-4">
     <img
-      src={company.logo}
+      src={getImageUrl(company.logo || company.logoUrl, '/assets/companies/lavendel.png')}
       alt={company.name}
       className="max-h-[58px] max-w-[165px] object-contain"
     />
@@ -56,6 +60,30 @@ const MarqueeRow = ({ companies, direction = "left", duration = 30 }) => {
 };
 
 const WhereStudentsWork = () => {
+  const [row1, setRow1] = useState(DEFAULT_COMPANIES_ROW1);
+  const [row2, setRow2] = useState(DEFAULT_COMPANIES_ROW2);
+
+  useEffect(() => {
+    let active = true;
+    apiClient
+      .get("/api/companies")
+      .then((res) => {
+        const items = res?.data?.data;
+        if (active && Array.isArray(items) && items.length > 0) {
+          const r1 = items.filter((c) => c.rowNumber === 1);
+          const r2 = items.filter((c) => c.rowNumber === 2);
+          if (r1.length > 0) setRow1(r1);
+          if (r2.length > 0) setRow2(r2);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load dynamic companies, using fallback:", err);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="overflow-hidden bg-white py-14">
       {/* Heading */}
@@ -72,11 +100,11 @@ const WhereStudentsWork = () => {
 
       {/* Row 1 - scrolls left continuously */}
       <div className="mb-6">
-        <MarqueeRow companies={companiesRow1} direction="left" duration={28} />
+        <MarqueeRow companies={row1} direction="left" duration={28} />
       </div>
 
       {/* Row 2 - scrolls right continuously */}
-      <MarqueeRow companies={companiesRow2} direction="right" duration={28} />
+      <MarqueeRow companies={row2} direction="right" duration={28} />
 
       {/* Keyframes for the seamless loop */}
       <style>{`
