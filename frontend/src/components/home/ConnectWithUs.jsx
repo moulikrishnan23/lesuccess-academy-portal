@@ -1,11 +1,26 @@
-import { useState } from "react";
-import apiClient from "../../services/apiClient.js";
+import { useEffect, useRef, useState } from "react";
+import useConnectWithUsSubmit from "../../hooks/useConnectWithUsSubmit.js";
 
 export default function ConnectWithUs() {
   const [form, setForm] = useState({ name: "", mobile: "", email: "" });
+  // Honeypot. Never shown to a person, so anything in it came from a bot.
+  const [website, setWebsite] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+
+  const { submit, isSubmitting, error, fieldErrors, reset } =
+    useConnectWithUsSubmit();
+
+  // The success banner hides itself after five seconds. Tracked in a ref so an
+  // unmount — or a second submit inside the window — clears the pending timer
+  // rather than firing setState on a gone component.
+  const hideTimerRef = useRef(null);
+
+  useEffect(
+    () => () => {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    },
+    [],
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,31 +31,29 @@ export default function ConnectWithUs() {
     if (e) e.preventDefault();
     if (!form.name || !form.mobile || !form.email || isSubmitting) return;
 
-    setIsSubmitting(true);
-    setErrorMessage("");
+    const accepted = await submit({ ...form, website });
+    if (!accepted) return;
 
-    try {
-      await apiClient.post("/api/leads", {
-        name: form.name,
-        mobile: form.mobile,
-        email: form.email,
-        source: "HOME_CONNECT_FORM",
-      });
-      setSubmitted(true);
-      setForm({ name: "", mobile: "", email: "" });
-      setTimeout(() => setSubmitted(false), 5000);
-    } catch (err) {
-      const msg =
-        err?.fieldErrors?.mobile ||
-        err?.fieldErrors?.email ||
-        err?.fieldErrors?.name ||
-        err?.message ||
-        "Something went wrong. Please try again.";
-      setErrorMessage(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+    setSubmitted(true);
+    setForm({ name: "", mobile: "", email: "" });
+    setWebsite("");
+
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => {
+      setSubmitted(false);
+      // Drops isSuccess with the banner, so the hook is not left reporting a
+      // success the visitor can no longer see.
+      reset();
+    }, 5000);
   };
+
+  const errorMessage = error
+    ? fieldErrors.mobile ||
+      fieldErrors.email ||
+      fieldErrors.name ||
+      error.message ||
+      "Something went wrong. Please try again."
+    : "";
 
   return (
     <section className="w-full bg-[#0f3f4f] py-16 px-6 md:px-12">
@@ -51,6 +64,25 @@ export default function ConnectWithUs() {
         <p className="text-slate-300 mb-10">
           Our vibrant community produces content, teaches courses, and leads events all over.
         </p>
+
+        {/*
+          Honeypot: off-screen rather than display:none, and tabbable only by
+          something that ignores the label. A real visitor never sees it.
+          Matches the markup on Contact.jsx and DemoClass.jsx — a bot that filters
+          on `display: none` walks straight past that trick, so no form uses it.
+        */}
+        <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+          <label htmlFor="connect-website">Leave this field empty</label>
+          <input
+            id="connect-website"
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <input

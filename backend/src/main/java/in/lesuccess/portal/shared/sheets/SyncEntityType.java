@@ -11,5 +11,6 @@ public enum SyncEntityType {
     CONTACT_MESSAGE,
     LEAD,
     DEMO_BOOKING,
-    COURSE_ENQUIRY
+    COURSE_ENQUIRY,
+    CONNECT_WITH_US
 }
