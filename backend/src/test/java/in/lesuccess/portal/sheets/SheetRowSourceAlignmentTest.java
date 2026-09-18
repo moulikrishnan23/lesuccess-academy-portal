@@ -3,6 +3,8 @@ package in.lesuccess.portal.sheets;
 import in.lesuccess.portal.contact.ContactMessage;
 import in.lesuccess.portal.contact.ContactMessageSheetRowSource;
 import in.lesuccess.portal.contact.ContactMessageStatus;
+import in.lesuccess.portal.connectwithus.ConnectWithUs;
+import in.lesuccess.portal.connectwithus.ConnectWithUsSheetRowSource;
 import in.lesuccess.portal.courseenquiry.CourseEnquiry;
 import in.lesuccess.portal.courseenquiry.CourseEnquirySheetRowSource;
 import in.lesuccess.portal.demobooking.DemoBooking;
@@ -480,6 +482,118 @@ class SheetRowSourceAlignmentTest {
         }
     }
 
+    @Nested
+    @DisplayName("Connect With Us tab")
+    class ConnectWithUsSubmissions {
+
+        /** Every optional column filled, so column order can be checked by value. */
+        private ConnectWithUs populatedSubmission() {
+            return ConnectWithUs.builder()
+                    .id(42L)
+                    .createdAt(LocalDateTime.of(2026, 9, 16, 10, 30, 0))
+                    .name("Divya Ramesh")
+                    .mobile("9884455667")
+                    .email("divya.ramesh@gmail.com")
+                    .build();
+        }
+
+        /**
+         * Email is the only nullable column on this tab: per V25, name and mobile
+         * are NOT NULL and created_at is defaulted, so nulling any of them here
+         * would test a row the database cannot hold.
+         */
+        private ConnectWithUs submissionWithoutEmail() {
+            return ConnectWithUs.builder()
+                    .id(43L)
+                    .createdAt(LocalDateTime.of(2026, 9, 16, 10, 41, 12))
+                    .name("Karthik S")
+                    .mobile("9003344556")
+                    .email(null)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("row aligns with its spec")
+        void rowAlignsWithSpec() {
+            assertLayoutHolds(ConnectWithUsSheetRowSource.SPEC,
+                    ConnectWithUsSheetRowSource.toRow(populatedSubmission()));
+        }
+
+        @Test
+        @DisplayName("row still aligns when the optional email is null")
+        void rowAlignsWithNullEmail() {
+            assertLayoutHolds(ConnectWithUsSheetRowSource.SPEC,
+                    ConnectWithUsSheetRowSource.toRow(submissionWithoutEmail()));
+        }
+
+        @Test
+        @DisplayName("writes to a tab named Connect With Us, spanning columns A-D")
+        void spansExpectedRange() {
+            SheetSpec spec = ConnectWithUsSheetRowSource.SPEC;
+            SheetRow row = ConnectWithUsSheetRowSource.toRow(populatedSubmission());
+
+            assertThat(spec.tabName()).isEqualTo("Connect With Us");
+            assertThat(spec.headers()).hasSize(4);
+            assertThat(spec.appendRange()).isEqualTo("Connect With Us!A:D");
+            assertThat(spec.headerRange()).isEqualTo("Connect With Us!A1:D1");
+            assertThat(row.entityType()).isEqualTo(SyncEntityType.CONNECT_WITH_US);
+            assertThat(row.entityId()).isEqualTo(42L);
+        }
+
+        @Test
+        @DisplayName("header row is exactly the four specified columns, in order")
+        void headersAreExactlyAsSpecified() {
+            assertThat(ConnectWithUsSheetRowSource.SPEC.headers())
+                    .containsExactly("Name", "Mobile", "Email", "Submitted At");
+        }
+
+        @Test
+        @DisplayName("values sit under the headers they belong to")
+        void valuesMatchHeaderOrder() {
+            SheetSpec spec = ConnectWithUsSheetRowSource.SPEC;
+            List<Object> values = ConnectWithUsSheetRowSource.toRow(populatedSubmission()).values();
+
+            assertThat(values.get(spec.headers().indexOf("Name"))).isEqualTo("Divya Ramesh");
+            assertThat(values.get(spec.headers().indexOf("Mobile"))).isEqualTo("9884455667");
+            assertThat(values.get(spec.headers().indexOf("Email"))).isEqualTo("divya.ramesh@gmail.com");
+            assertThat(values.get(spec.headers().indexOf("Submitted At")))
+                    .isEqualTo("2026-09-16 10:30:00");
+        }
+
+        @Test
+        @DisplayName("a null email becomes an empty cell, never null")
+        void nullEmailCoercesToEmptyString() {
+            SheetSpec spec = ConnectWithUsSheetRowSource.SPEC;
+            List<Object> values = ConnectWithUsSheetRowSource.toRow(submissionWithoutEmail()).values();
+
+            assertThat(values.get(spec.headers().indexOf("Email")))
+                    .as("Email is nullable on connect_with_us").isEqualTo("");
+        }
+
+        /**
+         * connect_with_us has no status column at all, so asking for a status cell
+         * must fail here rather than send Sheets a range built from a null column
+         * letter.
+         */
+        @Test
+        @DisplayName("append-only: locating or rewriting a row is refused outright")
+        void statusUpdateIsRefused() {
+            SheetSpec spec = ConnectWithUsSheetRowSource.SPEC;
+
+            assertThat(spec.supportsStatusUpdate()).isFalse();
+            assertThatIllegalStateException().isThrownBy(() -> spec.statusCell(2))
+                    .withMessageContaining("append-only");
+            assertThatIllegalStateException().isThrownBy(spec::idColumnRange)
+                    .withMessageContaining("append-only");
+        }
+
+        @Test
+        @DisplayName("every column is visible: this tab hides none")
+        void hidesNoColumns() {
+            assertThat(ConnectWithUsSheetRowSource.SPEC.hiddenColumns()).isEmpty();
+        }
+    }
+
     /**
      * Fails when a new entity starts syncing to Sheets without gaining coverage here.
      * {@code SyncEntityType} has exactly one constant per source by contract, so its
@@ -491,6 +605,7 @@ class SheetRowSourceAlignmentTest {
         assertThat(SyncEntityType.values())
                 .as("a new SheetRowSource was added — give it a @Nested block in this test")
                 .containsExactlyInAnyOrder(SyncEntityType.CONTACT_MESSAGE, SyncEntityType.LEAD,
-                        SyncEntityType.DEMO_BOOKING, SyncEntityType.COURSE_ENQUIRY);
+                        SyncEntityType.DEMO_BOOKING, SyncEntityType.COURSE_ENQUIRY,
+                        SyncEntityType.CONNECT_WITH_US);
     }
 }
