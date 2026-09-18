@@ -1,5 +1,5 @@
 -- V28: Team member table for home page team section & admin management
-CREATE TABLE team_member (
+CREATE TABLE IF NOT EXISTS team_member (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     name          VARCHAR(120) NOT NULL,
     role          VARCHAR(120) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE team_member (
     INDEX idx_team_member_featured (is_featured)
 );
 
-INSERT INTO team_member (name, role, email, image_url, is_featured, display_order, is_active, created_at, updated_at) VALUES
+INSERT IGNORE INTO team_member (name, role, email, image_url, is_featured, display_order, is_active, created_at, updated_at) VALUES
 ('Rathinavel Rajagopal', 'Director', 'rathinavelrajagopal@lesuccess.in', '/home/team/Rathinavel.png', 1, 1, 1, NOW(), NOW()),
 ('Uma Devi P K', 'CEO', 'uma@lesuccess.in', '/home/team/UmaDevi.png', 1, 2, 1, NOW(), NOW()),
 ('Muralidharan R', 'Vice President', 'murali.r@lesuccess.in', '/home/team/Muralidharan.png', 1, 3, 1, NOW(), NOW()),

@@ -12,6 +12,8 @@ import PublicLayout from "./components/layout/PublicLayout.jsx";
 import Footer from "./components/Footer.jsx";
 
 import Home from "./pages/Home";
+import AboutPage from "./pages/About/AboutPage.jsx";
+import TeamPage from "./pages/Team/TeamPage.jsx";
 import Contact from "./pages/Contact";
 import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
 import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
@@ -433,6 +435,22 @@ const AppContent = () => {
           <Route
             path="/login"
             element={<LoginPage />}
+          />
+
+          {/* About */}
+          <Route
+            path="/about"
+            element={<AboutPage />}
+          />
+
+          {/* Our Team */}
+          <Route
+            path="/our-team"
+            element={<TeamPage />}
+          />
+          <Route
+            path="/team"
+            element={<TeamPage />}
           />
 
           {/* Contact */}

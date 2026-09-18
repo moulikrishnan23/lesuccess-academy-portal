@@ -68,7 +68,7 @@ const Navbar = ({ onOpenEnquiry }) => {
             DESKTOP NAVIGATION
         ===================================================== */}
 
-        <div className="hidden items-center gap-9 lg:flex">
+        <div className="hidden items-center gap-7 xl:gap-8 lg:flex">
 
           {/* Home */}
 
@@ -77,6 +77,24 @@ const Navbar = ({ onOpenEnquiry }) => {
             className={navLinkClass}
           >
             Home
+          </NavLink>
+
+          {/* About */}
+
+          <NavLink
+            to="/about"
+            className={navLinkClass}
+          >
+            About
+          </NavLink>
+
+          {/* Our Team */}
+
+          <NavLink
+            to="/our-team"
+            className={navLinkClass}
+          >
+            Our Team
           </NavLink>
 
           {/* =================================================
@@ -119,7 +137,7 @@ const Navbar = ({ onOpenEnquiry }) => {
               aria-haspopup="true"
               aria-expanded={courseMenuOpen}
             >
-              Course
+              Courses
 
               <span
                 aria-hidden="true"
@@ -210,15 +228,6 @@ const Navbar = ({ onOpenEnquiry }) => {
               )}
           </div>
 
-          {/* Service */}
-
-          <NavLink
-            to="/service"
-            className={navLinkClass}
-          >
-            Service
-          </NavLink>
-
           {/* Gallery */}
 
           <NavLink
@@ -228,13 +237,13 @@ const Navbar = ({ onOpenEnquiry }) => {
             Gallery
           </NavLink>
 
-          {/* Contact */}
+          {/* Contact Us */}
 
           <NavLink
             to="/contact"
             className={navLinkClass}
           >
-            Contact
+            Contact Us
           </NavLink>
         </div>
 
@@ -371,19 +380,27 @@ const Navbar = ({ onOpenEnquiry }) => {
           </NavLink>
 
           <NavLink
+            to="/about"
+            className={mobileNavLinkClass}
+            onClick={closeMobileMenu}
+          >
+            About
+          </NavLink>
+
+          <NavLink
+            to="/our-team"
+            className={mobileNavLinkClass}
+            onClick={closeMobileMenu}
+          >
+            Our Team
+          </NavLink>
+
+          <NavLink
             to="/courses"
             className={mobileNavLinkClass}
             onClick={closeMobileMenu}
           >
-            Course
-          </NavLink>
-
-          <NavLink
-            to="/service"
-            className={mobileNavLinkClass}
-            onClick={closeMobileMenu}
-          >
-            Service
+            Courses
           </NavLink>
 
           <NavLink
@@ -399,7 +416,7 @@ const Navbar = ({ onOpenEnquiry }) => {
             className={mobileNavLinkClass}
             onClick={closeMobileMenu}
           >
-            Contact
+            Contact Us
           </NavLink>
 
           <button

@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { Download } from 'lucide-react'
+import { downloadSyllabus } from '../../utils/syllabusUtils.js'
 import SectionHeading from '../../components/ui/SectionHeading.jsx'
 import Skeleton, { SkeletonText } from '../../components/ui/Skeleton.jsx'
 import ErrorState, { EmptyState } from '../../components/ui/ErrorState.jsx'
@@ -163,6 +165,39 @@ function CourseCard({ course, column, reduced }) {
             ) : null}
           </div>
         ) : null}
+
+        {/* Action Row with Download Syllabus */}
+        <div
+          className={`relative mt-4 flex items-center justify-between gap-3 border-t pt-3.5 ${
+            featured ? 'border-white/20' : 'border-line'
+          }`}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              downloadSyllabus(course);
+            }}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              featured
+                ? 'bg-white/20 text-white hover:bg-white/30 border border-white/30'
+                : 'bg-slate-50 text-slate-700 hover:bg-[#074a68] hover:text-white border border-slate-200'
+            }`}
+            title={`Download ${course.title} Syllabus (PDF)`}
+          >
+            <Download size={13} />
+            Syllabus
+          </button>
+
+          <span
+            className={`text-xs font-semibold ${
+              featured ? 'text-white/90' : 'text-[#074a68] group-hover:text-[#ef334c]'
+            }`}
+          >
+            Learn More &rarr;
+          </span>
+        </div>
       </Link>
     </motion.li>
   )

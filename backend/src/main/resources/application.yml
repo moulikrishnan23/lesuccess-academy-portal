@@ -1,6 +1,8 @@
 spring:
   application:
     name: portal
+  profiles:
+    default: dev
 
   # Virtual threads for high-concurrency blocking I/O (Spring Boot 3.2+, Java 21)
   threads:

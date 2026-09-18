@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { Download } from 'lucide-react'
 import Button from '../ui/Button.jsx'
+import { downloadSyllabus } from '../../utils/syllabusUtils.js'
 import {
   BriefcaseIcon,
   CertificateIcon,
@@ -189,6 +191,15 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
           </Button>
           <Button variant="primary" size="lg" onClick={onEnrollClick}>
             Enroll Now
+          </Button>
+          <Button
+            variant="onDark"
+            size="lg"
+            onClick={() => downloadSyllabus(course)}
+            title={`Download ${course.title} Syllabus (PDF)`}
+          >
+            <Download size={16} className="inline mr-1.5" />
+            Download Syllabus
           </Button>
         </motion.div>
       </motion.div>
