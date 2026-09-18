@@ -14,4 +14,8 @@ docs
 lesuccess-*.json
 service-account*.json
 
+# Runtime uploaded media
+backend/uploads/
+uploads/
+
 
