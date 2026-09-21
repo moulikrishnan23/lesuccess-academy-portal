@@ -33,9 +33,8 @@ public class Course {
     @Column(nullable = false, length = 20)
     private CourseMode mode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private CourseBadge badge;
+    @Column(length = 50)
+    private String badge;
 
     @Column(name = "badge_text", length = 50)
     private String badgeText;
@@ -48,6 +47,24 @@ public class Course {
 
     @Column(name = "enroll_url", length = 255)
     private String enrollUrl;
+
+    @Column(name = "icon_url", length = 255)
+    private String iconUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 80)
+    private String category;
+
+    @Column(name = "role_heading", length = 200)
+    private String roleHeading;
+
+    @Column(name = "role_intro", columnDefinition = "TEXT")
+    private String roleIntro;
+
+    @Column(name = "role_bullets", columnDefinition = "TEXT")
+    private String roleBullets;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive;

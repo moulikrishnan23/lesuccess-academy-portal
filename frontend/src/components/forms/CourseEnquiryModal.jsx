@@ -170,7 +170,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+            className="fixed inset-0 bg-[#101010]/75 backdrop-blur-xs"
           />
 
           {/* Modal Card */}
@@ -179,28 +179,31 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl rounded-2xl md:rounded-3xl bg-white p-6 sm:p-8 md:p-10 shadow-2xl z-10 overflow-hidden"
+            className="relative w-full max-w-2xl rounded-3xl bg-white p-6 sm:p-8 md:p-10 shadow-2xl z-10 overflow-hidden border border-slate-100"
           >
             {/* Top-Right Circular Close Button */}
             <button
               type="button"
               onClick={onClose}
               aria-label="Close Enquiry Form"
-              className="absolute right-5 top-5 sm:right-7 sm:top-7 flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 text-slate-500 transition-colors hover:border-slate-600 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#074a68]"
+              className="absolute right-5 top-5 sm:right-7 sm:top-7 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition-colors hover:border-[#DF1E26] hover:text-[#DF1E26] focus:outline-none focus:ring-2 focus:ring-[#07405C] cursor-pointer"
             >
               <X size={18} strokeWidth={2} />
             </button>
 
             {/* Header */}
             <div className="pr-10">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DF1E26]/10 px-3 py-1 text-xs font-bold text-[#DF1E26] mb-2">
+                FAST TRACK CONSULTATION
+              </span>
               <h2
                 id="enquiry-modal-title"
-                className="font-display text-2xl font-bold tracking-tight text-[#084b66] sm:text-3xl"
+                className="font-display text-2xl font-bold tracking-tight text-[#101010] sm:text-3xl"
               >
                 Course Enquiry
               </h2>
-              <p className="mt-1 text-sm text-slate-500 sm:text-base">
-                We’re here to help would love to here from you.
+              <p className="mt-1 text-sm text-slate-600 sm:text-base">
+                Get dedicated career counseling and syllabus details tailored to your goals.
               </p>
             </div>
 
@@ -228,7 +231,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                 <button
                   type="button"
                   onClick={handleResetAndClose}
-                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#e51d48] to-[#c70f44] px-8 py-2.5 text-sm font-semibold text-white shadow-md transition hover:opacity-95"
+                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-2.5 text-sm font-semibold text-white shadow-md transition hover:opacity-95 cursor-pointer"
                 >
                   Close
                 </button>
@@ -260,7 +263,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                       className={`h-11 w-full rounded-lg border bg-[#f6f7f9] px-3.5 text-sm text-slate-800 transition focus:bg-white focus:outline-none focus:ring-2 ${
                         errors.name
                           ? 'border-red-500 focus:ring-red-300'
-                          : 'border-slate-300 focus:border-transparent focus:ring-[#074a68]'
+                          : 'border-slate-300 focus:border-transparent focus:ring-[#07405C]'
                       }`}
                     />
                     {errors.name && (
@@ -285,7 +288,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                       className={`h-11 w-full rounded-lg border bg-[#f6f7f9] px-3.5 text-sm text-slate-800 transition focus:bg-white focus:outline-none focus:ring-2 ${
                         errors.mobile
                           ? 'border-red-500 focus:ring-red-300'
-                          : 'border-slate-300 focus:border-transparent focus:ring-[#074a68]'
+                          : 'border-slate-300 focus:border-transparent focus:ring-[#07405C]'
                       }`}
                     />
                     {errors.mobile && (
@@ -310,7 +313,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                       className={`h-11 w-full rounded-lg border bg-[#f6f7f9] px-3.5 text-sm text-slate-800 transition focus:bg-white focus:outline-none focus:ring-2 ${
                         errors.email
                           ? 'border-red-500 focus:ring-red-300'
-                          : 'border-slate-300 focus:border-transparent focus:ring-[#074a68]'
+                          : 'border-slate-300 focus:border-transparent focus:ring-[#07405C]'
                       }`}
                     />
                     {errors.email && (
@@ -332,7 +335,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                       value={form.location}
                       onChange={(e) => handleChange('location', e.target.value)}
                       disabled={isSubmitting}
-                      className="h-11 w-full rounded-lg border border-slate-300 bg-[#f6f7f9] px-3.5 text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#074a68]"
+                      className="h-11 w-full rounded-lg border border-slate-300 bg-[#f6f7f9] px-3.5 text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#07405C]"
                     />
                   </div>
 
@@ -350,7 +353,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                         value={form.courseId}
                         onChange={(e) => handleChange('courseId', e.target.value)}
                         disabled={isSubmitting}
-                        className="h-11 w-full appearance-none rounded-lg border border-slate-300 bg-[#f6f7f9] px-3.5 pr-10 text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#074a68]"
+                        className="h-11 w-full appearance-none rounded-lg border border-slate-300 bg-[#f6f7f9] px-3.5 pr-10 text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#07405C]"
                       >
                         <option value="">Select course</option>
                         {availableCourses.map((c) => (
@@ -380,7 +383,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                         value={form.currentlyYouAre}
                         onChange={(e) => handleChange('currentlyYouAre', e.target.value)}
                         disabled={isSubmitting}
-                        className="h-11 w-full appearance-none rounded-lg border border-slate-300 bg-[#f6f7f9] px-3.5 pr-10 text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#074a68]"
+                        className="h-11 w-full appearance-none rounded-lg border border-slate-300 bg-[#f6f7f9] px-3.5 pr-10 text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#07405C]"
                       >
                         <option value="">Select role</option>
                         {CURRENTLY_YOU_ARE_OPTIONS.map((role) => (
@@ -402,7 +405,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#e51d48] to-[#c70f44] px-12 py-3 text-base font-semibold text-white shadow-[0_4px_14px_-4px_rgba(229,29,72,0.5)] transition hover:brightness-105 active:scale-98 disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-12 py-3.5 text-sm sm:text-base font-bold text-white shadow-lg transition hover:brightness-105 active:scale-98 disabled:opacity-50 cursor-pointer"
                   >
                     <span>{isSubmitting ? 'Sending…' : 'Send'}</span>
                     <Send size={16} className="-rotate-12 transform" />

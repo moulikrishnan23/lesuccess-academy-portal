@@ -29,21 +29,36 @@ function readCollection(raw, camelKey, snakeKey) {
 }
 
 function normalizeModule(raw) {
+  let topics = []
+  if (Array.isArray(raw?.topics)) {
+    topics = raw.topics
+  } else if (typeof raw?.content === 'string') {
+    try {
+      const parsed = JSON.parse(raw.content)
+      if (Array.isArray(parsed)) topics = parsed
+    } catch {
+      topics = raw.content.split('\n').map((s) => s.trim()).filter(Boolean)
+    }
+  } else if (typeof raw?.description === 'string') {
+    topics = raw.description.split('\n').map((s) => s.trim()).filter(Boolean)
+  }
+
   return {
-    id: raw.id,
-    title: raw.title ?? '',
-    description: raw.description ?? '',
-    displayOrder: raw.displayOrder ?? raw.display_order ?? 0,
+    id: raw?.id,
+    title: raw?.title ?? '',
+    description: raw?.description ?? raw?.content ?? '',
+    topics,
+    displayOrder: raw?.displayOrder ?? raw?.display_order ?? 0,
   }
 }
 
 function normalizeTechStackItem(raw) {
   return {
-    id: raw.id,
-    groupName: raw.groupName ?? raw.group_name ?? 'Other',
-    itemName: raw.itemName ?? raw.item_name ?? '',
-    iconUrl: raw.iconUrl ?? raw.icon_url ?? null,
-    displayOrder: raw.displayOrder ?? raw.display_order ?? 0,
+    id: raw?.id,
+    groupName: raw?.groupName ?? raw?.group_name ?? 'Tools',
+    itemName: raw?.itemName ?? raw?.item_name ?? raw?.toolName ?? raw?.tool_name ?? '',
+    iconUrl: raw?.iconUrl ?? raw?.icon_url ?? null,
+    displayOrder: raw?.displayOrder ?? raw?.display_order ?? 0,
   }
 }
 
@@ -105,6 +120,8 @@ function normalizeCourse(raw) {
     discountPrice: raw.discountPrice ?? raw.discount_price ?? null,
     discountLabel: raw.discountLabel ?? raw.discount_label ?? null,
     badgeLabel: raw.badgeLabel ?? raw.badge_label ?? null,
+    badge: raw.badge ?? null,
+    badgeText: raw.badgeText ?? raw.badge_text ?? null,
     iconUrl: raw.iconUrl ?? raw.icon_url ?? null,
     heroImageUrl: raw.heroImageUrl ?? raw.hero_image_url ?? null,
     syllabusFileUrl: raw.syllabusFileUrl ?? raw.syllabus_file_url ?? null,
@@ -114,7 +131,7 @@ function normalizeCourse(raw) {
     roleHeading: raw.roleHeading ?? raw.role_heading ?? null,
     roleIntro: raw.roleIntro ?? raw.role_intro ?? null,
     roleColumns: readJsonArray(raw.roleColumns ?? raw.role_columns, normalizeRoleColumn),
-    roleBullets: readJsonArray(raw.roleBullets ?? raw.role_bullets, normalizeRoleBullet),
+    roleBullets: readJsonArray(raw.roleBulletsList ?? raw.roleBullets ?? raw.role_bullets, normalizeRoleBullet),
   }
 }
 
@@ -124,6 +141,10 @@ function normalizeCourse(raw) {
  * reaching into the course object.
  */
 export function normalizeCourseDetail(raw) {
+  const toolsList = readCollection(raw, 'techStack', 'tech_stack')
+  const fallbackTools = readCollection(raw, 'tools', 'course_tools')
+  const techItems = toolsList.length > 0 ? toolsList : fallbackTools
+
   return {
     course: normalizeCourse(raw ?? {}),
     modules: readCollection(raw, 'modules', 'course_modules')
@@ -132,7 +153,7 @@ export function normalizeCourseDetail(raw) {
     // NOT sorted here: displayOrder on tech stack items restarts at 1 within
     // each group, so a global sort would interleave Front End with Back End.
     // TechStackSection groups first, then sorts within each group.
-    techStack: readCollection(raw, 'techStack', 'tech_stack').map(normalizeTechStackItem),
+    techStack: techItems.map(normalizeTechStackItem),
   }
 }
 
@@ -153,13 +174,16 @@ export function normalizeCourseList(raw) {
  * @returns {Promise<Object[]>} Published courses, in catalog order.
  */
 export async function getAll({ signal } = {}) {
-  if (isMockEnabled()) {
-    return normalizeCourseList(await mockGetCourses())
+  try {
+    const { data } = await apiClient.get('/api/courses', { signal })
+    // Backend wraps in ApiResponse<T>; real list/page is in data.data
+    return normalizeCourseList(data?.data ?? data)
+  } catch (err) {
+    if (isMockEnabled()) {
+      return normalizeCourseList(await mockGetCourses())
+    }
+    throw err
   }
-
-  const { data } = await apiClient.get('/api/courses', { signal })
-  // Backend wraps in ApiResponse<T>; real list/page is in data.data
-  return normalizeCourseList(data?.data ?? data)
 }
 
 /**
@@ -168,14 +192,17 @@ export async function getAll({ signal } = {}) {
  * @throws {import('../utils/apiError.js').ApiError} 404 when the slug is unknown.
  */
 export async function getBySlug(slug, { signal } = {}) {
-  if (isMockEnabled()) {
-    return normalizeCourseDetail(await mockGetCourseBySlug(slug))
+  try {
+    const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(slug)}`, {
+      signal,
+    })
+    return normalizeCourseDetail(data?.data ?? data)
+  } catch (err) {
+    if (isMockEnabled()) {
+      return normalizeCourseDetail(await mockGetCourseBySlug(slug))
+    }
+    throw err
   }
-
-  const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(slug)}`, {
-    signal,
-  })
-  return normalizeCourseDetail(data?.data ?? data)
 }
 
 export default { getAll, getBySlug, normalizeCourseDetail, normalizeCourseList }

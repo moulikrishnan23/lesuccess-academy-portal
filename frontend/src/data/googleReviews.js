@@ -5,12 +5,35 @@
 
 export const GOOGLE_REVIEWS_META = {
   rating: 4.6,
-  totalReviews: 250,
-  placeName: "LeSuccess Solutions / Technical Learning Centre",
-  address: "Tristar Tower, Avinashi Road, Coimbatore",
+  totalReviews: 291,
+  placeName: "LeSuccess",
+  address: "4th Floor, Tristar Tower, 657, Avinashi Rd, Coimbatore, Tamil Nadu 641037, India",
+  writeReviewUrl: "https://www.google.com/search?q=lesuccess+coimbatore+reviews",
 };
 
 export const GOOGLE_REVIEWS = [
+  {
+    id: "gr-shalini",
+    name: "Shalini Shalini",
+    reviewCount: "1 review",
+    course: "Java & Groovy",
+    rating: 5,
+    date: "3 months ago",
+    text: "I had a great learning experience with Lesuccess. The trainers taught Java, Groovy, and Data Structures & Algorithms in a clear and structured manner. The explanations were easy to understand, and the hands-on exercises helped strengthen my coding foundation.",
+    likesCount: 1,
+    verified: true,
+  },
+  {
+    id: "gr-anu",
+    name: "Anu Suhasini",
+    reviewCount: "2 reviews",
+    course: "Full Stack Training",
+    rating: 5,
+    date: "3 months ago",
+    text: "The practical training methodology and supportive mentors at LeSuccess made learning seamless. Concepts were taught from ground up with real-world scenarios that gave me enormous confidence in solving complex problems.",
+    likesCount: 0,
+    verified: true,
+  },
   {
     id: "gr-1",
     name: "Saranya V.",

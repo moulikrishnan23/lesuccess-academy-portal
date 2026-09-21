@@ -257,14 +257,15 @@ export default function CourseDetailPage() {
               Below lg the card drops into the flow beneath the content and
               MobileEnrollBar carries the CTA.
             */
-            className="lg:sticky lg:self-start"
+            className="lg:sticky lg:self-start transition-[top] duration-300 ease-in-out"
             style={{
-              top: 'calc(var(--app-header-max, 0px) + var(--course-tabs-h, 0px) + 1rem)',
+              top: 'calc(var(--app-header, 0px) + var(--course-tabs-h, 0px) + 0.75rem)',
             }}
           >
             <EnrollCourseForm
               ref={enrollFormRef}
               courseId={course?.id}
+              courseName={course?.name || course?.title}
               discountLabel={course?.discountLabel}
             />
           </motion.div>

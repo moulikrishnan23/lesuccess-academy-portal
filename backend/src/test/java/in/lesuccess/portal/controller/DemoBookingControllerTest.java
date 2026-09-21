@@ -148,6 +148,28 @@ class DemoBookingControllerTest {
                     .andExpect(status().isBadRequest());
         }
 
+        @Test
+        @DisplayName("Missing email -> 400")
+        void missingEmail_shouldReturn400() throws Exception {
+            mockMvc.perform(post(PUBLIC_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    validRequest().email(null).build())))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value(false));
+        }
+
+        @Test
+        @DisplayName("Malformed email -> 400")
+        void malformedEmail_shouldReturn400() throws Exception {
+            mockMvc.perform(post(PUBLIC_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    validRequest().email("not-an-email").build())))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value(false));
+        }
+
         /**
          * The whole point of the trap: the trapped response must be byte-identical
          * in shape to a genuine one, so a bot cannot detect that it was caught.

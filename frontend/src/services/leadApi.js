@@ -11,7 +11,7 @@ export const LEAD_SOURCE = {
  * Build the request body. Optional fields are omitted rather than sent as ""
  * so backend validation doesn't have to treat empty string as absent.
  */
-function toRequestBody({ name, mobile, email, courseId, lookingFor, source }) {
+function toRequestBody({ name, mobile, email, courseId, courseName, learningMode, lookingFor, source }) {
   const body = {
     name: name.trim(),
     source: source ?? LEAD_SOURCE.COURSE_ENROLL_FORM,
@@ -22,6 +22,8 @@ function toRequestBody({ name, mobile, email, courseId, lookingFor, source }) {
   // enquiry is not about a course.
   if (mobile?.trim()) body.mobile = mobile.trim()
   if (courseId !== null && courseId !== undefined) body.courseId = courseId
+  if (courseName?.trim()) body.courseName = courseName.trim()
+  if (learningMode?.trim()) body.learningMode = learningMode.trim()
   if (email?.trim()) body.email = email.trim()
   if (lookingFor?.trim()) body.lookingFor = lookingFor.trim()
 

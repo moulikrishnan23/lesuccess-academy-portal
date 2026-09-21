@@ -153,7 +153,7 @@ const BAND_IMAGES = {
 function ServiceBand({ id, labelledBy, image, heading, children }) {
   return (
     <section id={id} aria-labelledby={labelledBy}>
-      <div className="relative overflow-hidden bg-navy-900 pt-20 pb-28 lg:pt-24 lg:pb-32">
+      <div className="relative overflow-hidden bg-[#07405C] pt-20 pb-28 lg:pt-24 lg:pb-32">
         {/*
           Desaturated under a heavy navy wash: the reference reads as a duotone
           of the brand navy rather than a full-colour photograph, and a bright
@@ -164,7 +164,7 @@ function ServiceBand({ id, labelledBy, image, heading, children }) {
           className="absolute inset-0 bg-cover bg-center saturate-[0.35]"
           style={{ backgroundImage: `url(${image})` }}
         />
-        <div aria-hidden="true" className="band-overlay-navy absolute inset-0" />
+        <div aria-hidden="true" className="band-overlay-navy absolute inset-0 bg-[#07405C]/85" />
 
         <div className="relative mx-auto max-w-6xl px-5 sm:px-8">{heading}</div>
       </div>
@@ -199,8 +199,11 @@ export default function ServicePage() {
       {/* 1 — Page intro */}
       <section
         aria-labelledby="service-intro-title"
-        className="mx-auto max-w-6xl px-5 pt-20 pb-16 text-center sm:px-8 lg:pt-24"
+        className="mx-auto max-w-6xl px-5 pt-16 pb-16 text-center sm:px-8 lg:pt-20"
       >
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-4 py-1.5 text-xs font-bold text-[#07405C] shadow-xs mb-4">
+          SERVICES & INDUSTRY PARTNERSHIPS
+        </div>
         <motion.div
           variants={motionSafe(fadeUp, reduced)}
           initial="hidden"
@@ -215,7 +218,7 @@ export default function ServicePage() {
             title={
               <>
                 We Don&apos;t Just Train.{' '}
-                <span className="text-brand">We Transform.</span>
+                <span className="text-[#DF1E26]">We Transform.</span>
               </>
             }
             lede="We partner with corporates and educational institutions to deliver industry-relevant skills, workforce training and career development solutions."
@@ -340,7 +343,7 @@ export default function ServicePage() {
             weight="bold"
             title={
               <>
-                How LeSuccess <span className="text-brand">Drives Success</span>
+                How LeSuccess <span className="text-[#DF1E26]">Drives Success</span>
               </>
             }
             lede="At LeSuccess, our structured learning framework ensures every learner gains practical skills, confidence, and career-ready expertise."
@@ -375,12 +378,16 @@ export default function ServicePage() {
       {/* 5 — Ready to Transform Your Future? */}
       <section
         aria-labelledby="service-cta-title"
-        className="relative overflow-hidden bg-navy-900"
+        className="relative overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550]"
       >
-        {/* Diagonal navy → blue, both stops from the theme's navy ramp. */}
+        {/* Decorative ambient subtle glow */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(135deg,var(--color-navy-900)_0%,var(--color-navy-700)_100%)]"
+          className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#DF1E26]/10 blur-3xl pointer-events-none"
         />
 
         {/*

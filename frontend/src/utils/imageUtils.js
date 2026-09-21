@@ -37,3 +37,25 @@ export const getImageUrl = (url, fallback = '') => {
   // Frontend public static asset
   return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
 }
+
+/**
+ * Returns a high-quality logo URL for a course entity or mock course,
+ * ensuring no course is missing its logo.
+ */
+export const getCourseLogo = (course) => {
+  const icon = course?.iconUrl || course?.icon_url || course?.logoUrl || course?.logo_url
+  if (icon && typeof icon === 'string' && icon.trim()) {
+    return getImageUrl(icon)
+  }
+  const text = `${course?.slug || ''} ${course?.title || ''} ${course?.name || ''}`.toLowerCase()
+  if (text.includes('python')) return '/tech/python.svg'
+  if (text.includes('java')) return '/tech/java.svg'
+  if (text.includes('data') || text.includes('analytics') || text.includes('bi')) return '/tech/powerbi.svg'
+  if (text.includes('aws') || text.includes('cloud') || text.includes('devops')) return '/tech/aws.svg'
+  if (text.includes('react') || text.includes('frontend')) return '/tech/react.svg'
+  if (text.includes('django')) return '/tech/django.svg'
+  if (text.includes('docker') || text.includes('kubernetes')) return '/tech/docker.svg'
+  if (text.includes('sql') || text.includes('database')) return '/tech/mysql.svg'
+  if (text.includes('excel')) return '/tech/excel.svg'
+  return '/tech/api.svg'
+}

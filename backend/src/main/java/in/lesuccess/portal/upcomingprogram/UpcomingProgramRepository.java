@@ -22,4 +22,10 @@ public interface UpcomingProgramRepository extends JpaRepository<UpcomingProgram
     Page<UpcomingProgram> findAll(Pageable pageable);
 
     Page<UpcomingProgram> findByType(UpcomingProgramType type, Pageable pageable);
+
+    @Query(value = "SELECT title FROM program WHERE id = :id", nativeQuery = true)
+    String findRawTitleById(@Param("id") Long id);
+
+    @Query(value = "SELECT type FROM program WHERE id = :id", nativeQuery = true)
+    String findRawTypeById(@Param("id") Long id);
 }

@@ -33,6 +33,7 @@ export default function ConnectWithUs() {
       name: form.name.trim(),
       mobile: form.mobile.trim(),
       email: form.email.trim(),
+      message: form.message ? form.message.trim() : undefined,
       website,
     });
 
@@ -58,13 +59,20 @@ export default function ConnectWithUs() {
     : "";
 
   return (
-    <section className="w-full bg-[#0f3f4f] py-20 px-6 sm:px-10 lg:px-16 text-white">
-      <div className="mx-auto max-w-4xl text-center">
-        <h2 className="text-3xl font-extrabold sm:text-4xl text-white tracking-tight">
-          Connect with <span className="text-[#ef334c]">Us</span>
+    <section className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#024D72] py-20 px-6 sm:px-10 lg:px-16 text-white relative overflow-hidden">
+      {/* Decorative ambient glow */}
+      <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+
+      <div className="mx-auto max-w-4xl text-center relative z-10">
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold text-white mb-3 tracking-wider uppercase">
+          GET IN TOUCH
+        </span>
+        <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl text-white tracking-tight">
+          Connect with <span className="text-[#DF1E26]">Us</span>
         </h2>
-        <p className="mt-3 text-slate-300 max-w-2xl mx-auto text-base sm:text-lg">
-          Have questions about courses, batches, or career options? Reach out to our advisors
+        <p className="mt-3 text-slate-200 max-w-2xl mx-auto text-base sm:text-lg font-normal">
+          Have questions about courses, batches, or career paths? Reach out to our advisors
           and we will connect with you promptly.
         </p>
 
@@ -82,16 +90,16 @@ export default function ConnectWithUs() {
           />
         </div>
 
-        {/* Form container: Stacks vertically on mobile, multi-column on desktop */}
-        <form onSubmit={handleSubmit} className="mt-10 max-w-3xl mx-auto">
+        {/* Form container: Elevated crisp white card */}
+        <form onSubmit={handleSubmit} className="mt-10 max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl border border-white/20 text-slate-800">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4 text-left">
             {/* Name */}
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1.5" htmlFor="c-name">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="c-name">
                 Name *
               </label>
               <div className="relative">
-                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#07405C]" />
                 <input
                   id="c-name"
                   type="text"
@@ -100,18 +108,18 @@ export default function ConnectWithUs() {
                   value={form.name}
                   onChange={handleChange}
                   placeholder="Enter Your Name"
-                  className="w-full bg-slate-900/50 border border-slate-400/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ef334c] focus:border-transparent transition-all"
+                  className="w-full bg-[#F5F8FC] border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1.5" htmlFor="c-email">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="c-email">
                 Email
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#07405C]" />
                 <input
                   id="c-email"
                   type="email"
@@ -119,18 +127,18 @@ export default function ConnectWithUs() {
                   value={form.email}
                   onChange={handleChange}
                   placeholder="Enter Email ID"
-                  className="w-full bg-slate-900/50 border border-slate-400/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ef334c] focus:border-transparent transition-all"
+                  className="w-full bg-[#F5F8FC] border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all"
                 />
               </div>
             </div>
 
             {/* Phone */}
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1.5" htmlFor="c-mobile">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="c-mobile">
                 Phone Number *
               </label>
               <div className="relative">
-                <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#07405C]" />
                 <input
                   id="c-mobile"
                   type="tel"
@@ -139,7 +147,7 @@ export default function ConnectWithUs() {
                   value={form.mobile}
                   onChange={handleChange}
                   placeholder="Enter Mobile Number"
-                  className="w-full bg-slate-900/50 border border-slate-400/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ef334c] focus:border-transparent transition-all"
+                  className="w-full bg-[#F5F8FC] border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -147,11 +155,11 @@ export default function ConnectWithUs() {
 
           {/* Message Textarea */}
           <div className="text-left mb-6">
-            <label className="block text-xs font-semibold text-slate-200 mb-1.5" htmlFor="c-msg">
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="c-msg">
               Message (Optional)
             </label>
             <div className="relative">
-              <MessageSquare size={16} className="absolute left-3.5 top-3.5 text-slate-400" />
+              <MessageSquare size={16} className="absolute left-3.5 top-3.5 text-[#07405C]" />
               <textarea
                 id="c-msg"
                 name="message"
@@ -159,7 +167,7 @@ export default function ConnectWithUs() {
                 value={form.message}
                 onChange={handleChange}
                 placeholder="How can we help you?"
-                className="w-full bg-slate-900/50 border border-slate-400/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ef334c] focus:border-transparent transition-all resize-none"
+                className="w-full bg-[#F5F8FC] border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all resize-none"
               />
             </div>
           </div>
@@ -168,21 +176,21 @@ export default function ConnectWithUs() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto min-w-[240px] inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#ef334c] to-[#c71d34] text-white font-bold py-3.5 px-8 rounded-xl hover:opacity-95 transition shadow-lg disabled:opacity-50 cursor-pointer"
+              className="w-full sm:w-auto min-w-[240px] inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white font-bold py-3.5 px-8 rounded-xl hover:brightness-105 active:scale-98 transition shadow-lg disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? "Submitting..." : "Submit Inquiry"} <Send size={16} />
             </button>
           </div>
 
           {submitted && (
-            <div className="mt-5 flex items-center justify-center gap-2 text-emerald-300 text-sm font-medium">
+            <div className="mt-5 flex items-center justify-center gap-2 text-emerald-600 text-sm font-semibold">
               <CheckCircle size={18} />
               <span>Thank you! Your inquiry has been received. We will contact you soon.</span>
             </div>
           )}
 
           {errorMessage && (
-            <p className="mt-4 text-sm font-medium text-rose-300">
+            <p className="mt-4 text-sm font-semibold text-red-600">
               {errorMessage}
             </p>
           )}

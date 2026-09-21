@@ -18,6 +18,15 @@ import {
   Users as UsersIcon,
   Building2,
   ShieldCheck,
+  Star,
+  LayoutDashboard,
+  CalendarCheck,
+  GraduationCap,
+  PhoneCall,
+  UserCheck,
+  MessageSquare,
+  Briefcase,
+  Menu,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import apiClient from '../../services/apiClient.js'
@@ -27,10 +36,14 @@ import AdminProgramsTab from './components/AdminProgramsTab.jsx'
 import AdminTeamTab from './components/AdminTeamTab.jsx'
 import AdminCompaniesTab from './components/AdminCompaniesTab.jsx'
 import AdminUsersTab from './components/AdminUsersTab.jsx'
+import AdminOverviewTab from './components/AdminOverviewTab.jsx'
+import AdminFormSubmissionsTab from './components/AdminFormSubmissionsTab.jsx'
+import AdminReviewsTab from './components/AdminReviewsTab.jsx'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState('gallery') // 'gallery' | 'courses' | 'programs' | 'team' | 'companies' | 'users'
+  const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'gallery' | 'courses' | 'programs' | 'team' | 'reviews' | 'companies' | 'users' | form submissions
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   // Folders state
   const [categories, setCategories] = useState([])
@@ -439,16 +452,18 @@ export default function AdminDashboard() {
       </header>
 
       {/* =====================================================
-          TAB NAVIGATION BAR
+          TAB NAVIGATION BAR (Website Management)
       ===================================================== */}
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-slate-200 bg-white shadow-2xs">
         <div className="mx-auto flex max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-1 sm:space-x-2 py-2">
             {[
+              { id: 'overview', label: 'Overview', icon: LayoutDashboard },
               { id: 'gallery', label: 'Gallery', icon: Folder },
               { id: 'courses', label: 'Courses', icon: BookOpen },
               { id: 'programs', label: 'Programs & Events', icon: Calendar },
               { id: 'team', label: 'Team Members', icon: UsersIcon },
+              { id: 'reviews', label: 'Reviews', icon: Star },
               { id: 'companies', label: 'Companies', icon: Building2 },
               { id: 'users', label: 'User Management', icon: ShieldCheck },
             ].map((tab) => {
@@ -462,7 +477,7 @@ export default function AdminDashboard() {
                     setActiveTab(tab.id)
                     setSelectedCategory(null)
                   }}
-                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition whitespace-nowrap ${
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                     isActive
                       ? 'bg-[#084b66] text-white shadow-xs'
                       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -477,30 +492,94 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Alert notification */}
-        {alert && (
-          <div
-            className={`mb-6 flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
-              alert.type === 'error'
-                ? 'bg-red-50 text-red-700 border border-red-200'
-                : 'bg-green-50 text-green-700 border border-green-200'
-            }`}
-          >
-            <span>{alert.message}</span>
-            <button type="button" onClick={() => setAlert(null)}>
-              <X size={16} />
-            </button>
-          </div>
-        )}
+      {/* Main 2-Column Layout matching Reference Image 3 */}
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT SIDEBAR: Form Submissions */}
+          <aside className="lg:col-span-3">
+            {/* Sidebar Section Title */}
+            <div className="mb-3 px-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Form Submissions
+              </h3>
+            </div>
 
-        {/* Tab Views */}
-        {activeTab === 'courses' && <AdminCoursesTab showAlert={showAlert} />}
-        {activeTab === 'programs' && <AdminProgramsTab showAlert={showAlert} />}
-        {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}
-        {activeTab === 'companies' && <AdminCompaniesTab showAlert={showAlert} />}
-        {activeTab === 'users' && <AdminUsersTab showAlert={showAlert} />}
+            {/* 6 Form Submission Buttons */}
+            <div className="flex flex-col gap-2.5">
+              {[
+                { id: 'demo-bookings', label: 'Demo Bookings', icon: CalendarCheck },
+                { id: 'registrations', label: 'Webinar/Workshop/Internship', icon: GraduationCap },
+                { id: 'connect-with-us', label: 'Connect with us', icon: PhoneCall },
+                { id: 'course-enquiries', label: 'Course Enquiry', icon: BookOpen },
+                { id: 'leads', label: 'Enroll Now', icon: UserCheck },
+                { id: 'services', label: 'Services Form', icon: Briefcase },
+                { id: 'contact-messages', label: 'Contact Us', icon: MessageSquare },
+              ].map((item) => {
+                const Icon = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(item.id)
+                      setSelectedCategory(null)
+                    }}
+                    className={`w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-xs font-bold text-left transition border shadow-2xs cursor-pointer ${
+                      isActive
+                        ? 'bg-[#084b66] text-white border-[#084b66] shadow-sm'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="truncate">{item.label}</span>
+                    <Icon size={16} className={isActive ? 'text-white' : 'text-slate-400'} />
+                  </button>
+                )
+              })}
+            </div>
+          </aside>
+
+          {/* RIGHT MAIN CONTENT AREA */}
+          <main className="lg:col-span-9 min-w-0">
+            {/* Alert notification */}
+            {alert && (
+              <div
+                className={`mb-6 flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
+                  alert.type === 'error'
+                    ? 'bg-red-50 text-red-700 border border-red-200'
+                    : 'bg-green-50 text-green-700 border border-green-200'
+                }`}
+              >
+                <span>{alert.message}</span>
+                <button type="button" onClick={() => setAlert(null)}>
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+
+            {/* Tab Views */}
+            {activeTab === 'overview' && (
+              <AdminOverviewTab onNavigateTab={(tab) => setActiveTab(tab)} showAlert={showAlert} />
+            )}
+            {activeTab === 'courses' && <AdminCoursesTab showAlert={showAlert} />}
+            {activeTab === 'programs' && <AdminProgramsTab showAlert={showAlert} />}
+            {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}
+            {activeTab === 'reviews' && <AdminReviewsTab showAlert={showAlert} />}
+            {activeTab === 'companies' && <AdminCompaniesTab showAlert={showAlert} />}
+            {activeTab === 'users' && <AdminUsersTab showAlert={showAlert} />}
+
+            {/* Form Submission Views */}
+            {[
+              'demo-bookings',
+              'registrations',
+              'connect-with-us',
+              'course-enquiries',
+              'leads',
+              'services',
+              'contact-messages',
+            ].includes(activeTab) && (
+              <AdminFormSubmissionsTab formType={activeTab} showAlert={showAlert} />
+            )}
 
         {activeTab === 'gallery' && (
           <>
@@ -721,6 +800,8 @@ export default function AdminDashboard() {
           </>
         )}
       </main>
+        </div>
+      </div>
 
       {/* =====================================================
           MODAL 1: CREATE / EDIT FOLDER

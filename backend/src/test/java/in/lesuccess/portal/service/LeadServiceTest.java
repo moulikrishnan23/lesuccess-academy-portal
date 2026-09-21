@@ -43,6 +43,9 @@ class LeadServiceTest {
     private LeadRepository repository;
 
     @Mock
+    private in.lesuccess.portal.course.CourseRepository courseRepository;
+
+    @Mock
     private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks

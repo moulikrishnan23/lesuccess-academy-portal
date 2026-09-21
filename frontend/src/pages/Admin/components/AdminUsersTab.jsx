@@ -21,6 +21,16 @@ export default function AdminUsersTab({ showAlert }) {
     fetchUsers()
   }, [])
 
+  // Body scroll lock
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = 'unset'
+      }
+    }
+  }, [isModalOpen])
+
   const fetchUsers = async () => {
     setLoading(true)
     try {
@@ -194,137 +204,143 @@ export default function AdminUsersTab({ showAlert }) {
 
       {/* User Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl my-8">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white shrink-0">
               <h3 className="text-lg font-bold text-slate-900">
                 Register New {form.role === 'ADMIN' ? 'Administrator' : 'Trainer'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition cursor-pointer"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Account Role *
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setForm({ ...form, role: 'TRAINER' })}
-                    className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition ${
-                      form.role === 'TRAINER'
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <UserCheck size={16} />
-                    <span>Trainer</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setForm({ ...form, role: 'ADMIN' })}
-                    className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition ${
-                      form.role === 'ADMIN'
-                        ? 'border-purple-600 bg-purple-50 text-purple-800'
-                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <ShieldCheck size={16} />
-                    <span>Administrator</span>
-                  </button>
+            {/* Form wrapper */}
+            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+              {/* Internal Scrollable Body */}
+              <div className="p-6 overflow-y-auto flex-1 overscroll-contain space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                    Account Role *
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, role: 'TRAINER' })}
+                      className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition cursor-pointer ${
+                        form.role === 'TRAINER'
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <UserCheck size={16} />
+                      <span>Trainer</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, role: 'ADMIN' })}
+                      className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition cursor-pointer ${
+                        form.role === 'ADMIN'
+                          ? 'border-purple-600 bg-purple-50 text-purple-800'
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <ShieldCheck size={16} />
+                      <span>Administrator</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={form.fullName}
-                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                  placeholder="e.g. John Doe"
-                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Username *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={form.username}
-                  onChange={(e) => setForm({ ...form, username: e.target.value })}
-                  placeholder="e.g. johndoe"
-                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="johndoe@lesuccess.in"
-                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Password *
-                </label>
-                <div className="relative">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                    Full Name *
+                  </label>
                   <input
-                    type="password"
+                    type="text"
                     required
-                    minLength={6}
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    placeholder="Min 6 characters"
+                    value={form.fullName}
+                    onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                    placeholder="e.g. John Doe"
                     className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
                   />
-                  <Key size={16} className="absolute right-3 top-2.5 text-slate-400" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                    Username *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.username}
+                    onChange={(e) => setForm({ ...form, username: e.target.value })}
+                    placeholder="e.g. johndoe"
+                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="johndoe@lesuccess.in"
+                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                    Password *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      placeholder="Min 6 characters"
+                      className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
+                    />
+                    <Key size={16} className="absolute right-3 top-2.5 text-slate-400" />
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500">
+                  {form.role === 'TRAINER' ? (
+                    <p>
+                      <strong>Trainer Privileges:</strong> Access strictly limited to creating and managing Webinars, Workshops, and Internships.
+                    </p>
+                  ) : (
+                    <p>
+                      <strong>Admin Privileges:</strong> Full access to Courses, Gallery, Programs, Team Members, Companies, and User management.
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500">
-                {form.role === 'TRAINER' ? (
-                  <p>
-                    <strong>Trainer Privileges:</strong> Access strictly limited to creating and managing Webinars, Workshops, and Internships.
-                  </p>
-                ) : (
-                  <p>
-                    <strong>Admin Privileges:</strong> Full access to Courses, Gallery, Programs, Team Members, Companies, and User management.
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+              {/* Fixed Footer */}
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#084b66] px-5 py-2 text-sm font-semibold text-white hover:bg-[#063c52] transition shadow-sm"
+                  className="rounded-xl bg-[#084b66] px-5 py-2 text-sm font-semibold text-white hover:bg-[#063c52] transition shadow-sm cursor-pointer"
                 >
                   Create User
                 </button>

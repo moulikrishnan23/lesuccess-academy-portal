@@ -23,7 +23,7 @@ public class DemoBooking {
     @Column(name = "name", length = 120)
     private String name;
 
-    @Column(name = "email", length = 160)
+    @Column(name = "email", nullable = false, length = 160)
     private String email;
 
     @Column(name = "course_name", length = 200)
