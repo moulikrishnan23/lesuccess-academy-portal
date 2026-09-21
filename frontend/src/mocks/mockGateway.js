@@ -2,14 +2,17 @@ import { makeApiError } from '../utils/apiError.js'
 import { COURSES, SETTINGS, TESTIMONIALS } from './fixtures.js'
 
 /**
- * Dev-only stand-in for the API. Active only when VITE_USE_MOCKS === 'true',
- * which is set in .env.development and left unset everywhere else.
+ * Dev-only stand-in for the API. Active only when VITE_USE_MOCKS === 'true'.
  *
  * Services call these instead of the network, but still pass the result through
  * the same normalizer — so the mock path exercises the real parsing code and
  * can't drift into being a second, friendlier contract.
  *
- * Delete this folder and the `isMockEnabled()` branches once the backend ships.
+ * The backend has shipped and .env.development now sets VITE_USE_MOCKS=false,
+ * so this gateway is dormant by default. It is kept deliberately, NOT deleted:
+ * the ?mockState= switches below are the only way to reach the loading, error
+ * and empty branches on demand, and keeping the branches means turning them
+ * back on stays a one-line change to that flag.
  */
 
 export function isMockEnabled() {

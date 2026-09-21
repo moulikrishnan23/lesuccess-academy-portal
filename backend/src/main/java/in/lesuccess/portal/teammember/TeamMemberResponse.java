@@ -16,6 +16,7 @@ public class TeamMemberResponse {
     private String image; // alias for imageUrl to match frontend
     private String imageUrl;
     private boolean featured; // alias for isFeatured to match frontend
+    @SuppressWarnings("unused") // Used by Lombok builder and JSON serialization
     private boolean isFeatured;
     private int displayOrder;
     private boolean isActive;
