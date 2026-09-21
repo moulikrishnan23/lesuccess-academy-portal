@@ -18,6 +18,7 @@ import {
   Users as UsersIcon,
   Building2,
   ShieldCheck,
+  MessageSquare,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import apiClient from '../../services/apiClient.js'
@@ -27,6 +28,7 @@ import AdminProgramsTab from './components/AdminProgramsTab.jsx'
 import AdminTeamTab from './components/AdminTeamTab.jsx'
 import AdminCompaniesTab from './components/AdminCompaniesTab.jsx'
 import AdminUsersTab from './components/AdminUsersTab.jsx'
+import AdminMessagesTab from './components/AdminMessagesTab.jsx'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -451,6 +453,7 @@ export default function AdminDashboard() {
               { id: 'team', label: 'Team Members', icon: UsersIcon },
               { id: 'companies', label: 'Companies', icon: Building2 },
               { id: 'users', label: 'User Management', icon: ShieldCheck },
+              { id: 'messages', label: 'Messages', icon: MessageSquare },
             ].map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -501,6 +504,7 @@ export default function AdminDashboard() {
         {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}
         {activeTab === 'companies' && <AdminCompaniesTab showAlert={showAlert} />}
         {activeTab === 'users' && <AdminUsersTab showAlert={showAlert} />}
+        {activeTab === 'messages' && <AdminMessagesTab showAlert={showAlert} />}
 
         {activeTab === 'gallery' && (
           <>
