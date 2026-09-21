@@ -1,0 +1,530 @@
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
+
+import Navbar from "./components/Navbar";
+import OfferHeader from "./components/OfferHeader";
+import PublicLayout from "./components/layout/PublicLayout.jsx";
+import Footer from "./components/Footer.jsx";
+
+import Home from "./pages/Home";
+import Contact from "./pages/Contact";
+import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
+import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
+import ServicePage from "./pages/Services/ServicePage.jsx";
+import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
+import GalleryPage from "./pages/Gallery/GalleryPage.jsx";
+import LoginPage from "./pages/Auth/LoginPage.jsx";
+import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
+import TrainerDashboard from "./pages/Trainer/TrainerDashboard.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
+import useAdminShortcut from "./hooks/useAdminShortcut.js";
+
+
+const AppContent = () => {
+  const location = useLocation();
+
+  // Ctrl+Shift+Alt+1 jumps to the admin area. Mounted here because this is the
+  // one component inside both BrowserRouter and AuthProvider.
+  useAdminShortcut();
+  const isDashboard =
+    location.pathname.startsWith("/admin") ||
+    location.pathname.startsWith("/trainer");
+  const isLoginPage = location.pathname === "/login";
+
+  // Enquiry popup modal visibility (auto-opens on website visit, except on /login)
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(() => {
+    return window.location.pathname !== "/login";
+  });
+
+  useEffect(() => {
+    if (isLoginPage) {
+      setIsEnquiryOpen(false);
+    }
+  }, [isLoginPage]);
+
+  /*
+   * =========================================================
+   * HEADER STATES
+   * =========================================================
+   */
+
+  // Navbar visibility while scrolling
+  const [navbarVisible, setNavbarVisible] = useState(true);
+
+  // Hide both headers when footer is visible
+  const [footerVisible, setFooterVisible] = useState(false);
+
+  /*
+   * =========================================================
+   * HEADER HEIGHTS
+   * =========================================================
+   */
+
+  const [offerHeaderHeight, setOfferHeaderHeight] = useState(0);
+  const [navbarHeight, setNavbarHeight] = useState(0);
+
+  /*
+   * =========================================================
+   * REFS
+   * =========================================================
+   */
+
+  const offerHeaderRef = useRef(null);
+  const navbarRef = useRef(null);
+
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+
+  /*
+   * =========================================================
+   * UPDATE OFFER HEADER HEIGHT
+   * =========================================================
+   */
+
+  const updateOfferHeaderHeight = useCallback(() => {
+    if (!offerHeaderRef.current) return;
+
+    const height =
+      offerHeaderRef.current.getBoundingClientRect().height;
+
+    setOfferHeaderHeight(height);
+  }, []);
+
+  /*
+   * =========================================================
+   * UPDATE NAVBAR HEIGHT
+   * =========================================================
+   */
+
+  const updateNavbarHeight = useCallback(() => {
+    if (!navbarRef.current) return;
+
+    const height =
+      navbarRef.current.getBoundingClientRect().height;
+
+    setNavbarHeight(height);
+  }, []);
+
+  /*
+   * =========================================================
+   * DYNAMIC HEIGHT OBSERVER
+   * =========================================================
+   *
+   * Automatically recalculates the heights when:
+   *
+   * - Browser is resized
+   * - Offer text wraps
+   * - Mobile menu opens
+   * - Navbar changes height
+   */
+
+  useEffect(() => {
+    updateOfferHeaderHeight();
+    updateNavbarHeight();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateOfferHeaderHeight();
+      updateNavbarHeight();
+    });
+
+    if (offerHeaderRef.current) {
+      resizeObserver.observe(offerHeaderRef.current);
+    }
+
+    if (navbarRef.current) {
+      resizeObserver.observe(navbarRef.current);
+    }
+
+    window.addEventListener(
+      "resize",
+      updateOfferHeaderHeight
+    );
+
+    window.addEventListener(
+      "resize",
+      updateNavbarHeight
+    );
+
+    return () => {
+      resizeObserver.disconnect();
+
+      window.removeEventListener(
+        "resize",
+        updateOfferHeaderHeight
+      );
+
+      window.removeEventListener(
+        "resize",
+        updateNavbarHeight
+      );
+    };
+  }, [
+    updateOfferHeaderHeight,
+    updateNavbarHeight,
+  ]);
+
+  /*
+   * =========================================================
+   * SCROLL DIRECTION
+   * =========================================================
+   *
+   * At top:
+   *     Navbar visible
+   *
+   * Scroll down:
+   *     Navbar hides
+   *     OfferHeader stays visible
+   *
+   * Scroll up:
+   *     Navbar appears
+   */
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (ticking.current) return;
+
+      ticking.current = true;
+
+      requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+
+        /*
+         * Always show navbar at the very top
+         */
+
+        if (currentScrollY <= 20) {
+          setNavbarVisible(true);
+        }
+
+        /*
+         * Scrolling DOWN
+         */
+
+        else if (
+          currentScrollY >
+          lastScrollY.current + 5
+        ) {
+          setNavbarVisible(false);
+        }
+
+        /*
+         * Scrolling UP
+         */
+
+        else if (
+          currentScrollY <
+          lastScrollY.current - 5
+        ) {
+          setNavbarVisible(true);
+        }
+
+        lastScrollY.current = currentScrollY;
+        ticking.current = false;
+      });
+    };
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      }
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+    };
+  }, []);
+
+  /*
+   * =========================================================
+   * FOOTER OBSERVER
+   * =========================================================
+   *
+   * Footer visible:
+   *     OfferHeader hides
+   *     Navbar hides
+   *
+   * Footer not visible:
+   *     Normal scroll behaviour resumes
+   */
+
+  useEffect(() => {
+    const footer = document.querySelector("footer");
+
+    if (!footer) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setFooterVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0.01,
+      }
+    );
+
+    observer.observe(footer);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  /*
+   * =========================================================
+   * NAVBAR POSITION
+   * =========================================================
+   *
+   * Navbar always stays below OfferHeader.
+   */
+
+  const navbarTop = offerHeaderHeight;
+
+  /*
+   * =========================================================
+   * TOTAL HEADER HEIGHT
+   * =========================================================
+   *
+   * This reserves space in the page so the fixed
+   * headers don't cover the page content.
+   */
+
+  const totalHeaderHeight =
+    offerHeaderHeight + navbarHeight;
+
+  /*
+   * =========================================================
+   * FINAL VISIBILITY
+   * =========================================================
+   */
+
+  const showOfferHeader = !footerVisible;
+
+  const showNavbar =
+    navbarVisible && !footerVisible;
+
+  /*
+   * =========================================================
+   * PUBLISH HEADER HEIGHTS TO CSS
+   * =========================================================
+   *
+   * The header is fixed and its height is measured at runtime, so anything
+   * that has to sit below it — the course page's section tabs, its sticky
+   * enroll card, the scroll offset for in-page anchors — cannot hardcode a
+   * number. Those all used their own guesses and ended up underneath it.
+   *
+   * --app-header      the header height right now, which drops to just the
+   *                   offer bar while the navbar is hidden. Anything sticky
+   *                   that should ride along with the navbar uses this.
+   * --app-header-max  the height with the navbar shown. Anything that must
+   *                   never be covered, whatever the navbar is doing, uses
+   *                   this.
+   */
+  useEffect(() => {
+    const root = document.documentElement;
+    const visible = offerHeaderHeight + (showNavbar ? navbarHeight : 0);
+
+    root.style.setProperty("--app-header", `${visible}px`);
+    root.style.setProperty(
+      "--app-header-max",
+      `${offerHeaderHeight + navbarHeight}px`
+    );
+  }, [offerHeaderHeight, navbarHeight, showNavbar]);
+
+  return (
+    <div className="min-h-screen">
+
+      {/* =====================================================
+          OFFER HEADER
+      ===================================================== */}
+
+      {!isDashboard && (
+        <div
+          ref={offerHeaderRef}
+          className={`
+            fixed
+            left-0
+            top-0
+            z-60
+            w-full
+            transition-transform
+            duration-300
+            ease-in-out
+            ${
+              showOfferHeader
+                ? "translate-y-0"
+                : "-translate-y-full"
+            }
+          `}
+        >
+          <OfferHeader />
+        </div>
+      )}
+
+      {/* =====================================================
+          NAVBAR
+      ===================================================== */}
+
+      {!isDashboard && (
+        <div
+          ref={navbarRef}
+          className={`
+            fixed
+            left-0
+            z-50
+            w-full
+            transition-transform
+            duration-300
+            ease-in-out
+            ${
+              showNavbar
+                ? "translate-y-0"
+                : "-translate-y-full"
+            }
+          `}
+          style={{
+            top: `${navbarTop}px`,
+          }}
+        >
+          <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
+        </div>
+      )}
+
+      {/* =====================================================
+          HEADER SPACE
+      ===================================================== */}
+
+      {!isDashboard && (
+        <div
+          aria-hidden="true"
+          style={{
+            height: `${totalHeaderHeight}px`,
+          }}
+        />
+      )}
+
+      {/* =====================================================
+          PAGE ROUTES
+      ===================================================== */}
+
+      <main>
+        <Routes>
+
+          {/* Home */}
+
+          <Route
+            path="/"
+            element={<Home />}
+          />
+
+          {/* Gallery */}
+
+          <Route
+            path="/gallery"
+            element={<GalleryPage />}
+          />
+
+          {/* Login */}
+
+          <Route
+            path="/login"
+            element={<LoginPage />}
+          />
+
+          {/* Contact */}
+
+          <Route
+            path="/contact"
+            element={<Contact />}
+          />
+
+          {/* Protected Admin Dashboard */}
+
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRole="ADMIN">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected Trainer Dashboard */}
+
+          <Route
+            path="/trainer/dashboard"
+            element={
+              <ProtectedRoute allowedRole="TRAINER">
+                <TrainerDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Public Layout */}
+
+          <Route element={<PublicLayout />}>
+
+            {/* Courses */}
+
+            <Route
+              path="/courses"
+              element={<CourseCatalogPage />}
+            />
+
+            {/* Course Detail */}
+
+            <Route
+              path="/courses/:slug"
+              element={<CourseDetailPage />}
+            />
+
+            {/* Service */}
+
+            <Route
+              path="/service"
+              element={<ServicePage />}
+            />
+
+          </Route>
+
+        </Routes>
+      </main>
+
+
+      {!isDashboard && (
+        <div>
+          <Footer/>
+        </div>
+      )}
+
+      {/* =====================================================
+          COURSE ENQUIRY POPUP MODAL
+      ===================================================== */}
+      {!isDashboard && !isLoginPage && (
+        <CourseEnquiryModal
+          isOpen={isEnquiryOpen}
+          onClose={() => setIsEnquiryOpen(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+};
+
+export default App;

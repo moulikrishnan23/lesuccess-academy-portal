@@ -1,0 +1,54 @@
+# Dev fixtures
+
+These exist because the course detail page was built before
+`/api/courses`, `/api/courses/{slug}`, `/api/testimonials`, `/api/leads` and `/api/settings` were
+implemented on the Spring Boot side.
+
+Those endpoints are live now and `.env.development` sets `VITE_USE_MOCKS=false`,
+so the app talks to the real API by default. This folder stays anyway — the
+`?mockState=` switches below are the only way to reach the loading, error and
+empty branches on demand, and every `isMockEnabled()` branch is preserved so
+setting the flag back to `true` is a one-line, reversible change.
+
+Note the fixtures are richer than the current backend: `CourseResponse` does not
+yet serve `category`, `categoryGroup`, `description`, pricing, `iconUrl`,
+`heroImageUrl`, the role section fields, or a tech stack, and there is no
+`source` on a testimonial. Those sections render their hidden/empty state
+against the real API and their full state against these fixtures.
+
+## How it works
+
+`VITE_USE_MOCKS=true` (set in `.env.development`) makes each service
+resolve from `fixtures.js` instead of calling the network. The result still
+goes through the same `normalize*` function as a real response, so the mock
+path cannot quietly become a second contract.
+
+`fixtures.js` holds the testimonial and settings fixtures and re-exports
+`COURSES` from `catalog.js`, which carries all twenty seeded courses. Add a
+course there — `makeCourse()` fills in the fields that are the same across the
+catalog, and its tech stack is written as `{ 'Group Name': ['Tool', …] }` in the
+order the groups should render.
+
+## Forcing states in the browser
+
+| URL | What you get |
+| --- | --- |
+| `/courses` | Catalog page — every seeded course, each card linking to its detail page |
+| `/courses/python-full-stack-development` | The Course_Page.pdf reference course — five tech groups, ten modules, 30% off |
+| `/courses/full-stack-java` | Five tech groups and a two-column role section |
+| `/courses/tally` | Four groups and a one-column role section |
+| `/courses/gen-ai` | A three-group course with no discount and no badge |
+| `/courses/does-not-exist` | 404 → "Course not found" |
+| `?mockState=slow` | 5s delay → skeletons |
+| `?mockState=error` | 500 → error state with retry; lead form returns a 400 with field errors |
+| `?mockState=empty` | Course with no modules, tech stack, role copy or testimonials |
+| `?mockState=emptyCatalog` | `/courses` resolves with no courses at all |
+
+## Removing this
+
+1. Set `VITE_USE_MOCKS=false` in `.env.development`.
+2. Confirm the four endpoints against the shapes in `fixtures.js` and
+   `catalog.js`.
+3. Delete `src/mocks/` and the `isMockEnabled()` branch in each service.
+
+Nothing outside `src/services/` imports this folder.

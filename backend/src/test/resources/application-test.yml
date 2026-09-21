@@ -1,0 +1,45 @@
+# Test profile — H2 for unit/web tests, overridden by Testcontainers for integration
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: true
+
+  flyway:
+    enabled: false
+
+lesuccess:
+  jwt:
+    secret: test-secret-key-for-unit-tests-at-least-256-bits-long-requirement!!
+    expiration-ms: 3600000
+
+  rate-limit:
+    requests-per-hour: 100
+    trust-proxy: false
+    # Comma-separated scalar, not a YAML list — see application.yml.
+    trusted-proxies: ""
+    # Mirrors application.yml so tests exercise the real protected set.
+    protected-paths: /api/contact-messages,/api/leads,/api/course-enquiries,/api/connect-with-us,/api/demo-bookings
+
+  lead-capture:
+    duplicate-window-minutes: 5
+
+  leads:
+    # Comma-separated for the same @Value reason as protected-paths above.
+    accepted-sources: SERVICE_CTA_FORM
+
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+
+  sheets:
+    enabled: false

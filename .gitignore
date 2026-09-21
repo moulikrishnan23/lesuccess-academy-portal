@@ -1,3 +1,21 @@
 # OS files (applies to the whole repository)
 .DS_Store
 Thumbs.db
+
+# Local environment files — never commit real secrets.
+# .env.example is the committed template; .env is yours and stays local.
+.env
+.env.local
+.env.*.local
+docs
+
+# Service account keys and local credentials
+*-credentials*.json
+lesuccess-*.json
+service-account*.json
+
+# Runtime uploaded media
+backend/uploads/
+uploads/
+
+

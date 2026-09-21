@@ -1,0 +1,111 @@
+spring:
+  application:
+    name: portal
+
+  # Virtual threads for high-concurrency blocking I/O (Spring Boot 3.2+, Java 21)
+  threads:
+    virtual:
+      enabled: true
+
+  # Multipart file upload configuration (allows camera & high-res image uploads up to 25MB per file, 200MB total batch)
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 25MB
+      max-request-size: 200MB
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # Flyway
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  # Jackson (Jackson 3 via spring-boot-starter-jackson)
+  # write-dates-as-timestamps is NOT set here: Jackson 3 moved that flag off
+  # SerializationFeature onto DateTimeFeature, and its default is already
+  # false — java.time values serialize as ISO-8601 strings.
+  jackson:
+    default-property-inclusion: non_null
+
+# JWT configuration — TEMPORARY STUB, coordinate with Johnson before merging
+lesuccess:
+  jwt:
+    # No default, deliberately. A fallback secret here would let dev and staging
+    # boot silently on a value committed to the repo, while only prod failed fast.
+    # Every non-test environment must supply JWT_SECRET explicitly — see .env.example.
+    secret: ${JWT_SECRET}
+    expiration-ms: 86400000  # 24 hours
+
+  # Rate limiting
+  rate-limit:
+    requests-per-hour: 5
+    trust-proxy: false
+    # NOTE: every list below MUST stay a comma-separated scalar. @Value cannot bind
+    # a YAML sequence — Boot flattens a list into indexed keys (foo[0], foo[1]) and
+    # the un-indexed key does not exist, so @Value silently falls back to its
+    # default and the configured values are ignored with no error. Only change
+    # these to YAML lists if RateLimitFilter moves to @ConfigurationProperties.
+    trusted-proxies: ""
+    # Public form endpoints to throttle. Exact paths, POST only — add a new
+    # public form here rather than editing RateLimitFilter.
+    protected-paths: /api/contact-messages,/api/leads,/api/course-enquiries,/api/connect-with-us,/api/demo-bookings
+
+  # Shared lead-capture protections (Contact form and Leads form alike)
+  lead-capture:
+    # How far back a submission counts as a duplicate rather than a new enquiry.
+    duplicate-window-minutes: 5
+
+  leads:
+    accepted-sources: SERVICE_CTA_FORM,COURSE_ENROLL_FORM,HOME_CONNECT_FORM,HOME_DEMO_FORM
+
+  # CORS
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+
+  # Google Sheets sync
+  sheets:
+    enabled: ${LESUCCESS_SHEETS_ENABLED:false}
+    spreadsheet-id: ${SHEETS_SPREADSHEET_ID:}
+    # Two credential sources; base64 wins when both are set. Both default to empty so
+    # GoogleSheetsConfig can fail fast naming the missing variable, rather than the
+    # placeholder resolver failing with a less obvious message.
+    credentials-base64: ${SHEETS_CREDENTIALS_BASE64:}
+    credentials-path: ${SHEETS_CREDENTIALS_PATH:}
+    sheet-name: Contact Messages
+    # Socket timeouts for every Sheets call. The google-http-client default is
+    # 20000ms for both, which is what made an unreachable Sheets endpoint cost
+    # 20-40s per tab on startup. Raise these if a slow network is producing
+    # spurious sync failures; lower them to fail faster.
+    connect-timeout-ms: ${SHEETS_CONNECT_TIMEOUT_MS:5000}
+    read-timeout-ms: ${SHEETS_READ_TIMEOUT_MS:10000}
+    # Speak HTTP/2 to the Sheets API. GoogleNetHttpTransport is built on
+    # HttpURLConnection, which cannot do HTTP/2 at all; where HTTP/1.1 to
+    # sheets.googleapis.com stalls, every call dies on the read timeout while the
+    # same JVM reaches the same host over HTTP/2 in ~300ms. Falls back to HTTP/1.1
+    # by ALPN for any server that does not offer HTTP/2, so it is safe to leave on.
+    # Set false to restore the previous transport.
+    use-http2: ${SHEETS_USE_HTTP2:true}
+    # Total attempt budget per sync_failure row, across BOTH retry layers:
+    # SheetSyncTask burns 3 inside the original append, then SyncRetryScheduler
+    # counts up from there. 20 therefore buys ~17 scheduler passes. A row that
+    # exhausts it is marked ABANDONED and logged at ERROR, never silently resolved.
+    max-scheduler-attempts: ${SHEETS_MAX_SCHEDULER_ATTEMPTS:20}
+    # Minimum gap between two scheduler attempts on the same row. Must exceed the
+    # scheduler's own 15-minute tick to have any effect; at or below it, every
+    # pending row is eligible on every pass, which is the hammering this prevents.
+    retry-backoff-minutes: ${SHEETS_RETRY_BACKOFF_MINUTES:30}
+
+# Logging
+logging:
+  level:
+    in.lesuccess.portal: INFO
+    org.springframework.security: INFO
