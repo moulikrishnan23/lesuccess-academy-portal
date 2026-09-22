@@ -18,7 +18,15 @@ import {
   Users as UsersIcon,
   Building2,
   ShieldCheck,
+  Star,
+  LayoutDashboard,
+  CalendarCheck,
+  GraduationCap,
+  PhoneCall,
+  UserCheck,
   MessageSquare,
+  Briefcase,
+  Menu,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import apiClient from '../../services/apiClient.js'
@@ -28,6 +36,9 @@ import AdminProgramsTab from './components/AdminProgramsTab.jsx'
 import AdminTeamTab from './components/AdminTeamTab.jsx'
 import AdminCompaniesTab from './components/AdminCompaniesTab.jsx'
 import AdminUsersTab from './components/AdminUsersTab.jsx'
+import AdminOverviewTab from './components/AdminOverviewTab.jsx'
+import AdminFormSubmissionsTab from './components/AdminFormSubmissionsTab.jsx'
+import AdminReviewsTab from './components/AdminReviewsTab.jsx'
 import AdminMessagesTab from './components/AdminMessagesTab.jsx'
 
 export default function AdminDashboard() {
@@ -456,7 +467,6 @@ export default function AdminDashboard() {
               { id: 'reviews', label: 'Reviews', icon: Star },
               { id: 'companies', label: 'Companies', icon: Building2 },
               { id: 'users', label: 'User Management', icon: ShieldCheck },
-              { id: 'messages', label: 'Messages', icon: MessageSquare },
             ].map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -495,13 +505,83 @@ export default function AdminDashboard() {
               </h3>
             </div>
 
-        {/* Tab Views */}
-        {activeTab === 'courses' && <AdminCoursesTab showAlert={showAlert} />}
-        {activeTab === 'programs' && <AdminProgramsTab showAlert={showAlert} />}
-        {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}
-        {activeTab === 'companies' && <AdminCompaniesTab showAlert={showAlert} />}
-        {activeTab === 'users' && <AdminUsersTab showAlert={showAlert} />}
-        {activeTab === 'messages' && <AdminMessagesTab showAlert={showAlert} />}
+            {/* 6 Form Submission Buttons */}
+            <div className="flex flex-col gap-2.5">
+              {[
+                { id: 'demo-bookings', label: 'Demo Bookings', icon: CalendarCheck },
+                { id: 'registrations', label: 'Webinar/Workshop/Internship', icon: GraduationCap },
+                { id: 'connect-with-us', label: 'Connect with us', icon: PhoneCall },
+                { id: 'course-enquiries', label: 'Course Enquiry', icon: BookOpen },
+                { id: 'leads', label: 'Enroll Now', icon: UserCheck },
+                { id: 'services', label: 'Services Form', icon: Briefcase },
+                { id: 'contact-messages', label: 'Contact Us', icon: MessageSquare },
+              ].map((item) => {
+                const Icon = item.icon
+                const isActive = activeTab === item.id
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(item.id)
+                      setSelectedCategory(null)
+                    }}
+                    className={`w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-xs font-bold text-left transition border shadow-2xs cursor-pointer ${
+                      isActive
+                        ? 'bg-[#084b66] text-white border-[#084b66] shadow-sm'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="truncate">{item.label}</span>
+                    <Icon size={16} className={isActive ? 'text-white' : 'text-slate-400'} />
+                  </button>
+                )
+              })}
+            </div>
+          </aside>
+
+          {/* RIGHT MAIN CONTENT AREA */}
+          <main className="lg:col-span-9 min-w-0">
+            {/* Alert notification */}
+            {alert && (
+              <div
+                className={`mb-6 flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
+                  alert.type === 'error'
+                    ? 'bg-red-50 text-red-700 border border-red-200'
+                    : 'bg-green-50 text-green-700 border border-green-200'
+                }`}
+              >
+                <span>{alert.message}</span>
+                <button type="button" onClick={() => setAlert(null)}>
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+
+            {/* Tab Views */}
+            {activeTab === 'overview' && (
+              <AdminOverviewTab onNavigateTab={(tab) => setActiveTab(tab)} showAlert={showAlert} />
+            )}
+            {activeTab === 'courses' && <AdminCoursesTab showAlert={showAlert} />}
+            {activeTab === 'programs' && <AdminProgramsTab showAlert={showAlert} />}
+            {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}
+            {activeTab === 'reviews' && <AdminReviewsTab showAlert={showAlert} />}
+            {activeTab === 'companies' && <AdminCompaniesTab showAlert={showAlert} />}
+            {activeTab === 'users' && <AdminUsersTab showAlert={showAlert} />}
+            {activeTab === 'messages' && <AdminMessagesTab showAlert={showAlert} />}
+
+            {/* Form Submission Views */}
+            {[
+              'demo-bookings',
+              'registrations',
+              'connect-with-us',
+              'course-enquiries',
+              'leads',
+              'services',
+              'contact-messages',
+            ].includes(activeTab) && (
+              <AdminFormSubmissionsTab formType={activeTab} showAlert={showAlert} />
+            )}
 
         {activeTab === 'gallery' && (
           <>
