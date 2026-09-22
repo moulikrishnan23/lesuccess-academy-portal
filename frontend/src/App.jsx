@@ -9,8 +9,10 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import OfferHeader from "./components/OfferHeader";
 import PublicLayout from "./components/layout/PublicLayout.jsx";
+import PageTransition from "./components/layout/PageTransition.jsx";
 import Footer from "./components/Footer.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import { AnimatePresence } from "framer-motion";
 
 import Home from "./pages/Home";
 import AboutPage from "./pages/About/AboutPage.jsx";
@@ -424,107 +426,135 @@ const AppContent = () => {
 
       <main>
         <ScrollToTop />
-        <Routes>
+        <AnimatePresence mode="wait" initial={false}>
+          <Routes location={location} key={location.pathname}>
 
-          {/* Home */}
-
-          <Route
-            path="/"
-            element={<Home />}
-          />
-
-          {/* Gallery */}
-
-          <Route
-            path="/gallery"
-            element={<GalleryPage />}
-          />
-
-          {/* Login */}
-
-          <Route
-            path="/login"
-            element={<LoginPage />}
-          />
-
-          {/* About */}
-          <Route
-            path="/about"
-            element={<AboutPage />}
-          />
-
-          {/* Our Team */}
-          <Route
-            path="/our-team"
-            element={<TeamPage />}
-          />
-          <Route
-            path="/team"
-            element={<TeamPage />}
-          />
-
-          {/* Contact */}
-
-          <Route
-            path="/contact"
-            element={<Contact />}
-          />
-
-          {/* Protected Admin Dashboard */}
-
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRole="ADMIN">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Protected Trainer Dashboard */}
-
-          <Route
-            path="/trainer/dashboard"
-            element={
-              <ProtectedRoute allowedRole="TRAINER">
-                <TrainerDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Public Layout */}
-
-          <Route element={<PublicLayout />}>
-
-            {/* Courses */}
-
+            {/* Home */}
             <Route
-              path="/courses"
-              element={<CourseCatalogPage />}
+              path="/"
+              element={
+                <PageTransition>
+                  <Home />
+                </PageTransition>
+              }
             />
 
-            {/* Course Detail */}
-
+            {/* Gallery */}
             <Route
-              path="/courses/:slug"
-              element={<CourseDetailPage />}
+              path="/gallery"
+              element={
+                <PageTransition>
+                  <GalleryPage />
+                </PageTransition>
+              }
             />
 
-            {/* Services */}
-
+            {/* Login */}
             <Route
-              path="/services"
-              element={<ServicePage />}
+              path="/login"
+              element={
+                <PageTransition>
+                  <LoginPage />
+                </PageTransition>
+              }
             />
 
+            {/* About */}
             <Route
-              path="/service"
-              element={<ServicePage />}
+              path="/about"
+              element={
+                <PageTransition>
+                  <AboutPage />
+                </PageTransition>
+              }
             />
 
-          </Route>
+            {/* Our Team */}
+            <Route
+              path="/our-team"
+              element={
+                <PageTransition>
+                  <TeamPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/team"
+              element={
+                <PageTransition>
+                  <TeamPage />
+                </PageTransition>
+              }
+            />
 
-        </Routes>
+            {/* Contact */}
+            <Route
+              path="/contact"
+              element={
+                <PageTransition>
+                  <Contact />
+                </PageTransition>
+              }
+            />
+
+            {/* Protected Admin Dashboard */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute allowedRole="ADMIN">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected Trainer Dashboard */}
+            <Route
+              path="/trainer/dashboard"
+              element={
+                <ProtectedRoute allowedRole="TRAINER">
+                  <TrainerDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Public Layout */}
+            <Route element={<PublicLayout />}>
+              <Route
+                path="/courses"
+                element={
+                  <PageTransition>
+                    <CourseCatalogPage />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/courses/:slug"
+                element={
+                  <PageTransition>
+                    <CourseDetailPage />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/services"
+                element={
+                  <PageTransition>
+                    <ServicePage />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/service"
+                element={
+                  <PageTransition>
+                    <ServicePage />
+                  </PageTransition>
+                }
+              />
+            </Route>
+
+          </Routes>
+        </AnimatePresence>
       </main>
 
 

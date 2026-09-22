@@ -368,15 +368,11 @@ export default function AdminTeamTab({ showAlert }) {
                           }}
                         />
 
-                        {/* Structured Non-Colliding Top Bar */}
-                        <div className="absolute top-0 inset-x-0 p-2.5 flex items-start justify-between gap-1.5 z-10 pointer-events-none">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-amber-950 shadow-xs shrink-0 select-none">
+                        {/* Structured Top Bar: show ONLY Featured indicator in Featured Members area */}
+                        <div className="absolute top-0 inset-x-0 p-2.5 flex items-start justify-start z-10 pointer-events-none">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] font-bold text-amber-950 shadow-xs shrink-0 select-none">
                             <Star size={10} fill="currentColor" />
                             <span>Featured</span>
-                          </span>
-
-                          <span className="inline-flex items-center rounded-full bg-[#DF1E26] px-2 py-0.5 text-[10px] font-bold text-white shadow-xs max-w-[55%] truncate select-none" title={categoryName}>
-                            {categoryName}
                           </span>
                         </div>
                       </div>
@@ -544,20 +540,18 @@ export default function AdminTeamTab({ showAlert }) {
                           }}
                         />
 
-                        {/* Top Badges Bar in Flex Layout — Never Colliding */}
-                        <div className="absolute top-0 inset-x-0 p-2.5 flex items-start justify-between gap-1.5 z-10 pointer-events-none">
+                        {/* Top Badges: Featured OR Category badge (Mutually exclusive) */}
+                        <div className="absolute top-0 inset-x-0 p-2.5 flex items-start justify-end z-10 pointer-events-none">
                           {isFeatured ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/95 px-2 py-0.5 text-[10px] font-bold text-amber-950 shadow-xs shrink-0 select-none">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] font-bold text-amber-950 shadow-xs select-none">
                               <Star size={10} fill="currentColor" />
                               <span>Featured</span>
                             </span>
                           ) : (
-                            <span />
+                            <span className="inline-flex items-center rounded-full bg-[#DF1E26] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-xs max-w-[70%] truncate select-none" title={categoryName}>
+                              {categoryName}
+                            </span>
                           )}
-
-                          <span className="inline-flex items-center rounded-full bg-[#DF1E26] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-xs max-w-[60%] truncate select-none" title={categoryName}>
-                            {categoryName}
-                          </span>
                         </div>
                       </div>
 

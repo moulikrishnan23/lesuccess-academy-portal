@@ -14,6 +14,7 @@ import {
   Code2,
   Sparkles,
   Layers,
+  CheckCircle2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from '../../animations/variants.js'
@@ -96,6 +97,38 @@ export default function UpcomingPrograms() {
   const [isHovered, setIsHovered] = useState(false)
   const [direction, setDirection] = useState(1) // 1 = forward, -1 = backward
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+  const [selectedProgramForModal, setSelectedProgramForModal] = useState(null)
+
+  const handleOpenRegister = (programToRegister) => {
+    const target = programToRegister || currentProgram
+    if (!target) return
+    setSelectedProgramForModal(target)
+    setIsRegisterModalOpen(true)
+  }
+
+  const handleCloseRegister = () => {
+    setIsRegisterModalOpen(false)
+    setSelectedProgramForModal(null)
+  }
+  const [registeredEvents, setRegisteredEvents] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('lesuccess_registered_events') || '{}')
+    } catch {
+      return {}
+    }
+  })
+
+  const handleRegisterSuccess = (programId, regData) => {
+    setRegisteredEvents((prev) => {
+      const updated = { ...prev, [programId]: regData }
+      try {
+        localStorage.setItem('lesuccess_registered_events', JSON.stringify(updated))
+      } catch (err) {
+        console.error('Failed to cache registration', err)
+      }
+      return updated
+    })
+  }
 
   /* =======================================================
      FETCH UPCOMING PROGRAMS (100% DYNAMIC - NO HARDCODED DATA)
@@ -145,10 +178,10 @@ export default function UpcomingPrograms() {
   }
 
   /* =======================================================
-     AUTO SLIDE WITH PAUSE ON HOVER
+     AUTO SLIDE WITH PAUSE ON HOVER OR OPEN MODAL
   ======================================================= */
   useEffect(() => {
-    if (filteredPrograms.length <= 1 || isHovered) return undefined
+    if (filteredPrograms.length <= 1 || isHovered || isRegisterModalOpen) return undefined
 
     const timer = setInterval(() => {
       setDirection(1)
@@ -156,7 +189,7 @@ export default function UpcomingPrograms() {
     }, INTERVAL_MS)
 
     return () => clearInterval(timer)
-  }, [filteredPrograms.length, isHovered])
+  }, [filteredPrograms.length, isHovered, isRegisterModalOpen])
 
   /* =======================================================
      CAROUSEL NAVIGATION CONTROLS
@@ -183,6 +216,9 @@ export default function UpcomingPrograms() {
   const currentProgram = filteredPrograms[currentIndex] || filteredPrograms[0] || null
   const eventType = (currentProgram?.type || 'WEBINAR').toUpperCase()
   const isOffline = (currentProgram?.mode || '').toUpperCase() === 'OFFLINE'
+  const isRegisteredForCurrent = Boolean(currentProgram?.id && registeredEvents[currentProgram.id])
+  const registrationInfo = currentProgram?.id ? registeredEvents[currentProgram.id] : null
+  const registeredMeetLink = registrationInfo?.meetLink || currentProgram?.meetLink
 
   // Type-specific badge styling
   const badgeColors = {
@@ -217,6 +253,10 @@ export default function UpcomingPrograms() {
       className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-4 sm:px-6 md:px-10 lg:px-20 py-20 relative overflow-hidden"
     >
       {/* Decorative ambient background */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"
+      />
       <div
         aria-hidden="true"
         className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"
@@ -361,7 +401,7 @@ export default function UpcomingPrograms() {
             )}
 
             {/* MAIN CARD SURFACE */}
-            <div className="relative mx-auto rounded-3xl bg-white shadow-2xl shadow-black/20 border border-white/40 overflow-hidden">
+            <div className="group/eventcard relative mx-auto rounded-3xl bg-white shadow-2xl shadow-black/20 border border-white/40 overflow-hidden hover:shadow-[0_25px_60px_rgba(0,0,0,0.25)] transition-all duration-300">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentProgram?.id || currentIndex}
@@ -402,11 +442,11 @@ export default function UpcomingPrograms() {
                         </p>
                       </div>
                     ) : currentProgram?.imageUrl ? (
-                      <div className="relative z-10 my-auto w-full max-w-sm mx-auto aspect-[4/3] sm:aspect-square max-h-72 rounded-2xl overflow-hidden border border-white/25 bg-slate-900/60 shadow-lg group/img">
+                      <div className="relative z-10 my-auto w-full max-w-xs sm:max-w-sm mx-auto aspect-[4/3] rounded-2xl overflow-hidden border border-white/25 bg-slate-900/60 shadow-lg group/img">
                         <img
                           src={getImageUrl(currentProgram.imageUrl)}
                           alt={currentProgram.speakerName || currentProgram.title}
-                          className="h-full w-full object-cover object-center transition-transform duration-500 group-hover/img:scale-105"
+                          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover/eventcard:scale-105 group-hover/img:scale-105"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none'
                           }}
@@ -555,25 +595,33 @@ export default function UpcomingPrograms() {
 
                   {/* ACTION CTA BUTTONS */}
                   <div className="mt-8 flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
-                    <button
-                      type="button"
-                      onClick={() => setIsRegisterModalOpen(true)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-7 py-3 text-sm font-bold text-white shadow-lg shadow-[#DF1E26]/20 transition hover:opacity-95 hover:shadow-xl hover:shadow-[#DF1E26]/30 active:scale-98 cursor-pointer"
-                    >
-                      <Sparkles size={16} />
-                      <span>{eventType === 'WEBINAR' ? 'Register For Free' : eventType === 'WORKSHOP' ? 'Book Workshop Seat' : 'Apply For Internship'}</span>
-                    </button>
-
-                    {!isOffline && currentProgram.meetLink && (
-                      <a
-                        href={currentProgram.meetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#07405C] px-5 py-2.5 text-sm font-bold text-[#07405C] hover:bg-[#07405C] hover:text-white transition active:scale-98 cursor-pointer"
+                    {isRegisteredForCurrent ? (
+                      <>
+                        <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-300 px-4 py-2.5 text-xs sm:text-sm font-bold text-emerald-700 select-none">
+                          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                          <span>Registered For This Session</span>
+                        </div>
+                        {!isOffline && registeredMeetLink && (
+                          <a
+                            href={registeredMeetLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-[#06334a] transition active:scale-98 cursor-pointer"
+                          >
+                            <Video size={16} />
+                            <span>Join Google Meet</span>
+                          </a>
+                        )}
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenRegister(currentProgram)}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-7 py-3 text-sm font-bold text-white shadow-lg shadow-[#DF1E26]/20 transition hover:opacity-95 hover:shadow-xl hover:shadow-[#DF1E26]/30 active:scale-98 cursor-pointer"
                       >
-                        <Video size={16} />
-                        <span>Join Live Meet</span>
-                      </a>
+                        <Sparkles size={16} />
+                        <span>{eventType === 'WEBINAR' ? 'Register For Free' : eventType === 'WORKSHOP' ? 'Book Workshop Seat' : 'Apply For Internship'}</span>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -606,10 +654,11 @@ export default function UpcomingPrograms() {
 
       {/* REGISTRATION MODAL */}
       <ProgramRegistrationModal
-        isOpen={isRegisterModalOpen}
-        onClose={() => setIsRegisterModalOpen(false)}
-        program={currentProgram}
-        activeType={eventType}
+        isOpen={isRegisterModalOpen && Boolean(selectedProgramForModal)}
+        onClose={handleCloseRegister}
+        program={selectedProgramForModal}
+        activeType={selectedProgramForModal?.type || 'WEBINAR'}
+        onRegisterSuccess={handleRegisterSuccess}
       />
     </section>
   )

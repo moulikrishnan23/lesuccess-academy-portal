@@ -206,6 +206,30 @@
     text-decoration: underline;
     text-underline-offset: 3px;
   }
+
+  /* LeSuccess Card Design System */
+  .card-premium {
+    background-color: #ffffff;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    box-shadow: 0 4px 20px rgba(7, 64, 92, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .card-premium-hover {
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .card-premium-hover:hover {
+    transform: translateY(-6px);
+    border-color: rgba(7, 64, 92, 0.35);
+    box-shadow: 0 20px 35px -10px rgba(7, 64, 92, 0.12), 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  .card-accent-red-hover:hover {
+    border-color: rgba(223, 30, 38, 0.4);
+    box-shadow: 0 20px 35px -10px rgba(223, 30, 38, 0.1), 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
 }
 
 @layer utilities {

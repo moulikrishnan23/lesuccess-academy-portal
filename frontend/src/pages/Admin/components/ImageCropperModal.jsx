@@ -9,10 +9,10 @@ import {
   Check,
   Eye,
   Move,
-  Maximize2,
   Sliders,
   Sparkles,
   Loader2,
+  AlertCircle,
 } from 'lucide-react'
 
 export default function ImageCropperModal({
@@ -28,9 +28,10 @@ export default function ImageCropperModal({
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [rotation, setRotation] = useState(0)
   const [flipH, setFlipH] = useState(false)
-  const [aspectRatio, setAspectRatio] = useState(4 / 3) // 4:3 default for webinar card
-  const [aspectLabel, setAspectLabel] = useState('4:3')
+  const [aspectRatio, setAspectRatio] = useState(4 / 3) // Standard 4:3 ratio matching public card
+  const [aspectLabel, setAspectLabel] = useState('4:3 (Card Standard)')
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [loadError, setLoadError] = useState(false)
   const [imageDims, setImageDims] = useState({ width: 0, height: 0 })
 
   const containerRef = useRef(null)
@@ -38,9 +39,8 @@ export default function ImageCropperModal({
   const isDraggingRef = useRef(false)
   const dragStartRef = useRef({ x: 0, y: 0 })
   const panStartRef = useRef({ x: 0, y: 0 })
-  const previewCanvasRef = useRef(null)
 
-  // Reset adjustments when a new image is loaded or modal opens
+  // Reset adjustments when modal opens or a new image source is passed
   useEffect(() => {
     if (isOpen) {
       setZoom(1)
@@ -48,19 +48,33 @@ export default function ImageCropperModal({
       setRotation(0)
       setFlipH(false)
       setImageLoaded(false)
+      setLoadError(false)
     }
   }, [isOpen, imageSrc])
 
-  // Pre-load image to get natural dimensions
+  // Pre-load image to get natural dimensions without CORS failure
   useEffect(() => {
     if (!imageSrc) return
+    let active = true
     const img = new Image()
-    img.crossOrigin = 'anonymous'
     img.onload = () => {
-      setImageDims({ width: img.naturalWidth, height: img.naturalHeight })
-      setImageLoaded(true)
+      if (active) {
+        setImageDims({ width: img.naturalWidth, height: img.naturalHeight })
+        setImageLoaded(true)
+        setLoadError(false)
+      }
+    }
+    img.onerror = () => {
+      if (active) {
+        setImageDims({ width: 800, height: 600 })
+        setImageLoaded(true)
+        setLoadError(true)
+      }
     }
     img.src = imageSrc
+    return () => {
+      active = false
+    }
   }, [imageSrc])
 
   // Mouse / Touch Drag handlers
@@ -118,7 +132,24 @@ export default function ImageCropperModal({
     setZoom((prev) => Math.min(3.5, Math.max(1, +(prev + delta).toFixed(2))))
   }
 
-  // Generate cropped output canvas
+  // Viewport dimensions
+  const cropBoxHeight = 320
+  const cropBoxWidth = Math.round(cropBoxHeight * aspectRatio)
+
+  // Calculate base display dimensions so image covers the crop box at zoom=1 without black letterbox bars
+  const imgAspect = imageDims.width && imageDims.height ? imageDims.width / imageDims.height : aspectRatio
+  let baseW, baseH
+  if (imgAspect > aspectRatio) {
+    baseH = cropBoxHeight
+    baseW = Math.round(baseH * imgAspect)
+  } else {
+    baseW = cropBoxWidth
+    baseH = Math.round(baseW / imgAspect)
+  }
+  const baseLeft = (cropBoxWidth - baseW) / 2
+  const baseTop = (cropBoxHeight - baseH) / 2
+
+  // Generate cropped output canvas (Exact pixel match with what admin sees in viewport)
   const generateCroppedBlob = async () => {
     if (!imageRef.current) return null
 
@@ -131,23 +162,14 @@ export default function ImageCropperModal({
     const ctx = canvas.getContext('2d')
     if (!ctx) return null
 
-    // Background fill to clean dark blue/black
+    // Background fill to clean dark blue
     ctx.fillStyle = '#01273C'
     ctx.fillRect(0, 0, outputWidth, outputHeight)
 
-    // Base dimensions inside container
-    const container = containerRef.current
-    if (!container) return null
-
-    const containerRect = container.getBoundingClientRect()
-    const containerW = containerRect.width
-    const containerH = containerRect.height
-
-    const scaleFactor = outputWidth / containerW
+    const scaleFactor = outputWidth / cropBoxWidth
 
     ctx.save()
-
-    // Translate to canvas center
+    // Center of canvas
     ctx.translate(outputWidth / 2, outputHeight / 2)
 
     // Apply rotation
@@ -156,31 +178,21 @@ export default function ImageCropperModal({
     // Apply flip
     ctx.scale(flipH ? -1 : 1, 1)
 
-    // Apply pan (converted to canvas coordinates)
+    // Pan with rotation compensation
     const rad = (-rotation * Math.PI) / 180
     const cos = Math.cos(rad)
     const sin = Math.sin(rad)
     const rotatedPanX = (pan.x * cos - pan.y * sin) * (flipH ? -1 : 1)
     const rotatedPanY = pan.x * sin + pan.y * cos
-
     ctx.translate(rotatedPanX * scaleFactor, rotatedPanY * scaleFactor)
 
-    // Draw the image scaled to fill/fit
-    const img = imageRef.current
-    const nw = img.naturalWidth
-    const nh = img.naturalHeight
-    const imgAspect = nw / nh
+    // Apply zoom
+    ctx.scale(zoom, zoom)
 
-    let drawW, drawH
-    if (imgAspect > aspectRatio) {
-      drawH = outputHeight * zoom
-      drawW = drawH * imgAspect
-    } else {
-      drawW = outputWidth * zoom
-      drawH = drawW / imgAspect
-    }
-
-    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH)
+    // Draw base image centered
+    const drawBaseW = baseW * scaleFactor
+    const drawBaseH = baseH * scaleFactor
+    ctx.drawImage(imageRef.current, -drawBaseW / 2, -drawBaseH / 2, drawBaseW, drawBaseH)
     ctx.restore()
 
     return new Promise((resolve) => {
@@ -190,7 +202,7 @@ export default function ImageCropperModal({
             resolve(null)
             return
           }
-          const file = new File([blob], 'cropped-program-speaker.jpg', {
+          const file = new File([blob], 'cropped-program-photo.jpg', {
             type: 'image/jpeg',
             lastModified: Date.now(),
           })
@@ -218,9 +230,8 @@ export default function ImageCropperModal({
 
   if (!isOpen || !imageSrc) return null
 
-  // Calculate container aspect ratio styles
-  const cropBoxHeight = 320
-  const cropBoxWidth = Math.round(cropBoxHeight * aspectRatio)
+  // Live preview mockup scaling
+  const mockupScale = 220 / cropBoxHeight
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fadeIn">
@@ -232,9 +243,9 @@ export default function ImageCropperModal({
               <Sliders size={18} />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Crop & Frame Program Photo</h3>
+              <h3 className="text-base font-bold text-slate-900">Crop & Frame Event Photo</h3>
               <p className="text-xs text-slate-500">
-                Adjust zoom, position, and framing to ensure the face fits the webinar card without getting cut off.
+                Adjust zoom and drag the photo to center the speaker. The 4:3 frame matches the public event card.
               </p>
             </div>
           </div>
@@ -250,13 +261,13 @@ export default function ImageCropperModal({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-50/50">
-          {/* LEFT: Interactive Cropper Canvas & Controls (7 Cols) */}
+          {/* LEFT: Interactive Cropper Viewport & Controls (7 Cols) */}
           <div className="lg:col-span-7 flex flex-col items-center">
             {/* Aspect Ratio Selector Pills */}
             <div className="flex items-center gap-2 mb-3 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs text-xs font-semibold">
               <span className="text-slate-400 px-2 text-[11px] uppercase tracking-wider">Aspect Ratio:</span>
               {[
-                { label: '4:3 (Card)', ratio: 4 / 3 },
+                { label: '4:3 (Card Standard)', ratio: 4 / 3 },
                 { label: '1:1 (Square)', ratio: 1 },
                 { label: '16:9 (Wide)', ratio: 16 / 9 },
               ].map((item) => (
@@ -269,7 +280,7 @@ export default function ImageCropperModal({
                   }}
                   className={`px-3 py-1 rounded-lg transition cursor-pointer ${
                     aspectRatio === item.ratio
-                      ? 'bg-[#07405C] text-white shadow-xs'
+                      ? 'bg-[#07405C] text-white shadow-xs font-bold'
                       : 'text-slate-600 hover:bg-slate-100'
                   }`}
                 >
@@ -279,7 +290,23 @@ export default function ImageCropperModal({
             </div>
 
             {/* Crop Viewport Box */}
-            <div className="relative flex items-center justify-center p-3 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-inner w-full">
+            <div className="relative flex items-center justify-center p-3 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner w-full min-h-[340px]">
+              {!imageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90 z-20">
+                  <div className="flex items-center gap-2 text-white text-xs font-semibold">
+                    <Loader2 size={18} className="animate-spin text-cyan-400" />
+                    <span>Loading image into workspace...</span>
+                  </div>
+                </div>
+              )}
+
+              {loadError && (
+                <div className="absolute top-2 inset-x-2 z-20 flex items-center gap-2 bg-amber-500/90 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>Image loaded via direct fallback. Adjust and save to export cleanly.</span>
+                </div>
+              )}
+
               <div
                 ref={containerRef}
                 onMouseDown={handleMouseDown}
@@ -295,23 +322,28 @@ export default function ImageCropperModal({
                   height: `${cropBoxHeight}px`,
                   maxWidth: '100%',
                 }}
-                className="relative overflow-hidden rounded-xl bg-slate-950 border-2 border-white/60 shadow-2xl cursor-grab active:cursor-grabbing select-none"
+                className="relative overflow-hidden rounded-xl bg-slate-950 border-2 border-white/70 shadow-2xl cursor-grab active:cursor-grabbing select-none"
               >
-                {/* Image Under Transform */}
+                {/* Image Under Interactive Transform — Covers Box Without Letterbox Gaps */}
                 <img
                   ref={imageRef}
                   src={imageSrc}
                   alt="Crop preview"
-                  crossOrigin="anonymous"
                   draggable={false}
                   style={{
+                    position: 'absolute',
+                    left: `${baseLeft}px`,
+                    top: `${baseTop}px`,
+                    width: `${baseW}px`,
+                    height: `${baseH}px`,
+                    maxWidth: 'none',
                     transform: `translate(${pan.x}px, ${pan.y}px) rotate(${rotation}deg) scale(${
                       flipH ? -1 : 1
                     }, 1) scale(${zoom})`,
                     transformOrigin: 'center center',
                     transition: isDraggingRef.current ? 'none' : 'transform 0.05s ease-out',
                   }}
-                  className="h-full w-full object-contain pointer-events-none"
+                  className="pointer-events-none select-none"
                 />
 
                 {/* Rule of Thirds Guideline Grid Overlay */}
@@ -322,15 +354,15 @@ export default function ImageCropperModal({
                   <div className="border-r border-b border-white/20" />
                   <div className="border-r border-b border-white/20" />
                   <div className="border-b border-white/20" />
-                  <div className="border-r border-white/20" />
-                  <div className="border-r border-white/20" />
+                  <div className="border-r border-b border-white/20" />
+                  <div className="border-r border-b border-white/20" />
                   <div />
                 </div>
 
                 {/* Drag / Pan Instruction Pill */}
                 <div className="absolute bottom-2 inset-x-2 flex justify-center pointer-events-none">
-                  <span className="inline-flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white/90 text-[10px] font-semibold px-2.5 py-1 rounded-full border border-white/20 shadow-xs">
-                    <Move size={11} />
+                  <span className="inline-flex items-center gap-1.5 bg-black/75 backdrop-blur-md text-white text-[11px] font-semibold px-3 py-1 rounded-full border border-white/20 shadow-xs">
+                    <Move size={12} />
                     <span>Drag photo to center face • Scroll to zoom</span>
                   </span>
                 </div>
@@ -348,7 +380,7 @@ export default function ImageCropperModal({
                 <button
                   type="button"
                   onClick={() => setZoom((prev) => Math.max(1, +(prev - 0.2).toFixed(1)))}
-                  className="p-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition"
+                  className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer"
                   title="Zoom Out"
                 >
                   <ZoomOut size={14} />
@@ -365,7 +397,7 @@ export default function ImageCropperModal({
                 <button
                   type="button"
                   onClick={() => setZoom((prev) => Math.min(3, +(prev + 0.2).toFixed(1)))}
-                  className="p-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition"
+                  className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer"
                   title="Zoom In"
                 >
                   <ZoomIn size={14} />
@@ -405,17 +437,17 @@ export default function ImageCropperModal({
             </div>
           </div>
 
-          {/* RIGHT: Real-Time Webinar Card Live Preview (5 Cols) */}
+          {/* RIGHT: Real-Time Event Card Live Preview (5 Cols) */}
           <div className="lg:col-span-5 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Eye size={16} className="text-[#07405C]" />
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                  Live Webinar Card Preview
+                  Card Mockup Preview
                 </h4>
               </div>
               <p className="text-[11px] text-slate-500 mb-3">
-                Preview how the photo appears inside the live card with the speaker name badge.
+                Real-time preview of how the framed photo will appear on the public event card.
               </p>
 
               {/* Card Container Mockup */}
@@ -423,15 +455,18 @@ export default function ImageCropperModal({
                 {/* Top Badges */}
                 <div className="flex items-center justify-between mb-3 text-[10px]">
                   <span className="rounded-full bg-[#DF1E26] text-white font-bold px-2.5 py-0.5 uppercase tracking-wide">
-                    Free Webinar
+                    Live Event
                   </span>
                   <span className="rounded-full bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 font-semibold">
                     Online Meet
                   </span>
                 </div>
 
-                {/* Framed Image Container with live transform */}
-                <div className="relative aspect-[4/3] w-full max-h-56 rounded-xl overflow-hidden border border-white/30 bg-slate-950 shadow-md">
+                {/* Framed Image Container in 4:3 matching public card */}
+                <div
+                  style={{ aspectRatio: `${aspectRatio}` }}
+                  className="relative w-full max-h-56 rounded-xl overflow-hidden border border-white/30 bg-slate-950 shadow-md"
+                >
                   <div
                     style={{
                       width: '100%',
@@ -443,11 +478,15 @@ export default function ImageCropperModal({
                     <img
                       src={imageSrc}
                       alt="Preview"
+                      draggable={false}
                       style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        transform: `translate(${pan.x * 0.7}px, ${pan.y * 0.7}px) rotate(${rotation}deg) scale(${
+                        position: 'absolute',
+                        left: `${baseLeft * mockupScale}px`,
+                        top: `${baseTop * mockupScale}px`,
+                        width: `${baseW * mockupScale}px`,
+                        height: `${baseH * mockupScale}px`,
+                        maxWidth: 'none',
+                        transform: `translate(${pan.x * mockupScale}px, ${pan.y * mockupScale}px) rotate(${rotation}deg) scale(${
                           flipH ? -1 : 1
                         }, 1) scale(${zoom})`,
                         transformOrigin: 'center center',
@@ -499,7 +538,7 @@ export default function ImageCropperModal({
                 {uploading ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    <span>Processing & Uploading...</span>
+                    <span>Saving Cropped Photo...</span>
                   </>
                 ) : (
                   <>

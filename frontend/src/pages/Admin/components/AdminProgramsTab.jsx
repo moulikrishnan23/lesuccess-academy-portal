@@ -99,7 +99,7 @@ export default function AdminProgramsTab({ showAlert }) {
 
   const openCreateModal = (defaultType = 'WEBINAR') => {
     setEditingProgram(null)
-    const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toLocaleDateString('en-CA')
     const defaultMode = defaultType === 'INTERNSHIP' ? 'OFFLINE' : 'ONLINE'
     setForm({
       type: defaultType,
@@ -172,11 +172,19 @@ export default function AdminProgramsTab({ showAlert }) {
     e.target.value = ''
   }
 
-  const openCropForExistingImage = () => {
+  const openCropForExistingImage = async () => {
     if (!form.imageUrl) return
     const resolvedUrl = getImageUrl(form.imageUrl)
-    setCropImageSource(resolvedUrl)
-    setIsCropModalOpen(true)
+    try {
+      const res = await apiClient.get(resolvedUrl, { responseType: 'blob' })
+      const blobUrl = URL.createObjectURL(res.data)
+      setCropImageSource(blobUrl)
+      setIsCropModalOpen(true)
+    } catch (err) {
+      console.warn('Blob fetch failed, falling back to direct URL:', err)
+      setCropImageSource(resolvedUrl)
+      setIsCropModalOpen(true)
+    }
   }
 
   const handleApplyCroppedImage = async (croppedFile) => {
@@ -640,32 +648,45 @@ export default function AdminProgramsTab({ showAlert }) {
                     </label>
 
                     {form.imageUrl ? (
-                      <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
-                        <img
-                          src={getImageUrl(form.imageUrl)}
-                          alt="Uploaded visual"
-                          className="h-14 w-14 rounded-lg object-cover border border-slate-200 shrink-0"
-                          onError={(e) => {
-                            e.currentTarget.src = '/tech/api.svg'
-                          }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-slate-700 truncate">{form.imageUrl}</p>
-                          <p className="text-[11px] text-emerald-600 font-medium">Image attached</p>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                            Current Image (4:3 Card Frame)
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
+                            ✓ Attached
+                          </span>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
+
+                        {/* Framed 4:3 Card Preview matching public card */}
+                        <div className="relative mx-auto w-full max-w-sm aspect-[4/3] rounded-xl overflow-hidden border border-slate-300 bg-slate-900 shadow-md group">
+                          <img
+                            src={getImageUrl(form.imageUrl)}
+                            alt="Current program visual"
+                            className="h-full w-full object-cover object-center"
+                            onError={(e) => {
+                              e.currentTarget.src = '/home/team/dummy.png'
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                            <span className="text-xs font-semibold text-white truncate">{form.imageUrl}</span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                           <button
                             type="button"
                             onClick={openCropForExistingImage}
-                            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-[#07405C] hover:bg-slate-50 transition cursor-pointer shadow-2xs"
-                            title="Crop & Frame Photo"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#07405C] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#024D72] transition cursor-pointer"
+                            title="Crop & Adjust Framing"
                           >
-                            <Crop size={13} />
-                            <span>Crop / Adjust</span>
+                            <Crop size={14} />
+                            <span>Crop / Adjust Image</span>
                           </button>
-                          <label className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer transition shadow-2xs">
-                            <Upload size={13} />
-                            <span>Replace</span>
+                          <label className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition cursor-pointer shadow-2xs">
+                            <Upload size={14} />
+                            <span>Replace Image</span>
                             <input
                               type="file"
                               accept="image/*"
@@ -677,10 +698,11 @@ export default function AdminProgramsTab({ showAlert }) {
                           <button
                             type="button"
                             onClick={handleRemoveImage}
-                            className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition cursor-pointer"
-                            title="Remove image"
+                            className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition cursor-pointer"
+                            title="Remove Image"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={14} />
+                            <span>Remove</span>
                           </button>
                         </div>
                       </div>
@@ -727,6 +749,7 @@ export default function AdminProgramsTab({ showAlert }) {
                     <input
                       type="date"
                       required
+                      min={new Date().toLocaleDateString('en-CA')}
                       value={form.eventDate}
                       onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
                       className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#07405C] focus:outline-none focus:ring-1 focus:ring-[#07405C]"

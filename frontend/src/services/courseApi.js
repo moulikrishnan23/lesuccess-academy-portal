@@ -57,6 +57,7 @@ function normalizeModule(raw) {
     // accordion call it `description`. Both are read so neither side has to move.
     description: raw.description ?? raw.content ?? '',
     displayOrder: raw.displayOrder ?? 0,
+    topics,
   }
 }
 
@@ -148,13 +149,19 @@ function normalizeCourse(raw) {
     price: raw.price ?? null, // NOT SERVED by CourseResponse
     discountPrice: raw.discountPrice ?? null, // NOT SERVED
     discountLabel: raw.discountLabel ?? null, // NOT SERVED
+    badge: raw.badge ?? null,
+    badgeText: raw.badgeText ?? raw.badgeLabel ?? null,
     badgeLabel: raw.badgeLabel ?? raw.badgeText ?? null,
+    isActive: raw.isActive !== undefined ? raw.isActive : (raw.active !== undefined ? raw.active : (raw.status !== 'INACTIVE')),
+    displayOrder: raw.displayOrder ?? 0,
+    placementAssistance: Boolean(raw.placementAssistance),
+    enrollUrl: raw.enrollUrl ?? null,
     iconUrl: raw.iconUrl ?? null, // NOT SERVED
     heroImageUrl: raw.heroImageUrl ?? null, // NOT SERVED
     // The backend calls it `syllabusUrl` (Course.syllabus_url); the fixtures and
     // the download button call it `syllabusFileUrl`.
     syllabusFileUrl: raw.syllabusFileUrl ?? raw.syllabusUrl ?? null,
-    status: raw.status ?? null, // NOT SERVED — the backend models this as a boolean
+    status: raw.status ?? (raw.isActive === false ? 'INACTIVE' : 'PUBLISHED'),
     // Drives WhatYoullLearnToDoSection. Was hardcoded per category in the
     // component; it is course content, so it lives on the course.
     roleHeading: raw.roleHeading ?? null, // NOT SERVED
@@ -186,7 +193,7 @@ export function normalizeCourseDetail(raw) {
     // NOT sorted here: displayOrder on tech stack items restarts at 1 within
     // each group, so a global sort would interleave Front End with Back End.
     // TechStackSection groups first, then sorts within each group.
-    techStack: readCollection(raw, 'techStack').map(normalizeTechStackItem),
+    techStack: techItems.map(normalizeTechStackItem),
   }
 }
 
@@ -218,10 +225,6 @@ export async function getAll({ signal } = {}) {
     }
     throw err
   }
-
-  const { data } = await apiClient.get('/api/courses', { signal })
-  // Backend wraps in ApiResponse<T>; real list is in data.data
-  return normalizeCourseList(data?.data ?? data)
 }
 
 /**

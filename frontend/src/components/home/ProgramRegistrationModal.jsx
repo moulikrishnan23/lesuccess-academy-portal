@@ -1,10 +1,46 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, Calendar, Clock, Video, Briefcase, CheckCircle2, Send, AlertCircle, MapPin } from 'lucide-react'
+import { X, Calendar, Clock, Video, Briefcase, CheckCircle2, Send, AlertCircle, MapPin, Copy } from 'lucide-react'
 import apiClient from '../../services/apiClient.js'
 import { normalizeMobile } from '../../utils/validation.js'
 
-export default function ProgramRegistrationModal({ isOpen, onClose, program, activeType = 'WEBINAR' }) {
+function formatModalDate(dateStr) {
+  if (!dateStr) return null
+  try {
+    const parts = String(dateStr).trim().split('-')
+    if (parts.length !== 3) return dateStr
+    const [y, m, d] = parts.map(Number)
+    const date = new Date(y, m - 1, d)
+    if (Number.isNaN(date.getTime())) return dateStr
+    return date.toLocaleDateString('en-IN', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return dateStr
+  }
+}
+
+function formatModalTime(timeStr) {
+  if (!timeStr) return null
+  try {
+    const parts = String(timeStr).trim().split(':')
+    if (parts.length < 2) return timeStr
+    const [h, min] = parts.map(Number)
+    const date = new Date(2000, 0, 1, h, min)
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+  } catch {
+    return timeStr
+  }
+}
+
+export default function ProgramRegistrationModal({ isOpen, onClose, program, activeType = 'WEBINAR', onRegisterSuccess }) {
   const [name, setName] = useState('')
   const [mobileNumber, setMobileNumber] = useState('')
   const [email, setEmail] = useState('')
@@ -12,6 +48,36 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [serverError, setServerError] = useState('')
+  const [registrationResult, setRegistrationResult] = useState(null)
+  const [copiedMeet, setCopiedMeet] = useState(false)
+
+  const resolvedType = (program?.type || activeType || 'WEBINAR').toUpperCase()
+  const isWebinar = resolvedType === 'WEBINAR'
+  const isWorkshop = resolvedType === 'WORKSHOP'
+  const isInternship = resolvedType === 'INTERNSHIP'
+
+  const eventTypeName = isWebinar ? 'Webinar' : isWorkshop ? 'Workshop' : 'Internship'
+  const modalHeading = isWebinar
+    ? 'Register for Webinar'
+    : isWorkshop
+    ? 'Register for Workshop'
+    : 'Apply for Internship'
+
+  const actionText = isWebinar
+    ? 'Register for Webinar'
+    : isWorkshop
+    ? 'Register for Workshop'
+    : 'Apply for Internship'
+
+  const displayEventDate =
+    program?.displayDate || formatModalDate(program?.eventDate) || 'Upcoming'
+  const formattedStartTime = formatModalTime(program?.startTime)
+  const formattedEndTime = formatModalTime(program?.endTime)
+  const displayEventTime =
+    program?.displayTime ||
+    (formattedStartTime && formattedEndTime
+      ? `${formattedStartTime} - ${formattedEndTime}`
+      : formattedStartTime || 'Flexible Timings')
 
   // Close on Escape key
   useEffect(() => {
@@ -67,7 +133,7 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
     }
 
     if (!program?.id) {
-      setServerError('Unable to register: Invalid program selected.')
+      setServerError(`Unable to register: Selected ${eventTypeName.toLowerCase()} is missing or invalid. Please close and re-select the event.`)
       return
     }
 
@@ -83,7 +149,19 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
         venueAddress: isProgOffline ? (program.venueAddress || program.platform) : undefined,
       }
 
-      await apiClient.post(`/api/upcoming-programs/${program.id}/register`, payload)
+      const res = await apiClient.post(`/api/upcoming-programs/${program.id}/register`, payload)
+      const regData = res?.data?.data
+      setRegistrationResult(regData)
+      if (regData) {
+        try {
+          const stored = JSON.parse(localStorage.getItem('lesuccess_registered_events') || '{}')
+          stored[program.id] = regData
+          localStorage.setItem('lesuccess_registered_events', JSON.stringify(stored))
+        } catch (e) {
+          console.error('Failed to cache registration', e)
+        }
+      }
+      onRegisterSuccess?.(program.id, regData)
       setIsSuccess(true)
     } catch (err) {
       const msg =
@@ -103,11 +181,10 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
     setErrors({})
     setIsSuccess(false)
     setServerError('')
+    setRegistrationResult(null)
+    setCopiedMeet(false)
     onClose()
   }
-
-  const isWebinar = activeType === 'WEBINAR'
-  const actionText = isWebinar ? 'Register for Webinar' : 'Apply for Internship'
 
   return (
     <AnimatePresence>
@@ -150,7 +227,7 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
             <div className="pr-10">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DF1E26]/10 px-2.5 py-0.5 text-xs font-bold text-[#DF1E26] border border-[#DF1E26]/20">
-                  {program?.badge || (isWebinar ? 'Free Webinar' : 'Internship Program')}
+                  {program?.badge || program?.label || (isWebinar ? 'Free Webinar' : isWorkshop ? 'Hands-on Workshop' : 'Internship Program')}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
                   {isProgOffline ? <MapPin size={12} className="text-[#DF1E26]" /> : <Video size={12} className="text-[#07405C]" />}
@@ -161,7 +238,7 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
                 id="program-modal-title"
                 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900"
               >
-                {program?.title || actionText}
+                {modalHeading}
               </h2>
               {program?.topic && (
                 <p className="mt-1 text-xs sm:text-sm text-slate-500 line-clamp-2">
@@ -171,19 +248,15 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
             </div>
 
             {/* Program Quick Specs */}
-            <div className="mt-4 flex flex-wrap gap-3 py-2.5 px-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-600">
-              {program?.displayDate && (
-                <div className="flex items-center gap-1.5">
-                  <Calendar size={14} className="text-[#DF1E26]" />
-                  <span className="font-semibold text-slate-800">{program.displayDate}</span>
-                </div>
-              )}
-              {program?.displayTime && (
-                <div className="flex items-center gap-1.5">
-                  <Clock size={14} className="text-[#07405C]" />
-                  <span className="font-semibold text-slate-800">{program.displayTime}</span>
-                </div>
-              )}
+            <div className="mt-3.5 flex flex-wrap gap-3 py-2 px-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-600">
+              <div className="flex items-center gap-1.5">
+                <Calendar size={14} className="text-[#DF1E26]" />
+                <span className="font-semibold text-slate-800">{displayEventDate}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock size={14} className="text-[#07405C]" />
+                <span className="font-semibold text-slate-800">{displayEventTime}</span>
+              </div>
               {isProgOffline ? (
                 <div className="flex items-center gap-1.5 min-w-0">
                   <MapPin size={14} className="text-[#DF1E26] shrink-0" />
@@ -201,15 +274,76 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
 
             {/* Content Body */}
             {isSuccess ? (
-              <div className="py-8 text-center animate-fadeIn">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <div className="py-6 text-center animate-fadeIn">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                   <CheckCircle2 size={32} />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Registration Confirmed!</h3>
-                <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-sm mx-auto">
+                <p className="mt-1.5 text-xs sm:text-sm text-slate-600 max-w-sm mx-auto">
                   Thank you, <span className="font-semibold text-slate-900">{name}</span>. Your seat for{' '}
-                  <span className="font-semibold text-slate-900">{program?.title}</span> has been reserved. We will send reminders and joining details to your contact number.
+                  <span className="font-semibold text-slate-900">{program?.title}</span> ({eventTypeName}) has been confirmed.
                 </p>
+
+                {/* Live Session Access Card for Online Events when meet link is provided */}
+                {!isProgOffline && (registrationResult?.meetLink || program?.meetLink) && (
+                  <div className="mt-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/80 p-4 text-left shadow-xs">
+                    <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs sm:text-sm mb-1.5">
+                      <Video size={16} className="text-emerald-600 shrink-0" />
+                      <span>Your Live Session Access Link</span>
+                    </div>
+                    <p className="text-xs text-emerald-800 mb-3">
+                      Your Google Meet link has been unlocked. Join directly at the scheduled time:
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                      <a
+                        href={registrationResult?.meetLink || program?.meetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#07405C] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-[#06334a] transition active:scale-98"
+                      >
+                        <Video size={15} />
+                        <span>Join Google Meet Now</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const link = registrationResult?.meetLink || program?.meetLink
+                          if (link && navigator.clipboard) {
+                            navigator.clipboard.writeText(link)
+                            setCopiedMeet(true)
+                            setTimeout(() => setCopiedMeet(false), 2500)
+                          }
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition cursor-pointer"
+                      >
+                        {copiedMeet ? (
+                          <>
+                            <CheckCircle2 size={14} className="text-emerald-600" />
+                            <span>Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={14} />
+                            <span>Copy Link</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {isProgOffline && (
+                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-left text-xs text-amber-900">
+                    <div className="font-bold flex items-center gap-1.5 text-amber-950 mb-1">
+                      <MapPin size={14} className="text-[#DF1E26]" />
+                      <span>In-Person Attendance Confirmed</span>
+                    </div>
+                    <div>
+                      {program?.venueAddress || 'LeSuccess Campus'} — Please arrive 15 minutes before the session starts.
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="button"
                   onClick={handleResetAndClose}
@@ -226,6 +360,25 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
                     <span>{serverError}</span>
                   </div>
                 )}
+
+                {/* Selected Event / Program (Read-Only) */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      {eventTypeName} *
+                    </label>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#07405C] bg-[#07405C]/10 px-2 py-0.5 rounded">
+                      Event Type: {eventTypeName}
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    readOnly
+                    value={program?.title || ''}
+                    disabled
+                    className="h-10.5 w-full rounded-xl border border-slate-200 bg-slate-100/80 px-3.5 text-xs sm:text-sm font-bold text-slate-800 cursor-not-allowed select-none"
+                  />
+                </div>
 
                 {/* Name */}
                 <div>

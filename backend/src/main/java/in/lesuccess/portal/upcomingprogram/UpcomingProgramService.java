@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Slf4j
@@ -19,24 +20,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UpcomingProgramService {
 
+    private static final ZoneId ZONE_IST = ZoneId.of("Asia/Kolkata");
+
     private final UpcomingProgramRepository repository;
     private final UpcomingProgramRegistrationRepository registrationRepository;
 
     @Transactional(readOnly = true)
     public List<UpcomingProgramResponse> listUpcoming(UpcomingProgramType type) {
+        LocalDate today = LocalDate.now(ZONE_IST);
         List<UpcomingProgram> programs = type != null
-                ? repository.findUpcomingByType(type, LocalDate.now())
-                : repository.findUpcoming(LocalDate.now());
+                ? repository.findUpcomingByType(type, today)
+                : repository.findUpcoming(today);
 
         return programs.stream()
-                .map(p -> UpcomingProgramResponse.from(p, registrationRepository.countByProgramId(p.getId())))
+                .map(p -> UpcomingProgramResponse.from(p, registrationRepository.countByProgramId(p.getId()), false))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public UpcomingProgramResponse getById(Long id) {
         UpcomingProgram program = findOrThrow(id);
-        return UpcomingProgramResponse.from(program, registrationRepository.countByProgramId(id));
+        return UpcomingProgramResponse.from(program, registrationRepository.countByProgramId(id), false);
     }
 
     @Transactional(readOnly = true)
@@ -51,7 +55,7 @@ public class UpcomingProgramService {
 
     @Transactional
     public UpcomingProgramResponse create(UpcomingProgramRequest request) {
-        if (request.getEventDate() != null && request.getEventDate().isBefore(LocalDate.now())) {
+        if (request.getEventDate() != null && request.getEventDate().isBefore(LocalDate.now(ZONE_IST))) {
             throw new InvalidRequestException("Event date must be today or in the future");
         }
 
