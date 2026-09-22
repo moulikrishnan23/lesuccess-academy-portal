@@ -1,7 +1,15 @@
 import apiClient from './apiClient.js'
 import { isMockEnabled, mockSubmitLead } from '../mocks/mockGateway.js'
 
-/** Where a lead came from. Each form sends its own. */
+/**
+ * Where a lead came from. Each form sends its own.
+ *
+ * Both values are members of the backend's LeadSource enum (which also declares
+ * HOME_DEMO_FORM and HOME_CONNECT_FORM, unused here), so they deserialize.
+ * Whether a given source is actually accepted over HTTP is a separate runtime
+ * decision — see `lesuccess.leads.accepted-sources` — and cannot be settled
+ * from this file.
+ */
 export const LEAD_SOURCE = {
   COURSE_ENROLL_FORM: 'COURSE_ENROLL_FORM',
   SERVICE_CTA_FORM: 'SERVICE_CTA_FORM',
@@ -41,18 +49,27 @@ export async function submit(payload, { signal, live = false } = {}) {
   /*
    * `live` opts a single caller out of the mock gateway.
    *
-   * The Service page CTA posts for real while VITE_USE_MOCKS stays 'true' for
-   * the rest of the app. Flipping that flag globally would take the Home and
-   * Course pages live at the same time, which is out of scope — and their
-   * services do not yet unwrap the ApiResponse envelope, so they would render
-   * empty rather than fail loudly.
+   * It mattered when VITE_USE_MOCKS was 'true' and only the Service page CTA
+   * posted for real. That flag is now 'false', so this is a no-op on the normal
+   * path — it is kept because it is the escape hatch that lets someone turn the
+   * mocks back on for the catalog (and their ?mockState= switches) while this
+   * one form still hits the API.
    */
   if (!live && isMockEnabled()) {
     return mockSubmitLead(body)
   }
 
   const { data } = await apiClient.post('/api/leads', body, { signal })
-  return data
+  /*
+   * Backend wraps in ApiResponse<LeadResponse>, so the created lead is at
+   * data.data — unwrapped here so the live and mock paths return the same
+   * thing rather than an envelope on one and a lead on the other.
+   *
+   * A honeypot-suppressed 201 deliberately carries `data: null` while looking
+   * identical otherwise (see LeadController), so null is a SUCCESS here, not a
+   * failure. Callers must not treat a null return as an error.
+   */
+  return data?.data ?? null
 }
 
 export default { submit, LEAD_SOURCE }

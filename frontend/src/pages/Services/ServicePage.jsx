@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   FileSearch,
@@ -16,7 +17,9 @@ import ProcessStepCard from '../../components/cards/ProcessStepCard.jsx'
 import LeadCaptureForm from '../../components/forms/LeadCaptureForm.jsx'
 import SectionHeading from '../../components/ui/SectionHeading.jsx'
 import useDocumentMeta from '../../hooks/useDocumentMeta.js'
+import useProcessSteps from '../../hooks/useProcessSteps.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
+import useServiceOfferings from '../../hooks/useServiceOfferings.js'
 import {
   fadeUp,
   motionSafe,
@@ -30,9 +33,11 @@ import { LEAD_SOURCE } from '../../services/leadApi.js'
  * file rather than inline in the markup so the wording can be checked against
  * the reference without reading through JSX.
  *
- * Static on purpose: no CMS wiring was asked for. When /api/services exists,
- * these arrays are what a useServices() hook would return — same shape, same
- * field names — so the components below would not change.
+ * These are no longer the only source: /api/services and /api/process-steps
+ * exist now and are read by the hooks below. The arrays stay as the FALLBACK.
+ * The `service` table is unseeded, so GET /api/services returns [] today — if
+ * an empty list replaced this copy the page would go blank, so empty, failed
+ * and still-loading all resolve back to these arrays. See `resolveList`.
  */
 const INSTITUTION_SERVICES = [
   {
@@ -108,6 +113,74 @@ const PROCESS_STEPS = [
 ]
 
 /*
+ * iconUrl → lucide component.
+ *
+ * The cards take an icon COMPONENT (`icon: Icon`), but the backend stores a
+ * string. Only icons already imported in this file are mappable — this is a
+ * lookup, not a dynamic import, so an unknown name cannot pull in new code.
+ *
+ * Keys are normalized (basename, extension dropped, non-alphanumerics removed,
+ * lowercased) so "MapPinned", "map-pinned" and "/icons/map_pinned.svg" all hit
+ * the same entry. Anything unrecognised — or null, which is what every seeded
+ * process_step row carries today — returns undefined and the caller keeps the
+ * static icon, so current visuals cannot regress.
+ */
+const ICON_COMPONENTS = {
+  FileSearch,
+  HandFist,
+  Handshake,
+  MapPinned,
+  MessagesSquare,
+  Network,
+  Presentation,
+  Rocket,
+  UserRoundCog,
+  UsersRound,
+}
+
+const ICON_LOOKUP = Object.entries(ICON_COMPONENTS).reduce(
+  (acc, [name, component]) => {
+    acc[name.toLowerCase()] = component
+    return acc
+  },
+  {},
+)
+
+function iconFromUrl(iconUrl) {
+  if (typeof iconUrl !== 'string') return undefined
+
+  const basename = iconUrl.split(/[\\/]/).pop() ?? ''
+  const key = basename
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[^a-z0-9]/gi, '')
+    .toLowerCase()
+
+  return key ? ICON_LOOKUP[key] : undefined
+}
+
+/**
+ * The fallback rule, in one place: a live list is used only when it is a
+ * non-empty array. Loading (`[]`), a failed fetch (`[]`) and an unseeded table
+ * (`[]`) are therefore indistinguishable, and all three keep the static copy.
+ */
+function resolveList(live, fallback) {
+  return Array.isArray(live) && live.length > 0 ? live : fallback
+}
+
+/**
+ * A live ServiceOfferingResponse rendered in the shape FeatureCard wants.
+ * `fallbackIcon` is the static card's icon at the same position, so a row with
+ * no usable iconUrl still draws the artwork the page draws today.
+ */
+function toServiceCard(item, fallbackIcon) {
+  return {
+    title: item.title,
+    description: item.description,
+    icon: iconFromUrl(item.iconUrl) ?? fallbackIcon,
+  }
+}
+
+/*
  * Vertical offsets for the four steps: odd cards drop, even cards rise, so the
  * row alternates evenly rather than wandering.
  *
@@ -118,15 +191,6 @@ const PROCESS_STEPS = [
  * four boxes identical, which is what the reference shows.
  */
 const STEP_OFFSETS = ['lg:mb-10', 'lg:mt-10', 'lg:mb-10', 'lg:mt-10']
-
-/*
- * "You looking for?" options. The reference shows the control but not its
- * choices, so these are the page's own service names rather than invented
- * categories — nothing here is a service the page does not already describe.
- */
-const ENQUIRY_OPTIONS = [...INSTITUTION_SERVICES, ...CORPORATE_SERVICES].map(
-  ({ title }) => ({ value: title, label: title }),
-)
 
 /*
  * Band photography. Both files are stock placeholders — real photographs, but
@@ -187,6 +251,60 @@ function ServiceBand({ id, labelledBy, image, heading, children }) {
  */
 export default function ServicePage() {
   const reduced = useReducedMotion()
+
+  /*
+   * Live content. Both hooks swallow their own failures into an empty list, so
+   * nothing here can throw and no loading branch is needed: while a request is
+   * in flight the lists are empty, which resolves to the static copy, so the
+   * page renders its current content immediately and swaps only if real rows
+   * arrive.
+   */
+  const { institution: liveInstitution, corporate: liveCorporate } =
+    useServiceOfferings()
+  const { steps: liveSteps } = useProcessSteps()
+
+  const institutionServices = useMemo(() => {
+    const live = resolveList(liveInstitution, null)
+    if (!live) return INSTITUTION_SERVICES
+    return live.map((item, index) =>
+      toServiceCard(item, INSTITUTION_SERVICES[index]?.icon),
+    )
+  }, [liveInstitution])
+
+  const corporateServices = useMemo(() => {
+    const live = resolveList(liveCorporate, null)
+    if (!live) return CORPORATE_SERVICES
+    return live.map((item, index) =>
+      toServiceCard(item, CORPORATE_SERVICES[index]?.icon),
+    )
+  }, [liveCorporate])
+
+  const processSteps = useMemo(() => {
+    const live = resolveList(liveSteps, null)
+    if (!live) return PROCESS_STEPS
+    return live.map((item, index) => ({
+      // The cards show "01".."04"; the backend sends an int stepNumber.
+      step: String(item.stepNumber ?? index + 1).padStart(2, '0'),
+      title: item.title,
+      description: item.description,
+      icon: iconFromUrl(item.iconUrl) ?? PROCESS_STEPS[index]?.icon,
+    }))
+  }, [liveSteps])
+
+  /*
+   * "You looking for?" options — the page's own service names rather than
+   * invented categories. Derived from the RESOLVED lists, not the static arrays
+   * at module scope: computing this once at import time would have left the
+   * dropdown showing stale copy whenever live rows differed from the fallback.
+   */
+  const enquiryOptions = useMemo(
+    () =>
+      [...institutionServices, ...corporateServices].map(({ title }) => ({
+        value: title,
+        label: title,
+      })),
+    [institutionServices, corporateServices],
+  )
 
   useDocumentMeta({
     title: 'Services — LeSuccess Academy',
@@ -260,7 +378,7 @@ export default function ServicePage() {
           */
           className="grid list-none gap-6 p-0 sm:auto-rows-fr sm:grid-cols-2"
         >
-          {INSTITUTION_SERVICES.map((service, index) => (
+          {institutionServices.map((service, index) => (
             <FeatureCard
               key={service.title}
               icon={service.icon}
@@ -313,7 +431,7 @@ export default function ServicePage() {
           // Equal-size, staggered boxes — same technique as institutions above.
           className="grid list-none gap-6 p-0 md:auto-rows-fr md:grid-cols-2"
         >
-          {CORPORATE_SERVICES.map((service, index) => (
+          {corporateServices.map((service, index) => (
             <FeatureCard
               key={service.title}
               icon={service.icon}
@@ -357,7 +475,7 @@ export default function ServicePage() {
           viewport={ONCE_IN_VIEW}
           className="mt-12 grid list-none gap-6 p-0 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4"
         >
-          {PROCESS_STEPS.map((item, index) => (
+          {processSteps.map((item, index) => (
             <ProcessStepCard
               key={item.step}
               step={item.step}
@@ -421,7 +539,7 @@ export default function ServicePage() {
           >
             <LeadCaptureForm
               layout="row"
-              options={ENQUIRY_OPTIONS}
+              options={enquiryOptions}
               source={LEAD_SOURCE.SERVICE_CTA_FORM}
             />
           </motion.div>

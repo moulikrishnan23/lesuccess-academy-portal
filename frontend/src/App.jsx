@@ -26,9 +26,14 @@ import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
 import TrainerDashboard from "./pages/Trainer/TrainerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
+import useAdminShortcut from "./hooks/useAdminShortcut.js";
 
 const AppContent = () => {
   const location = useLocation();
+
+  // Ctrl+Shift+Alt+1 jumps to the admin area. Mounted here because this is the
+  // one component inside both BrowserRouter and AuthProvider.
+  useAdminShortcut();
   const isDashboard =
     location.pathname.startsWith("/admin") ||
     location.pathname.startsWith("/trainer");

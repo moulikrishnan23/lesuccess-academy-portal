@@ -25,7 +25,12 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(corsProperties.getAllowedOrigins());
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // PATCH is required by the demo-booking and course-order endpoints
+        // (PATCH /api/admin/demo-bookings/{id}/status and
+        // PATCH /api/admin/courses/{id}/order). Without it the browser's
+        // preflight fails and those endpoints are unreachable from the SPA,
+        // even though the API serves them.
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
