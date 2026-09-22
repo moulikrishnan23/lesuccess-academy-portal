@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Clock3,
@@ -7,7 +8,6 @@ import {
   Layers3,
   ArrowUpRight,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import Skeleton, { SkeletonText } from "../ui/Skeleton.jsx";
 import useCourses from "../../hooks/useCourses.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
@@ -15,23 +15,11 @@ import CourseBadge from "../ui/CourseBadge.jsx";
 import { formatDuration } from "../../utils/formatters.js";
 import { downloadSyllabus } from "../../utils/syllabusUtils.js";
 import { getCourseLogo } from "../../utils/imageUtils.js";
-import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import { FloatingOrbs, TechGrid, SectionHeading } from "../ui/BackgroundMotion.jsx";
-
-/*
- * The four courses this section leads with, in the order they appear. Titles,
- * durations and badges are no longer written here — they come off the same
- * course records the detail pages render, so the home page cannot advertise a
- * duration the page it links to disagrees with. Curate this row by editing the
- * slugs.
- */
-// Slugs are derived by CourseResponse.toSlug(name) on the backend.
-const FEATURED_SLUGS = [
-  "full-stack-java",
-  "data-analytics",
-  "python-full-stack-development",
-  "aws-and-devops",
-];
+import {
+  isEligibleCourse,
+  sortCoursesByOffer,
+} from "../../utils/courseOfferUtils.js";
 
 const LOGO_BY_SLUG = {
   "full-stack-java": "/tech/java.svg",
@@ -40,6 +28,10 @@ const LOGO_BY_SLUG = {
   "python-full-stack-development-course-in-coimbatore": "/tech/python.svg",
   "aws-and-devops": "/tech/aws.svg",
   "aws-devops": "/tech/aws.svg",
+  "mean-full-stack": "/tech/javascript.svg",
+  "mern-full-stack": "/tech/react.svg",
+  "data-science": "/tech/python.svg",
+  "artificial-intelligence-and-machine-learning": "/tech/python.svg",
 };
 
 const DEFAULT_BADGES = {
@@ -49,6 +41,7 @@ const DEFAULT_BADGES = {
   "python-full-stack-development-course-in-coimbatore": { badge: "TRENDING", badgeText: "Trending" },
   "aws-and-devops": { badge: "HIGH_DEMAND", badgeText: "High Demand" },
   "aws-devops": { badge: "HIGH_DEMAND", badgeText: "High Demand" },
+  "mean-full-stack": { badge: "OFFER", badgeText: "50% Offer" },
 };
 
 function CourseCardSkeleton() {
@@ -70,27 +63,30 @@ function CourseCardSkeleton() {
 
 const ChooseYourPath = () => {
   const { courses, isLoading, error } = useCourses();
-  const reduced = useReducedMotion();
+  useReducedMotion(); // Hook for reduced motion preferences
 
-  // Match featured courses flexibly across slugs
-  const featured = FEATURED_SLUGS.map((slug) => {
-    const found = courses.find(
-      (c) =>
-        c.slug === slug ||
-        c.slug === slug.replace('-and-', '-') ||
-        (slug.includes('java') && c.slug?.includes('java')) ||
-        (slug.includes('data-analytics') && c.slug?.includes('data-analytics')) ||
-        (slug.includes('python') && c.slug?.includes('python')) ||
-        ((slug.includes('aws') || slug.includes('devops')) && (c.slug?.includes('aws') || c.slug?.includes('devops')))
-    );
-    if (!found) return null;
-    const defaultBadge = DEFAULT_BADGES[slug] || DEFAULT_BADGES[found.slug] || {};
-    return {
-      ...found,
-      badge: found.badge || defaultBadge.badge,
-      badgeText: found.badgeText || found.badgeLabel || defaultBadge.badgeText,
-    };
-  }).filter(Boolean);
+  // Dynamically filter and sort courses:
+  // 1. Highest offer percentage first (e.g. 50% -> 30% -> 20%)
+  // 2. Then by displayOrder for remaining badged / featured courses
+  const featured = useMemo(() => {
+    if (!Array.isArray(courses) || courses.length === 0) return [];
+
+    const eligible = courses.filter(isEligibleCourse);
+    const sourceList = eligible.length > 0 ? eligible : courses.filter((c) => c.isActive !== false);
+
+    const sorted = sortCoursesByOffer(sourceList);
+
+    return sorted.map((course) => {
+      const defaultBadge = DEFAULT_BADGES[course.slug] || {};
+      const badge = course.badge || defaultBadge.badge;
+      const badgeText = course.badgeText || course.badgeLabel || defaultBadge.badgeText;
+      return {
+        ...course,
+        badge,
+        badgeText,
+      };
+    });
+  }, [courses]);
 
   /*
    * A failed catalog fetch hides the section rather than putting an error box
@@ -121,7 +117,7 @@ const ChooseYourPath = () => {
             aria-label="Loading featured courses"
             className="mt-14 grid gap-8 md:grid-cols-2"
           >
-            {Array.from({ length: FEATURED_SLUGS.length }, (_, index) => (
+            {Array.from({ length: 4 }, (_, index) => (
               <CourseCardSkeleton key={index} />
             ))}
           </div>
@@ -129,7 +125,7 @@ const ChooseYourPath = () => {
           <div className="mt-14 grid gap-8 md:grid-cols-2">
             {featured.map((course) => (
               <div
-                key={course.slug}
+                key={course.slug || course.id}
                 className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-8 shadow-[0_4px_20px_rgba(7,64,92,0.06)] hover:shadow-[0_22px_45px_rgba(7,64,92,0.12)] hover:-translate-y-2 hover:border-[#07405C]/35 transition-all duration-300 text-left"
               >
                 {/* Subtle top brand accent line with faint resting presence */}
@@ -145,7 +141,7 @@ const ChooseYourPath = () => {
                   <div className="flex items-center gap-4">
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50 p-2.5 shadow-2xs transition-all duration-300 group-hover:scale-105 group-hover:border-[#07405C]/20 group-hover:bg-[#07405C]/5">
                       <img
-                        src={getCourseLogo(course) || LOGO_BY_SLUG[course.slug]}
+                        src={getCourseLogo(course) || LOGO_BY_SLUG[course.slug] || "/tech/api.svg"}
                         alt=""
                         width={40}
                         height={40}

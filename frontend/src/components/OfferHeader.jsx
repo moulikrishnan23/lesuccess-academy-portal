@@ -1,105 +1,49 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../services/apiClient.js";
 import useCourses from "../hooks/useCourses.js";
+import {
+  BADGE_THEMES,
+  getBadgeTheme,
+  getCourseBadgeType,
+  getCourseOfferPercentage,
+  isEligibleCourse,
+  sortCoursesByOffer,
+  formatCourseOfferHeadline,
+} from "../utils/courseOfferUtils.js";
 
-/**
- * BADGE_THEMES defines the unified configuration for each course badge.
- * This guarantees the badge text, background color, text color, and border
- * are always tied together as one rotating state and cannot drift out of sync.
- *
- * Color palette is derived directly from the project's brand design system:
- * - Special Offer: Translucent frosted white pill matching existing OfferHeader
- * - Trending Course: Purple brand pill matching Admin Courses palette ("Trending (Purple)")
- * - Most Enrolled: Blue brand pill matching Admin Courses palette ("Most Enrolled (Blue)")
- * - High Demand: Emerald/Green brand pill matching Admin Courses palette ("High Demand (Green)")
- */
-const BADGE_THEMES = {
-  "Special Offer": {
-    type: "Special Offer",
-    badgeClasses: "bg-white/20 text-white border-white/30 shadow-xs",
-    background: "bg-white/20",
-    textColor: "text-white",
-    borderColor: "border-white/30",
-  },
-  "Trending Course": {
-    type: "Trending Course",
-    badgeClasses: "bg-purple-500/30 text-white border-purple-300/40 shadow-xs",
-    background: "bg-purple-500/30",
-    textColor: "text-white",
-    borderColor: "border-purple-300/40",
-  },
-  "Most Enrolled": {
-    type: "Most Enrolled",
-    badgeClasses: "bg-blue-500/30 text-white border-blue-300/40 shadow-xs",
-    background: "bg-blue-500/30",
-    textColor: "text-white",
-    borderColor: "border-blue-300/40",
-  },
-  "High Demand": {
-    type: "High Demand",
-    badgeClasses: "bg-emerald-500/30 text-white border-emerald-300/40 shadow-xs",
-    background: "bg-emerald-500/30",
-    textColor: "text-white",
-    borderColor: "border-emerald-300/40",
-  },
-};
-
-const ORDERED_BADGE_TYPES = [
-  "Special Offer",
-  "Trending Course",
-  "Most Enrolled",
-  "High Demand",
-];
-
-function getBadgeTheme(item, index = 0) {
-  if (!item) return BADGE_THEMES["Special Offer"];
-
-  const rawType = item.badgeType || item.type || item.badge;
-  if (rawType) {
-    const rawLower = String(rawType).toLowerCase().trim();
-    if (rawLower.includes("offer")) return BADGE_THEMES["Special Offer"];
-    if (rawLower.includes("trend")) return BADGE_THEMES["Trending Course"];
-    if (rawLower.includes("enroll")) return BADGE_THEMES["Most Enrolled"];
-    if (rawLower.includes("demand")) return BADGE_THEMES["High Demand"];
-  }
-
-  if (item.text) {
-    const textLower = item.text.toLowerCase();
-    if (textLower.includes("trend")) return BADGE_THEMES["Trending Course"];
-    if (textLower.includes("most enrolled") || textLower.includes("enrolled")) return BADGE_THEMES["Most Enrolled"];
-    if (textLower.includes("high demand") || textLower.includes("demand")) return BADGE_THEMES["High Demand"];
-    if (textLower.includes("offer") || textLower.includes("special offer")) return BADGE_THEMES["Special Offer"];
-  }
-
-  const fallbackKey = ORDERED_BADGE_TYPES[index % ORDERED_BADGE_TYPES.length];
-  return BADGE_THEMES[fallbackKey] || BADGE_THEMES["Special Offer"];
-}
-
-const FALLBACK = [
+const FALLBACK_ITEMS = [
   {
     badgeType: "Special Offer",
+    badgeTheme: BADGE_THEMES["Special Offer"],
     text: "Data Analytics Course - 30% Offer 10 Days Only - Limited Seats!",
     linkLabel: "Enroll Now",
     linkUrl: "/courses/data-analytics",
+    slug: "data-analytics",
   },
   {
     badgeType: "Trending Course",
+    badgeTheme: BADGE_THEMES["Trending Course"],
     text: "Python Full Stack Development - Industry-Ready Curriculum with 100% Placement Support!",
     linkLabel: "Enroll Now",
     linkUrl: "/courses/python-full-stack-development",
+    slug: "python-full-stack-development",
   },
   {
     badgeType: "Most Enrolled",
+    badgeTheme: BADGE_THEMES["Most Enrolled"],
     text: "Java Full Stack Development - Enterprise Spring Boot & Microservices Masterclass!",
     linkLabel: "Enroll Now",
     linkUrl: "/courses/full-stack-java",
+    slug: "full-stack-java",
   },
   {
     badgeType: "High Demand",
+    badgeTheme: BADGE_THEMES["High Demand"],
     text: "AWS with DevOps Certification - Hands-on Cloud, Docker & Kubernetes Training!",
     linkLabel: "Enroll Now",
     linkUrl: "/courses/aws-and-devops",
+    slug: "aws-and-devops",
   },
 ];
 
@@ -107,11 +51,16 @@ const INTERVAL_MS = 5000;
 const FADE_MS = 400;
 
 const OfferHeader = () => {
-  const [announcements, setAnnouncements] = useState(FALLBACK);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { courses } = useCourses();
+
+  const [announcementsFromApi, setAnnouncementsFromApi] = useState([]);
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const timerRef = useRef(null);
 
+  // Attempt to fetch any custom announcements from backend
   useEffect(() => {
     const controller = new AbortController();
     apiClient
@@ -119,22 +68,69 @@ const OfferHeader = () => {
       .then(({ data }) => {
         const list = data?.data;
         if (Array.isArray(list) && list.length > 0) {
-          setAnnouncements(list);
+          setAnnouncementsFromApi(list);
         }
       })
-      .catch(() => {/* keep fallback */});
+      .catch(() => {
+        /* Fall back gracefully to course data */
+      });
     return () => controller.abort();
   }, []);
 
+  // Dynamically build rotating items from courses (Single source of truth)
+  const activeAnnouncements = useMemo(() => {
+    // If backend has dedicated announcement records, use them
+    if (announcementsFromApi.length > 0) {
+      return announcementsFromApi.map((item, idx) => {
+        const badgeTheme = getBadgeTheme(item, idx);
+        return {
+          ...item,
+          badgeTheme,
+          badgeType: badgeTheme.type,
+        };
+      });
+    }
+
+    // Filter and sort all eligible courses dynamically by offer percentage
+    const eligibleCourses = courses.filter(isEligibleCourse);
+    const sortedCourses = sortCoursesByOffer(eligibleCourses);
+
+    if (sortedCourses.length > 0) {
+      return sortedCourses.map((course, idx) => {
+        const offerPercentage = getCourseOfferPercentage(course);
+        const badgeType = getCourseBadgeType(course, idx);
+        const badgeTheme = getBadgeTheme(badgeType, idx);
+        const text = formatCourseOfferHeadline(course, offerPercentage, badgeType);
+        const targetSlug = course.slug || "data-analytics";
+
+        return {
+          courseId: course.id,
+          slug: targetSlug,
+          title: course.title,
+          badgeType,
+          badgeTheme,
+          offerPercentage,
+          text,
+          linkUrl: `/courses/${targetSlug}`,
+          course,
+        };
+      });
+    }
+
+    // Default fallback while courses are loading or if catalog is empty
+    return FALLBACK_ITEMS;
+  }, [courses, announcementsFromApi]);
+
+  // 5-second rotation effect in lockstep
   useEffect(() => {
-    if (announcements.length <= 1) return undefined;
+    if (activeAnnouncements.length <= 1) return undefined;
 
     let fadeTimeout = null;
     timerRef.current = setInterval(() => {
       // fade out
       setVisible(false);
       fadeTimeout = setTimeout(() => {
-        setIndex((prev) => (prev + 1) % announcements.length);
+        setIndex((prev) => (prev + 1) % activeAnnouncements.length);
         // fade in
         setVisible(true);
       }, FADE_MS);
@@ -144,18 +140,14 @@ const OfferHeader = () => {
       clearInterval(timerRef.current);
       if (fadeTimeout) clearTimeout(fadeTimeout);
     };
-  }, [announcements]);
+  }, [activeAnnouncements.length]);
 
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { courses } = useCourses();
-
-  const current = announcements[index] ?? FALLBACK[0];
-  const text = current.text ?? FALLBACK[0].text;
-  const badgeTheme = getBadgeTheme(current, index);
+  const current = activeAnnouncements[index % activeAnnouncements.length] ?? FALLBACK_ITEMS[0];
+  const text = current.text ?? FALLBACK_ITEMS[0].text;
+  const badgeTheme = current.badgeTheme ?? BADGE_THEMES["Special Offer"];
 
   const handleEnrollNow = () => {
-    // 1. If user is already on a course detail page, identify that course and scroll to enroll form
+    // 1. If user is already on a course detail page, scroll to enroll form
     if (location.pathname.startsWith("/courses/")) {
       const currentSlug = location.pathname.replace(/^\/courses\//, "").split("/")[0].split("#")[0];
       if (currentSlug) {
@@ -173,10 +165,10 @@ const OfferHeader = () => {
       }
     }
 
-    // 2. If on another page, identify the course from current announcement or fallback
-    let targetSlug = null;
+    // 2. Navigate directly to target course's enroll section
+    let targetSlug = current?.slug;
 
-    if (current?.linkUrl && current.linkUrl.includes("/courses/")) {
+    if (!targetSlug && current?.linkUrl && current.linkUrl.includes("/courses/")) {
       targetSlug = current.linkUrl.replace(/.*\/courses\//, "").split("#")[0].split("/")[0];
     }
 
@@ -190,16 +182,16 @@ const OfferHeader = () => {
 
       if (matched) {
         targetSlug = matched.slug;
+      } else if (lower.includes("mean")) {
+        targetSlug = "mean-full-stack";
       } else if (lower.includes("data analytic")) {
         targetSlug = "data-analytics";
       } else if (lower.includes("python")) {
         targetSlug = "python-full-stack-development";
       } else if (lower.includes("java")) {
-        targetSlug = "java-full-stack-development";
+        targetSlug = "full-stack-java";
       } else if (lower.includes("aws") || lower.includes("devops")) {
-        targetSlug = "aws-with-devops";
-      } else if (lower.includes("mern")) {
-        targetSlug = "mern-full-stack";
+        targetSlug = "aws-and-devops";
       }
     }
 
