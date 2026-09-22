@@ -30,7 +30,7 @@ public class AdminUserController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserResponse>>> listUsers() {
         List<UserResponse> users = userRepository.findAll().stream()
-                .filter(AppUser::isActive)
+                .filter(user -> user.isActive())
                 .map(UserResponse::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success("Users retrieved", users));
