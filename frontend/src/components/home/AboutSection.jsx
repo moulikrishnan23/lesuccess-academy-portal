@@ -1,106 +1,130 @@
-import aboutImage from "../../assets/home/about.png"
-
-import {Award, UserStar, Briefcase} from "lucide-react"
-
+import { motion } from "framer-motion";
+import aboutImage from "../../assets/home/about.png";
+import { Award, UserCheck, Briefcase, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
+import {
+  fadeUp,
+  fadeLeft,
+  fadeRight,
+  staggerContainer,
+  motionSafe,
+  ONCE_IN_VIEW,
+} from "../../animations/variants.js";
 
 const AboutSection = () => {
-  return (
-    <section className="w-full bg-[#eef4fa] px-6 py-16 lg:px-10">
-      <div className="mx-auto grid max-w-300 items-center gap-10 lg:grid-cols-2 lg:gap-14">
+  const reduced = useReducedMotion();
 
-        {/* Image */}
-        <div className="overflow-hidden rounded-2xl">
-          <img
-            src={aboutImage}
-            alt="LeSuccess Team"
-            className="h-full w-full object-cover"
-          />
-        </div>
+  return (
+    <section id="about-section" className="w-full bg-[#F5F8FC] px-6 py-18 sm:px-10 lg:px-20 overflow-hidden">
+      <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        {/* Image Frame */}
+        <motion.div
+          variants={motionSafe(fadeLeft, reduced)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={ONCE_IN_VIEW}
+          className="relative group"
+        >
+          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-[#DF1E26]/20 to-[#07405C]/20 opacity-70 blur-lg transition duration-500 group-hover:opacity-100" />
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xl">
+            <img
+              src={aboutImage}
+              alt="LeSuccess Team"
+              className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+            />
+          </div>
+        </motion.div>
 
         {/* Content */}
-        <div>
-          {/* Label */}
-          <div className=" mb-5 inline-flex items-center gap-2 rounded-full border border-[#074a68] px-4 py-1.5 transition 
-          animate-pulse">
-            <span className="h-2 w-2 rounded-full bg-[#074a68] "></span>
-
-            <span className="text-xs font-semibold text-[#074a68] transition hover:text-red-500">
-              ABOUT US
+        <motion.div
+          variants={motionSafe(fadeRight, reduced)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={ONCE_IN_VIEW}
+        >
+          {/* Eyebrow Label */}
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#07405C]/30 bg-[#07405C]/5 px-3.5 py-1 transition">
+            <span className="h-2 w-2 rounded-full bg-[#07405C]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#07405C]">
+              About LeSuccess
             </span>
           </div>
 
           {/* Heading */}
-          <h2 className="text-3xl font-bold leading-tight sm:text-4xl">
-            <span className="text-[#df3447]">No.1 IT Training</span>{" "}
-            Institute
+          <h2 className="text-3xl font-bold leading-tight sm:text-4xl text-[#101010]">
+            <span className="text-[#DF1E26]">No.1 IT Training</span> Institute
             <br />
-            in <span className="text-black">Coimbatore</span>
+            in <span className="text-[#101010]">Coimbatore</span>
           </h2>
 
           {/* Description */}
-          <p className="mt-6 max-w-xl text-base leading-7 text-gray-600">
-            LeSuccess is a talent development and placement firm that
-            connects academic talent with industry through strategic
-            collaborations and innovative hiring solutions.
+          <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600">
+            LeSuccess is a premier talent development and placement firm connecting ambitious
+            learners with top industry opportunities through hands-on project training,
+            dedicated mentorship, and direct recruitment pathways.
           </p>
 
-          {/* Features */}
-          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
-
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#df3447] text-white">
-                <Award/>
+          {/* Feature Highlights Bento */}
+          <motion.div
+            variants={motionSafe(staggerContainer, reduced)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={ONCE_IN_VIEW}
+            className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3"
+          >
+            <motion.div
+              variants={motionSafe(fadeUp, reduced)}
+              className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-[#DF1E26]/40 hover:-translate-y-1 transition-all duration-200"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#DF1E26]/10 text-[#DF1E26] mb-3">
+                <Award size={20} />
               </div>
+              <h4 className="text-sm font-bold text-[#101010]">Industry Aligned</h4>
+              <p className="text-xs text-slate-500 mt-1">Production-ready course syllabus</p>
+            </motion.div>
 
-              <span className="text-sm font-medium text-gray-700">
-                High Quality
-                <br />
-                Courses
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#df3447] text-white">
-                <UserStar />
+            <motion.div
+              variants={motionSafe(fadeUp, reduced)}
+              className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-[#DF1E26]/40 hover:-translate-y-1 transition-all duration-200"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#DF1E26]/10 text-[#DF1E26] mb-3">
+                <UserCheck size={20} />
               </div>
+              <h4 className="text-sm font-bold text-[#101010]">Expert Mentors</h4>
+              <p className="text-xs text-slate-500 mt-1">1-on-1 code reviews & guidance</p>
+            </motion.div>
 
-              <span className="text-sm font-medium text-gray-700">
-                Expert
-                <br />
-                Instructors
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#df3447] text-white">
+            <motion.div
+              variants={motionSafe(fadeUp, reduced)}
+              className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-[#DF1E26]/40 hover:-translate-y-1 transition-all duration-200"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#DF1E26]/10 text-[#DF1E26] mb-3">
                 <Briefcase size={20} />
               </div>
+              <h4 className="text-sm font-bold text-[#101010]">Placement Cell</h4>
+              <p className="text-xs text-slate-500 mt-1">Interview drives & resume polish</p>
+            </motion.div>
+          </motion.div>
 
-              <span className="text-sm font-medium text-gray-700">
-                Practical Project
-                <br />
-                Training
-              </span>
-            </div>
-
-          </div>
-
-          {/* Buttons */}
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link className="rounded-md bg-[#074a68] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#063c55]" to="/gallery">
-              See Gallery
+          {/* CTA Buttons */}
+          <div className="mt-9 flex flex-wrap gap-4 items-center">
+            <Link
+              to="/about"
+              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-7 py-3 text-sm font-bold text-white shadow-md transition hover:brightness-105 active:scale-98 cursor-pointer"
+            >
+              <span>Know More</span>
+              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
 
             <Link
-              to="/about"
-              className="rounded-md border-2 border-[#074a68] px-7 py-3 text-sm font-semibold text-[#074a68] transition hover:bg-[#074a68] hover:text-white"
+              to="/gallery"
+              className="inline-flex items-center gap-2 rounded-xl border border-[#07405C] bg-white px-7 py-3 text-sm font-bold text-[#07405C] shadow-xs transition hover:bg-[#07405C] hover:text-white active:scale-98 cursor-pointer"
             >
-              Know More
+              <span>See Campus Gallery</span>
             </Link>
           </div>
-        </div>
-
+        </motion.div>
       </div>
     </section>
   );

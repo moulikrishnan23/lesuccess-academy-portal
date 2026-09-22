@@ -68,6 +68,9 @@ public class CourseEnquiry {
     @Column(name = "current_status", length = 120)
     private String currentStatus;
 
+    @Column(name = "query", columnDefinition = "TEXT")
+    private String query;
+
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
 

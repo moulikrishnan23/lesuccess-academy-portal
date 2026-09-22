@@ -4,9 +4,21 @@ These exist because the course detail page was built before
 `/api/courses`, `/api/courses/{slug}`, `/api/testimonials`, `/api/leads` and `/api/settings` were
 implemented on the Spring Boot side.
 
+Those endpoints are live now and `.env.development` sets `VITE_USE_MOCKS=false`,
+so the app talks to the real API by default. This folder stays anyway — the
+`?mockState=` switches below are the only way to reach the loading, error and
+empty branches on demand, and every `isMockEnabled()` branch is preserved so
+setting the flag back to `true` is a one-line, reversible change.
+
+Note the fixtures are richer than the current backend: `CourseResponse` does not
+yet serve `category`, `categoryGroup`, `description`, pricing, `iconUrl`,
+`heroImageUrl`, the role section fields, or a tech stack, and there is no
+`source` on a testimonial. Those sections render their hidden/empty state
+against the real API and their full state against these fixtures.
+
 ## How it works
 
-`VITE_USE_MOCKS=true` (set only in `.env.development`) makes each service
+`VITE_USE_MOCKS=true` (set in `.env.development`) makes each service
 resolve from `fixtures.js` instead of calling the network. The result still
 goes through the same `normalize*` function as a real response, so the mock
 path cannot quietly become a second contract.

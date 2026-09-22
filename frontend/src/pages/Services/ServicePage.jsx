@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   FileSearch,
@@ -16,7 +17,9 @@ import ProcessStepCard from '../../components/cards/ProcessStepCard.jsx'
 import LeadCaptureForm from '../../components/forms/LeadCaptureForm.jsx'
 import SectionHeading from '../../components/ui/SectionHeading.jsx'
 import useDocumentMeta from '../../hooks/useDocumentMeta.js'
+import useProcessSteps from '../../hooks/useProcessSteps.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
+import useServiceOfferings from '../../hooks/useServiceOfferings.js'
 import {
   fadeUp,
   motionSafe,
@@ -30,9 +33,11 @@ import { LEAD_SOURCE } from '../../services/leadApi.js'
  * file rather than inline in the markup so the wording can be checked against
  * the reference without reading through JSX.
  *
- * Static on purpose: no CMS wiring was asked for. When /api/services exists,
- * these arrays are what a useServices() hook would return — same shape, same
- * field names — so the components below would not change.
+ * These are no longer the only source: /api/services and /api/process-steps
+ * exist now and are read by the hooks below. The arrays stay as the FALLBACK.
+ * The `service` table is unseeded, so GET /api/services returns [] today — if
+ * an empty list replaced this copy the page would go blank, so empty, failed
+ * and still-loading all resolve back to these arrays. See `resolveList`.
  */
 const INSTITUTION_SERVICES = [
   {
@@ -108,6 +113,74 @@ const PROCESS_STEPS = [
 ]
 
 /*
+ * iconUrl → lucide component.
+ *
+ * The cards take an icon COMPONENT (`icon: Icon`), but the backend stores a
+ * string. Only icons already imported in this file are mappable — this is a
+ * lookup, not a dynamic import, so an unknown name cannot pull in new code.
+ *
+ * Keys are normalized (basename, extension dropped, non-alphanumerics removed,
+ * lowercased) so "MapPinned", "map-pinned" and "/icons/map_pinned.svg" all hit
+ * the same entry. Anything unrecognised — or null, which is what every seeded
+ * process_step row carries today — returns undefined and the caller keeps the
+ * static icon, so current visuals cannot regress.
+ */
+const ICON_COMPONENTS = {
+  FileSearch,
+  HandFist,
+  Handshake,
+  MapPinned,
+  MessagesSquare,
+  Network,
+  Presentation,
+  Rocket,
+  UserRoundCog,
+  UsersRound,
+}
+
+const ICON_LOOKUP = Object.entries(ICON_COMPONENTS).reduce(
+  (acc, [name, component]) => {
+    acc[name.toLowerCase()] = component
+    return acc
+  },
+  {},
+)
+
+function iconFromUrl(iconUrl) {
+  if (typeof iconUrl !== 'string') return undefined
+
+  const basename = iconUrl.split(/[\\/]/).pop() ?? ''
+  const key = basename
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[^a-z0-9]/gi, '')
+    .toLowerCase()
+
+  return key ? ICON_LOOKUP[key] : undefined
+}
+
+/**
+ * The fallback rule, in one place: a live list is used only when it is a
+ * non-empty array. Loading (`[]`), a failed fetch (`[]`) and an unseeded table
+ * (`[]`) are therefore indistinguishable, and all three keep the static copy.
+ */
+function resolveList(live, fallback) {
+  return Array.isArray(live) && live.length > 0 ? live : fallback
+}
+
+/**
+ * A live ServiceOfferingResponse rendered in the shape FeatureCard wants.
+ * `fallbackIcon` is the static card's icon at the same position, so a row with
+ * no usable iconUrl still draws the artwork the page draws today.
+ */
+function toServiceCard(item, fallbackIcon) {
+  return {
+    title: item.title,
+    description: item.description,
+    icon: iconFromUrl(item.iconUrl) ?? fallbackIcon,
+  }
+}
+
+/*
  * Vertical offsets for the four steps: odd cards drop, even cards rise, so the
  * row alternates evenly rather than wandering.
  *
@@ -118,15 +191,6 @@ const PROCESS_STEPS = [
  * four boxes identical, which is what the reference shows.
  */
 const STEP_OFFSETS = ['lg:mb-10', 'lg:mt-10', 'lg:mb-10', 'lg:mt-10']
-
-/*
- * "You looking for?" options. The reference shows the control but not its
- * choices, so these are the page's own service names rather than invented
- * categories — nothing here is a service the page does not already describe.
- */
-const ENQUIRY_OPTIONS = [...INSTITUTION_SERVICES, ...CORPORATE_SERVICES].map(
-  ({ title }) => ({ value: title, label: title }),
-)
 
 /*
  * Band photography. Both files are stock placeholders — real photographs, but
@@ -153,7 +217,7 @@ const BAND_IMAGES = {
 function ServiceBand({ id, labelledBy, image, heading, children }) {
   return (
     <section id={id} aria-labelledby={labelledBy}>
-      <div className="relative overflow-hidden bg-navy-900 pt-20 pb-28 lg:pt-24 lg:pb-32">
+      <div className="relative overflow-hidden bg-[#07405C] pt-20 pb-28 lg:pt-24 lg:pb-32">
         {/*
           Desaturated under a heavy navy wash: the reference reads as a duotone
           of the brand navy rather than a full-colour photograph, and a bright
@@ -164,7 +228,7 @@ function ServiceBand({ id, labelledBy, image, heading, children }) {
           className="absolute inset-0 bg-cover bg-center saturate-[0.35]"
           style={{ backgroundImage: `url(${image})` }}
         />
-        <div aria-hidden="true" className="band-overlay-navy absolute inset-0" />
+        <div aria-hidden="true" className="band-overlay-navy absolute inset-0 bg-[#07405C]/85" />
 
         <div className="relative mx-auto max-w-6xl px-5 sm:px-8">{heading}</div>
       </div>
@@ -188,6 +252,60 @@ function ServiceBand({ id, labelledBy, image, heading, children }) {
 export default function ServicePage() {
   const reduced = useReducedMotion()
 
+  /*
+   * Live content. Both hooks swallow their own failures into an empty list, so
+   * nothing here can throw and no loading branch is needed: while a request is
+   * in flight the lists are empty, which resolves to the static copy, so the
+   * page renders its current content immediately and swaps only if real rows
+   * arrive.
+   */
+  const { institution: liveInstitution, corporate: liveCorporate } =
+    useServiceOfferings()
+  const { steps: liveSteps } = useProcessSteps()
+
+  const institutionServices = useMemo(() => {
+    const live = resolveList(liveInstitution, null)
+    if (!live) return INSTITUTION_SERVICES
+    return live.map((item, index) =>
+      toServiceCard(item, INSTITUTION_SERVICES[index]?.icon),
+    )
+  }, [liveInstitution])
+
+  const corporateServices = useMemo(() => {
+    const live = resolveList(liveCorporate, null)
+    if (!live) return CORPORATE_SERVICES
+    return live.map((item, index) =>
+      toServiceCard(item, CORPORATE_SERVICES[index]?.icon),
+    )
+  }, [liveCorporate])
+
+  const processSteps = useMemo(() => {
+    const live = resolveList(liveSteps, null)
+    if (!live) return PROCESS_STEPS
+    return live.map((item, index) => ({
+      // The cards show "01".."04"; the backend sends an int stepNumber.
+      step: String(item.stepNumber ?? index + 1).padStart(2, '0'),
+      title: item.title,
+      description: item.description,
+      icon: iconFromUrl(item.iconUrl) ?? PROCESS_STEPS[index]?.icon,
+    }))
+  }, [liveSteps])
+
+  /*
+   * "You looking for?" options — the page's own service names rather than
+   * invented categories. Derived from the RESOLVED lists, not the static arrays
+   * at module scope: computing this once at import time would have left the
+   * dropdown showing stale copy whenever live rows differed from the fallback.
+   */
+  const enquiryOptions = useMemo(
+    () =>
+      [...institutionServices, ...corporateServices].map(({ title }) => ({
+        value: title,
+        label: title,
+      })),
+    [institutionServices, corporateServices],
+  )
+
   useDocumentMeta({
     title: 'Services — LeSuccess Academy',
     description:
@@ -199,8 +317,11 @@ export default function ServicePage() {
       {/* 1 — Page intro */}
       <section
         aria-labelledby="service-intro-title"
-        className="mx-auto max-w-6xl px-5 pt-20 pb-16 text-center sm:px-8 lg:pt-24"
+        className="mx-auto max-w-6xl px-5 pt-16 pb-16 text-center sm:px-8 lg:pt-20"
       >
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-4 py-1.5 text-xs font-bold text-[#07405C] shadow-xs mb-4">
+          SERVICES & INDUSTRY PARTNERSHIPS
+        </div>
         <motion.div
           variants={motionSafe(fadeUp, reduced)}
           initial="hidden"
@@ -215,7 +336,7 @@ export default function ServicePage() {
             title={
               <>
                 We Don&apos;t Just Train.{' '}
-                <span className="text-brand">We Transform.</span>
+                <span className="text-[#DF1E26]">We Transform.</span>
               </>
             }
             lede="We partner with corporates and educational institutions to deliver industry-relevant skills, workforce training and career development solutions."
@@ -257,7 +378,7 @@ export default function ServicePage() {
           */
           className="grid list-none gap-6 p-0 sm:auto-rows-fr sm:grid-cols-2"
         >
-          {INSTITUTION_SERVICES.map((service, index) => (
+          {institutionServices.map((service, index) => (
             <FeatureCard
               key={service.title}
               icon={service.icon}
@@ -310,7 +431,7 @@ export default function ServicePage() {
           // Equal-size, staggered boxes — same technique as institutions above.
           className="grid list-none gap-6 p-0 md:auto-rows-fr md:grid-cols-2"
         >
-          {CORPORATE_SERVICES.map((service, index) => (
+          {corporateServices.map((service, index) => (
             <FeatureCard
               key={service.title}
               icon={service.icon}
@@ -340,7 +461,7 @@ export default function ServicePage() {
             weight="bold"
             title={
               <>
-                How LeSuccess <span className="text-brand">Drives Success</span>
+                How LeSuccess <span className="text-[#DF1E26]">Drives Success</span>
               </>
             }
             lede="At LeSuccess, our structured learning framework ensures every learner gains practical skills, confidence, and career-ready expertise."
@@ -354,7 +475,7 @@ export default function ServicePage() {
           viewport={ONCE_IN_VIEW}
           className="mt-12 grid list-none gap-6 p-0 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4"
         >
-          {PROCESS_STEPS.map((item, index) => (
+          {processSteps.map((item, index) => (
             <ProcessStepCard
               key={item.step}
               step={item.step}
@@ -375,12 +496,16 @@ export default function ServicePage() {
       {/* 5 — Ready to Transform Your Future? */}
       <section
         aria-labelledby="service-cta-title"
-        className="relative overflow-hidden bg-navy-900"
+        className="relative overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550]"
       >
-        {/* Diagonal navy → blue, both stops from the theme's navy ramp. */}
+        {/* Decorative ambient subtle glow */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(135deg,var(--color-navy-900)_0%,var(--color-navy-700)_100%)]"
+          className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#DF1E26]/10 blur-3xl pointer-events-none"
         />
 
         {/*
@@ -414,7 +539,7 @@ export default function ServicePage() {
           >
             <LeadCaptureForm
               layout="row"
-              options={ENQUIRY_OPTIONS}
+              options={enquiryOptions}
               source={LEAD_SOURCE.SERVICE_CTA_FORM}
             />
           </motion.div>

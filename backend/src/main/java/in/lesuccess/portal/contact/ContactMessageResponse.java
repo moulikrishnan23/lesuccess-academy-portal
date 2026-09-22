@@ -25,6 +25,14 @@ public class ContactMessageResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public String getMobile() {
+        return phone;
+    }
+
+    public String getPhoneNumber() {
+        return phone;
+    }
+
     public static ContactMessageResponse from(ContactMessage entity) {
         return ContactMessageResponse.builder()
                 .id(entity.getId())

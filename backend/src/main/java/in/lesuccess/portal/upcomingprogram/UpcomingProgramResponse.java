@@ -1,5 +1,6 @@
 package in.lesuccess.portal.upcomingprogram;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,9 +25,23 @@ public class UpcomingProgramResponse {
     private LocalTime startTime;
     private LocalTime endTime;
     private String platform;
+    private String mode;
     private String meetLink;
+    private String venueAddress;
+    private String organizationName;
+    private String venueName;
+    private String speakerName;
+    private String imageUrl;
     private boolean certificateIncluded;
+
+    @JsonProperty("isActive")
     private boolean isActive;
+
+    @JsonProperty("active")
+    public boolean getActive() {
+        return isActive;
+    }
+
     private long registrationCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -42,7 +57,13 @@ public class UpcomingProgramResponse {
                 .startTime(entity.getStartTime())
                 .endTime(entity.getEndTime())
                 .platform(entity.getPlatform())
+                .mode(entity.getMode())
                 .meetLink(entity.getMeetLink())
+                .venueAddress(entity.getVenueAddress())
+                .organizationName(entity.getOrganizationName())
+                .venueName(entity.getVenueName())
+                .speakerName(entity.getSpeakerName())
+                .imageUrl(entity.getImageUrl())
                 .certificateIncluded(entity.isCertificateIncluded())
                 .isActive(entity.isActive())
                 .createdAt(entity.getCreatedAt())

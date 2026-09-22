@@ -44,6 +44,11 @@ const ICON_BY_NAME = {
   AWS: '/tech/aws.svg',
   Excel: '/tech/excel.svg',
   'Power BI': '/tech/powerbi.svg',
+  Java: '/tech/java.svg',
+  'Spring Boot': '/tech/springboot.svg',
+  Hibernate: '/tech/hibernate.svg',
+  Maven: '/tech/maven.svg',
+  Postman: '/tech/postman.svg',
 }
 
 /**

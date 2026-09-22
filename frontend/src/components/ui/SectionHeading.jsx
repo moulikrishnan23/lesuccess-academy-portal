@@ -1,10 +1,14 @@
+import { motion } from 'framer-motion'
+import { fadeUp, motionSafe, ONCE_IN_VIEW } from '../../animations/variants.js'
+import useReducedMotion from '../../hooks/useReducedMotion.js'
+
 /**
  * Section header.
  *
- * Course_Page.pdf uses a plain navy heading with no eyebrow label, so the
- * course page passes no `eyebrow`. The prop is kept because the home page in
- * homa page.pdf does use small pill labels above its headings — that page can
- * opt in without a second component.
+ * All headings animate in with a gentle fade + slide-up on scroll entrance,
+ * providing a consistent, modern animation across all sections of the site.
+ * Pass `animate={false}` to suppress when the heading is inside an already-
+ * animated parent container.
  */
 /*
  * `section` reproduces exactly what every existing caller already renders —
@@ -40,14 +44,16 @@ export default function SectionHeading({
   size = 'section',
   weight = 'semibold',
   className = '',
+  animate = true,
 }) {
+  const reduced = useReducedMotion()
   const isCentered = align === 'center'
   // `tone` is about the band behind the heading, not the type colour: 'light'
   // means light text for a dark band. Default keeps every existing caller
   // rendering exactly as before.
   const isOnDark = tone === 'light'
 
-  return (
+  const inner = (
     <header className={`${isCentered ? 'text-center' : ''} ${className}`}>
       {eyebrow ? (
         <p className="mb-3 inline-block rounded-full bg-brand-soft px-3 py-1 text-[0.6875rem] font-semibold tracking-[0.12em] text-brand uppercase">
@@ -74,5 +80,18 @@ export default function SectionHeading({
         </p>
       ) : null}
     </header>
+  )
+
+  if (!animate) return inner
+
+  return (
+    <motion.div
+      variants={motionSafe(fadeUp, reduced)}
+      initial="hidden"
+      whileInView="visible"
+      viewport={ONCE_IN_VIEW}
+    >
+      {inner}
+    </motion.div>
   )
 }

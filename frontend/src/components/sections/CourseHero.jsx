@@ -136,7 +136,7 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
       {showImage ? null : (
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:48px_48px]"
+          className="absolute inset-0 opacity-[0.16] bg-[linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:48px_48px]"
         />
       )}
       <div
@@ -189,9 +189,7 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
           <Button variant="onDark" size="lg" onClick={onFreeDemoClick}>
             Free Demo
           </Button>
-          <Button variant="primary" size="lg" onClick={onEnrollClick}>
-            Enroll Now
-          </Button>
+          
           <Button
             variant="onDark"
             size="lg"
@@ -200,6 +198,9 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
           >
             <Download size={16} className="inline mr-1.5" />
             Download Syllabus
+          </Button>
+          <Button variant="primary" size="lg" onClick={onEnrollClick}>
+            Enroll Now
           </Button>
         </motion.div>
       </motion.div>

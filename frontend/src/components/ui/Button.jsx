@@ -12,12 +12,16 @@ import useReducedMotion from '../../hooks/useReducedMotion.js'
 */
 const VARIANTS = {
   primary:
-    'bg-brand-gradient text-white shadow-[0_4px_14px_-4px_rgba(214,42,107,0.5)] hover:brightness-105 disabled:opacity-60',
+    'bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white shadow-[0_4px_16px_rgba(244,66,70,0.35)] hover:shadow-[0_6px_20px_rgba(244,66,70,0.45)] hover:brightness-105 disabled:opacity-50 cursor-pointer',
+  secondary:
+    'bg-gradient-to-r from-[#024D72] to-[#07405C] text-white shadow-md hover:shadow-lg hover:brightness-105 disabled:opacity-50 cursor-pointer',
   onDark:
-    'border border-white/70 text-white hover:bg-white hover:text-navy-800 disabled:opacity-50',
-  navy: 'bg-navy-800 text-white hover:bg-navy-700 disabled:opacity-60',
+    'border border-white/70 text-white hover:bg-white hover:text-[#101010] shadow-sm disabled:opacity-50 cursor-pointer',
+  navy: 'bg-[#07405C] text-white hover:bg-[#024D72] shadow-sm disabled:opacity-50 cursor-pointer',
+  outline:
+    'border-2 border-[#07405C] text-[#07405C] hover:bg-[#07405C] hover:text-white shadow-xs disabled:opacity-50 cursor-pointer',
   quiet:
-    'border border-line-strong bg-white text-navy-800 hover:border-brand hover:text-brand disabled:opacity-50',
+    'border border-slate-200 bg-white text-slate-800 hover:border-[#DF1E26] hover:text-[#DF1E26] shadow-xs disabled:opacity-50 cursor-pointer',
 }
 
 const SIZES = {
@@ -39,6 +43,7 @@ export default function Button({
   className = '',
   children,
   disabled = false,
+  shimmer = false,
   ...props
 }) {
   const reduced = useReducedMotion()
@@ -56,8 +61,8 @@ export default function Button({
       type={type}
       disabled={disabled}
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
-        'transition-[filter,background-color,color,border-color] disabled:cursor-not-allowed',
+        'group relative inline-flex items-center justify-center gap-2 rounded-xl font-semibold overflow-hidden',
+        'transition-all duration-200 disabled:cursor-not-allowed',
         VARIANTS[variant],
         SIZES[size],
         className,
@@ -65,6 +70,12 @@ export default function Button({
       {...motionProps}
       {...props}
     >
+      {shimmer && !reduced && (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 group-hover:translate-x-full pointer-events-none"
+        />
+      )}
       {children}
     </motion.button>
   )

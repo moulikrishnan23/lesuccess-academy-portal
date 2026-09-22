@@ -81,6 +81,43 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
+    /** Admin — upload course logo / image. */
+    @PostMapping(value = "/api/admin/courses/upload-logo", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<java.util.Map<String, String>>> uploadLogo(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Cannot upload empty file");
+        }
+
+        String original = file.getOriginalFilename();
+        String ext = "";
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf(".")).toLowerCase();
+        }
+
+        if (!java.util.List.of(".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif").contains(ext)) {
+            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Only image files (.jpg, .jpeg, .png, .webp, .svg, .gif) are supported");
+        }
+
+        try {
+            java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads", "courses");
+            if (!java.nio.file.Files.exists(uploadDir)) {
+                java.nio.file.Files.createDirectories(uploadDir);
+            }
+
+            String filename = java.util.UUID.randomUUID().toString() + ext;
+            java.nio.file.Path targetPath = uploadDir.resolve(filename);
+            java.nio.file.Files.copy(file.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            String fileUrl = "/uploads/courses/" + filename;
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Logo uploaded successfully", java.util.Map.of("url", fileUrl, "filename", filename)));
+        } catch (java.io.IOException e) {
+            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Failed to store file: " + e.getMessage());
+        }
+    }
+
     // ── Modules ───────────────────────────────────────────────────────────────
 
     /** Public — syllabus accordion for a course page. */
@@ -111,6 +148,54 @@ public class CourseController {
     public ResponseEntity<Void> deleteModule(@PathVariable Long moduleId) {
         service.deleteModule(moduleId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/api/admin/courses/{id}/modules/batch")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<List<CourseModuleResponse>>> batchSyncModules(
+            @PathVariable Long id,
+            @RequestBody List<CourseModuleRequest> requests) {
+        return ResponseEntity.ok(ApiResponse.success("Modules synchronized successfully", service.syncModules(id, requests)));
+    }
+
+    // ── Tools ─────────────────────────────────────────────────────────────────
+
+    /** Public — tools list for a course page. */
+    @GetMapping("/api/courses/{idOrSlug}/tools")
+    public ResponseEntity<ApiResponse<List<CourseToolResponse>>> listTools(@PathVariable String idOrSlug) {
+        return ResponseEntity.ok(ApiResponse.success("Tools retrieved successfully", service.listTools(idOrSlug)));
+    }
+
+    @PostMapping("/api/admin/courses/{id}/tools")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<CourseToolResponse>> createTool(
+            @PathVariable Long id,
+            @Valid @RequestBody CourseToolRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Tool created successfully", service.createTool(id, request)));
+    }
+
+    @PutMapping("/api/admin/tools/{toolId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<CourseToolResponse>> updateTool(
+            @PathVariable Long toolId,
+            @Valid @RequestBody CourseToolRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Tool updated successfully", service.updateTool(toolId, request)));
+    }
+
+    @DeleteMapping("/api/admin/tools/{toolId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Void> deleteTool(@PathVariable Long toolId) {
+        service.deleteTool(toolId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/api/admin/courses/{id}/tools/batch")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<List<CourseToolResponse>>> batchSyncTools(
+            @PathVariable Long id,
+            @RequestBody List<CourseToolRequest> requests) {
+        return ResponseEntity.ok(ApiResponse.success("Tools synchronized successfully", service.syncTools(id, requests)));
     }
 
     // ── Testimonials ──────────────────────────────────────────────────────────
