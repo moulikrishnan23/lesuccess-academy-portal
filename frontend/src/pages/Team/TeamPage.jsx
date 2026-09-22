@@ -14,6 +14,7 @@ import {
   Layers,
   Copy,
   Check,
+  Star,
 } from "lucide-react";
 import { FaLinkedinIn } from "react-icons/fa";
 import apiClient from "../../services/apiClient.js";
@@ -168,9 +169,12 @@ const DEFAULT_TEAM_MEMBERS = [
   },
 ];
 
+const isFeaturedMember = (m) => Boolean(m?.featured || m?.isFeatured);
+
 const getMemberCategory = (m) => {
+  if (!m) return 'Our Mentors';
   const raw = (m.category || m.department || '').trim();
-  if (!raw) return m.featured ? 'Management Team' : 'Our Mentors';
+  if (!raw) return 'Our Mentors';
   const lower = raw.toLowerCase();
   if (lower === 'management team' || lower.includes('leadership') || lower.includes('executive')) {
     return 'Management Team';
@@ -199,7 +203,7 @@ const TeamMemberCard = ({ member, onSelect }) => {
     }
   };
 
-  const badgeText = getMemberCategory(member);
+  const isFeatured = isFeaturedMember(member);
 
   return (
     <div
@@ -212,11 +216,11 @@ const TeamMemberCard = ({ member, onSelect }) => {
           onSelect(member);
         }
       }}
-      className="group relative flex flex-col overflow-hidden rounded-3xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#DF1E26]"
+      className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#07405C]/35 hover:shadow-[0_20px_40px_rgba(7,64,92,0.12)] cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#DF1E26]"
     >
       {/* Background Image Container (TeamBg.png) */}
       <div
-        className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center border border-gray-100 shadow-sm"
+        className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center border border-slate-200/90 shadow-xs"
         style={{ backgroundImage: `url('/home/TeamBg.png')` }}
       >
         <img
@@ -228,10 +232,15 @@ const TeamMemberCard = ({ member, onSelect }) => {
           }}
         />
 
-        {/* Dynamic Category Badge at Top-Right (Matching media_1789914698735.png) */}
-        {badgeText && (
-          <span className="absolute top-3.5 right-3.5 rounded-full bg-[#DF1E26] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-white shadow-md z-10 select-none tracking-wide">
-            {badgeText}
+        {/* Top Badge: Featured OR Category badge (Mutually exclusive) */}
+        {isFeatured ? (
+          <span className="absolute top-3.5 right-3.5 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs z-10 select-none tracking-wide">
+            <Star size={11} className="text-amber-950" fill="currentColor" />
+            <span>Featured</span>
+          </span>
+        ) : (
+          <span className="absolute top-3.5 right-3.5 inline-flex items-center rounded-full bg-[#DF1E26] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-white shadow-xs z-10 select-none tracking-wide max-w-[70%] truncate" title={getMemberCategory(member)}>
+            {getMemberCategory(member)}
           </span>
         )}
 
@@ -343,19 +352,42 @@ export default function TeamPage() {
     };
   }, [selectedMember]);
 
-  const filteredMembers = teamMembers.filter((m) => {
-    if (selectedCategory === 'All') return true;
-    const memberCat = getMemberCategory(m).toLowerCase();
-    const selected = selectedCategory.trim().toLowerCase();
-    return memberCat === selected;
-  });
+  const sortTeamMembers = (list) => {
+    return [...list].sort((a, b) => {
+      const aFeatured = isFeaturedMember(a);
+      const bFeatured = isFeaturedMember(b);
+      if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
+      const orderA = typeof a.displayOrder === 'number' ? a.displayOrder : 999;
+      const orderB = typeof b.displayOrder === 'number' ? b.displayOrder : 999;
+      return orderA - orderB;
+    });
+  };
 
-  const managementMembers = teamMembers.filter((m) => getMemberCategory(m) === 'Management Team');
-  const mentorMembers = teamMembers.filter((m) => getMemberCategory(m) === 'Our Mentors');
-  const otherMembers = teamMembers.filter((m) => {
-    const cat = getMemberCategory(m);
-    return cat !== 'Management Team' && cat !== 'Our Mentors';
-  });
+  const filteredMembers = sortTeamMembers(
+    teamMembers.filter((m) => {
+      if (selectedCategory === 'All') return true;
+      const memberCat = getMemberCategory(m).toLowerCase();
+      const selected = selectedCategory.trim().toLowerCase();
+      return memberCat === selected;
+    })
+  );
+
+  const managementMembers = sortTeamMembers(
+    teamMembers.filter((m) => getMemberCategory(m) === 'Management Team')
+  );
+  const mentorMembers = sortTeamMembers(
+    teamMembers.filter((m) => getMemberCategory(m) === 'Our Mentors')
+  );
+
+  // Remaining dynamic categories beyond Management Team and Our Mentors
+  const otherCategoryNames = Array.from(
+    new Set([
+      ...categories.filter((c) => c !== 'All' && c !== 'Management Team' && c !== 'Our Mentors'),
+      ...teamMembers
+        .map((m) => getMemberCategory(m))
+        .filter((c) => c && c !== 'Management Team' && c !== 'Our Mentors'),
+    ])
+  );
 
   return (
     <div className="w-full bg-white">
@@ -468,31 +500,39 @@ export default function TeamPage() {
             </div>
           </section>
 
-          {/* Other Categories if any */}
-          {otherMembers.length > 0 && (
-            <section className="py-16 bg-[#f8fbfe]">
-              <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                <div className="text-center max-w-2xl mx-auto mb-12">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
-                    SPECIALISTS & PARTNERS
-                  </span>
-                  <h2 className="text-3xl font-bold text-slate-900 mt-3">
-                    Additional <span className="text-[#DF1E26]">Team Members</span>
-                  </h2>
-                </div>
+          {/* Other Categories dynamically rendered by their actual category names */}
+          {otherCategoryNames.map((catName, idx) => {
+            const catMembers = sortTeamMembers(
+              teamMembers.filter((m) => getMemberCategory(m).toLowerCase() === catName.toLowerCase())
+            );
+            if (catMembers.length === 0) return null;
 
-                <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  {otherMembers.map((member) => (
-                    <TeamMemberCard
-                      key={member.id || member.name}
-                      member={member}
-                      onSelect={setSelectedMember}
-                    />
-                  ))}
+            const isAltBg = idx % 2 === 0;
+            return (
+              <section key={catName} className={`py-16 ${isAltBg ? 'bg-[#f8fbfe]' : 'bg-white'}`}>
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                  <div className="text-center max-w-2xl mx-auto mb-12">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
+                      {catName.toUpperCase()}
+                    </span>
+                    <h2 className="text-3xl font-bold text-slate-900 mt-3">
+                      {catName}
+                    </h2>
+                  </div>
+
+                  <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {catMembers.map((member) => (
+                      <TeamMemberCard
+                        key={member.id || member.name}
+                        member={member}
+                        onSelect={setSelectedMember}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </section>
-          )}
+              </section>
+            );
+          })}
         </>
       ) : (
         /* Filtered Category View */
@@ -605,6 +645,12 @@ export default function TeamPage() {
                     <Layers size={12} className="text-[#DF1E26]" />
                     {getMemberCategory(selectedMember)}
                   </span>
+                  {isFeaturedMember(selectedMember) && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 text-amber-950 px-2.5 py-0.5 text-xs font-bold shadow-xs">
+                      <Star size={11} fill="currentColor" />
+                      <span>Featured</span>
+                    </span>
+                  )}
                 </div>
 
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-[#101010] tracking-tight">

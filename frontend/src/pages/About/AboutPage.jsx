@@ -23,9 +23,10 @@ import {
   motionSafe,
   ONCE_IN_VIEW,
 } from "../../animations/variants.js";
+import { FloatingOrbs, TechGrid, SectionHeading } from "../../components/ui/BackgroundMotion.jsx";
 
 const STATS = [
-  { target: 10000, suffix: "+", label: "Students Trained", sub: "Across multiple batches" },
+  { target: 37, suffix: "K+", label: "Students Trained", sub: "Across multiple batches" },
   { target: 150, suffix: "+", label: "Hiring Partners", sub: "Leading tech enterprises" },
   { target: 95, suffix: "%", label: "Placement Success", sub: "Career transitions verified" },
   { target: 20, suffix: "+", label: "Specialized Courses", sub: "Industry-aligned programs" },
@@ -224,7 +225,7 @@ export default function AboutPage() {
 
           <div className="grid gap-8 md:grid-cols-2">
             {/* Mission */}
-            <div className="relative rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-sm transition hover:shadow-md hover:border-[#07405C]">
+            <div className="relative rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition hover:shadow-[0_20px_40px_rgba(7,64,92,0.1)] hover:border-[#07405C]">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#07405C]/10 text-[#07405C] mb-6">
                 <Target size={28} />
               </div>
@@ -251,7 +252,7 @@ export default function AboutPage() {
             </div>
 
             {/* Vision */}
-            <div className="relative rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-sm transition hover:shadow-md hover:border-[#DF1E26]">
+            <div className="relative rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition hover:shadow-[0_20px_40px_rgba(223,30,38,0.1)] hover:border-[#DF1E26]">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#DF1E26]/10 text-[#DF1E26] mb-6">
                 <Eye size={28} />
               </div>
@@ -307,42 +308,50 @@ export default function AboutPage() {
       {/* =====================================================
           VALUE PILLARS / WHY LESUCCESS
       ===================================================== */}
-      <section className="py-20 bg-white">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-4 py-1.5 text-xs font-bold text-[#07405C]">
-              WHY CHOOSE LESUCCESS
-            </span>
-            <h2 className="text-3xl font-extrabold text-[#101010] sm:text-4xl mt-4">
-              The Core Pillars of Our <span className="text-[#DF1E26]">Training Model</span>
-            </h2>
-            <p className="text-slate-600 mt-4 text-base sm:text-lg">
-              Everything we do is focused on one objective: ensuring our students acquire high-value
-              practical capabilities that recruiters actively seek.
-            </p>
-          </div>
+      <section className="relative py-20 bg-white overflow-hidden">
+        {/* Ambient background motion */}
+        <FloatingOrbs variant="default" />
+        <TechGrid opacity="opacity-[0.02]" />
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
+          <SectionHeading
+            badge="WHY CHOOSE LESUCCESS"
+            badgeIcon={Award}
+            titlePrefix="The Core Pillars of Our"
+            titleHighlight="Training Model"
+            description="Everything we do is focused on one objective: ensuring our students acquire high-value practical capabilities that recruiters actively seek."
+            className="mb-16"
+          />
+
+          <motion.div
+            variants={motionSafe(staggerContainer, reduced)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={ONCE_IN_VIEW}
+            className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"
+          >
             {PILLARS.map((pillar) => {
               const Icon = pillar.icon;
               return (
-                <div
+                <motion.div
                   key={pillar.title}
-                  className="group relative rounded-2xl border border-slate-200 bg-[#F5F8FC]/60 p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:bg-white hover:border-[#DF1E26] hover:shadow-xl"
+                  variants={motionSafe(fadeUp, reduced)}
+                  className="group relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:border-[#07405C]/35 hover:shadow-[0_20px_40px_rgba(7,64,92,0.1)] shadow-[0_4px_20px_rgba(7,64,92,0.05)] cursor-default"
                 >
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-slate-200 text-[#07405C] transition-all duration-300 group-hover:bg-[#DF1E26] group-hover:text-white group-hover:scale-110 shadow-xs">
-                    <Icon size={26} />
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#DF1E26] via-[#CA164B] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#07405C]/8 to-[#024D72]/4 border border-[#07405C]/12 text-[#07405C] transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-[#F44246] group-hover:to-[#CA164B] group-hover:text-white group-hover:border-transparent group-hover:scale-105 shadow-2xs">
+                    <Icon size={26} className="transition-transform duration-300 group-hover:scale-110" />
                   </div>
-                  <h3 className="mt-6 text-lg font-bold text-[#101010]">
+                  <h3 className="mt-6 text-lg font-bold text-[#101010] transition-colors group-hover:text-[#07405C]">
                     {pillar.title}
                   </h3>
                   <p className="mt-3 text-sm leading-relaxed text-slate-600">
                     {pillar.description}
                   </p>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -364,7 +373,7 @@ export default function AboutPage() {
             {STEPS.map((step) => (
               <div
                 key={step.step}
-                className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:border-[#07405C]/40 transition hover:shadow-md"
+                className="relative rounded-2xl border border-slate-200/90 bg-white p-6 shadow-[0_4px_16px_rgba(7,64,92,0.05)] hover:border-[#07405C]/40 transition-all duration-300 hover:shadow-[0_12px_28px_rgba(7,64,92,0.08)] hover:-translate-y-1"
               >
                 <span className="text-3xl font-black text-[#07405C]/20">
                   {step.step}

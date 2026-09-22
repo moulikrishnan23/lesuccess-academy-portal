@@ -11,13 +11,17 @@ import {
   motionSafe,
   ONCE_IN_VIEW,
 } from "../../animations/variants.js";
+import { FloatingOrbs } from "../ui/BackgroundMotion.jsx";
 
 const AboutSection = () => {
   const reduced = useReducedMotion();
 
   return (
-    <section id="about-section" className="w-full bg-[#F5F8FC] px-6 py-18 sm:px-10 lg:px-20 overflow-hidden">
-      <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    <section id="about-section" className="relative w-full bg-[#F5F8FC] px-6 py-18 sm:px-10 lg:px-20 overflow-hidden">
+      {/* Subtle Background Motion */}
+      <FloatingOrbs variant="default" />
+
+      <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
         {/* Image Frame */}
         <motion.div
           variants={motionSafe(fadeLeft, reduced)}
@@ -65,7 +69,7 @@ const AboutSection = () => {
             dedicated mentorship, and direct recruitment pathways.
           </p>
 
-          {/* Feature Highlights Bento */}
+          {/* Feature Highlights Bento with LeSuccess Card Design System */}
           <motion.div
             variants={motionSafe(staggerContainer, reduced)}
             initial="hidden"
@@ -75,35 +79,38 @@ const AboutSection = () => {
           >
             <motion.div
               variants={motionSafe(fadeUp, reduced)}
-              className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-[#DF1E26]/40 hover:-translate-y-1 transition-all duration-200"
+              className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_4px_16px_rgba(7,64,92,0.05)] hover:border-[#07405C]/35 hover:shadow-[0_12px_28px_rgba(7,64,92,0.1)] hover:-translate-y-1.5 transition-all duration-300 cursor-default"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#DF1E26]/10 text-[#DF1E26] mb-3">
+              <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-[#DF1E26] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#DF1E26]/10 to-[#CA164B]/5 border border-[#DF1E26]/15 text-[#DF1E26] mb-3.5 transition-all duration-300 group-hover:scale-105 group-hover:bg-gradient-to-r group-hover:from-[#DF1E26] group-hover:to-[#CA164B] group-hover:text-white group-hover:border-transparent group-hover:shadow-xs">
                 <Award size={20} />
               </div>
-              <h4 className="text-sm font-bold text-[#101010]">Industry Aligned</h4>
-              <p className="text-xs text-slate-500 mt-1">Production-ready course syllabus</p>
+              <h4 className="text-sm font-bold text-[#101010] transition-colors group-hover:text-[#07405C]">Industry Aligned</h4>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">Production-ready course syllabus</p>
             </motion.div>
 
             <motion.div
               variants={motionSafe(fadeUp, reduced)}
-              className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-[#DF1E26]/40 hover:-translate-y-1 transition-all duration-200"
+              className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_4px_16px_rgba(7,64,92,0.05)] hover:border-[#07405C]/35 hover:shadow-[0_12px_28px_rgba(7,64,92,0.1)] hover:-translate-y-1.5 transition-all duration-300 cursor-default"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#DF1E26]/10 text-[#DF1E26] mb-3">
+              <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-[#DF1E26] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#DF1E26]/10 to-[#CA164B]/5 border border-[#DF1E26]/15 text-[#DF1E26] mb-3.5 transition-all duration-300 group-hover:scale-105 group-hover:bg-gradient-to-r group-hover:from-[#DF1E26] group-hover:to-[#CA164B] group-hover:text-white group-hover:border-transparent group-hover:shadow-xs">
                 <UserCheck size={20} />
               </div>
-              <h4 className="text-sm font-bold text-[#101010]">Expert Mentors</h4>
-              <p className="text-xs text-slate-500 mt-1">1-on-1 code reviews & guidance</p>
+              <h4 className="text-sm font-bold text-[#101010] transition-colors group-hover:text-[#07405C]">Expert Mentors</h4>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">1-on-1 code reviews & guidance</p>
             </motion.div>
 
             <motion.div
               variants={motionSafe(fadeUp, reduced)}
-              className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-[#DF1E26]/40 hover:-translate-y-1 transition-all duration-200"
+              className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_4px_16px_rgba(7,64,92,0.05)] hover:border-[#07405C]/35 hover:shadow-[0_12px_28px_rgba(7,64,92,0.1)] hover:-translate-y-1.5 transition-all duration-300 cursor-default"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#DF1E26]/10 text-[#DF1E26] mb-3">
+              <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-[#DF1E26] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#DF1E26]/10 to-[#CA164B]/5 border border-[#DF1E26]/15 text-[#DF1E26] mb-3.5 transition-all duration-300 group-hover:scale-105 group-hover:bg-gradient-to-r group-hover:from-[#DF1E26] group-hover:to-[#CA164B] group-hover:text-white group-hover:border-transparent group-hover:shadow-xs">
                 <Briefcase size={20} />
               </div>
-              <h4 className="text-sm font-bold text-[#101010]">Placement Cell</h4>
-              <p className="text-xs text-slate-500 mt-1">Interview drives & resume polish</p>
+              <h4 className="text-sm font-bold text-[#101010] transition-colors group-hover:text-[#07405C]">Placement Cell</h4>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">Interview drives & resume polish</p>
             </motion.div>
           </motion.div>
 

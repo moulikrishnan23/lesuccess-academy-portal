@@ -42,6 +42,11 @@ public class UpcomingProgramResponse {
         return isActive;
     }
 
+    @JsonProperty("visibleOnSite")
+    public boolean getVisibleOnSite() {
+        return isActive;
+    }
+
     private long registrationCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -72,8 +77,17 @@ public class UpcomingProgramResponse {
     }
 
     public static UpcomingProgramResponse from(UpcomingProgram entity, long registrationCount) {
+        return from(entity, registrationCount, true);
+    }
+
+    public static UpcomingProgramResponse from(UpcomingProgram entity, long registrationCount, boolean includeMeetLink) {
         UpcomingProgramResponse response = from(entity);
         response.setRegistrationCount(registrationCount);
+        if (!includeMeetLink) {
+            if (entity.getType() == UpcomingProgramType.WEBINAR || entity.getType() == UpcomingProgramType.WORKSHOP) {
+                response.setMeetLink(null);
+            }
+        }
         return response;
     }
 }

@@ -22,7 +22,7 @@ import {
 } from "../../animations/variants.js";
 
 const STATS = [
-  { value: "10,000+", label: "Students Trained", icon: Users },
+  { value: "37K+", label: "Students Trained", icon: Users },
   { value: "150+", label: "Hiring Partners", icon: Building2 },
   { value: "95%", label: "Placement Success", icon: Award },
   { value: "20+", label: "Specialized Courses", icon: BookOpen },

@@ -20,7 +20,8 @@ function normalizeProgram(raw) {
     organizationName: raw.organizationName ?? null,
     venueName: raw.venueName ?? null,
     certificateIncluded: raw.certificateIncluded ?? false,
-    isActive: raw.active ?? raw.isActive ?? true,
+    isActive: raw.active ?? raw.isActive ?? raw.visibleOnSite ?? true,
+    visibleOnSite: raw.visibleOnSite ?? raw.active ?? raw.isActive ?? true,
     registrationCount: raw.registrationCount ?? 0,
   }
 }
