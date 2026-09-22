@@ -1,5 +1,5 @@
 -- V29: Company partners for "Choose Your Path" / Where Students Work section
-CREATE TABLE company_partner (
+CREATE TABLE IF NOT EXISTS company_partner (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     name          VARCHAR(120) NOT NULL,
     logo_url      VARCHAR(255) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE company_partner (
     INDEX idx_company_partner_row_order (row_num, display_order)
 );
 
-INSERT INTO company_partner (name, logo_url, row_num, display_order, is_active, created_at, updated_at) VALUES
+INSERT IGNORE INTO company_partner (name, logo_url, row_num, display_order, is_active, created_at, updated_at) VALUES
 ('Lavendel Consulting', '/assets/companies/lavendel.png', 1, 1, 1, NOW(), NOW()),
 ('Kovan Labs', '/assets/companies/kovan.png', 1, 2, 1, NOW(), NOW()),
 ('Memstech', '/assets/companies/memstech.png', 1, 3, 1, NOW(), NOW()),

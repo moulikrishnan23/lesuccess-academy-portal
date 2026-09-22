@@ -17,7 +17,16 @@ public class ConnectWithUsResponse {
     private String name;
     private String mobile;
     private String email;
+    private String message;
     private LocalDateTime createdAt;
+
+    public String getFullName() {
+        return name;
+    }
+
+    public String getPhoneNumber() {
+        return mobile;
+    }
 
     public static ConnectWithUsResponse from(ConnectWithUs entity) {
         return ConnectWithUsResponse.builder()
@@ -25,6 +34,7 @@ public class ConnectWithUsResponse {
                 .name(entity.getName())
                 .mobile(entity.getMobile())
                 .email(entity.getEmail())
+                .message(entity.getMessage())
                 .createdAt(entity.getCreatedAt())
                 .build();
     }

@@ -15,6 +15,11 @@ public class TeamMemberResponse {
     private String email;
     private String image; // alias for imageUrl to match frontend
     private String imageUrl;
+    private String bio;
+    private String experience;
+    private String skills;
+    private String department;
+    private String category; // alias for department / category
     private boolean featured; // alias for isFeatured to match frontend
     @SuppressWarnings("unused") // Used by Lombok builder and JSON serialization
     private boolean isFeatured;
@@ -31,6 +36,11 @@ public class TeamMemberResponse {
                 .email(member.getEmail())
                 .image(member.getImageUrl())
                 .imageUrl(member.getImageUrl())
+                .bio(member.getBio())
+                .experience(member.getExperience())
+                .skills(member.getSkills())
+                .department(member.getDepartment())
+                .category(member.getDepartment())
                 .featured(member.isFeatured())
                 .isFeatured(member.isFeatured())
                 .displayOrder(member.getDisplayOrder())

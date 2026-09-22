@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TestimonialRequest {
 
+    private Long courseId;
+
     @NotBlank(message = "Student name is required")
     @Size(max = 120, message = "Name must not exceed 120 characters")
     private String studentName;
@@ -22,6 +24,17 @@ public class TestimonialRequest {
     @Min(value = 1, message = "Rating must be at least 1")
     @Max(value = 5, message = "Rating must not exceed 5")
     private int rating;
+
+    @Size(max = 50)
+    private String source;
+
+    @Size(max = 50)
+    private String reviewDate;
+
+    @Size(max = 100)
+    private String reviewerRole;
+
+    private int likesCount;
 
     @Size(max = 255, message = "Photo URL must not exceed 255 characters")
     private String photoUrl;

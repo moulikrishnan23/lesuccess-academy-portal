@@ -18,15 +18,28 @@ public class UpcomingProgramRegistration {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "program_id", nullable = false)
+    @org.hibernate.annotations.NotFound(action = org.hibernate.annotations.NotFoundAction.IGNORE)
     private UpcomingProgram program;
+
+    @Column(name = "program_id", insertable = false, updatable = false)
+    private Long programId;
 
     @Column(nullable = false, length = 120)
     private String name;
 
     @Column(name = "mobile_number", nullable = false, length = 20)
     private String mobileNumber;
+
+    @Column(length = 160)
+    private String email;
+
+    @Column(length = 20)
+    private String mode;
+
+    @Column(name = "venue_address", length = 255)
+    private String venueAddress;
 
     @Column(name = "ip_address", length = 45)
     private String ipAddress;

@@ -140,45 +140,48 @@ export default function GalleryPage() {
   }, [lightboxIndex, images])
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-12">
+    <div className="min-h-screen bg-[#F5F8FC]/50 py-12 px-4 sm:px-6 lg:px-12">
       <div className="mx-auto max-w-7xl">
         {/* =====================================================
             HEADER / TITLE
         ===================================================== */}
-        <div className="mb-10 text-center">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-[#084b66] sm:text-4xl md:text-5xl">
-            {currentFolder ? currentFolder.name : 'GALLERY'}
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#07405C]/10 border border-[#07405C]/20 text-xs font-semibold uppercase tracking-wider text-[#07405C] mb-3">
+            Campus Life & Events
+          </div>
+          <h1 className="font-display text-3xl font-black tracking-tight text-[#101010] sm:text-4xl md:text-5xl">
+            {currentFolder ? currentFolder.name : 'Photo Gallery & Moments'}
           </h1>
-          <p className="mt-3 text-sm text-slate-500 sm:text-base max-w-2xl mx-auto">
+          <p className="mt-3 text-sm text-slate-600 sm:text-base max-w-2xl mx-auto font-normal">
             {currentFolder?.description ||
               'Explore campus moments, placement celebrations, corporate drives, and life at LeSuccess Academy.'}
           </p>
 
           {/* Breadcrumbs & Back Navigation */}
           {currentFolder && (
-            <div className="mt-6 flex items-center justify-center gap-2">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={handleBack}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-[#084b66]"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-[#07405C] hover:border-[#07405C]/30 cursor-pointer"
               >
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
 
-              <nav aria-label="Breadcrumb" className="flex items-center text-sm text-slate-500">
+              <nav aria-label="Breadcrumb" className="flex items-center text-sm font-medium text-slate-500">
                 {breadcrumbs.map((crumb, idx) => {
                   const isLast = idx === breadcrumbs.length - 1
                   return (
                     <span key={crumb.name + idx} className="flex items-center">
                       {idx > 0 && <span className="mx-2 text-slate-400">/</span>}
                       {isLast ? (
-                        <span className="font-semibold text-[#084b66]">{crumb.name}</span>
+                        <span className="font-bold text-[#07405C]">{crumb.name}</span>
                       ) : (
                         <button
                           type="button"
                           onClick={() => navigateTo(crumb.slug)}
-                          className="hover:text-[#084b66] hover:underline"
+                          className="hover:text-[#07405C] hover:underline cursor-pointer"
                         >
                           {crumb.name}
                         </button>
@@ -196,7 +199,7 @@ export default function GalleryPage() {
         ===================================================== */}
         {loading ? (
           <div className="flex min-h-[40vh] items-center justify-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#084b66]" />
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#07405C]" />
           </div>
         ) : (
           <>
@@ -211,7 +214,7 @@ export default function GalleryPage() {
                     whileHover={{ y: -5 }}
                     transition={{ duration: 0.2 }}
                     onClick={() => navigateTo(cat.slug)}
-                    className="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-[#084b66]/40 hover:shadow-md"
+                    className="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition hover:border-[#07405C]/50 hover:shadow-xl"
                   >
                     {/* Thumbnail Preview */}
                     <div className="relative aspect-4/3 w-full overflow-hidden bg-slate-100">
@@ -225,13 +228,13 @@ export default function GalleryPage() {
                           }}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#084b66]/10 to-slate-200 text-[#084b66]">
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#07405C]/10 to-slate-200 text-[#07405C]">
                           <Folder size={48} strokeWidth={1.5} />
                         </div>
                       )}
 
                       {/* Photo/Subcategory count badge */}
-                      <div className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-xs flex items-center gap-1.5">
+                      <div className="absolute bottom-3 right-3 rounded-lg bg-[#101010]/75 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-md flex items-center gap-1.5 border border-white/10">
                         {cat.subCategoryCount > 0 && cat.imageCount > 0 ? (
                           <>
                             <Layers size={13} />
@@ -253,7 +256,7 @@ export default function GalleryPage() {
 
                     {/* Card Title */}
                     <div className="p-4 text-center">
-                      <h3 className="font-display text-base font-bold text-slate-800 transition group-hover:text-[#e51d48]">
+                      <h3 className="font-display text-base font-bold text-[#101010] transition group-hover:text-[#DF1E26]">
                         {cat.name}
                       </h3>
                     </div>
@@ -267,8 +270,8 @@ export default function GalleryPage() {
             =================================================== */}
             {currentFolder && subcategories.length > 0 && (
               <div className="mb-12">
-                <h2 className="mb-6 font-display text-xl font-bold text-slate-800 flex items-center gap-2">
-                  <Folder size={20} className="text-[#084b66]" />
+                <h2 className="mb-6 font-display text-xl font-bold text-[#101010] flex items-center gap-2">
+                  <Folder size={20} className="text-[#07405C]" />
                   <span>Subfolders / Albums</span>
                 </h2>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -277,7 +280,7 @@ export default function GalleryPage() {
                       key={sub.id}
                       whileHover={{ y: -4 }}
                       onClick={() => navigateTo(sub.slug)}
-                      className="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition hover:border-[#084b66]/40 hover:shadow-md"
+                      className="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition hover:border-[#07405C]/50 hover:shadow-lg"
                     >
                       <div className="relative aspect-4/3 w-full overflow-hidden bg-slate-100">
                         {sub.coverImageUrl ? (
@@ -287,11 +290,11 @@ export default function GalleryPage() {
                             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-slate-100 text-[#084b66]">
+                          <div className="flex h-full w-full items-center justify-center bg-slate-100 text-[#07405C]">
                             <Folder size={40} strokeWidth={1.5} />
                           </div>
                         )}
-                        <div className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-xs flex items-center gap-1.5">
+                        <div className="absolute bottom-3 right-3 rounded-lg bg-[#101010]/75 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-md flex items-center gap-1.5 border border-white/10">
                           {sub.subCategoryCount > 0 && sub.imageCount > 0 ? (
                             <>
                               <Layers size={13} />
@@ -311,7 +314,7 @@ export default function GalleryPage() {
                         </div>
                       </div>
                       <div className="p-4 text-center">
-                        <h4 className="font-display text-base font-bold text-slate-800 transition group-hover:text-[#e51d48]">
+                        <h4 className="font-display text-base font-bold text-[#101010] transition group-hover:text-[#DF1E26]">
                           {sub.name}
                         </h4>
                       </div>
@@ -333,7 +336,7 @@ export default function GalleryPage() {
                       whileHover={{ y: -4, scale: 1.01 }}
                       transition={{ duration: 0.2 }}
                       onClick={() => openLightbox(idx)}
-                      className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs hover:border-[#084b66]/40 hover:shadow-lg transition aspect-4/3"
+                      className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs hover:border-[#07405C]/50 hover:shadow-xl transition aspect-4/3"
                     >
                       <img
                         src={getImageUrl(img.imageUrl)}

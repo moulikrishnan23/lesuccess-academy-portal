@@ -1,5 +1,6 @@
 package in.lesuccess.portal.lead;
 
+import in.lesuccess.portal.course.CourseRepository;
 import in.lesuccess.portal.shared.dto.PageResponse;
 import in.lesuccess.portal.shared.exception.InvalidRequestException;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
@@ -24,6 +25,7 @@ import java.util.Set;
 public class LeadService {
 
     private final LeadRepository repository;
+    private final CourseRepository courseRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     /** Same externalised window ContactService uses, so both forms behave alike. */
@@ -94,11 +96,23 @@ public class LeadService {
             }
         }
 
+        String resolvedCourseName = request.getCourseName();
+        if ((resolvedCourseName == null || resolvedCourseName.isBlank()) && request.getCourseId() != null && courseRepository != null) {
+            try {
+                resolvedCourseName = courseRepository.findById(request.getCourseId())
+                        .map(in.lesuccess.portal.course.Course::getName)
+                        .orElse(null);
+            } catch (Exception ignored) {
+            }
+        }
+
         Lead entity = Lead.builder()
                 .name(LeadCaptureSupport.sanitizeText(request.getName().trim()))
                 .mobile(cleanMobile)
                 .email(request.getEmail() == null ? null : request.getEmail().trim())
                 .courseId(request.getCourseId())
+                .courseName(resolvedCourseName != null ? LeadCaptureSupport.sanitizeText(resolvedCourseName.trim()) : null)
+                .learningMode(trimOrNull(request.getLearningMode()))
                 .lookingFor(LeadCaptureSupport.sanitizeText(trimOrNull(request.getLookingFor())))
                 .source(request.getSource())
                 .status(LeadStatus.NEW)

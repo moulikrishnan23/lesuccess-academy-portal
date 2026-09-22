@@ -1,5 +1,6 @@
 import apiClient from './apiClient.js'
 import { isMockEnabled, mockGetTestimonialsByCourse } from '../mocks/mockGateway.js'
+import { GOOGLE_REVIEWS } from '../data/googleReviews.js'
 
 /**
  * The backend filters before responding — CourseService#listTestimonials calls
@@ -55,14 +56,33 @@ export function normalizeTestimonials(raw) {
  * @returns {Promise<Object[]>}
  */
 export async function getByCourse(courseId, { signal } = {}) {
-  if (isMockEnabled()) {
-    return normalizeTestimonials(await mockGetTestimonialsByCourse(courseId))
+  try {
+    const { data } = await apiClient.get('/api/testimonials', { signal })
+    const items = normalizeTestimonials(data?.data ?? data)
+    if (items.length > 0) return items
+  } catch (err) {
+    // try fallback below
   }
 
-  const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(courseId)}/testimonials`, {
-    signal,
-  })
-  return normalizeTestimonials(data?.data ?? data)
+  if (courseId) {
+    try {
+      const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(courseId)}/testimonials`, { signal })
+      const items = normalizeTestimonials(data?.data ?? data)
+      if (items.length > 0) return items
+    } catch (err) {
+      // try fallback below
+    }
+  }
+
+  if (isMockEnabled()) {
+    const mockList = await mockGetTestimonialsByCourse(courseId)
+    if (Array.isArray(mockList) && mockList.length > 0) {
+      return normalizeTestimonials(mockList)
+    }
+  }
+
+  // Fallback to authentic common Google Reviews dataset
+  return normalizeTestimonials(GOOGLE_REVIEWS)
 }
 
 export default { getByCourse, normalizeTestimonials }

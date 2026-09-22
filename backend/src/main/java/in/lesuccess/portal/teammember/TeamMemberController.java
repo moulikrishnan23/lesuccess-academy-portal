@@ -21,6 +21,11 @@ public class TeamMemberController {
         return ResponseEntity.ok(ApiResponse.success("Team members retrieved", service.listActive()));
     }
 
+    @GetMapping("/api/team-members/{id}")
+    public ResponseEntity<ApiResponse<TeamMemberResponse>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success("Team member retrieved", service.getById(id)));
+    }
+
     @GetMapping("/api/admin/team-members")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<TeamMemberResponse>>> listForAdmin() {
@@ -40,6 +45,20 @@ public class TeamMemberController {
             @PathVariable Long id,
             @Valid @RequestBody TeamMemberRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Team member updated", service.update(id, request)));
+    }
+
+    @GetMapping("/api/admin/team-members/next-order")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<Integer>> getNextOrder() {
+        return ResponseEntity.ok(ApiResponse.success("Next order retrieved", service.getNextOrder()));
+    }
+
+    @PutMapping("/api/admin/team-members/{id}/order")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<TeamMemberResponse>> updateOrder(
+            @PathVariable Long id,
+            @RequestParam int displayOrder) {
+        return ResponseEntity.ok(ApiResponse.success("Order updated", service.updateOrder(id, displayOrder)));
     }
 
     @DeleteMapping("/api/admin/team-members/{id}")

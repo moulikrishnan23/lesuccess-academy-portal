@@ -33,6 +33,18 @@ public class TeamMember {
     @Column(name = "image_url", length = 255)
     private String imageUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(length = 120)
+    private String experience;
+
+    @Column(length = 255)
+    private String skills;
+
+    @Column(length = 100)
+    private String department;
+
     @Column(name = "is_featured", nullable = false)
     @Builder.Default
     private boolean isFeatured = false;

@@ -2,6 +2,7 @@ package in.lesuccess.portal.course;
 
 import in.lesuccess.portal.shared.dto.PageResponse;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
+import in.lesuccess.portal.shared.util.OrderRebalanceUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ public class CourseService {
 
     private final CourseRepository repository;
     private final CourseModuleRepository moduleRepository;
+    private final CourseToolRepository toolRepository;
     private final TestimonialRepository testimonialRepository;
 
     @Transactional(readOnly = true)
@@ -33,14 +35,16 @@ public class CourseService {
     public CourseResponse getById(Long id) {
         Course course = findOrThrow(id);
         List<CourseModuleResponse> modules = listModules(course.getId());
-        return CourseResponse.from(course, modules);
+        List<CourseToolResponse> tools = listTools(course.getId());
+        return CourseResponse.from(course, modules, tools);
     }
 
     @Transactional(readOnly = true)
     public CourseResponse getByIdOrSlug(String idOrSlug) {
         Course course = findByIdOrSlug(idOrSlug);
         List<CourseModuleResponse> modules = listModules(course.getId());
-        return CourseResponse.from(course, modules);
+        List<CourseToolResponse> tools = listTools(course.getId());
+        return CourseResponse.from(course, modules, tools);
     }
 
     public Course findByIdOrSlug(String idOrSlug) {
@@ -70,6 +74,10 @@ public class CourseService {
 
     @Transactional
     public CourseResponse create(CourseRequest request) {
+        List<Course> allCourses = repository.findAllByOrderByDisplayOrderAscIdAsc();
+        int nextOrder = OrderRebalanceUtil.getNextOrder(allCourses, Course::getDisplayOrder);
+        int assignedOrder = request.getDisplayOrder() > 0 ? request.getDisplayOrder() : nextOrder;
+
         Course entity = Course.builder()
                 .name(request.getName().trim())
                 .shortDescription(request.getShortDescription())
@@ -80,18 +88,46 @@ public class CourseService {
                 .placementAssistance(request.isPlacementAssistance())
                 .syllabusUrl(request.getSyllabusUrl())
                 .enrollUrl(request.getEnrollUrl())
+                .iconUrl(request.getIconUrl())
+                .description(request.getDescription())
+                .category(request.getCategory())
+                .roleHeading(request.getRoleHeading())
+                .roleIntro(request.getRoleIntro())
+                .roleBullets(request.resolveRoleBullets())
                 .isActive(request.isActive())
-                .displayOrder(request.getDisplayOrder())
+                .displayOrder(assignedOrder)
                 .build();
 
         Course saved = repository.save(entity);
-        log.info("Course created: id={}, name={}", saved.getId(), saved.getName());
-        return CourseResponse.from(saved);
+
+        if (assignedOrder <= allCourses.size()) {
+            allCourses.add(saved);
+            List<Course> modified = OrderRebalanceUtil.reorder(
+                    allCourses, saved.getId(), assignedOrder,
+                    Course::getId, Course::getDisplayOrder, Course::setDisplayOrder);
+            if (!modified.isEmpty()) {
+                repository.saveAll(modified);
+            }
+        }
+
+        log.info("Course created: id={}, name={}, order={}", saved.getId(), saved.getName(), saved.getDisplayOrder());
+
+        if (request.getTools() != null) {
+            syncTools(saved.getId(), request.getTools());
+        }
+        if (request.getModules() != null) {
+            syncModules(saved.getId(), request.getModules());
+        }
+
+        return CourseResponse.from(saved, listModules(saved.getId()), listTools(saved.getId()));
     }
 
     @Transactional
     public CourseResponse update(Long id, CourseRequest request) {
         Course entity = findOrThrow(id);
+        int oldOrder = entity.getDisplayOrder();
+        int newOrder = request.getDisplayOrder() > 0 ? request.getDisplayOrder() : oldOrder;
+
         entity.setName(request.getName().trim());
         entity.setShortDescription(request.getShortDescription());
         entity.setDurationMonths(request.getDurationMonths());
@@ -101,22 +137,54 @@ public class CourseService {
         entity.setPlacementAssistance(request.isPlacementAssistance());
         entity.setSyllabusUrl(request.getSyllabusUrl());
         entity.setEnrollUrl(request.getEnrollUrl());
+        entity.setIconUrl(request.getIconUrl());
+        entity.setDescription(request.getDescription());
+        entity.setCategory(request.getCategory());
+        entity.setRoleHeading(request.getRoleHeading());
+        entity.setRoleIntro(request.getRoleIntro());
+        entity.setRoleBullets(request.resolveRoleBullets());
         entity.setActive(request.isActive());
-        entity.setDisplayOrder(request.getDisplayOrder());
 
-        Course saved = repository.saveAndFlush(entity);
-        log.info("Course updated: id={}", id);
-        return CourseResponse.from(saved);
+        if (oldOrder != newOrder) {
+            List<Course> allCourses = repository.findAllByOrderByDisplayOrderAscIdAsc();
+            List<Course> modified = OrderRebalanceUtil.reorder(
+                    allCourses, id, newOrder,
+                    Course::getId, Course::getDisplayOrder, Course::setDisplayOrder);
+            if (!modified.isEmpty()) {
+                repository.saveAll(modified);
+            }
+        } else {
+            repository.saveAndFlush(entity);
+        }
+
+        Course refreshed = findOrThrow(id);
+        log.info("Course updated: id={}, order={}", id, refreshed.getDisplayOrder());
+
+        if (request.getTools() != null) {
+            syncTools(refreshed.getId(), request.getTools());
+        }
+        if (request.getModules() != null) {
+            syncModules(refreshed.getId(), request.getModules());
+        }
+
+        return CourseResponse.from(refreshed, listModules(refreshed.getId()), listTools(refreshed.getId()));
     }
 
     @Transactional
     public CourseResponse updateOrder(Long id, CourseOrderRequest request) {
-        Course entity = findOrThrow(id);
-        entity.setDisplayOrder(request.getDisplayOrder());
+        findOrThrow(id);
+        List<Course> allCourses = repository.findAllByOrderByDisplayOrderAscIdAsc();
+        List<Course> modified = OrderRebalanceUtil.reorder(
+                allCourses, id, request.getDisplayOrder(),
+                Course::getId, Course::getDisplayOrder, Course::setDisplayOrder);
 
-        Course saved = repository.saveAndFlush(entity);
-        log.info("Course display order updated: id={}, order={}", id, request.getDisplayOrder());
-        return CourseResponse.from(saved);
+        if (!modified.isEmpty()) {
+            repository.saveAll(modified);
+        }
+
+        Course refreshed = findOrThrow(id);
+        log.info("Course display order updated: id={}, order={}", id, refreshed.getDisplayOrder());
+        return CourseResponse.from(refreshed);
     }
 
     @Transactional
@@ -125,6 +193,14 @@ public class CourseService {
         entity.setDeletedAt(LocalDateTime.now());
         entity.setActive(false);
         repository.save(entity);
+
+        List<Course> remaining = repository.findAllByOrderByDisplayOrderAscIdAsc();
+        List<Course> modified = OrderRebalanceUtil.rebalance(
+                remaining, Course::getDisplayOrder, Course::setDisplayOrder);
+        if (!modified.isEmpty()) {
+            repository.saveAll(modified);
+        }
+
         log.info("Course soft-deleted: id={}", id);
     }
 
@@ -184,13 +260,116 @@ public class CourseService {
         log.info("Course module deleted: id={}", moduleId);
     }
 
+    @Transactional
+    public List<CourseModuleResponse> syncModules(Long courseId, List<CourseModuleRequest> moduleRequests) {
+        Course course = findOrThrow(courseId);
+        moduleRepository.deleteByCourseId(courseId);
+        if (moduleRequests == null || moduleRequests.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        int order = 1;
+        for (CourseModuleRequest req : moduleRequests) {
+            if (req.getTitle() == null || req.getTitle().isBlank()) continue;
+            CourseModule module = CourseModule.builder()
+                    .course(course)
+                    .title(req.getTitle().trim())
+                    .content(req.resolveContent())
+                    .displayOrder(req.getDisplayOrder() > 0 ? req.getDisplayOrder() : order++)
+                    .build();
+            moduleRepository.save(module);
+        }
+        return listModules(courseId);
+    }
+
+    // ── Tools ────────────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<CourseToolResponse> listTools(Long courseId) {
+        return toolRepository.findByCourseIdOrderByDisplayOrderAsc(courseId)
+                .stream()
+                .map(CourseToolResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseToolResponse> listTools(String idOrSlug) {
+        Course course = findByIdOrSlug(idOrSlug);
+        return listTools(course.getId());
+    }
+
+    @Transactional
+    public CourseToolResponse createTool(Long courseId, CourseToolRequest request) {
+        Course course = findOrThrow(courseId);
+        CourseTool entity = CourseTool.builder()
+                .course(course)
+                .groupName(request.getGroupName() != null && !request.getGroupName().isBlank() ? request.getGroupName().trim() : "Tools")
+                .toolName(request.getToolName().trim())
+                .iconUrl(request.getIconUrl() != null && !request.getIconUrl().isBlank() ? request.getIconUrl().trim() : null)
+                .displayOrder(request.getDisplayOrder())
+                .build();
+        CourseTool saved = toolRepository.save(entity);
+        log.info("Course tool created: id={}, courseId={}", saved.getId(), courseId);
+        return CourseToolResponse.from(saved);
+    }
+
+    @Transactional
+    public CourseToolResponse updateTool(Long toolId, CourseToolRequest request) {
+        CourseTool entity = toolRepository.findById(toolId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course tool", toolId));
+        if (request.getGroupName() != null && !request.getGroupName().isBlank()) {
+            entity.setGroupName(request.getGroupName().trim());
+        }
+        entity.setToolName(request.getToolName().trim());
+        entity.setIconUrl(request.getIconUrl() != null && !request.getIconUrl().isBlank() ? request.getIconUrl().trim() : null);
+        entity.setDisplayOrder(request.getDisplayOrder());
+        CourseTool saved = toolRepository.saveAndFlush(entity);
+        log.info("Course tool updated: id={}", toolId);
+        return CourseToolResponse.from(saved);
+    }
+
+    @Transactional
+    public void deleteTool(Long toolId) {
+        if (!toolRepository.existsById(toolId)) {
+            throw new ResourceNotFoundException("Course tool", toolId);
+        }
+        toolRepository.deleteById(toolId);
+        log.info("Course tool deleted: id={}", toolId);
+    }
+
+    @Transactional
+    public List<CourseToolResponse> syncTools(Long courseId, List<CourseToolRequest> toolRequests) {
+        Course course = findOrThrow(courseId);
+        toolRepository.deleteByCourseId(courseId);
+        if (toolRequests == null || toolRequests.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        int order = 1;
+        for (CourseToolRequest req : toolRequests) {
+            if (req.getToolName() == null || req.getToolName().isBlank()) continue;
+            CourseTool tool = CourseTool.builder()
+                    .course(course)
+                    .groupName(req.getGroupName() != null && !req.getGroupName().isBlank() ? req.getGroupName().trim() : "Tools")
+                    .toolName(req.getToolName().trim())
+                    .iconUrl(req.getIconUrl() != null && !req.getIconUrl().isBlank() ? req.getIconUrl().trim() : null)
+                    .displayOrder(req.getDisplayOrder() > 0 ? req.getDisplayOrder() : order++)
+                    .build();
+            toolRepository.save(tool);
+        }
+        return listTools(courseId);
+    }
+
     // ── Testimonials ─────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public List<TestimonialResponse> listTestimonials(Long courseId) {
         findOrThrow(courseId);
-        return testimonialRepository.findByCourseIdAndIsActiveTrueOrderByDisplayOrderAsc(courseId)
+        List<TestimonialResponse> forCourse = testimonialRepository.findByCourseIdAndIsActiveTrueOrderByDisplayOrderAsc(courseId)
                 .stream().map(TestimonialResponse::from).toList();
+        if (forCourse.isEmpty()) {
+            return testimonialRepository.findAllByIsActiveTrueOrderByDisplayOrderAscIdAsc()
+                    .stream().map(TestimonialResponse::from).toList();
+        }
+        return forCourse;
     }
 
     @Transactional(readOnly = true)

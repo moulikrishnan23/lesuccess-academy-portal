@@ -50,6 +50,17 @@ public class CourseEnquiryRequest {
     @Size(max = 120, message = "Currently-you-are must not exceed 120 characters")
     private String currentStatus;
 
+    @Size(max = 2000, message = "Query must not exceed 2000 characters")
+    private String query;
+
+    private String message;
+
+    public String getEffectiveQuery() {
+        if (query != null && !query.isBlank()) return query.trim();
+        if (message != null && !message.isBlank()) return message.trim();
+        return null;
+    }
+
     /** Honeypot field — must arrive empty. Never persisted. */
     private String website;
 

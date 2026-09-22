@@ -147,6 +147,8 @@ class DemoBookingRateLimitFilterTest {
 
     private DemoBookingRequest buildValidRequest() {
         return DemoBookingRequest.builder()
+                .name("Student User")
+                .email("student@example.com")
                 .courseName("Data Analytics")
                 .mobileNumber("+919876543210")
                 .website("")

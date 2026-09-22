@@ -44,6 +44,11 @@ const ICON_BY_NAME = {
   AWS: '/tech/aws.svg',
   Excel: '/tech/excel.svg',
   'Power BI': '/tech/powerbi.svg',
+  Java: '/tech/java.svg',
+  'Spring Boot': '/tech/springboot.svg',
+  Hibernate: '/tech/hibernate.svg',
+  Maven: '/tech/maven.svg',
+  Postman: '/tech/postman.svg',
 }
 
 /**
@@ -388,6 +393,10 @@ export const COURSES = [
       <p>Learning a MEAN Full Stack course in Coimbatore with LeSuccess suits anyone aiming at larger product and services teams, where Angular and TypeScript are the standard rather than the exception. Angular is opinionated by design — modules, dependency injection, typed services and RxJS — and that structure is exactly why bigger codebases and bigger teams choose it. The course teaches TypeScript properly first, since untyped habits are what make Angular feel heavy. Behind the front end you build the same Node, Express and MongoDB services, so you finish able to work on either side of the stack. Live projects, daily tasks and 100% placement support run throughout.</p>
     `,
     durationValue: 300,
+    badgeLabel: '50% Offer',
+    discountLabel: '50% OFF',
+    price: 45000,
+    discountPrice: 22500,
     roleHeading: 'What does a MEAN Stack Developer do?',
     roleIntro:
       'A MEAN developer works inside a typed, structured front end and the Node services behind it. The discipline the stack imposes is the point: it is what lets several developers work on one application without standing on each other.',

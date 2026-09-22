@@ -2,12 +2,14 @@ package in.lesuccess.portal.gallery;
 
 import in.lesuccess.portal.shared.exception.InvalidRequestException;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
+import in.lesuccess.portal.shared.util.OrderRebalanceUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -58,6 +60,9 @@ public class GalleryService {
 
     @Transactional(readOnly = true)
     public List<GalleryImageResponse> listCategoryImages(Long categoryId) {
+        categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("GalleryCategory", categoryId));
+
         return imageRepository.findAllByCategoryIdAndDeletedAtIsNullAndIsActiveTrueOrderByDisplayOrderAscIdAsc(categoryId)
                 .stream()
                 .map(GalleryImageResponse::from)
@@ -77,25 +82,34 @@ public class GalleryService {
     }
 
     @Transactional(readOnly = true)
-    public List<GalleryImageResponse> listAllImagesForAdmin(Long categoryId) {
+    public List<GalleryImageResponse> listCategoryImagesForAdmin(Long categoryId) {
+        categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("GalleryCategory", categoryId));
+
         return imageRepository.findAllByCategoryIdAndDeletedAtIsNullOrderByDisplayOrderAscIdAsc(categoryId)
                 .stream()
                 .map(GalleryImageResponse::from)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<GalleryImageResponse> listAllImagesForAdmin(Long categoryId) {
+        return listCategoryImagesForAdmin(categoryId);
+    }
+
     @Transactional
     public GalleryCategoryResponse createCategory(GalleryCategoryRequest request) {
-        String slug = request.getSlug();
-        if (slug == null || slug.trim().isEmpty()) {
-            slug = slugify(request.getName());
-        } else {
-            slug = slugify(slug);
-        }
+        String slug = request.getSlug() != null && !request.getSlug().trim().isEmpty()
+                ? slugify(request.getSlug())
+                : slugify(request.getName());
 
         if (categoryRepository.existsBySlugAndDeletedAtIsNull(slug)) {
-            slug = slug + "-" + System.currentTimeMillis();
+            throw new InvalidRequestException("Category slug '" + slug + "' is already in use");
         }
+
+        List<GalleryCategory> allCats = categoryRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
+        int nextOrder = OrderRebalanceUtil.getNextOrder(allCats, GalleryCategory::getDisplayOrder);
+        int assignedOrder = request.getDisplayOrder() != null && request.getDisplayOrder() > 0 ? request.getDisplayOrder() : nextOrder;
 
         GalleryCategory category = GalleryCategory.builder()
                 .name(request.getName().trim())
@@ -103,11 +117,23 @@ public class GalleryService {
                 .description(request.getDescription() != null ? request.getDescription().trim() : null)
                 .coverImageUrl(request.getCoverImageUrl() != null ? request.getCoverImageUrl().trim() : null)
                 .parentId(request.getParentId())
-                .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
+                .displayOrder(assignedOrder)
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 
         GalleryCategory saved = categoryRepository.save(category);
+
+        if (assignedOrder <= allCats.size()) {
+            List<GalleryCategory> toReorder = new ArrayList<>(allCats);
+            toReorder.add(saved);
+            List<GalleryCategory> modified = OrderRebalanceUtil.reorder(
+                    toReorder, saved.getId(), assignedOrder,
+                    GalleryCategory::getId, GalleryCategory::getDisplayOrder, GalleryCategory::setDisplayOrder);
+            if (!modified.isEmpty()) {
+                categoryRepository.saveAll(modified);
+            }
+        }
+
         log.info("Gallery category created: id={}, name={}, slug={}", saved.getId(), saved.getName(), saved.getSlug());
         return toCategoryResponse(saved);
     }
@@ -116,6 +142,9 @@ public class GalleryService {
     public GalleryCategoryResponse updateCategory(Long id, GalleryCategoryRequest request) {
         GalleryCategory category = categoryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("GalleryCategory", id));
+
+        int oldOrder = category.getDisplayOrder();
+        int newOrder = request.getDisplayOrder() != null && request.getDisplayOrder() > 0 ? request.getDisplayOrder() : oldOrder;
 
         category.setName(request.getName().trim());
         if (request.getSlug() != null && !request.getSlug().trim().isEmpty()) {
@@ -128,16 +157,25 @@ public class GalleryService {
         category.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
         category.setCoverImageUrl(request.getCoverImageUrl() != null ? request.getCoverImageUrl().trim() : null);
         category.setParentId(request.getParentId());
-        if (request.getDisplayOrder() != null) {
-            category.setDisplayOrder(request.getDisplayOrder());
-        }
         if (request.getIsActive() != null) {
             category.setActive(request.getIsActive());
         }
 
-        GalleryCategory saved = categoryRepository.save(category);
-        log.info("Gallery category updated: id={}", saved.getId());
-        return toCategoryResponse(saved);
+        if (oldOrder != newOrder) {
+            List<GalleryCategory> allCats = categoryRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
+            List<GalleryCategory> modified = OrderRebalanceUtil.reorder(
+                    allCats, id, newOrder,
+                    GalleryCategory::getId, GalleryCategory::getDisplayOrder, GalleryCategory::setDisplayOrder);
+            if (!modified.isEmpty()) {
+                categoryRepository.saveAll(modified);
+            }
+        } else {
+            categoryRepository.save(category);
+        }
+
+        GalleryCategory refreshed = categoryRepository.findByIdAndDeletedAtIsNull(id).orElse(category);
+        log.info("Gallery category updated: id={}", refreshed.getId());
+        return toCategoryResponse(refreshed);
     }
 
     @Transactional
@@ -147,6 +185,14 @@ public class GalleryService {
 
         category.setDeletedAt(LocalDateTime.now());
         categoryRepository.save(category);
+
+        List<GalleryCategory> remaining = categoryRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
+        List<GalleryCategory> modified = OrderRebalanceUtil.rebalance(
+                remaining, GalleryCategory::getDisplayOrder, GalleryCategory::setDisplayOrder);
+        if (!modified.isEmpty()) {
+            categoryRepository.saveAll(modified);
+        }
+
         log.info("Gallery category deleted: id={}", id);
     }
 
@@ -155,17 +201,33 @@ public class GalleryService {
         categoryRepository.findByIdAndDeletedAtIsNull(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("GalleryCategory", request.getCategoryId()));
 
+        List<GalleryImage> categoryImages = imageRepository.findAllByCategoryIdAndDeletedAtIsNullOrderByDisplayOrderAscIdAsc(request.getCategoryId());
+        int nextOrder = OrderRebalanceUtil.getNextOrder(categoryImages, GalleryImage::getDisplayOrder);
+        int assignedOrder = request.getDisplayOrder() != null && request.getDisplayOrder() > 0 ? request.getDisplayOrder() : nextOrder;
+
         GalleryImage image = GalleryImage.builder()
                 .categoryId(request.getCategoryId())
                 .title(request.getTitle() != null ? request.getTitle().trim() : null)
                 .imageUrl(request.getImageUrl().trim())
                 .caption(request.getCaption() != null ? request.getCaption().trim() : null)
-                .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
+                .displayOrder(assignedOrder)
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 
         GalleryImage saved = imageRepository.save(image);
-        log.info("Gallery image created: id={}, categoryId={}", saved.getId(), saved.getCategoryId());
+
+        if (assignedOrder <= categoryImages.size()) {
+            List<GalleryImage> toReorder = new ArrayList<>(categoryImages);
+            toReorder.add(saved);
+            List<GalleryImage> modified = OrderRebalanceUtil.reorder(
+                    toReorder, saved.getId(), assignedOrder,
+                    GalleryImage::getId, GalleryImage::getDisplayOrder, GalleryImage::setDisplayOrder);
+            if (!modified.isEmpty()) {
+                imageRepository.saveAll(modified);
+            }
+        }
+
+        log.info("Gallery image created: id={}, categoryId={}, order={}", saved.getId(), saved.getCategoryId(), saved.getDisplayOrder());
         return GalleryImageResponse.from(saved);
     }
 
@@ -216,16 +278,28 @@ public class GalleryService {
         if (request.getCaption() != null) {
             image.setCaption(request.getCaption().trim());
         }
-        if (request.getDisplayOrder() != null) {
-            image.setDisplayOrder(request.getDisplayOrder());
-        }
+        int oldOrder = image.getDisplayOrder();
+        int newOrder = request.getDisplayOrder() != null && request.getDisplayOrder() > 0 ? request.getDisplayOrder() : oldOrder;
+
         if (request.getIsActive() != null) {
             image.setActive(request.getIsActive());
         }
 
-        GalleryImage saved = imageRepository.save(image);
-        log.info("Gallery image updated: id={}", saved.getId());
-        return GalleryImageResponse.from(saved);
+        if (oldOrder != newOrder) {
+            List<GalleryImage> categoryImages = imageRepository.findAllByCategoryIdAndDeletedAtIsNullOrderByDisplayOrderAscIdAsc(image.getCategoryId());
+            List<GalleryImage> modified = OrderRebalanceUtil.reorder(
+                    categoryImages, id, newOrder,
+                    GalleryImage::getId, GalleryImage::getDisplayOrder, GalleryImage::setDisplayOrder);
+            if (!modified.isEmpty()) {
+                imageRepository.saveAll(modified);
+            }
+        } else {
+            imageRepository.save(image);
+        }
+
+        GalleryImage refreshed = imageRepository.findByIdAndDeletedAtIsNull(id).orElse(image);
+        log.info("Gallery image updated: id={}, order={}", refreshed.getId(), refreshed.getDisplayOrder());
+        return GalleryImageResponse.from(refreshed);
     }
 
     @Transactional
@@ -235,6 +309,14 @@ public class GalleryService {
 
         image.setDeletedAt(LocalDateTime.now());
         imageRepository.save(image);
+
+        List<GalleryImage> remaining = imageRepository.findAllByCategoryIdAndDeletedAtIsNullOrderByDisplayOrderAscIdAsc(image.getCategoryId());
+        List<GalleryImage> modified = OrderRebalanceUtil.rebalance(
+                remaining, GalleryImage::getDisplayOrder, GalleryImage::setDisplayOrder);
+        if (!modified.isEmpty()) {
+            imageRepository.saveAll(modified);
+        }
+
         log.info("Gallery image deleted: id={}", id);
     }
 

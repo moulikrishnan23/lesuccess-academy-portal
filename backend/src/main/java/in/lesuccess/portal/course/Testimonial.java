@@ -20,8 +20,8 @@ public class Testimonial {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "course_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
     private Course course;
 
     @Column(name = "student_name", nullable = false, length = 120)
@@ -32,6 +32,18 @@ public class Testimonial {
 
     @Column(nullable = false, columnDefinition = "TINYINT")
     private int rating;
+
+    @Column(length = 50)
+    private String source;
+
+    @Column(name = "review_date", length = 50)
+    private String reviewDate;
+
+    @Column(name = "reviewer_role", length = 100)
+    private String reviewerRole;
+
+    @Column(name = "likes_count")
+    private int likesCount;
 
     @Column(name = "photo_url", length = 255)
     private String photoUrl;

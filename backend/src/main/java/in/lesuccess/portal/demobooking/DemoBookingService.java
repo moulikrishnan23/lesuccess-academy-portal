@@ -72,11 +72,8 @@ public class DemoBookingService {
         }
 
         DemoBooking entity = DemoBooking.builder()
-                // Course name is free text chosen from a dropdown the page builds
-                // from the catalogue, but it arrives as a string the caller
-                // controls, so it is sanitised like every other free-text field.
-                // The mobile number needs no sanitising beyond normalisation: it
-                // is already constrained by @Pattern to digits and a +91 prefix.
+                .name(LeadCaptureSupport.sanitizeText(trimOrNull(request.getName())))
+                .email(LeadCaptureSupport.sanitizeText(trimOrNull(request.getEmail())))
                 .courseName(LeadCaptureSupport.sanitizeText(trimOrNull(request.getCourseName())))
                 .mobileNumber(cleanMobile)
                 .ipAddress(ipAddress)

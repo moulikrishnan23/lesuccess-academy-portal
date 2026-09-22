@@ -8,7 +8,7 @@ import { normalizeMobile } from '../utils/validation.js'
  * leadApi and courseEnquiryApi: the backend caps each with @Size and treats
  * absent as absent, so there is no reason to store a row full of empty strings.
  */
-function toRequestBody({ name, mobile, email, website }) {
+function toRequestBody({ name, mobile, email, message, website }) {
   const body = {
     name: name.trim(),
     // Sent as 10 digits. The backend strips whitespace itself and accepts either
@@ -18,6 +18,7 @@ function toRequestBody({ name, mobile, email, website }) {
   }
 
   if (email?.trim()) body.email = email.trim()
+  if (message?.trim()) body.message = message.trim()
 
   /*
    * Honeypot. The backend treats a non-empty `website` as a bot and returns the

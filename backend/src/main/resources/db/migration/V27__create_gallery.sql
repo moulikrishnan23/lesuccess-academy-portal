@@ -1,5 +1,5 @@
 -- V27: Gallery categories and images for public gallery and admin management
-CREATE TABLE gallery_category (
+CREATE TABLE IF NOT EXISTS gallery_category (
     id               BIGINT AUTO_INCREMENT PRIMARY KEY,
     name             VARCHAR(100)  NOT NULL,
     slug             VARCHAR(120)  NOT NULL UNIQUE,
@@ -17,7 +17,7 @@ CREATE TABLE gallery_category (
     INDEX idx_cat_active (is_active)
 );
 
-CREATE TABLE gallery_image (
+CREATE TABLE IF NOT EXISTS gallery_image (
     id               BIGINT AUTO_INCREMENT PRIMARY KEY,
     category_id      BIGINT        NOT NULL,
     title            VARCHAR(150)  NULL,
@@ -35,7 +35,7 @@ CREATE TABLE gallery_image (
 );
 
 -- Seed initial categories matching reference designs
-INSERT INTO gallery_category (id, name, slug, description, cover_image_url, parent_id, display_order, is_active, created_at, updated_at)
+INSERT IGNORE INTO gallery_category (id, name, slug, description, cover_image_url, parent_id, display_order, is_active, created_at, updated_at)
 VALUES
 (1, 'Onam 2026', 'onam-2026', 'Celebration of Onam festival at LeSuccess Academy', '/images/gallery/gallery-1.png', NULL, 1, 1, NOW(), NOW()),
 (2, 'Bishop Herbal', 'bishop-herbal', 'Campus engagement and corporate visit at Bishop Herbal', '/images/gallery/gallery-2.png', NULL, 2, 1, NOW(), NOW()),
@@ -52,7 +52,7 @@ VALUES
 (12, 'SNS', 'sns', 'Mega job fair & developer interviews at SNS Institutions', '/images/gallery/gallery-6.png', 3, 6, 1, NOW(), NOW());
 
 -- Seed sample pictures inside Onam 2026 (category_id = 1)
-INSERT INTO gallery_image (category_id, title, image_url, caption, display_order, is_active, created_at, updated_at)
+INSERT IGNORE INTO gallery_image (category_id, title, image_url, caption, display_order, is_active, created_at, updated_at)
 VALUES
 (1, 'Picture 1', '/images/gallery/gallery-1.png', 'Traditional Onam Pookalam decoration', 1, 1, NOW(), NOW()),
 (1, 'Picture 2', '/images/gallery/gallery-2.png', 'Student cultural performances and celebrations', 2, 1, NOW(), NOW()),
