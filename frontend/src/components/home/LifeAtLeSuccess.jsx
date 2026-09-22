@@ -1,222 +1,192 @@
-import { Circle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Sparkles, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
 
-const galleryImages = [
-  "/images/gallery/gallery-1.png",
-  "/images/gallery/gallery-2.png",
-  "/images/gallery/gallery-3.png",
-  "/images/gallery/gallery-6.png",    
-  "/images/gallery/gallery-4.png",  
-  "/images/gallery/gallery-5.png",  
+// Individual image configs matching the reference image layout and preserving subject faces
+const row1Items = [
+  {
+    src: "/images/gallery/gallery-3.png",
+    alt: "Signing Ceremony",
+    widthClass: "w-72 sm:w-96 lg:w-[460px]",
+    posClass: "object-top",
+  },
+  {
+    src: "/images/gallery/gallery-6.png",
+    alt: "LeSuccess Team Leadership",
+    widthClass: "w-52 sm:w-64 lg:w-72",
+    posClass: "object-top",
+  },
+  {
+    src: "/images/gallery/gallery-4.png",
+    alt: "Campus Celebration and Activities",
+    widthClass: "w-52 sm:w-64 lg:w-72",
+    posClass: "object-top",
+  },
+  {
+    src: "/images/gallery/gallery-5.png",
+    alt: "Campus Academic Building",
+    widthClass: "w-72 sm:w-96 lg:w-[460px]",
+    posClass: "object-center",
+  },
+  {
+    src: "/images/gallery/gallery-1.png",
+    alt: "LeSuccess Faculty",
+    widthClass: "w-52 sm:w-64 lg:w-72",
+    posClass: "object-top",
+  },
+  {
+    src: "/images/gallery/gallery-2.png",
+    alt: "Certification Ceremony",
+    widthClass: "w-52 sm:w-64 lg:w-72",
+    posClass: "object-top",
+  },
 ];
 
-const LifeAtLeSuccess = () => {
+const row2Items = [
+  {
+    src: "/images/gallery/gallery-5.png",
+    alt: "Campus Academic Building",
+    widthClass: "w-72 sm:w-96 lg:w-[460px]",
+    posClass: "object-center",
+  },
+  {
+    src: "/images/gallery/gallery-1.png",
+    alt: "LeSuccess Mentors and Faculty",
+    widthClass: "w-52 sm:w-64 lg:w-72",
+    posClass: "object-top",
+  },
+  {
+    src: "/images/gallery/gallery-2.png",
+    alt: "Student Certification Ceremony",
+    widthClass: "w-52 sm:w-64 lg:w-72",
+    posClass: "object-top",
+  },
+  {
+    src: "/images/gallery/gallery-3.png",
+    alt: "Signing Ceremony",
+    widthClass: "w-72 sm:w-96 lg:w-[460px]",
+    posClass: "object-top",
+  },
+  {
+    src: "/images/gallery/gallery-6.png",
+    alt: "LeSuccess Team Leadership",
+    widthClass: "w-52 sm:w-64 lg:w-72",
+    posClass: "object-top",
+  },
+  {
+    src: "/images/gallery/gallery-4.png",
+    alt: "Campus Celebration and Activities",
+    widthClass: "w-52 sm:w-64 lg:w-72",
+    posClass: "object-top",
+  },
+];
+
+export default function LifeAtLeSuccess() {
+  const reduced = useReducedMotion();
+  // Seamless loop: duplicate array for infinite marquee moving right
+  const marqueeRow1 = [...row1Items, ...row1Items];
+  const marqueeRow2 = [...row2Items, ...row2Items];
+
   return (
-    <section className="relative h-175 w-full overflow-hidden bg-black">
-      {/* ================= GALLERY ================= */}
-      <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
-        {/* Image 1 - Left Large */}
-        <div className="relative col-start-1 row-span-2 overflow-hidden">
-          <img
-            src={galleryImages[0]}
-            alt="LeSuccess Gallery"
-            className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-          />
+    <section className="relative h-[480px] sm:h-[540px] lg:h-[580px] w-full overflow-hidden bg-[#07405C] bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#012f45]">
+      {/* Background Marquee Tracks moving towards the right with edge-to-edge vertical coverage */}
+      <div className="absolute inset-0 flex flex-col justify-between gap-1.5 sm:gap-2.5 opacity-90 sm:opacity-95 hover:opacity-100 transition-opacity duration-300">
+        {/* Row 1 - Marquee moving to the right */}
+        <div className="flex w-max flex-1 min-h-0 animate-marquee-right">
+          {marqueeRow1.map((item, idx) => (
+            <div
+              key={`row1-${idx}`}
+              className={`mx-1 sm:mx-1.5 h-full ${item.widthClass} shrink-0 overflow-hidden rounded-xl border border-white/15 shadow-md`}
+            >
+              <img
+                src={item.src}
+                alt={item.alt}
+                className={`h-full w-full object-cover ${item.posClass} filter brightness-105 contrast-105 transition-transform duration-500 hover:scale-105`}
+                loading="lazy"
+              />
+            </div>
+          ))}
         </div>
 
-        {/* Image 2 */}
-        <div className="relative overflow-hidden">
-          <img
-            src={galleryImages[1]}
-            alt="LeSuccess Gallery"
-            className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-          />
-        </div>
-
-        {/* Image 3 */}
-        <div className="relative overflow-hidden">
-          <img
-            src={galleryImages[2]}
-            alt="LeSuccess Gallery"
-            className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-          />
-        </div>
-
-        {/* Image 4 */}
-        <div className="relative overflow-hidden">
-          <img
-            src={galleryImages[3]}
-            alt="LeSuccess Gallery"
-            className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-          />
-        </div>
-
-        {/* Image 5 */}
-        <div className="relative overflow-hidden row-span-2">
-          <img
-            src={galleryImages[4]}
-            alt="LeSuccess Gallery"
-            className="h-full w-full object-cover  transition-transform duration-700 hover:scale-105"
-          />
-        </div>
-
-        <div className="relative overflow-hidden col-span-2">
-          <img
-            src={galleryImages[5]}
-            alt="LeSuccess Gallery"
-            className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-          />
+        {/* Row 2 - Marquee moving to the right slightly offset */}
+        <div className="flex w-max flex-1 min-h-0 animate-marquee-right-slow">
+          {marqueeRow2.map((item, idx) => (
+            <div
+              key={`row2-${idx}`}
+              className={`mx-1 sm:mx-1.5 h-full ${item.widthClass} shrink-0 overflow-hidden rounded-xl border border-white/15 shadow-md`}
+            >
+              <img
+                src={item.src}
+                alt={item.alt}
+                className={`h-full w-full object-cover ${item.posClass} filter brightness-105 contrast-105 transition-transform duration-500 hover:scale-105`}
+                loading="lazy"
+              />
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ================= RED OVERLAY ================= */}
-      <div
-        className="
-          absolute inset-0
-          bg-linear-to-r
-          from-red-600/60
-          via-red-500/40
-          to-transparent
-          pointer-events-none
-        "
-      />
+      {/* Brand navy gradient overlay: text contrast preserved on left, photos crystal clear on right */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#07405C]/95 via-[#07405C]/75 to-[#07405C]/20 z-10 pointer-events-none" />
 
-      {/* Bottom red overlay */}
-      <div
-        className="
-          absolute inset-x-0 bottom-0
-          h-[40%]
-          bg-linear-to-t
-          from-red-600/50
-          to-transparent
-          pointer-events-none
-        "
-      />
-
-      {/* ================= CONTENT ================= */}
-      <div
-        className="
-          absolute
-          left-[7%]
-          top-1/2
-          z-10
-          max-w-155
-          -translate-y-1/2
-          text-white
-        "
-      >
-        {/* Label */}
-        <div
-          className="
-            mb-6
-            inline-flex
-            items-center
-            gap-2
-            rounded-full
-            border
-            border-white
-            px-4
-            py-1.5
-            text-[13px]
-            font-medium
-            tracking-wide
-          "
+      {/* SINGLE UNIFIED RESPONSIVE CONTENT CONTAINER */}
+      <div className="relative z-20 mx-auto flex h-full max-w-7xl items-center px-6 sm:px-12 lg:px-16">
+        <motion.div
+          variants={motionSafe(fadeUp, reduced)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={ONCE_IN_VIEW}
+          className="max-w-2xl text-white"
         >
-          <Circle size={10} strokeWidth={2} fill="white" />
-          OUR GALLERY
-        </div>
+          <div className="mb-4 sm:mb-5 inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-4 py-1.5 text-xs font-semibold backdrop-blur-md">
+            <Sparkles size={14} className="text-[#DF1E26]" />
+            OUR GALLERY
+          </div>
 
-        {/* Heading */}
-        <h2
-          className="
-            mb-3
-            text-[48px]
-            text-white
-            font-medium
-            leading-[1.1]
-            tracking-[-1px]
-          "
-        >
-          Life at LeSuccess
-        </h2>
+          <h2 className="text-3xl font-extrabold sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight">
+            Life at <span className="text-[#DF1E26]">LeSuccess</span>
+          </h2>
 
-        {/* Description */}
-        <p
-          className="
-            text-[21px]
-            font-normal
-            leading-[1.45]
-          "
-        >
-          Build a strong foundation that empowers you to face
-          <br />
-          real-world challenges and step into your career with
-          <br />
-          clarity and self-assurance.
-        </p>
+          <p className="mt-3 sm:mt-5 text-sm sm:text-xl text-gray-200 leading-relaxed max-w-xl">
+            Build a strong foundation that empowers you to face real-world challenges
+            and step into your tech career with clarity, practical confidence, and pride.
+          </p>
+
+          <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              to="/gallery"
+              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-bold text-white shadow-lg transition hover:brightness-110 active:scale-98"
+            >
+              <span>Explore Full Gallery</span>
+              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </motion.div>
       </div>
 
-      {/* ================= MOBILE ================= */}
-      <div
-        className="
-          absolute inset-0
-          hidden
-          bg-linear-to-b
-          from-red-500/20
-          via-red-500/50
-          to-red-600/65
-          max-md:block
-          pointer-events-none
-        "
-      />
-
-      <div
-        className="
-          absolute
-          bottom-8
-          left-5
-          right-5
-          z-10
-          hidden
-          text-white
-          max-md:block
-        "
-      >
-        <div
-          className="
-            mb-4
-            inline-flex
-            items-center
-            gap-2
-            rounded-full
-            border
-            border-white
-            px-3
-            py-1
-            text-[11px]
-          "
-        >
-          <span>○</span>
-          OUR GALLERY
-        </div>
-
-        <h2
-          className="
-            mb-2
-            text-[30px]
-            font-medium
-            leading-tight
-          "
-        >
-          Life at LeSuccess
-        </h2>
-
-        <p className="text-[15px] leading-normal">
-          Build a strong foundation that empowers you to face real-world
-          challenges and step into your career with clarity and self-assurance.
-        </p>
-      </div>
+      {/* Inline styles for smooth marquee animation moving to the right */}
+      <style>{`
+        @keyframes marqueeScrollRight {
+          0% {
+            transform: translateX(-50%);
+          }
+          100% {
+            transform: translateX(0%);
+          }
+        }
+        .animate-marquee-right {
+          animation: marqueeScrollRight 35s linear infinite;
+        }
+        .animate-marquee-right-slow {
+          animation: marqueeScrollRight 45s linear infinite;
+        }
+        .animate-marquee-right:hover,
+        .animate-marquee-right-slow:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </section>
   );
-};
-
-export default LifeAtLeSuccess;
+}

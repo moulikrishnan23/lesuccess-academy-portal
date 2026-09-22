@@ -117,9 +117,22 @@ export default function ModulesAccordion({ modules, isLoading }) {
               </>
             )}
             renderPanel={({ item }) => (
-              <p className="border-t border-line pt-3 text-[0.875rem] leading-[1.85] text-ink-soft">
-                {item.description || 'Details for this module are being finalised.'}
-              </p>
+              <div className="border-t border-line pt-3 text-[0.875rem] text-ink-soft">
+                {Array.isArray(item.topics) && item.topics.length > 0 ? (
+                  <ul className="space-y-2 list-none p-0">
+                    {item.topics.map((topic, i) => (
+                      <li key={i} className="flex items-start gap-2.5">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#07405C] shrink-0 mt-2" />
+                        <span className="leading-relaxed">{topic}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="leading-[1.85]">
+                    {item.description || 'Details for this module are being finalised.'}
+                  </p>
+                )}
+              </div>
             )}
           />
         )}

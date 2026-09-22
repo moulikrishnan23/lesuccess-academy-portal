@@ -9,4 +9,12 @@ import java.util.List;
 public interface TestimonialRepository extends JpaRepository<Testimonial, Long> {
 
     List<Testimonial> findByCourseIdAndIsActiveTrueOrderByDisplayOrderAsc(Long courseId);
+
+    List<Testimonial> findAllByIsActiveTrueOrderByDisplayOrderAscIdAsc();
+
+    List<Testimonial> findAllByOrderByDisplayOrderAscIdAsc();
+
+    java.util.Optional<Testimonial> findByIdAndDeletedAtIsNull(Long id);
+
+    long countByDeletedAtIsNull();
 }

@@ -32,7 +32,8 @@ import AdminMessagesTab from './components/AdminMessagesTab.jsx'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState('gallery') // 'gallery' | 'courses' | 'programs' | 'team' | 'companies' | 'users'
+  const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'gallery' | 'courses' | 'programs' | 'team' | 'reviews' | 'companies' | 'users' | form submissions
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   // Folders state
   const [categories, setCategories] = useState([])
@@ -441,16 +442,18 @@ export default function AdminDashboard() {
       </header>
 
       {/* =====================================================
-          TAB NAVIGATION BAR
+          TAB NAVIGATION BAR (Website Management)
       ===================================================== */}
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-slate-200 bg-white shadow-2xs">
         <div className="mx-auto flex max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-1 sm:space-x-2 py-2">
             {[
+              { id: 'overview', label: 'Overview', icon: LayoutDashboard },
               { id: 'gallery', label: 'Gallery', icon: Folder },
               { id: 'courses', label: 'Courses', icon: BookOpen },
               { id: 'programs', label: 'Programs & Events', icon: Calendar },
               { id: 'team', label: 'Team Members', icon: UsersIcon },
+              { id: 'reviews', label: 'Reviews', icon: Star },
               { id: 'companies', label: 'Companies', icon: Building2 },
               { id: 'users', label: 'User Management', icon: ShieldCheck },
               { id: 'messages', label: 'Messages', icon: MessageSquare },
@@ -465,7 +468,7 @@ export default function AdminDashboard() {
                     setActiveTab(tab.id)
                     setSelectedCategory(null)
                   }}
-                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition whitespace-nowrap ${
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                     isActive
                       ? 'bg-[#084b66] text-white shadow-xs'
                       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -480,23 +483,17 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Alert notification */}
-        {alert && (
-          <div
-            className={`mb-6 flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
-              alert.type === 'error'
-                ? 'bg-red-50 text-red-700 border border-red-200'
-                : 'bg-green-50 text-green-700 border border-green-200'
-            }`}
-          >
-            <span>{alert.message}</span>
-            <button type="button" onClick={() => setAlert(null)}>
-              <X size={16} />
-            </button>
-          </div>
-        )}
+      {/* Main 2-Column Layout matching Reference Image 3 */}
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT SIDEBAR: Form Submissions */}
+          <aside className="lg:col-span-3">
+            {/* Sidebar Section Title */}
+            <div className="mb-3 px-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Form Submissions
+              </h3>
+            </div>
 
         {/* Tab Views */}
         {activeTab === 'courses' && <AdminCoursesTab showAlert={showAlert} />}
@@ -725,6 +722,8 @@ export default function AdminDashboard() {
           </>
         )}
       </main>
+        </div>
+      </div>
 
       {/* =====================================================
           MODAL 1: CREATE / EDIT FOLDER

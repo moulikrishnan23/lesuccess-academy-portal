@@ -13,6 +13,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     List<Course> findByIsActiveTrueOrderByDisplayOrderAsc();
 
+    List<Course> findAllByOrderByDisplayOrderAscIdAsc();
+
     @Query("SELECT c FROM Course c ORDER BY c.displayOrder ASC")
     Page<Course> findAllForAdmin(Pageable pageable);
 }

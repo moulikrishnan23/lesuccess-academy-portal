@@ -62,6 +62,7 @@ public class ConnectWithUsService {
                 .name(LeadCaptureSupport.sanitizeText(request.getName().trim()))
                 .mobile(cleanMobile)
                 .email(trimOrNull(request.getEmail()))
+                .message(LeadCaptureSupport.sanitizeText(trimOrNull(request.getMessage())))
                 .ipAddress(ipAddress)
                 .build();
 

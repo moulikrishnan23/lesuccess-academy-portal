@@ -10,8 +10,11 @@ import Navbar from "./components/Navbar";
 import OfferHeader from "./components/OfferHeader";
 import PublicLayout from "./components/layout/PublicLayout.jsx";
 import Footer from "./components/Footer.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 
 import Home from "./pages/Home";
+import AboutPage from "./pages/About/AboutPage.jsx";
+import TeamPage from "./pages/Team/TeamPage.jsx";
 import Contact from "./pages/Contact";
 import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
 import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
@@ -25,7 +28,6 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import useAdminShortcut from "./hooks/useAdminShortcut.js";
 
-
 const AppContent = () => {
   const location = useLocation();
 
@@ -37,10 +39,8 @@ const AppContent = () => {
     location.pathname.startsWith("/trainer");
   const isLoginPage = location.pathname === "/login";
 
-  // Enquiry popup modal visibility (auto-opens on website visit, except on /login)
-  const [isEnquiryOpen, setIsEnquiryOpen] = useState(() => {
-    return window.location.pathname !== "/login";
-  });
+  // Enquiry popup modal visibility (starts closed on open, interactive launcher available)
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
 
   useEffect(() => {
     if (isLoginPage) {
@@ -305,12 +305,18 @@ const AppContent = () => {
    * =========================================================
    * FINAL VISIBILITY
    * =========================================================
+   *
+   * OfferHeader (red banner) hides when the footer is visible — it competes
+   * for the same fixed position and is less important than the site navigation.
+   *
+   * Navbar: only depends on scroll direction. It does NOT hide when the footer
+   * is visible — that was a bug where scrolling to the bottom of any page made
+   * the main navigation disappear, leaving users with no way to navigate.
    */
 
   const showOfferHeader = !footerVisible;
 
-  const showNavbar =
-    navbarVisible && !footerVisible;
+  const showNavbar = navbarVisible;
 
   /*
    * =========================================================
@@ -417,6 +423,7 @@ const AppContent = () => {
       ===================================================== */}
 
       <main>
+        <ScrollToTop />
         <Routes>
 
           {/* Home */}
@@ -438,6 +445,22 @@ const AppContent = () => {
           <Route
             path="/login"
             element={<LoginPage />}
+          />
+
+          {/* About */}
+          <Route
+            path="/about"
+            element={<AboutPage />}
+          />
+
+          {/* Our Team */}
+          <Route
+            path="/our-team"
+            element={<TeamPage />}
+          />
+          <Route
+            path="/team"
+            element={<TeamPage />}
           />
 
           {/* Contact */}
@@ -487,7 +510,12 @@ const AppContent = () => {
               element={<CourseDetailPage />}
             />
 
-            {/* Service */}
+            {/* Services */}
+
+            <Route
+              path="/services"
+              element={<ServicePage />}
+            />
 
             <Route
               path="/service"
@@ -507,7 +535,7 @@ const AppContent = () => {
       )}
 
       {/* =====================================================
-          COURSE ENQUIRY POPUP MODAL
+          COURSE ENQUIRY POPUP MODAL (Triggered by Navbar/CTAs)
       ===================================================== */}
       {!isDashboard && !isLoginPage && (
         <CourseEnquiryModal

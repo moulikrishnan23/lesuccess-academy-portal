@@ -71,6 +71,7 @@ public class CourseEnquiryService {
                 .location(LeadCaptureSupport.sanitizeText(trimOrNull(request.getLocation())))
                 .courseId(courseId)
                 .currentStatus(LeadCaptureSupport.sanitizeText(trimOrNull(request.getCurrentStatus())))
+                .query(LeadCaptureSupport.sanitizeText(trimOrNull(request.getEffectiveQuery())))
                 .ipAddress(ipAddress)
                 .build();
 
@@ -79,17 +80,14 @@ public class CourseEnquiryService {
 
         eventPublisher.publishEvent(new CourseEnquiryCreatedEvent(this, saved));
 
-        return CourseEnquirySubmitResult.success(CourseEnquiryResponse.from(saved));
+        String courseTitle = resolveCourseTitle(saved.getCourseId());
+        return CourseEnquirySubmitResult.success(CourseEnquiryResponse.from(saved, courseTitle));
     }
 
     @Transactional(readOnly = true)
     public PageResponse<CourseEnquiryResponse> list(Long courseId, String search, Pageable pageable) {
         Page<CourseEnquiry> page;
 
-        // Normalised once, to null when there is nothing to search on. The previous
-        // shape carried the guard in a separate boolean, which trimmed twice and
-        // left the null analysis unable to see that the flag implied search != null
-        // — two "potential null pointer access" warnings on correct code.
         String term = (search != null && !search.isBlank()) ? search.trim() : null;
 
         if (courseId != null && term != null) {
@@ -102,7 +100,18 @@ public class CourseEnquiryService {
             page = repository.findAll(pageable);
         }
 
-        return PageResponse.from(page.map(CourseEnquiryResponse::from));
+        return PageResponse.from(page.map(enquiry -> CourseEnquiryResponse.from(enquiry, resolveCourseTitle(enquiry.getCourseId()))));
+    }
+
+    private String resolveCourseTitle(Long cId) {
+        if (cId == null) return null;
+        try {
+            return courseRepository.findById(cId)
+                    .map(Course::getName)
+                    .orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

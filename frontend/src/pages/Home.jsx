@@ -13,7 +13,7 @@ import ConnectWithUs from '../components/home/ConnectWithUs'
 const Home = () => {
   return (
     <div>
-      <HeroVideo/>
+      <HeroVideo />
       <AboutSection/>
 
       <WhyChooseUs/>

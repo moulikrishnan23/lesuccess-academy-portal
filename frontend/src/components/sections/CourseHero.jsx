@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { Download } from 'lucide-react'
 import Button from '../ui/Button.jsx'
+import { downloadSyllabus } from '../../utils/syllabusUtils.js'
 import {
   BriefcaseIcon,
   CertificateIcon,
@@ -134,7 +136,7 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
       {showImage ? null : (
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:48px_48px]"
+          className="absolute inset-0 opacity-[0.16] bg-[linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:48px_48px]"
         />
       )}
       <div
@@ -186,6 +188,16 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
               the page owns that behaviour and passes it down. */}
           <Button variant="onDark" size="lg" onClick={onFreeDemoClick}>
             Free Demo
+          </Button>
+          
+          <Button
+            variant="onDark"
+            size="lg"
+            onClick={() => downloadSyllabus(course)}
+            title={`Download ${course.title} Syllabus (PDF)`}
+          >
+            <Download size={16} className="inline mr-1.5" />
+            Download Syllabus
           </Button>
           <Button variant="primary" size="lg" onClick={onEnrollClick}>
             Enroll Now

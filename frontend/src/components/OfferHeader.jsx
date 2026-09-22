@@ -114,10 +114,14 @@ const OfferHeader = () => {
   };
 
   return (
-    <div className="w-full bg-linear-to-r from-[#ff3b3f] to-[#cc0f4f] text-white">
-      <div className="mx-auto flex min-h-13.75 flex-wrap items-center justify-center gap-3 px-4 py-2 text-center">
+    <div className="w-full bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white shadow-xs">
+      <div className="mx-auto flex min-h-11 flex-wrap items-center justify-center gap-3 px-4 py-2 text-center">
+        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-bold tracking-wide uppercase text-white border border-white/30 select-none">
+          Special Offer
+        </span>
+
         <p
-          className="text-sm font-semibold sm:text-base md:text-lg"
+          className="text-xs font-semibold sm:text-sm md:text-base tracking-wide"
           style={{
             opacity: visible ? 1 : 0,
             transition: `opacity ${FADE_MS}ms ease-in-out`,
@@ -130,17 +134,21 @@ const OfferHeader = () => {
           type="button"
           onClick={handleEnrollNow}
           className="
-            animate-pulse
-            rounded-md
+            animate-[pulse_1.2s_ease-in-out_infinite]
+            rounded-lg
             bg-white
-            px-5
-            py-2
-            text-sm
-            font-semibold
-            text-[#e51d48]
+            px-4
+            py-1.5
+            text-xs
+            sm:text-sm
+            font-bold
+            text-[#DF1E26]
+            shadow-sm
             transition
             duration-200
-            hover:bg-gray-100
+            hover:bg-slate-100
+            active:scale-95
+            cursor-pointer
           "
         >
           Enroll Now

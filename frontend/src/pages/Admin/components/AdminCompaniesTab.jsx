@@ -22,6 +22,16 @@ export default function AdminCompaniesTab({ showAlert }) {
     fetchCompanies()
   }, [])
 
+  // Body scroll lock
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = 'unset'
+      }
+    }
+  }, [isModalOpen])
+
   const fetchCompanies = async () => {
     setLoading(true)
     try {
@@ -67,6 +77,18 @@ export default function AdminCompaniesTab({ showAlert }) {
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
+    if (!validTypes.includes(file.type)) {
+      showAlert?.('Please select a PNG, SVG, JPG, or WebP file', 'error')
+      e.target.value = ''
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showAlert?.('Logo file size must be less than 5MB', 'error')
+      e.target.value = ''
+      return
+    }
 
     const formData = new FormData()
     formData.append('file', file)
@@ -285,123 +307,163 @@ export default function AdminCompaniesTab({ showAlert }) {
 
       {/* Company Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl my-8">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white shrink-0">
               <h3 className="text-lg font-bold text-slate-900">
                 {editingCompany ? 'Edit Company Partner' : 'Add Company Partner'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition cursor-pointer"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Company Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g. Lavendel Consulting"
-                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Logo (URL or Upload) *
-                </label>
-                <div className="flex gap-2">
+            {/* Form wrapper */}
+            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+              {/* Internal Scrollable Body */}
+              <div className="p-6 overflow-y-auto flex-1 overscroll-contain space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                    Company Name *
+                  </label>
                   <input
                     type="text"
                     required
-                    value={form.logoUrl}
-                    onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
-                    placeholder="/assets/companies/... or https://..."
-                    className="flex-1 rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="e.g. Lavendel Consulting"
+                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
                   />
-                  <label className="inline-flex items-center gap-1.5 cursor-pointer rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
-                    <Upload size={14} />
-                    <span>{uploadingLogo ? '...' : 'Upload'}</span>
-                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                  </label>
                 </div>
 
-                {Boolean(form.logoUrl) && (
-                  <div className="mt-2 flex items-center gap-3">
-                    <div className="h-10 w-24 p-1 rounded-lg border border-slate-200 bg-white flex items-center justify-center">
-                      <img
-                        src={getImageUrl(form.logoUrl, '/assets/companies/lavendel.png')}
-                        alt="Logo preview"
-                        className="max-h-full max-w-full object-contain"
-                      />
+                {/* Company Logo Upload */}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                    Company Logo *
+                  </label>
+
+                  {form.logoUrl ? (
+                    <div className="flex items-center gap-3.5 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                      <div className="h-14 w-28 p-1.5 rounded-xl border border-slate-200 bg-white shadow-2xs flex items-center justify-center shrink-0">
+                        <img
+                          src={getImageUrl(form.logoUrl, '/assets/companies/lavendel.png')}
+                          alt="Logo preview"
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-800 truncate">
+                          {typeof form.logoUrl === 'string' ? form.logoUrl.split('/').pop() || form.logoUrl : 'Company Logo'}
+                        </p>
+                        <p className="text-[11px] text-emerald-600 font-medium mt-0.5">Logo attached</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <label className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer transition shadow-2xs">
+                          <Upload size={13} />
+                          <span>{uploadingLogo ? 'Uploading...' : 'Replace'}</span>
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                            onChange={handleFileUpload}
+                            disabled={uploadingLogo}
+                            className="hidden"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setForm((prev) => ({ ...prev, logoUrl: '' }))}
+                          className="rounded-xl p-2 text-red-500 hover:bg-red-50 transition cursor-pointer"
+                          title="Remove logo"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
-                    <span className="text-xs text-slate-400 truncate max-w-xs">
-                      {typeof form.logoUrl === 'string' ? form.logoUrl : (form.logoUrl?.url || '')}
-                    </span>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/60 p-5 hover:border-[#07405C] hover:bg-slate-50 transition cursor-pointer text-center group">
+                      {uploadingLogo ? (
+                        <div className="flex items-center gap-2 text-xs text-[#07405C] font-semibold py-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#07405C] border-t-transparent" />
+                          <span>Uploading logo...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 group-hover:text-[#07405C] group-hover:border-[#07405C]/30 shadow-2xs mb-2 transition">
+                            <Upload size={18} />
+                          </div>
+                          <span className="text-xs font-bold text-slate-800">Choose Company Logo from Computer</span>
+                          <span className="text-[11px] text-slate-400 mt-0.5">Supports PNG, SVG, JPG, WebP (max 5MB)</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                        onChange={handleFileUpload}
+                        disabled={uploadingLogo}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      Marquee Row
+                    </label>
+                    <select
+                      value={form.rowNumber}
+                      onChange={(e) => setForm({ ...form, rowNumber: Number(e.target.value) })}
+                      className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
+                    >
+                      <option value={1}>Row 1 (Scrolls Left)</option>
+                      <option value={2}>Row 2 (Scrolls Right)</option>
+                    </select>
                   </div>
-                )}
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Marquee Row
-                  </label>
-                  <select
-                    value={form.rowNumber}
-                    onChange={(e) => setForm({ ...form, rowNumber: Number(e.target.value) })}
-                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                  >
-                    <option value={1}>Row 1 (Scrolls Left)</option>
-                    <option value={2}>Row 2 (Scrolls Right)</option>
-                  </select>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      Display Order
+                    </label>
+                    <input
+                      type="number"
+                      value={form.displayOrder}
+                      onChange={(e) => setForm({ ...form, displayOrder: e.target.value })}
+                      className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Display Order
+                  <label className="inline-flex items-center gap-2 cursor-pointer pt-1">
+                    <input
+                      type="checkbox"
+                      checked={form.isActive}
+                      onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                      className="h-4 w-4 rounded border-slate-300 text-[#084b66] focus:ring-[#084b66]"
+                    />
+                    <span className="text-xs font-semibold text-slate-700">Logo Active / Visible</span>
                   </label>
-                  <input
-                    type="number"
-                    value={form.displayOrder}
-                    onChange={(e) => setForm({ ...form, displayOrder: e.target.value })}
-                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                  />
                 </div>
               </div>
 
-              <div>
-                <label className="inline-flex items-center gap-2 cursor-pointer pt-1">
-                  <input
-                    type="checkbox"
-                    checked={form.isActive}
-                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                    className="h-4 w-4 rounded border-slate-300 text-[#084b66] focus:ring-[#084b66]"
-                  />
-                  <span className="text-xs font-semibold text-slate-700">Logo Active / Visible</span>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+              {/* Fixed Footer */}
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#084b66] px-5 py-2 text-sm font-semibold text-white hover:bg-[#063c52] transition shadow-sm"
+                  className="rounded-xl bg-[#084b66] px-5 py-2 text-sm font-semibold text-white hover:bg-[#063c52] transition shadow-sm cursor-pointer"
                 >
                   {editingCompany ? 'Update Logo' : 'Add Logo'}
                 </button>

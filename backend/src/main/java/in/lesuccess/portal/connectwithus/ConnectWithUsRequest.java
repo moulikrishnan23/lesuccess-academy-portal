@@ -37,6 +37,9 @@ public class ConnectWithUsRequest {
     @Size(max = 160, message = "Email must not exceed 160 characters")
     private String email;
 
+    @Size(max = 2000, message = "Message must not exceed 2000 characters")
+    private String message;
+
     /** Honeypot field — must arrive empty. Never persisted. */
     private String website;
 

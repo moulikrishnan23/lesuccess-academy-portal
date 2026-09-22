@@ -30,7 +30,7 @@ function Field({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-[0.8125rem] font-medium text-ink-muted">
+      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold text-navy-800/85">
         {label}
       </label>
 
@@ -45,7 +45,7 @@ function Field({
         autoComplete={autoComplete}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? errorId : undefined}
-        className={`h-12 w-full rounded-lg border bg-white px-3.5 text-[0.9375rem] text-navy-800 transition-colors focus:outline-none disabled:opacity-60 ${
+        className={`h-10.5 w-full rounded-lg border bg-white px-3.5 text-sm text-navy-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-60 ${
           error ? 'border-danger' : 'border-line-strong focus:border-brand'
         }`}
       />
@@ -60,7 +60,7 @@ function Field({
             initial="hidden"
             animate="visible"
             exit={reduced ? undefined : 'exit'}
-            className="mt-1.5 text-[0.75rem] text-danger"
+            className="mt-1 text-[0.75rem] text-danger"
           >
             {error}
           </motion.p>
@@ -81,7 +81,7 @@ function Field({
  * hero and mid-page CTAs.
  */
 const EnrollCourseForm = forwardRef(function EnrollCourseForm(
-  { courseId, discountLabel, className = '' },
+  { courseId, courseName, discountLabel, className = '' },
   ref,
 ) {
   const baseId = useId()
@@ -95,6 +95,7 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
   })
 
   const [values, setValues] = useState(EMPTY_FORM)
+  const [learningMode, setLearningMode] = useState('Online')
   const [clientErrors, setClientErrors] = useState({})
   // Validate on change only after the first submit, so the form doesn't scold
   // someone who is still typing their name.
@@ -138,6 +139,8 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
       mobile: normalizeMobile(values.mobile),
       email: values.email,
       courseId,
+      courseName,
+      learningMode,
       source: LEAD_SOURCE.COURSE_ENROLL_FORM,
     })
   }
@@ -165,12 +168,12 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
         border so the white card still holds an edge against a white page
         without drawing a box around itself.
       */
-      className={`scroll-mt-28 overflow-hidden rounded-2xl bg-white ring-1 ring-navy-900/[0.06] shadow-[0_1px_2px_rgba(18,58,92,0.05),0_8px_20px_-8px_rgba(18,58,92,0.14),0_28px_56px_-28px_rgba(18,58,92,0.30)] ${className}`}
+      className={`scroll-mt-28 rounded-2xl bg-white ring-1 ring-navy-900/[0.06] shadow-[0_1px_2px_rgba(18,58,92,0.05),0_8px_20px_-8px_rgba(18,58,92,0.14),0_28px_56px_-28px_rgba(18,58,92,0.30)] ${className}`}
     >
       {/* Brand cap — the reference card's navy bar, carrying the site gradient. */}
       <div aria-hidden="true" className="bg-brand-gradient h-1.5" />
 
-      <div className="p-7">
+      <div className="p-5 sm:p-6">
         <AnimatePresence mode="wait" initial={false}>
           {isSuccess ? (
             <motion.div
@@ -210,20 +213,20 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
               animate="visible"
               exit={reduced ? undefined : 'exit'}
             >
-              <div className="mb-6 flex items-center justify-between gap-3">
-                <h3 className="font-display text-[1.375rem] font-bold text-navy-800">
+              <div className="mb-4 sm:mb-5 flex items-center justify-between gap-2">
+                <h3 className="font-display text-lg sm:text-xl font-bold text-navy-800 tracking-tight">
                   Enroll This Course
                 </h3>
 
                 {/* Per-course data — absent when there is no offer. */}
                 {discountLabel ? (
-                  <span className="shrink-0 rounded-md bg-green-soft px-2.5 py-1 text-[0.75rem] font-semibold text-green">
+                  <span className="shrink-0 rounded-md bg-[#DF1E26]/10 px-2.5 py-0.5 text-[0.7rem] font-bold text-[#DF1E26] border border-[#DF1E26]/20">
                     {discountLabel}
                   </span>
                 ) : null}
               </div>
 
-              <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              <form onSubmit={handleSubmit} noValidate className="space-y-3 sm:space-y-3.5">
                 <Field
                   id={`${baseId}-name`}
                   label="Name"
@@ -262,11 +265,35 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                   reduced={reduced}
                 />
 
+                {/* Learning Mode (Online / Offline) */}
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-navy-800/85">
+                    Learning Mode
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Online', 'Offline'].map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setLearningMode(mode)}
+                        disabled={isSubmitting}
+                        className={`flex items-center justify-center rounded-lg border py-2 text-xs font-semibold transition-all cursor-pointer ${
+                          learningMode === mode
+                            ? 'border-[#07405C] bg-[#07405C] text-white shadow-xs'
+                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span>{mode}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Request-level failures that aren't tied to a field. */}
                 {error && Object.keys(fieldErrors).length === 0 ? (
                   <p
                     role="alert"
-                    className="rounded-md bg-danger-soft px-3 py-2.5 text-[0.75rem] text-danger"
+                    className="rounded-md bg-danger-soft px-3 py-2 text-[0.75rem] text-danger"
                   >
                     {error.message}
                   </p>
@@ -275,9 +302,8 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                 <Button
                   type="submit"
                   variant="primary"
-                  // Matches the taller fields above it.
-                  size="lg"
-                  className="mt-1 w-full"
+                  size="md"
+                  className="mt-2 w-full h-11 text-sm font-bold shadow-md hover:shadow-lg transition-all"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Sending…' : 'Enroll Now'}

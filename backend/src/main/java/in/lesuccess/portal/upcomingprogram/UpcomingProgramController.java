@@ -102,4 +102,56 @@ public class UpcomingProgramController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(ApiResponse.success("Registrations retrieved successfully", service.listRegistrations(id, pageable)));
     }
+
+    /** Admin/Trainer — list all registrations across all upcoming programs (Webinars, Workshops, Internships). */
+    @GetMapping("/api/admin/upcoming-programs/registrations")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
+    public ResponseEntity<ApiResponse<PageResponse<UpcomingProgramRegistrationResponse>>> listAllRegistrations(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(ApiResponse.success("All registrations retrieved successfully", service.listAllRegistrations(search, pageable)));
+    }
+
+    /** Admin — upload upcoming program / event speaker image or banner. */
+    @PostMapping(value = "/api/admin/upcoming-programs/upload-image", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
+    public ResponseEntity<ApiResponse<java.util.Map<String, String>>> uploadImage(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Cannot upload empty file");
+        }
+
+        String original = file.getOriginalFilename();
+        String ext = "";
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf(".")).toLowerCase();
+        }
+
+        if (!java.util.List.of(".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif").contains(ext)) {
+            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Only image files (.jpg, .jpeg, .png, .webp, .svg, .gif) are supported");
+        }
+
+        try {
+            java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads", "programs");
+            if (!java.nio.file.Files.exists(uploadDir)) {
+                java.nio.file.Files.createDirectories(uploadDir);
+            }
+
+            String filename = java.util.UUID.randomUUID().toString() + ext;
+            java.nio.file.Path targetPath = uploadDir.resolve(filename);
+            java.nio.file.Files.copy(file.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            String fileUrl = "/uploads/programs/" + filename;
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Program image uploaded successfully", java.util.Map.of("url", fileUrl, "filename", filename)));
+        } catch (java.io.IOException e) {
+            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Failed to store file: " + e.getMessage());
+        }
+    }
 }

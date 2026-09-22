@@ -27,30 +27,64 @@ public class CourseResponse {
     private Integer durationValue; // alias for durationMonths
     private String  durationUnit;  // "months" when durationMonths is set
 
-    private CourseMode  mode;
-    private CourseBadge badge;
-    private String      badgeText;
+    private CourseMode mode;
+    private String     badge;
+    private String     badgeText;
     private String      badgeLabel; // alias for badgeText
 
     private boolean placementAssistance;
     private String  syllabusUrl;
     private String  enrollUrl;
+    private String  iconUrl;
+
+    private String description;
+    private String category;
+    private String roleHeading;
+    private String roleIntro;
+    private String roleBullets;
+    private List<String> roleBulletsList;
 
     private boolean isActive;
     private int     displayOrder;
 
     private List<CourseModuleResponse> modules;
+    private List<CourseToolResponse> tools;
+    private List<CourseToolResponse> techStack;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private static final com.fasterxml.jackson.databind.ObjectMapper OBJECT_MAPPER = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    public static List<String> parseBullets(String bullets) {
+        if (bullets == null || bullets.isBlank()) {
+            return java.util.Collections.emptyList();
+        }
+        String trimmed = bullets.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+            try {
+                return OBJECT_MAPPER.readValue(trimmed, new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+            } catch (Exception ignored) {
+            }
+        }
+        return java.util.Arrays.stream(trimmed.split("[\r\n]+"))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .toList();
+    }
+
     public static CourseResponse from(Course entity) {
-        return from(entity, null);
+        return from(entity, null, null);
     }
 
     public static CourseResponse from(Course entity, List<CourseModuleResponse> modules) {
+        return from(entity, modules, null);
+    }
+
+    public static CourseResponse from(Course entity, List<CourseModuleResponse> modules, List<CourseToolResponse> tools) {
         String name = entity.getName();
         String slug = toSlug(name);
+        String roleBullets = entity.getRoleBullets();
 
         return CourseResponse.builder()
                 .id(entity.getId())
@@ -68,9 +102,18 @@ public class CourseResponse {
                 .placementAssistance(entity.isPlacementAssistance())
                 .syllabusUrl(entity.getSyllabusUrl())
                 .enrollUrl(entity.getEnrollUrl())
+                .iconUrl(entity.getIconUrl())
+                .description(entity.getDescription())
+                .category(entity.getCategory())
+                .roleHeading(entity.getRoleHeading())
+                .roleIntro(entity.getRoleIntro())
+                .roleBullets(roleBullets)
+                .roleBulletsList(parseBullets(roleBullets))
                 .isActive(entity.isActive())
                 .displayOrder(entity.getDisplayOrder())
                 .modules(modules)
+                .tools(tools)
+                .techStack(tools)
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();

@@ -267,6 +267,8 @@ class SheetRowSourceAlignmentTest {
             return DemoBooking.builder()
                     .id(2044L)
                     .createdAt(LocalDateTime.of(2026, 9, 5, 18, 12, 30))
+                    .name("Rajesh Kumar")
+                    .email("rajesh@example.com")
                     .courseName("Full Stack Development")
                     .mobileNumber("9840012345")
                     .status(DemoBookingStatus.PENDING)
@@ -274,15 +276,14 @@ class SheetRowSourceAlignmentTest {
         }
 
         /**
-         * Course name is the only column demo_booking leaves nullable: V17 added it at
-         * length 200 without NOT NULL so a booking survives its course being renamed or
-         * deleted. Mobile, status and created-at are NOT NULL on the table, so nulling
-         * them here would test a row the database cannot hold.
+         * Course name is nullable on demo_booking so a booking survives its course being renamed or deleted.
          */
         private DemoBooking bookingWithoutCourseName() {
             return DemoBooking.builder()
                     .id(2045L)
                     .createdAt(LocalDateTime.of(2026, 9, 5, 18, 20, 1))
+                    .name("Sneha R")
+                    .email("sneha@example.com")
                     .courseName(null)
                     .mobileNumber("9840067890")
                     .status(DemoBookingStatus.CONTACTED)
@@ -304,14 +305,14 @@ class SheetRowSourceAlignmentTest {
         }
 
         @Test
-        @DisplayName("spans columns A-E and tags the row for replay")
+        @DisplayName("spans columns A-G and tags the row for replay")
         void spansExpectedRange() {
             SheetSpec spec = DemoBookingSheetRowSource.SPEC;
             SheetRow row = DemoBookingSheetRowSource.toRow(populatedBooking());
 
-            assertThat(spec.headers()).hasSize(5);
-            assertThat(spec.appendRange()).isEqualTo("Demo Bookings!A:E");
-            assertThat(spec.headerRange()).isEqualTo("Demo Bookings!A1:E1");
+            assertThat(spec.headers()).hasSize(7);
+            assertThat(spec.appendRange()).isEqualTo("Demo Bookings!A:G");
+            assertThat(spec.headerRange()).isEqualTo("Demo Bookings!A1:G1");
             assertThat(row.entityType()).isEqualTo(SyncEntityType.DEMO_BOOKING);
             assertThat(row.entityId()).isEqualTo(2044L);
         }
@@ -324,6 +325,8 @@ class SheetRowSourceAlignmentTest {
 
             assertThat(values.get(spec.headers().indexOf("ID"))).isEqualTo(2044L);
             assertThat(values.get(spec.headers().indexOf("Created At"))).isEqualTo("2026-09-05 18:12:30");
+            assertThat(values.get(spec.headers().indexOf("Name"))).isEqualTo("Rajesh Kumar");
+            assertThat(values.get(spec.headers().indexOf("Email"))).isEqualTo("rajesh@example.com");
             assertThat(values.get(spec.headers().indexOf("Course Name"))).isEqualTo("Full Stack Development");
             assertThat(values.get(spec.headers().indexOf("Mobile Number"))).isEqualTo("9840012345");
             assertThat(values.get(spec.headers().indexOf("Status"))).isEqualTo("PENDING");

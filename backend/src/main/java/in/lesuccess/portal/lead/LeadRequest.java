@@ -33,6 +33,22 @@ public class LeadRequest {
     /** Optional; unused by the Service form, carried for the course enrolment form. */
     private Long courseId;
 
+    @Size(max = 150, message = "Course name must not exceed 150 characters")
+    private String courseName;
+
+    @Size(max = 30, message = "Learning mode must not exceed 30 characters")
+    private String learningMode;
+
+    public void setPreferredCourse(String preferredCourse) {
+        if (this.courseName == null || this.courseName.isBlank()) {
+            this.courseName = preferredCourse;
+        }
+    }
+
+    public String getPreferredCourse() {
+        return this.courseName;
+    }
+
     @Size(max = 120, message = "Looking for must not exceed 120 characters")
     private String lookingFor;
 

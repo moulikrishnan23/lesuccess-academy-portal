@@ -27,7 +27,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
  * <p>Protects admin contact-message routes with JWT. Public POST is open.
  * CSRF disabled (stateless API), sessions are stateless.</p>
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -67,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/upcoming-programs", "/api/upcoming-programs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/gallery", "/api/gallery/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/team-members", "/api/team-members/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/testimonials", "/api/testimonials/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/companies", "/api/companies/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/process-steps").permitAll()

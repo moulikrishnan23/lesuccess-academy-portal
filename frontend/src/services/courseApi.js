@@ -35,6 +35,20 @@ function readCollection(raw, key) {
 }
 
 function normalizeModule(raw) {
+  let topics = []
+  if (Array.isArray(raw?.topics)) {
+    topics = raw.topics
+  } else if (typeof raw?.content === 'string') {
+    try {
+      const parsed = JSON.parse(raw.content)
+      if (Array.isArray(parsed)) topics = parsed
+    } catch {
+      topics = raw.content.split('\n').map((s) => s.trim()).filter(Boolean)
+    }
+  } else if (typeof raw?.description === 'string') {
+    topics = raw.description.split('\n').map((s) => s.trim()).filter(Boolean)
+  }
+
   return {
     id: raw.id,
     title: raw.title ?? '',
@@ -162,6 +176,10 @@ function normalizeCourse(raw) {
  * feature, not a shape mismatch to normalize around.
  */
 export function normalizeCourseDetail(raw) {
+  const toolsList = readCollection(raw, 'techStack', 'tech_stack')
+  const fallbackTools = readCollection(raw, 'tools', 'course_tools')
+  const techItems = toolsList.length > 0 ? toolsList : fallbackTools
+
   return {
     course: normalizeCourse(raw ?? {}),
     modules: readCollection(raw, 'modules').map(normalizeModule).sort(byDisplayOrder),
@@ -190,8 +208,15 @@ export function normalizeCourseList(raw) {
  * @returns {Promise<Object[]>} Active courses, ordered by displayOrder.
  */
 export async function getAll({ signal } = {}) {
-  if (isMockEnabled()) {
-    return normalizeCourseList(await mockGetCourses())
+  try {
+    const { data } = await apiClient.get('/api/courses', { signal })
+    // Backend wraps in ApiResponse<T>; real list/page is in data.data
+    return normalizeCourseList(data?.data ?? data)
+  } catch (err) {
+    if (isMockEnabled()) {
+      return normalizeCourseList(await mockGetCourses())
+    }
+    throw err
   }
 
   const { data } = await apiClient.get('/api/courses', { signal })
@@ -205,14 +230,17 @@ export async function getAll({ signal } = {}) {
  * @throws {import('../utils/apiError.js').ApiError} 404 when the slug is unknown.
  */
 export async function getBySlug(slug, { signal } = {}) {
-  if (isMockEnabled()) {
-    return normalizeCourseDetail(await mockGetCourseBySlug(slug))
+  try {
+    const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(slug)}`, {
+      signal,
+    })
+    return normalizeCourseDetail(data?.data ?? data)
+  } catch (err) {
+    if (isMockEnabled()) {
+      return normalizeCourseDetail(await mockGetCourseBySlug(slug))
+    }
+    throw err
   }
-
-  const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(slug)}`, {
-    signal,
-  })
-  return normalizeCourseDetail(data?.data ?? data)
 }
 
 export default { getAll, getBySlug, normalizeCourseDetail, normalizeCourseList }

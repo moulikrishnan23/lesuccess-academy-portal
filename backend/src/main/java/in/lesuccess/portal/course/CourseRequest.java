@@ -27,12 +27,13 @@ public class CourseRequest {
     @NotNull(message = "Mode is required")
     private CourseMode mode;
 
-    private CourseBadge badge;
+    @Size(max = 50, message = "Badge must not exceed 50 characters")
+    private String badge;
 
     @Size(max = 50, message = "Badge text must not exceed 50 characters")
     private String badgeText;
 
-    private boolean placementAssistance;
+    private Boolean placementAssistance;
 
     @Size(max = 255, message = "Syllabus URL must not exceed 255 characters")
     private String syllabusUrl;
@@ -40,9 +41,56 @@ public class CourseRequest {
     @Size(max = 255, message = "Enroll URL must not exceed 255 characters")
     private String enrollUrl;
 
+    @Size(max = 255, message = "Icon URL must not exceed 255 characters")
+    private String iconUrl;
+
+    private String description;
+
+    @Size(max = 80, message = "Category must not exceed 80 characters")
+    private String category;
+
+    @Size(max = 200, message = "Role heading must not exceed 200 characters")
+    private String roleHeading;
+
+    private String roleIntro;
+
+    private String roleBullets;
+
+    private java.util.List<String> roleBulletsList;
+
+    private java.util.List<CourseToolRequest> tools;
+
+    private java.util.List<CourseModuleRequest> modules;
+
     @lombok.Builder.Default
-    private boolean isActive = true;
+    private Boolean isActive = true;
 
     @Min(value = 0, message = "Display order must be 0 or greater")
-    private int displayOrder;
+    private Integer displayOrder = 0;
+
+    public int getDisplayOrder() {
+        return displayOrder != null ? displayOrder : 0;
+    }
+
+    public boolean isPlacementAssistance() {
+        return Boolean.TRUE.equals(placementAssistance);
+    }
+
+    public boolean isActive() {
+        return isActive == null || isActive;
+    }
+
+    public String resolveRoleBullets() {
+        if (roleBullets != null && !roleBullets.isBlank()) {
+            return roleBullets;
+        }
+        if (roleBulletsList != null && !roleBulletsList.isEmpty()) {
+            try {
+                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(roleBulletsList);
+            } catch (Exception e) {
+                return String.join("\n", roleBulletsList);
+            }
+        }
+        return null;
+    }
 }

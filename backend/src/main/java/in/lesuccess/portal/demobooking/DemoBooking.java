@@ -20,6 +20,12 @@ public class DemoBooking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "name", length = 120)
+    private String name;
+
+    @Column(name = "email", nullable = false, length = 160)
+    private String email;
+
     @Column(name = "course_name", length = 200)
     private String courseName;
 
