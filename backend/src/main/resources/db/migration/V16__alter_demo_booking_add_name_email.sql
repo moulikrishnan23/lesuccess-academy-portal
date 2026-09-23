@@ -1,5 +1,3 @@
--- V16: Add name and email to demo_booking
-
 ALTER TABLE demo_booking
     ADD COLUMN name VARCHAR(120) NULL AFTER course_id;
 
