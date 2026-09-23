@@ -5,9 +5,8 @@ ALTER TABLE connect_with_us
     ADD COLUMN message TEXT NULL AFTER email;
 
 -- 2. Lead Capture: Add course_name and learning_mode columns
-ALTER TABLE lead_capture
-    ADD COLUMN course_name VARCHAR(150) NULL AFTER course_id,
-    ADD COLUMN learning_mode VARCHAR(30) NULL AFTER course_name;
+ALTER TABLE lead_capture ADD COLUMN course_name VARCHAR(150) NULL AFTER course_id;
+ALTER TABLE lead_capture ADD COLUMN learning_mode VARCHAR(30) NULL AFTER course_name;
 
 -- 3. Program Registration: Add email column
 ALTER TABLE program_registration

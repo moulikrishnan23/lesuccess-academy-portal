@@ -1,10 +1,9 @@
 -- V33: Enhance testimonial table for Google reviews and seed authentic reviews
-ALTER TABLE testimonial
-    MODIFY COLUMN course_id BIGINT NULL,
-    ADD COLUMN source VARCHAR(50) NOT NULL DEFAULT 'Google' AFTER rating,
-    ADD COLUMN review_date VARCHAR(50) NULL AFTER source,
-    ADD COLUMN reviewer_role VARCHAR(100) NULL AFTER review_date,
-    ADD COLUMN likes_count INT NOT NULL DEFAULT 0 AFTER reviewer_role;
+ALTER TABLE testimonial MODIFY COLUMN course_id BIGINT NULL;
+ALTER TABLE testimonial ADD COLUMN source VARCHAR(50) NOT NULL DEFAULT 'Google' AFTER rating;
+ALTER TABLE testimonial ADD COLUMN review_date VARCHAR(50) NULL AFTER source;
+ALTER TABLE testimonial ADD COLUMN reviewer_role VARCHAR(100) NULL AFTER review_date;
+ALTER TABLE testimonial ADD COLUMN likes_count INT NOT NULL DEFAULT 0 AFTER reviewer_role;
 
 -- Seed authentic LeSuccess Google Reviews
 INSERT INTO testimonial (course_id, student_name, review_text, rating, source, review_date, reviewer_role, likes_count, photo_url, display_order, is_active, created_at, updated_at)

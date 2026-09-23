@@ -1,9 +1,8 @@
 -- V34: Add details columns to team_member table (bio, experience, skills, department)
-ALTER TABLE team_member
-    ADD COLUMN bio TEXT NULL AFTER role,
-    ADD COLUMN experience VARCHAR(120) NULL AFTER bio,
-    ADD COLUMN skills VARCHAR(255) NULL AFTER experience,
-    ADD COLUMN department VARCHAR(100) NULL AFTER skills;
+ALTER TABLE team_member ADD COLUMN bio TEXT NULL AFTER role;
+ALTER TABLE team_member ADD COLUMN experience VARCHAR(120) NULL AFTER bio;
+ALTER TABLE team_member ADD COLUMN skills VARCHAR(255) NULL AFTER experience;
+ALTER TABLE team_member ADD COLUMN department VARCHAR(100) NULL AFTER skills;
 
 -- Populate details for existing team members
 UPDATE team_member

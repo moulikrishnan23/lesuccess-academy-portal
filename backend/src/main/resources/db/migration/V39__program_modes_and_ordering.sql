@@ -12,6 +12,5 @@ SET mode = 'OFFLINE',
 WHERE platform LIKE '%Campus%' OR type = 'INTERNSHIP';
 
 -- 2. Add mode and venue_address to program_registration table
-ALTER TABLE program_registration
-    ADD COLUMN mode VARCHAR(20) NULL AFTER email,
-    ADD COLUMN venue_address VARCHAR(255) NULL AFTER mode;
+ALTER TABLE program_registration ADD COLUMN mode VARCHAR(20) NULL AFTER email;
+ALTER TABLE program_registration ADD COLUMN venue_address VARCHAR(255) NULL AFTER mode;
