@@ -55,7 +55,7 @@ class UpcomingProgramServiceTest {
                 .isActive(true)
                 .build());
 
-        UpcomingProgramRegistration registration = registrationRepository.save(UpcomingProgramRegistration.builder()
+        registrationRepository.save(UpcomingProgramRegistration.builder()
                 .program(program)
                 .name("John Doe")
                 .mobileNumber("9876543210")
@@ -87,7 +87,7 @@ class UpcomingProgramServiceTest {
                 .isActive(true)
                 .build());
 
-        UpcomingProgramRegistration registration = registrationRepository.save(UpcomingProgramRegistration.builder()
+        registrationRepository.save(UpcomingProgramRegistration.builder()
                 .program(program)
                 .name("Jane Doe")
                 .mobileNumber("9876543211")

@@ -47,9 +47,6 @@ class UpcomingProgramControllerTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @MockitoBean
     private UpcomingProgramService service;
 
