@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 public class DemoBookingResponse {
 
     private Long id;
+    private String name;
+    private String email;
     private String courseName;
     private String mobileNumber;
     private DemoBookingStatus status;
@@ -22,6 +24,8 @@ public class DemoBookingResponse {
     public static DemoBookingResponse from(DemoBooking entity) {
         return DemoBookingResponse.builder()
                 .id(entity.getId())
+                .name(entity.getName())
+                .email(entity.getEmail())
                 .courseName(entity.getCourseName())
                 .mobileNumber(entity.getMobileNumber())
                 .status(entity.getStatus())

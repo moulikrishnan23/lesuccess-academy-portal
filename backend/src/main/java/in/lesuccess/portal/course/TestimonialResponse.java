@@ -20,6 +20,10 @@ public class TestimonialResponse {
     private String quoteText;   // alias for reviewText (frontend compatibility)
     private int rating;
     private int ratingValue;    // alias for rating (frontend compatibility)
+    private String source;
+    private String reviewDate;
+    private String reviewerRole;
+    private int likesCount;
     private String photoUrl;
     private int displayOrder;
     private boolean isActive;
@@ -29,12 +33,16 @@ public class TestimonialResponse {
     public static TestimonialResponse from(Testimonial entity) {
         return TestimonialResponse.builder()
                 .id(entity.getId())
-                .courseId(entity.getCourse().getId())
+                .courseId(entity.getCourse() != null ? entity.getCourse().getId() : null)
                 .studentName(entity.getStudentName())
                 .reviewText(entity.getReviewText())
                 .quoteText(entity.getReviewText())
                 .rating(entity.getRating())
                 .ratingValue(entity.getRating())
+                .source(entity.getSource() != null ? entity.getSource() : "Google")
+                .reviewDate(entity.getReviewDate())
+                .reviewerRole(entity.getReviewerRole())
+                .likesCount(entity.getLikesCount())
                 .photoUrl(entity.getPhotoUrl())
                 .displayOrder(entity.getDisplayOrder())
                 .isActive(entity.isActive())

@@ -7,20 +7,28 @@ function normalizeProgram(raw) {
     label: raw.label ?? null,
     title: raw.title ?? '',
     topic: raw.topic ?? '',
+    speakerName: raw.speakerName ?? raw.trainerName ?? null,
+    imageUrl: raw.imageUrl ?? raw.image ?? null,
+    image: raw.imageUrl ?? raw.image ?? null,
     eventDate: raw.eventDate ?? null,      // "2026-09-06"
     startTime: raw.startTime ?? null,      // "17:00:00"
     endTime: raw.endTime ?? null,          // "18:30:00"
     platform: raw.platform ?? '',
+    mode: raw.mode ?? 'ONLINE',
     meetLink: raw.meetLink ?? null,
+    venueAddress: raw.venueAddress ?? null,
+    organizationName: raw.organizationName ?? null,
+    venueName: raw.venueName ?? null,
     certificateIncluded: raw.certificateIncluded ?? false,
-    isActive: raw.active ?? raw.isActive ?? true,
+    isActive: raw.active ?? raw.isActive ?? raw.visibleOnSite ?? true,
+    visibleOnSite: raw.visibleOnSite ?? raw.active ?? raw.isActive ?? true,
     registrationCount: raw.registrationCount ?? 0,
   }
 }
 
 /**
  * GET /api/upcoming-programs?type={type}
- * Returns all active upcoming programs, optionally filtered by type (WEBINAR | INTERNSHIP).
+ * Returns all active upcoming programs, optionally filtered by type (WEBINAR | WORKSHOP | INTERNSHIP).
  */
 export async function listUpcoming(type = null, { signal } = {}) {
   const params = type ? { type } : {}
@@ -29,4 +37,16 @@ export async function listUpcoming(type = null, { signal } = {}) {
   return list.map(normalizeProgram)
 }
 
-export default { listUpcoming }
+/**
+ * Admin: Upload image for an upcoming program / event speaker or banner.
+ */
+export async function uploadProgramImage(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await apiClient.post('/api/admin/upcoming-programs/upload-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data?.data // { url, filename }
+}
+
+export default { listUpcoming, uploadProgramImage }

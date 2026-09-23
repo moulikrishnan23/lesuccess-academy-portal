@@ -21,26 +21,21 @@ const DEFAULT_COMPANIES_ROW2 = [
 ];
 
 const CompanyCard = ({ company }) => (
-  <div className="inline-flex h-[84px] w-[194px] mx-2 shrink-0 items-center justify-center rounded-lg border border-[#d5dfe8] bg-white px-4">
+  <div className="inline-flex h-[88px] w-[200px] mx-2.5 shrink-0 items-center justify-center rounded-2xl border border-slate-200/80 bg-white px-5 shadow-xs hover:shadow-md hover:border-[#DF1E26]/30 transition-all duration-300">
     <img
       src={getImageUrl(company.logo || company.logoUrl, '/assets/companies/lavendel.png')}
       alt={company.name}
-      className="max-h-[58px] max-w-[165px] object-contain"
+      className="max-h-[52px] max-w-[160px] object-contain transition-transform duration-300 hover:scale-105"
     />
   </div>
 );
 
 /**
- * A single seamless marquee row.
- * The track renders the list twice, back to back, and animates
- * from translateX(0) to translateX(-50%). Because the second half
- * is an exact copy of the first, the moment it finishes it looks
- * identical to the starting frame, so the loop never "resets" or jumps -
- * it just keeps flowing continuously in one direction.
+ * A single seamless marquee row with mask-faded edges.
  */
 const MarqueeRow = ({ companies, direction = "left", duration = 30 }) => {
   return (
-    <div className="group relative w-full overflow-hidden">
+    <div className="group relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
       <div
         className="flex w-max animate-marquee group-hover:[animation-play-state:paused]"
         style={{
@@ -87,14 +82,14 @@ const WhereStudentsWork = () => {
   return (
     <section className="overflow-hidden bg-white py-14">
       {/* Heading */}
-      <div className="mb-10 flex flex-col items-center">
-        <div className="mb-5 flex items-center gap-2 rounded-full border border-[#005080] px-3 py-1.5 text-xs font-medium uppercase text-[#005080]">
-          <span className="h-2 w-2 rounded-full bg-[#005080]" />
-          Choose Your Path
+      <div className="mb-12 flex flex-col items-center">
+        <div className="mb-4 flex items-center gap-2 rounded-full border border-[#07405C]/30 bg-[#07405C]/5 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#07405C]">
+          <span className="h-2 w-2 rounded-full bg-[#07405C]" />
+          Our Alumni & Hiring Partners
         </div>
 
-        <h2 className="text-center text-[32px] font-bold text-[#111] md:text-[40px]">
-          Where do our <span className="text-[#d62552]">Students Work?</span>
+        <h2 className="text-center text-3xl font-extrabold text-[#101010] md:text-4xl tracking-tight">
+          Where Do Our <span className="text-[#DF1E26]">Students Work?</span>
         </h2>
       </div>
 

@@ -47,8 +47,27 @@ public class UpcomingProgram {
     @Column(length = 50)
     private String platform;
 
+    @Column(length = 20)
+    @Builder.Default
+    private String mode = "ONLINE";
+
     @Column(name = "meet_link", length = 255)
     private String meetLink;
+
+    @Column(name = "venue_address", length = 255)
+    private String venueAddress;
+
+    @Column(name = "organization_name", length = 120)
+    private String organizationName;
+
+    @Column(name = "speaker_name", length = 120)
+    private String speakerName;
+
+    @Column(name = "venue_name", length = 120)
+    private String venueName;
+
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
 
     @Column(name = "certificate_included", nullable = false)
     private boolean certificateIncluded;

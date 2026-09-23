@@ -1,3 +1,7 @@
+import { motion } from "framer-motion";
+import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../animations/variants.js";
+import useReducedMotion from "../hooks/useReducedMotion.js";
+
 const companiesRow1 = [
   { name: "Lavendel Consulting", logo: "/assets/companies/lavendel.png" },
   { name: "Kovan Labs", logo: "/assets/companies/kovan.png" },
@@ -16,8 +20,12 @@ const companiesRow2 = [
   { name: "EV", logo: "/assets/companies/ev.png" },
 ];
 
+/* Duplicate each row once for a seamless infinite loop */
+const row1Loop = [...companiesRow1, ...companiesRow1];
+const row2Loop = [...companiesRow2, ...companiesRow2];
+
 const CompanyCard = ({ company }) => (
-  <div className="inline-flex h-21 w-48.5 mx-2 items-center justify-center rounded-lg border border-[#d5dfe8] bg-white px-4">
+  <div className="inline-flex h-21 w-48.5 mx-2 shrink-0 items-center justify-center rounded-lg border border-[#d5dfe8] bg-white px-4">
     <img
       src={company.logo}
       alt={company.name}
@@ -27,57 +35,77 @@ const CompanyCard = ({ company }) => (
 );
 
 const WhereStudentsWork = () => {
+  const reduced = useReducedMotion();
   return (
     <section className="overflow-hidden bg-white py-14">
 
       {/* Heading */}
       <div className="mb-10 flex flex-col items-center">
-        <div className="mb-5 flex items-center gap-2 rounded-full border border-[#005080] px-3 py-1.5 text-xs font-medium uppercase text-[#005080]">
-          <span className="h-2 w-2 rounded-full bg-[#005080]" />
-          Choose Your Path
-        </div>
+        <motion.div
+          variants={motionSafe(fadeUp, reduced)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={ONCE_IN_VIEW}
+          className="flex flex-col items-center"
+        >
+          <div className="mb-5 flex items-center gap-2 rounded-full border border-[#07405C] px-3 py-1.5 text-xs font-medium uppercase text-[#07405C]">
+            <span className="h-2 w-2 rounded-full bg-[#07405C]" />
+            Our Alumni
+          </div>
 
-        <h2 className="text-center text-[32px] font-bold text-[#111] md:text-[40px]">
-          Where do our{" "}
-          <span className="text-[#d62552]">Students Work?</span>
-        </h2>
+          <h2 className="text-center text-[32px] font-bold text-[#111] md:text-[40px]">
+            Where do our{" "}
+            <span className="text-[#DF1E26]">Students Work?</span>
+          </h2>
+        </motion.div>
       </div>
 
-      {/* Row 1 */}
-      <marquee
-        direction="left"
-        scrollamount="6"
-        behavior="scroll"
-        className="mb-10"
-      >
-        {companiesRow1.map((company, index) => (
-          <CompanyCard key={`one-${index}`} company={company} />
-        ))}
+      {/* Row 1 — scrolls left */}
+      <div className="relative mb-6 flex overflow-hidden">
+        <div
+          className="flex w-max"
+          style={{
+            animation: reduced
+              ? "none"
+              : "wsScrollLeft 28s linear infinite",
+          }}
+        >
+          {row1Loop.map((company, index) => (
+            <CompanyCard key={`one-${index}`} company={company} />
+          ))}
+        </div>
+      </div>
 
-        {/* Duplicate for loop */}
-        {companiesRow1.map((company, index) => (
-          <CompanyCard key={`one-copy-${index}`} company={company} />
-        ))}
-      </marquee>
+      {/* Row 2 — scrolls right */}
+      <div className="relative flex overflow-hidden">
+        <div
+          className="flex w-max"
+          style={{
+            animation: reduced
+              ? "none"
+              : "wsScrollRight 32s linear infinite",
+          }}
+        >
+          {row2Loop.map((company, index) => (
+            <CompanyCard key={`two-${index}`} company={company} />
+          ))}
+        </div>
+      </div>
 
-      {/* Row 2 */}
-      <marquee
-        direction="right"
-        scrollamount="6"
-        behavior="scroll"
-      >
-        {companiesRow2.map((company, index) => (
-          <CompanyCard key={`two-${index}`} company={company} />
-        ))}
-
-        {/* Duplicate for loop */}
-        {companiesRow2.map((company, index) => (
-          <CompanyCard key={`two-copy-${index}`} company={company} />
-        ))}
-      </marquee>
+      {/* CSS keyframes for the two scroll directions */}
+      <style>{`
+        @keyframes wsScrollLeft {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes wsScrollRight {
+          0%   { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+      `}</style>
 
     </section>
   );
 };
 
-export default WhereStudentsWork;
+export default WhereStudentsWork;

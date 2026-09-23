@@ -38,6 +38,9 @@ public class ConnectWithUs {
     @Column(length = 160)
     private String email;
 
+    @Column(columnDefinition = "TEXT")
+    private String message;
+
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
 

@@ -1,14 +1,15 @@
-import { useRef, useState, useEffect } from "react";
-import { Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Users, Mail, ArrowRight, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
 import apiClient from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils.js";
 
 const DEFAULT_TEAM_MEMBERS = [
-  // ==========================================================
-  // FEATURED MEMBERS
-  // ==========================================================
-
   {
+    id: 1,
     name: "Rathinavel Rajagopal",
     role: "Director",
     email: "rathinavelrajagopal@lesuccess.in",
@@ -16,6 +17,7 @@ const DEFAULT_TEAM_MEMBERS = [
     featured: true,
   },
   {
+    id: 2,
     name: "Uma Devi P K",
     role: "CEO",
     email: "uma@lesuccess.in",
@@ -23,717 +25,134 @@ const DEFAULT_TEAM_MEMBERS = [
     featured: true,
   },
   {
+    id: 3,
     name: "Muralidharan R",
     role: "Vice President",
     email: "murali.r@lesuccess.in",
     image: "/home/team/Muralidharan.png",
     featured: true,
   },
-
-  // ==========================================================
-  // OTHER TEAM MEMBERS
-  // ==========================================================
-
-  {
-    name: "Kennedy R",
-    role: "AGM - Corporate Relationship",
-    email: "email@lesuccess.in",
-    image: "/home/team/Kennedy.png",
-    featured: false,
-  },
-  {
-    name: "Arun Kumar K",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "/home/team/ArunKumar.png",
-    featured: false,
-  },
-  {
-    name: "Felix R",
-    role: "Assistant Vice President",
-    email: "email@lesuccess.in",
-    image: "/home/team/Felix.png",
-    featured: false,
-  },
-  {
-    name: "Kirubakaran",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Saranya",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Naveen",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Dinesh",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Keerthana",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Employee Name",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Employee Name",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Employee Name",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Employee Name",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
-  {
-    name: "Employee Name",
-    role: "Role",
-    email: "email@lesuccess.in",
-    image: "",
-    featured: false,
-  },
 ];
 
-
-// ==========================================================
-// TEAM CARD
-// ==========================================================
-
-const TeamCard = ({ member, featured = false, index }) => {
-  const isFirstFeatured = featured && index === 0;
+const FeaturedTeamCard = ({ member }) => {
+  const imgSrc = member.imageUrl
+    ? getImageUrl(member.imageUrl)
+    : member.image || "/home/team/dummy.png";
 
   return (
-    <div className="relative w-full">
-
-      {/* ================= IMAGE ================= */}
-
+    <div className="group relative flex flex-col items-center transition-all duration-300 hover:-translate-y-2">
+      {/* Background Image Container with TeamBg.png — designed normal state */}
       <div
-        className="
-          relative
-          w-full
-          aspect-383/400
-          overflow-hidden
-          rounded-3xl
-          bg-cover
-          bg-center
-          bg-no-repeat
-        "
+        className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center bg-no-repeat shadow-[0_4px_20px_rgba(7,64,92,0.06)] border border-slate-200/90 transition-all duration-300 group-hover:shadow-[0_20px_40px_rgba(7,64,92,0.12)] group-hover:border-[#07405C]/35"
         style={{ backgroundImage: "url('/home/TeamBg.png')" }}
       >
         <img
-          src={getImageUrl(member.image || member.imageUrl, "")}
+          src={imgSrc}
           alt={member.name}
-          draggable="false"
+          className="h-full w-full select-none object-cover object-top transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {
-            e.target.src = "";
+            e.currentTarget.src = "/home/team/dummy.png";
           }}
-          className={`
-            h-full
-            w-full
-            select-none
-            ${
-              isFirstFeatured
-                ? "object-cover"
-                : "object-contain"
-            }
-          `}
         />
+
+        {/* Yellow Featured badge with Star icon — matching Admin Team UI */}
+        <span className="absolute top-4 right-4 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs z-10 select-none tracking-wide">
+          <Star size={11} className="text-amber-950" fill="currentColor" />
+          <span>Featured</span>
+        </span>
       </div>
 
-
-      {/* ================= DETAILS CARD ================= */}
-
-      <div
-        className={`
-          relative
-          z-10
-          mx-auto
-          -mt-11.25
-          w-[calc(100%-14px)]
-          rounded-[20px]
-          border
-          text-center
-          ${
-            featured
-              ? "min-h-33.75 px-4 py-5"
-              : "min-h-24 px-3 py-4"
-          }
-          border-[#084b68]
-          bg-[#084b68]
-        `}
-      >
-
-        {/* NAME */}
-
-        <h3
-          className={`
-            font-bold
-            leading-tight
-            ${
-              featured
-                ? "text-[17px] sm:text-[18px]"
-                : "text-[15px] sm:text-[16px]"
-            }
-            text-white
-          `}
-        >
+      {/* Detail Overlay Card */}
+      <div className="relative z-10 -mt-10 w-[calc(100%-24px)] rounded-2xl border border-[#07405C] bg-[#07405C] px-5 py-4 text-center text-white shadow-lg transition-all duration-300 group-hover:bg-[#024D72] group-hover:shadow-xl">
+        <h3 className="text-lg font-bold text-white transition-colors group-hover:text-[#DF1E26]">
           {member.name}
         </h3>
-
-
-        {/* ROLE */}
-
-        <p
-          className={`
-            mt-1
-            ${
-              featured
-                ? "text-[15px] sm:text-[16px]"
-                : "text-[13px] sm:text-[14px]"
-            }
-            text-[#d1d8df]
-          `}
-        >
-          {member.role}
+        <p className="mt-1 text-xs font-medium text-gray-200">
+          {member.role || member.designation}
         </p>
-
-
-        {/* EMAIL */}
-
-        <p
-          className={`
-            mt-4
-            truncate
-            ${
-              featured
-                ? "text-[11px] sm:text-[12px]"
-                : "text-[10px] sm:text-[11px]"
-            }
-            text-white
-          `}
-        >
-          {member.email}
-        </p>
-
+        {member.email && (
+          <a
+            href={`mailto:${member.email}`}
+            className="mt-2 inline-flex items-center gap-1 text-[11px] text-gray-300 transition-colors hover:text-white"
+          >
+            <Mail size={12} />
+            {member.email}
+          </a>
+        )}
       </div>
     </div>
   );
 };
 
-
-// ==========================================================
-// OUR TEAM
-// ==========================================================
-
-const OurTeam = () => {
-
-  // ========================================================
-  // SLIDE STATE
-  // ========================================================
-
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  // ========================================================
-  // DRAG STATES
-  // ========================================================
-
-  const [isDragging, setIsDragging] = useState(false);
-
-  const dragStartX = useRef(0);
-  const dragCurrentX = useRef(0);
-
-
-  const [members, setMembers] = useState(DEFAULT_TEAM_MEMBERS);
+export default function OurTeam() {
+  const reduced = useReducedMotion();
+  const [featuredMembers, setFeaturedMembers] = useState(DEFAULT_TEAM_MEMBERS);
 
   useEffect(() => {
-    let active = true;
-    apiClient
-      .get("/api/team-members")
-      .then((res) => {
-        const data = res?.data?.data;
-        if (active && Array.isArray(data) && data.length > 0) {
-          setMembers(data);
+    let isMounted = true;
+    async function fetchTeam() {
+      try {
+        const res = await apiClient.get("/api/team-members");
+        if (res?.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+          const apiFeatured = res.data.data
+            .filter((m) => m.featured || m.displayOrder <= 3)
+            .slice(0, 3);
+          if (isMounted && apiFeatured.length > 0) {
+            setFeaturedMembers(apiFeatured);
+          }
         }
-      })
-      .catch((err) => {
-        console.warn("Could not load dynamic team members, using defaults:", err);
-      });
+      } catch (err) {
+        // Fall back to default
+      }
+    }
+    fetchTeam();
     return () => {
-      active = false;
+      isMounted = false;
     };
   }, []);
 
-  // ========================================================
-  // GET FEATURED MEMBERS
-  // ========================================================
-
-  const featuredMembers = members.filter(
-    (member) => member.featured || member.isFeatured
-  );
-
-
-  // ========================================================
-  // GET OTHER MEMBERS
-  // ========================================================
-
-  const otherMembers = members.filter(
-    (member) => !member.featured && !member.isFeatured
-  );
-
-
-  // ========================================================
-  // CREATE SLIDES
-  // 8 MEMBERS PER SLIDE
-  // ========================================================
-
-  const membersPerSlide = 8;
-
-  const slides = [];
-
-  for (
-    let i = 0;
-    i < otherMembers.length;
-    i += membersPerSlide
-  ) {
-    slides.push(
-      otherMembers.slice(i, i + membersPerSlide)
-    );
-  }
-
-
-  // ========================================================
-  // DRAG START
-  // ========================================================
-
-  const handleDragStart = (clientX) => {
-    setIsDragging(true);
-
-    dragStartX.current = clientX;
-    dragCurrentX.current = clientX;
-  };
-
-
-  // ========================================================
-  // DRAG MOVE
-  // ========================================================
-
-  const handleDragMove = (clientX) => {
-
-    if (!isDragging) return;
-
-    dragCurrentX.current = clientX;
-  };
-
-
-  // ========================================================
-  // DRAG END
-  // ========================================================
-
-  const handleDragEnd = () => {
-
-    if (!isDragging) return;
-
-    const distance =
-      dragCurrentX.current - dragStartX.current;
-
-    const threshold = 80;
-
-
-    // ------------------------------------------------------
-    // DRAG LEFT → NEXT SLIDE
-    // ------------------------------------------------------
-
-    if (
-      distance < -threshold &&
-      currentSlide < slides.length - 1
-    ) {
-      setCurrentSlide((prev) => prev + 1);
-    }
-
-
-    // ------------------------------------------------------
-    // DRAG RIGHT → PREVIOUS SLIDE
-    // ------------------------------------------------------
-
-    else if (
-      distance > threshold &&
-      currentSlide > 0
-    ) {
-      setCurrentSlide((prev) => prev - 1);
-    }
-
-
-    // Reset drag
-    setIsDragging(false);
-
-    dragStartX.current = 0;
-    dragCurrentX.current = 0;
-  };
-
-
-  // ========================================================
-  // DOT CLICK
-  // ========================================================
-
-  const handleDotClick = (index) => {
-
-    // First dot
-    if (index === 0) {
-      setCurrentSlide(0);
-      return;
-    }
-
-
-    // Second dot
-    if (index === 1) {
-      setCurrentSlide(
-        Math.min(1, slides.length - 1)
-      );
-      return;
-    }
-
-
-    // Third dot
-    if (index === 2) {
-      setCurrentSlide(
-        Math.min(2, slides.length - 1)
-      );
-    }
-  };
-
-
   return (
-    <section
-      className="
-        w-full
-        bg-white
-        px-5
-        py-14
-        sm:px-8
-        sm:py-16
-        lg:px-12
-        xl:px-16
-      "
-    >
-
-      <div className="mx-auto max-w-312.5">
-
-
-        {/* ==================================================
-            HEADER
-        ================================================== */}
-
-        <div className="text-center">
-
-          {/* BADGE */}
-
-          <span
-            className="
-              inline-flex
-              items-center
-              gap-2
-              rounded-full
-              border
-              border-[#074a68]
-              px-4
-              py-1.5
-              text-[11px]
-              font-medium
-              tracking-wide
-              text-[#074a68]
-              sm:text-[12px]
-            "
-          >
-
-            <span
-              className="
-                h-2
-                w-2
-                rounded-full
-                bg-[#074a68]
-              "
-            />
-
-            <Users size={13} />
-
+    <section className="w-full bg-[#f8fbfe] py-20 px-6 sm:px-10 lg:px-20 overflow-hidden">
+      <div className="mx-auto max-w-7xl text-center">
+        <motion.div
+          variants={motionSafe(fadeUp, reduced)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={ONCE_IN_VIEW}
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1.5 text-xs font-bold text-[#07405C]">
+            <Users size={14} className="text-[#DF1E26]" />
             OUR TEAM
-
           </span>
 
-
-          {/* HEADING */}
-
-          <h2
-            className="
-              mt-5
-              text-3xl
-              font-bold
-              leading-tight
-              text-[#161616]
-              sm:text-4xl
-              lg:text-[40px]
-            "
-          >
-            Meet the minds behind{" "}
-            <span className="text-[#ed334d]">
-              your success
-            </span>
+          <h2 className="mt-4 text-3xl font-extrabold text-[#101010] sm:text-4xl">
+            Meet Our <span className="text-[#DF1E26]">Visionary Leaders</span>
           </h2>
 
-
-          {/* DESCRIPTION */}
-
-          <p
-            className="
-              mx-auto
-              mt-5
-              max-w-250
-              text-base
-              leading-7
-              text-gray-600
-              sm:text-lg
-            "
-          >
-            Our team consists of experienced professionals
-            who bring industry insights, practical training,
-            and continuous support to help you stay ahead in
-            your career journey.
+          <p className="mx-auto mt-4 max-w-3xl text-base text-gray-600 sm:text-lg">
+            Dedicated leaders and technology mentors shaping modern careers with passion,
+            integrity, and industry excellence.
           </p>
+        </motion.div>
 
-        </div>
-
-
-        {/* ==================================================
-            FEATURED MEMBERS
-            3 MEMBERS
-        ================================================== */}
-
-        <div
-          className="
-            mx-auto
-            mt-11
-            grid
-            max-w-287.5
-            grid-cols-1
-            gap-8
-            sm:grid-cols-2
-            lg:grid-cols-3
-            lg:gap-7
-          "
-        >
-
-          {featuredMembers.map((member, index) => (
-
-            <TeamCard
-              key={index}
-              member={member}
-              featured={true}
-              index={index}
-            />
-
+        {/* Featured 3-Card Grid */}
+        <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+          {featuredMembers.map((member) => (
+            <FeaturedTeamCard key={member.name || member.id} member={member} />
           ))}
-
         </div>
 
-
-        {/* ==================================================
-            OTHER TEAM CAROUSEL
-        ================================================== */}
-
-        <div
-          className="
-            mx-auto
-            mt-12
-            max-w-287.5
-          "
-        >
-
-          {/* ==================================================
-              DRAG AREA
-          ================================================== */}
-
-          <div
-            className={`
-              overflow-hidden
-              select-none
-              ${
-                isDragging
-                  ? "cursor-grabbing"
-                  : "cursor-grab"
-              }
-            `}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              handleDragStart(e.clientX);
-            }}
-            onMouseMove={(e) => {
-              handleDragMove(e.clientX);
-            }}
-            onMouseUp={handleDragEnd}
-            onMouseLeave={() => {
-              if (isDragging) {
-                handleDragEnd();
-              }
-            }}
-            onTouchStart={(e) => {
-              handleDragStart(
-                e.touches[0].clientX
-              );
-            }}
-            onTouchMove={(e) => {
-              handleDragMove(
-                e.touches[0].clientX
-              );
-            }}
-            onTouchEnd={handleDragEnd}
+        {/* View All Team Members CTA Button */}
+        <div className="mt-14 flex justify-center">
+          <Link
+            to="/our-team"
+            className="group inline-flex items-center gap-2.5 rounded-xl bg-[#07405C] px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:bg-[#024D72] hover:shadow-xl hover:gap-3.5"
           >
-
-            {/* ==================================================
-                SLIDES
-            ================================================== */}
-
-            <div
-              className={`
-                flex
-                ${
-                  isDragging
-                    ? ""
-                    : "transition-transform duration-500 ease-in-out"
-                }
-              `}
-              style={{
-                transform: `translateX(-${
-                  currentSlide * 100
-                }%)`,
-              }}
-            >
-
-              {slides.map(
-                (slide, slideIndex) => (
-
-                  <div
-                    key={slideIndex}
-                    className="
-                      min-w-full
-                      grid
-                      grid-cols-1
-                      gap-x-7
-                      gap-y-12
-                      sm:grid-cols-2
-                      lg:grid-cols-4
-                    "
-                  >
-
-                    {slide.map(
-                      (member, index) => (
-
-                        <TeamCard
-                          key={index}
-                          member={member}
-                          featured={false}
-                          index={index}
-                        />
-
-                      )
-                    )}
-
-                  </div>
-
-                )
-              )}
-
-            </div>
-
-          </div>
-
-
-          {/* ==================================================
-              CAROUSEL DOTS
-          ================================================== */}
-
-          <div
-            className="
-              mt-9
-              flex
-              items-center
-              justify-center
-              gap-3
-            "
-          >
-
-            {[0, 1, 2].map((dot) => {
-
-              const isActive =
-                currentSlide === dot;
-
-              return (
-                <button
-                  key={dot}
-                  type="button"
-                  aria-label={`Go to team slide ${
-                    dot + 1
-                  }`}
-                  onClick={() =>
-                    handleDotClick(dot)
-                  }
-                  className={`
-                    h-2.5
-                    w-2.5
-                    rounded-full
-                    transition-all
-                    duration-300
-                    ${
-                      isActive
-                        ? "scale-125 bg-[#084b68]"
-                        : "bg-[#cbd5dc] hover:bg-[#084b68]"
-                    }
-                  `}
-                />
-              );
-
-            })}
-
-          </div>
-
+            View All Team Members
+            <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
-
       </div>
-
     </section>
   );
-};
-
-export default OurTeam;
+}

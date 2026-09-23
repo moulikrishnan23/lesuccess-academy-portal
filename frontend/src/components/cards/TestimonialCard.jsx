@@ -13,7 +13,7 @@ export default function TestimonialCard({ testimonial }) {
   const { studentName, photoUrl, ratingValue, quoteText } = testimonial
 
   return (
-    <figure className="flex h-full flex-col rounded-[20px] border-[3px] border-brand bg-white p-6 shadow-[0_6px_20px_rgba(11,42,69,0.07)]">
+    <figure className="flex h-full flex-col rounded-[20px] border-[3px] border-brand bg-white p-6 shadow-[0_6px_20px_rgba(11,42,69,0.07)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_16px_36px_rgba(11,42,69,0.12)]">
       {/*
         Opening mark sits top-left, closing mark bottom-right — the quote reads
         as enclosed by them. The blockquote keeps horizontal padding so the

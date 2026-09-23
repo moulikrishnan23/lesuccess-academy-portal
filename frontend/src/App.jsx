@@ -9,9 +9,14 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import OfferHeader from "./components/OfferHeader";
 import PublicLayout from "./components/layout/PublicLayout.jsx";
+import PageTransition from "./components/layout/PageTransition.jsx";
 import Footer from "./components/Footer.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
+import { AnimatePresence } from "framer-motion";
 
 import Home from "./pages/Home";
+import AboutPage from "./pages/About/AboutPage.jsx";
+import TeamPage from "./pages/Team/TeamPage.jsx";
 import Contact from "./pages/Contact";
 import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
 import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
@@ -25,7 +30,6 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import useAdminShortcut from "./hooks/useAdminShortcut.js";
 
-
 const AppContent = () => {
   const location = useLocation();
 
@@ -37,10 +41,8 @@ const AppContent = () => {
     location.pathname.startsWith("/trainer");
   const isLoginPage = location.pathname === "/login";
 
-  // Enquiry popup modal visibility (auto-opens on website visit, except on /login)
-  const [isEnquiryOpen, setIsEnquiryOpen] = useState(() => {
-    return window.location.pathname !== "/login";
-  });
+  // Enquiry popup modal visibility (starts closed on open, interactive launcher available)
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
 
   useEffect(() => {
     if (isLoginPage) {
@@ -305,12 +307,18 @@ const AppContent = () => {
    * =========================================================
    * FINAL VISIBILITY
    * =========================================================
+   *
+   * OfferHeader (red banner) hides when the footer is visible — it competes
+   * for the same fixed position and is less important than the site navigation.
+   *
+   * Navbar: only depends on scroll direction. It does NOT hide when the footer
+   * is visible — that was a bug where scrolling to the bottom of any page made
+   * the main navigation disappear, leaving users with no way to navigate.
    */
 
   const showOfferHeader = !footerVisible;
 
-  const showNavbar =
-    navbarVisible && !footerVisible;
+  const showNavbar = navbarVisible;
 
   /*
    * =========================================================
@@ -417,86 +425,136 @@ const AppContent = () => {
       ===================================================== */}
 
       <main>
-        <Routes>
+        <ScrollToTop />
+        <AnimatePresence mode="wait" initial={false}>
+          <Routes location={location} key={location.pathname}>
 
-          {/* Home */}
-
-          <Route
-            path="/"
-            element={<Home />}
-          />
-
-          {/* Gallery */}
-
-          <Route
-            path="/gallery"
-            element={<GalleryPage />}
-          />
-
-          {/* Login */}
-
-          <Route
-            path="/login"
-            element={<LoginPage />}
-          />
-
-          {/* Contact */}
-
-          <Route
-            path="/contact"
-            element={<Contact />}
-          />
-
-          {/* Protected Admin Dashboard */}
-
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRole="ADMIN">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Protected Trainer Dashboard */}
-
-          <Route
-            path="/trainer/dashboard"
-            element={
-              <ProtectedRoute allowedRole="TRAINER">
-                <TrainerDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Public Layout */}
-
-          <Route element={<PublicLayout />}>
-
-            {/* Courses */}
-
+            {/* Home */}
             <Route
-              path="/courses"
-              element={<CourseCatalogPage />}
+              path="/"
+              element={
+                <PageTransition>
+                  <Home />
+                </PageTransition>
+              }
             />
 
-            {/* Course Detail */}
-
+            {/* Gallery */}
             <Route
-              path="/courses/:slug"
-              element={<CourseDetailPage />}
+              path="/gallery"
+              element={
+                <PageTransition>
+                  <GalleryPage />
+                </PageTransition>
+              }
             />
 
-            {/* Service */}
-
+            {/* Login */}
             <Route
-              path="/service"
-              element={<ServicePage />}
+              path="/login"
+              element={
+                <PageTransition>
+                  <LoginPage />
+                </PageTransition>
+              }
             />
 
-          </Route>
+            {/* About */}
+            <Route
+              path="/about"
+              element={
+                <PageTransition>
+                  <AboutPage />
+                </PageTransition>
+              }
+            />
 
-        </Routes>
+            {/* Our Team */}
+            <Route
+              path="/our-team"
+              element={
+                <PageTransition>
+                  <TeamPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/team"
+              element={
+                <PageTransition>
+                  <TeamPage />
+                </PageTransition>
+              }
+            />
+
+            {/* Contact */}
+            <Route
+              path="/contact"
+              element={
+                <PageTransition>
+                  <Contact />
+                </PageTransition>
+              }
+            />
+
+            {/* Protected Admin Dashboard */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute allowedRole="ADMIN">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected Trainer Dashboard */}
+            <Route
+              path="/trainer/dashboard"
+              element={
+                <ProtectedRoute allowedRole="TRAINER">
+                  <TrainerDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Public Layout */}
+            <Route element={<PublicLayout />}>
+              <Route
+                path="/courses"
+                element={
+                  <PageTransition>
+                    <CourseCatalogPage />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/courses/:slug"
+                element={
+                  <PageTransition>
+                    <CourseDetailPage />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/services"
+                element={
+                  <PageTransition>
+                    <ServicePage />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/service"
+                element={
+                  <PageTransition>
+                    <ServicePage />
+                  </PageTransition>
+                }
+              />
+            </Route>
+
+          </Routes>
+        </AnimatePresence>
       </main>
 
 
@@ -507,7 +565,7 @@ const AppContent = () => {
       )}
 
       {/* =====================================================
-          COURSE ENQUIRY POPUP MODAL
+          COURSE ENQUIRY POPUP MODAL (Triggered by Navbar/CTAs)
       ===================================================== */}
       {!isDashboard && !isLoginPage && (
         <CourseEnquiryModal

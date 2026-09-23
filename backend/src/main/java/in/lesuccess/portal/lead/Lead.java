@@ -58,6 +58,12 @@ public class Lead {
     @Column(name = "course_id")
     private Long courseId;
 
+    @Column(name = "course_name", length = 150)
+    private String courseName;
+
+    @Column(name = "learning_mode", length = 30)
+    private String learningMode;
+
     @Column(name = "looking_for", length = 120)
     private String lookingFor;
 

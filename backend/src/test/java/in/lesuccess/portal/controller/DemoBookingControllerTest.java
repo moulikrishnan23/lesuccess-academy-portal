@@ -78,6 +78,8 @@ class DemoBookingControllerTest {
 
     private static DemoBookingRequest.DemoBookingRequestBuilder validRequest() {
         return DemoBookingRequest.builder()
+                .name("Student User")
+                .email("student@example.com")
                 .courseName("Data Analytics")
                 .mobileNumber("9876543210")
                 .website("");
@@ -146,6 +148,28 @@ class DemoBookingControllerTest {
                     .andExpect(status().isBadRequest());
         }
 
+        @Test
+        @DisplayName("Missing email -> 400")
+        void missingEmail_shouldReturn400() throws Exception {
+            mockMvc.perform(post(PUBLIC_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    validRequest().email(null).build())))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value(false));
+        }
+
+        @Test
+        @DisplayName("Malformed email -> 400")
+        void malformedEmail_shouldReturn400() throws Exception {
+            mockMvc.perform(post(PUBLIC_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    validRequest().email("not-an-email").build())))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value(false));
+        }
+
         /**
          * The whole point of the trap: the trapped response must be byte-identical
          * in shape to a genuine one, so a bot cannot detect that it was caught.
@@ -174,7 +198,8 @@ class DemoBookingControllerTest {
 
             mockMvc.perform(post(PUBLIC_URL)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"mobileNumber\":\"9876543210\",\"courseName\":\"Data Analytics\","
+                            .content("{\"name\":\"Student User\",\"email\":\"student@example.com\","
+                                    + "\"mobileNumber\":\"9876543210\",\"courseName\":\"Data Analytics\","
                                     + "\"website\":\"http://spam.example\"}"))
                     .andExpect(status().isCreated());
 

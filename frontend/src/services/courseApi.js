@@ -35,6 +35,20 @@ function readCollection(raw, key) {
 }
 
 function normalizeModule(raw) {
+  let topics = []
+  if (Array.isArray(raw?.topics)) {
+    topics = raw.topics
+  } else if (typeof raw?.content === 'string') {
+    try {
+      const parsed = JSON.parse(raw.content)
+      if (Array.isArray(parsed)) topics = parsed
+    } catch {
+      topics = raw.content.split('\n').map((s) => s.trim()).filter(Boolean)
+    }
+  } else if (typeof raw?.description === 'string') {
+    topics = raw.description.split('\n').map((s) => s.trim()).filter(Boolean)
+  }
+
   return {
     id: raw.id,
     title: raw.title ?? '',
@@ -43,6 +57,7 @@ function normalizeModule(raw) {
     // accordion call it `description`. Both are read so neither side has to move.
     description: raw.description ?? raw.content ?? '',
     displayOrder: raw.displayOrder ?? 0,
+    topics,
   }
 }
 
@@ -134,13 +149,19 @@ function normalizeCourse(raw) {
     price: raw.price ?? null, // NOT SERVED by CourseResponse
     discountPrice: raw.discountPrice ?? null, // NOT SERVED
     discountLabel: raw.discountLabel ?? null, // NOT SERVED
+    badge: raw.badge ?? null,
+    badgeText: raw.badgeText ?? raw.badgeLabel ?? null,
     badgeLabel: raw.badgeLabel ?? raw.badgeText ?? null,
+    isActive: raw.isActive !== undefined ? raw.isActive : (raw.active !== undefined ? raw.active : (raw.status !== 'INACTIVE')),
+    displayOrder: raw.displayOrder ?? 0,
+    placementAssistance: Boolean(raw.placementAssistance),
+    enrollUrl: raw.enrollUrl ?? null,
     iconUrl: raw.iconUrl ?? null, // NOT SERVED
     heroImageUrl: raw.heroImageUrl ?? null, // NOT SERVED
     // The backend calls it `syllabusUrl` (Course.syllabus_url); the fixtures and
     // the download button call it `syllabusFileUrl`.
     syllabusFileUrl: raw.syllabusFileUrl ?? raw.syllabusUrl ?? null,
-    status: raw.status ?? null, // NOT SERVED — the backend models this as a boolean
+    status: raw.status ?? (raw.isActive === false ? 'INACTIVE' : 'PUBLISHED'),
     // Drives WhatYoullLearnToDoSection. Was hardcoded per category in the
     // component; it is course content, so it lives on the course.
     roleHeading: raw.roleHeading ?? null, // NOT SERVED
@@ -162,13 +183,17 @@ function normalizeCourse(raw) {
  * feature, not a shape mismatch to normalize around.
  */
 export function normalizeCourseDetail(raw) {
+  const toolsList = readCollection(raw, 'techStack', 'tech_stack')
+  const fallbackTools = readCollection(raw, 'tools', 'course_tools')
+  const techItems = toolsList.length > 0 ? toolsList : fallbackTools
+
   return {
     course: normalizeCourse(raw ?? {}),
     modules: readCollection(raw, 'modules').map(normalizeModule).sort(byDisplayOrder),
     // NOT sorted here: displayOrder on tech stack items restarts at 1 within
     // each group, so a global sort would interleave Front End with Back End.
     // TechStackSection groups first, then sorts within each group.
-    techStack: readCollection(raw, 'techStack').map(normalizeTechStackItem),
+    techStack: techItems.map(normalizeTechStackItem),
   }
 }
 
@@ -190,13 +215,16 @@ export function normalizeCourseList(raw) {
  * @returns {Promise<Object[]>} Active courses, ordered by displayOrder.
  */
 export async function getAll({ signal } = {}) {
-  if (isMockEnabled()) {
-    return normalizeCourseList(await mockGetCourses())
+  try {
+    const { data } = await apiClient.get('/api/courses', { signal })
+    // Backend wraps in ApiResponse<T>; real list/page is in data.data
+    return normalizeCourseList(data?.data ?? data)
+  } catch (err) {
+    if (isMockEnabled()) {
+      return normalizeCourseList(await mockGetCourses())
+    }
+    throw err
   }
-
-  const { data } = await apiClient.get('/api/courses', { signal })
-  // Backend wraps in ApiResponse<T>; real list is in data.data
-  return normalizeCourseList(data?.data ?? data)
 }
 
 /**
@@ -205,14 +233,17 @@ export async function getAll({ signal } = {}) {
  * @throws {import('../utils/apiError.js').ApiError} 404 when the slug is unknown.
  */
 export async function getBySlug(slug, { signal } = {}) {
-  if (isMockEnabled()) {
-    return normalizeCourseDetail(await mockGetCourseBySlug(slug))
+  try {
+    const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(slug)}`, {
+      signal,
+    })
+    return normalizeCourseDetail(data?.data ?? data)
+  } catch (err) {
+    if (isMockEnabled()) {
+      return normalizeCourseDetail(await mockGetCourseBySlug(slug))
+    }
+    throw err
   }
-
-  const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(slug)}`, {
-    signal,
-  })
-  return normalizeCourseDetail(data?.data ?? data)
 }
 
 export default { getAll, getBySlug, normalizeCourseDetail, normalizeCourseList }

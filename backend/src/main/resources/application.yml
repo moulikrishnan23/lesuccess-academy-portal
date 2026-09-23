@@ -1,6 +1,8 @@
 spring:
   application:
     name: portal
+  profiles:
+    default: dev
 
   # Virtual threads for high-concurrency blocking I/O (Spring Boot 3.2+, Java 21)
   threads:
@@ -27,6 +29,8 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    encoding: UTF-8
+    detect-encoding: true
 
   # Jackson (Jackson 3 via spring-boot-starter-jackson)
   # write-dates-as-timestamps is NOT set here: Jackson 3 moved that flag off

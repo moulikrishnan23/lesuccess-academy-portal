@@ -20,6 +20,9 @@ public class UpcomingProgramRegistrationRequest {
     @Size(max = 120, message = "Name must not exceed 120 characters")
     private String name;
 
+    @Size(max = 160, message = "Email must not exceed 160 characters")
+    private String email;
+
     @Getter(AccessLevel.NONE)
     private String mobileNumber;
 
