@@ -24,6 +24,20 @@ public class CourseModuleRequest {
 
     private java.util.List<String> topics;
 
+    /*
+     * @Builder.Default, or the builder ignores this initializer and leaves the
+     * field null.
+     *
+     * Nothing observable depends on it today: getDisplayOrder() below coerces
+     * null to 0, and Lombok routes the generated equals, hashCode and toString
+     * through that accessor rather than reading the field directly (verified in
+     * the bytecode - they call getDisplayOrder()I). So it is here for two duller
+     * reasons: the field then holds what its declaration says it holds, and
+     * deleting the null check below - which reads as redundant sitting next to
+     * an initializer - cannot quietly turn every builder-built request's order
+     * into null. isActive above already carries it.
+     */
+    @Builder.Default
     @Min(value = 0, message = "Display order must be 0 or greater")
     private Integer displayOrder = 0;
 

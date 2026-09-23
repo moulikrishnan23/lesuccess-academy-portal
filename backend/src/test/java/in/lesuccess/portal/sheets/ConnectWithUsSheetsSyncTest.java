@@ -51,6 +51,7 @@ class ConnectWithUsSheetsSyncTest {
                 .name("Divya Ramesh")
                 .mobile("9884455667")
                 .email("divya.ramesh@gmail.com")
+                .message("Which weekend batches are open for Data Analytics?")
                 .build();
     }
 
@@ -76,31 +77,37 @@ class ConnectWithUsSheetsSyncTest {
     }
 
     @Test
-    @DisplayName("the queued row carries the specified four values, in header order")
+    @DisplayName("the queued row carries the specified five values, in header order")
     void queuedRowCarriesTheRightValues() {
+        // Message is last, after Submitted At: rows already in the spreadsheet were
+        // written under the original A-D layout, so a column inserted mid-row would
+        // leave every historical submission's timestamp under the Message header.
         assertThat(queuedRowFor(submission()).values()).containsExactly(
                 "Divya Ramesh",
                 "9884455667",
                 "divya.ramesh@gmail.com",
-                "2026-09-16 10:30:00");
+                "2026-09-16 10:30:00",
+                "Which weekend batches are open for Data Analytics?");
     }
 
     /**
-     * Email is nullable on {@code connect_with_us}. A raw null would be dropped
-     * during serialisation and shift "Submitted At" one column left, so it must
-     * arrive as an empty cell.
+     * Email and message are both nullable on {@code connect_with_us}. A raw null
+     * would be dropped during serialisation and shift "Submitted At" one column
+     * left, so each must arrive as an empty cell.
      */
     @Test
-    @DisplayName("a submission with no email leaves the Email cell blank, not null")
+    @DisplayName("a submission with no email or message leaves those cells blank, not null")
     void missingEmail_leavesTheCellBlank() {
-        ConnectWithUs withoutEmail = submission();
-        withoutEmail.setEmail(null);
+        ConnectWithUs sparse = submission();
+        sparse.setEmail(null);
+        sparse.setMessage(null);
 
-        assertThat(queuedRowFor(withoutEmail).values()).containsExactly(
+        assertThat(queuedRowFor(sparse).values()).containsExactly(
                 "Divya Ramesh",
                 "9884455667",
                 "",
-                "2026-09-16 10:30:00");
+                "2026-09-16 10:30:00",
+                "");
     }
 
     /**

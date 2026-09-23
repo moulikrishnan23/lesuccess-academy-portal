@@ -40,10 +40,18 @@ public class ConnectWithUsSheetRowSource implements SheetRowSource {
 
     private static final DateTimeFormatter DT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /** Columns A-D. Append-only: this tab is never rewritten row-by-row. */
+    /**
+     * Columns A-E. Append-only: this tab is never rewritten row-by-row.
+     *
+     * <p>Message is last, after Submitted At, rather than beside the other fields
+     * the visitor typed. It reads worse, and it is still correct: rows already in
+     * the spreadsheet were written under the A-D layout, so inserting a column
+     * mid-row would leave every historical submission's timestamp sitting under a
+     * "Message" header. New columns go on the end for that reason alone.</p>
+     */
     public static final SheetSpec SPEC = SheetSpec.appendOnly(
             "Connect With Us",
-            List.of("Name", "Mobile", "Email", "Submitted At"));
+            List.of("Name", "Mobile", "Email", "Submitted At", "Message"));
 
     @Override
     public SyncEntityType entityType() {
@@ -68,7 +76,11 @@ public class ConnectWithUsSheetRowSource implements SheetRowSource {
                 // serialisation and shifts every later value one column left, which
                 // corrupts the sheet silently.
                 submission.getEmail() == null ? "" : submission.getEmail(),
-                submission.getCreatedAt().format(DT_FORMAT)
+                submission.getCreatedAt().format(DT_FORMAT),
+                // "How can we help you?" on the Home form. Persisted and shown in the
+                // admin table since this table existed, but it never reached the sheet,
+                // so whoever worked this tab could not see what was actually asked.
+                submission.getMessage() == null ? "" : submission.getMessage()
         );
 
         return new SheetRow(SPEC, SyncEntityType.CONNECT_WITH_US, submission.getId(), values);

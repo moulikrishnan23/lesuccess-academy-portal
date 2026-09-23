@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Download } from 'lucide-react'
 import Button from '../ui/Button.jsx'
-import { downloadSyllabus } from '../../utils/syllabusUtils.js'
+import { downloadSyllabus, hasSyllabus } from '../../utils/syllabusUtils.js'
 import {
   BriefcaseIcon,
   CertificateIcon,
@@ -24,11 +24,28 @@ import { formatDuration } from '../../utils/formatters.js'
  * If the model later gains those flags, drive the pills from them instead of
  * adding a second source of truth.
  */
+/**
+ * Site-wide promises, true of every course we run, so they are copy rather than
+ * data. Placement Assistance is NOT among them: `placementAssistance` is a real
+ * column an admin ticks per course, and listing it unconditionally advertised it
+ * on courses that do not carry it.
+ */
 const STATIC_PROMISES = [
   { label: 'Certificate Included', Icon: CertificateIcon },
-  { label: 'Placement Assistance', Icon: BriefcaseIcon },
   { label: 'Affordable Fees', Icon: TagIcon },
 ]
+
+/** The pills for one course: the site-wide ones plus whatever the row says. */
+function promisesFor(course) {
+  const promises = [STATIC_PROMISES[0]]
+
+  if (course?.placementAssistance) {
+    promises.push({ label: 'Placement Assistance', Icon: BriefcaseIcon })
+  }
+
+  promises.push(STATIC_PROMISES[1])
+  return promises
+}
 
 function StatPill({ label, Icon }) {
   return (
@@ -175,7 +192,7 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
         >
           {/* Reference renders this as "Duration - 3Months". */}
           {duration ? <StatPill label={`Duration - ${duration}`} Icon={ClockIcon} /> : null}
-          {STATIC_PROMISES.map(({ label, Icon }) => (
+          {promisesFor(course).map(({ label, Icon }) => (
             <StatPill key={label} label={label} Icon={Icon} />
           ))}
         </motion.ul>
@@ -190,15 +207,19 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
             Free Demo
           </Button>
           
-          <Button
-            variant="onDark"
-            size="lg"
-            onClick={() => downloadSyllabus(course)}
-            title={`Download ${course.title} Syllabus (PDF)`}
-          >
-            <Download size={16} className="inline mr-1.5" />
-            Download Syllabus
-          </Button>
+          {/* Hidden when the course has no syllabus on file. It used to always
+              render, and handed the visitor the Java Full Stack PDF. */}
+          {hasSyllabus(course) && (
+            <Button
+              variant="onDark"
+              size="lg"
+              onClick={() => downloadSyllabus(course)}
+              title={`Download ${course.title} Syllabus (PDF)`}
+            >
+              <Download size={16} className="inline mr-1.5" />
+              Download Syllabus
+            </Button>
+          )}
           <Button variant="primary" size="lg" onClick={onEnrollClick}>
             Enroll Now
           </Button>

@@ -38,24 +38,31 @@ export const getImageUrl = (url, fallback = '') => {
   return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
 }
 
+/** Shown for a course whose logo has not been uploaded yet. */
+export const COURSE_LOGO_PLACEHOLDER = '/tech/api.svg'
+
 /**
- * Returns a high-quality logo URL for a course entity or mock course,
- * ensuring no course is missing its logo.
+ * The logo URL for a course: its own uploaded icon, or a neutral placeholder.
+ *
+ * @param {object} course
+ * @returns {string} always a renderable URL, never null
  */
 export const getCourseLogo = (course) => {
+  /*
+   * The course's own icon, or the neutral placeholder - never a guess.
+   *
+   * There used to be a keyword ladder here (python -> python.svg, java ->
+   * java.svg, and so on) below this check. It only ever ran for a course with no
+   * iconUrl, which since the admin panel gained a logo uploader means a course
+   * an admin has not given a logo to - and for those it picked an icon by
+   * matching words in the title, so "Java : Full Stack" and "DSA with Python /
+   * Java" got the same one and anything unrecognised got nothing. A missing
+   * logo is now visibly missing, which is a thing an admin can see and fix.
+   */
   const icon = course?.iconUrl || course?.icon_url || course?.logoUrl || course?.logo_url
   if (icon && typeof icon === 'string' && icon.trim()) {
     return getImageUrl(icon)
   }
-  const text = `${course?.slug || ''} ${course?.title || ''} ${course?.name || ''}`.toLowerCase()
-  if (text.includes('python')) return '/tech/python.svg'
-  if (text.includes('java')) return '/tech/java.svg'
-  if (text.includes('data') || text.includes('analytics') || text.includes('bi')) return '/tech/powerbi.svg'
-  if (text.includes('aws') || text.includes('cloud') || text.includes('devops')) return '/tech/aws.svg'
-  if (text.includes('react') || text.includes('frontend')) return '/tech/react.svg'
-  if (text.includes('django')) return '/tech/django.svg'
-  if (text.includes('docker') || text.includes('kubernetes')) return '/tech/docker.svg'
-  if (text.includes('sql') || text.includes('database')) return '/tech/mysql.svg'
-  if (text.includes('excel')) return '/tech/excel.svg'
-  return '/tech/api.svg'
+
+  return COURSE_LOGO_PLACEHOLDER
 }

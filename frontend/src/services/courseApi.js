@@ -114,15 +114,22 @@ function normalizeRoleBullet(raw) {
 
 /*
  * Fields marked NOT SERVED below exist in the fixtures and are read by the
- * components, but CourseResponse does not carry them today. They are kept
- * rather than deleted: the mock path still supplies them, and each component
- * already handles the null/'' case by hiding its own section. Removing them
- * here would only move the same emptiness somewhere less obvious.
+ * components, but CourseResponse does not carry them. They are kept rather than
+ * deleted: the mock path still supplies them, and each component already handles
+ * the null/'' case by hiding its own section.
  *
- * CourseResponse actually serves: id, name, title, slug, shortDescription,
- * durationMonths, durationValue, durationUnit, mode, badge, badgeText,
- * badgeLabel, placementAssistance, syllabusUrl, enrollUrl, isActive,
- * displayOrder, modules, createdAt, updatedAt.
+ * CourseResponse serves: id, name, title, slug, shortDescription, description,
+ * category, durationMonths, durationValue, durationUnit, mode, badge, badgeText,
+ * badgeLabel, placementAssistance, syllabusUrl, enrollUrl, iconUrl, roleHeading,
+ * roleIntro, roleBullets, roleBulletsList, isActive, displayOrder, modules,
+ * tools, techStack, createdAt, updatedAt.
+ *
+ * That list is longer than it was. description, category, iconUrl, roleHeading,
+ * roleIntro and roleBullets were all annotated NOT SERVED here while the backend
+ * had been serving them for some time, and the note further down claiming there
+ * is "no tech stack in the backend at all" was written before the course_tool
+ * table existed (V37). Kept accurate now because these annotations are what a
+ * reader uses to decide whether a blank section is a bug or a missing column.
  */
 function normalizeCourse(raw) {
   return {
@@ -131,7 +138,7 @@ function normalizeCourse(raw) {
     // as a fallback so a payload built without the alias still renders.
     title: raw.title ?? raw.name ?? '',
     slug: raw.slug ?? '',
-    category: raw.category ?? null, // NOT SERVED by CourseResponse
+    category: raw.category ?? null,
     /*
      * Catalog grouping label ("Full Stack", "Data", "Cloud"), separate from
      * `category` because `category` is the short course name the "Why Learn …?"
@@ -140,7 +147,7 @@ function normalizeCourse(raw) {
      */
     categoryGroup: raw.categoryGroup ?? null, // NOT SERVED by CourseResponse
     shortDescription: raw.shortDescription ?? '',
-    description: raw.description ?? '', // NOT SERVED by CourseResponse
+    description: raw.description ?? '',
     durationValue: raw.durationValue ?? raw.durationMonths ?? null,
     // CourseResponse sets this to the literal "months" whenever durationMonths
     // is non-null, and omits it otherwise.
@@ -156,7 +163,7 @@ function normalizeCourse(raw) {
     displayOrder: raw.displayOrder ?? 0,
     placementAssistance: Boolean(raw.placementAssistance),
     enrollUrl: raw.enrollUrl ?? null,
-    iconUrl: raw.iconUrl ?? null, // NOT SERVED
+    iconUrl: raw.iconUrl ?? null,
     heroImageUrl: raw.heroImageUrl ?? null, // NOT SERVED
     // The backend calls it `syllabusUrl` (Course.syllabus_url); the fixtures and
     // the download button call it `syllabusFileUrl`.
@@ -164,10 +171,27 @@ function normalizeCourse(raw) {
     status: raw.status ?? (raw.isActive === false ? 'INACTIVE' : 'PUBLISHED'),
     // Drives WhatYoullLearnToDoSection. Was hardcoded per category in the
     // component; it is course content, so it lives on the course.
-    roleHeading: raw.roleHeading ?? null, // NOT SERVED
-    roleIntro: raw.roleIntro ?? null, // NOT SERVED
+    roleHeading: raw.roleHeading ?? null,
+    roleIntro: raw.roleIntro ?? null,
     roleColumns: readJsonArray(raw.roleColumns, normalizeRoleColumn), // NOT SERVED
-    roleBullets: readJsonArray(raw.roleBullets, normalizeRoleBullet), // NOT SERVED
+    /*
+     * `roleBulletsList` first: the backend already parses the stored column and
+     * publishes the result, accepting both a JSON array and newline-separated
+     * text (CourseResponse#parseBullets). Reading only the raw `roleBullets`
+     * string meant bullets stored one-per-line silently vanished from the page,
+     * because readJsonArray returns [] for anything that is not JSON.
+     */
+    roleBullets: Array.isArray(raw.roleBulletsList) && raw.roleBulletsList.length > 0
+      ? raw.roleBulletsList.map(normalizeRoleBullet).filter(Boolean)
+      : readJsonArray(raw.roleBullets, normalizeRoleBullet),
+    /*
+     * Carried on list items too, not just on the detail response: GET /api/courses
+     * now serves each course's tools, and the catalog cards read this instead of
+     * guessing a tech stack from keywords in the title.
+     */
+    techStack: readCollection(raw, 'techStack').length > 0
+      ? readCollection(raw, 'techStack').map(normalizeTechStackItem)
+      : readCollection(raw, 'tools').map(normalizeTechStackItem),
   }
 }
 
@@ -176,11 +200,11 @@ function normalizeCourse(raw) {
  * Keeping them separate means a section can show its own empty state without
  * reaching into the course object.
  *
- * `modules` is populated by CourseService#getByIdOrSlug and omitted entirely on
- * the list endpoint, where it is null. There is no tech stack in the backend at
- * all — no entity, no DTO field, no endpoint — so `techStack` is always [] on
- * the live path and TechStackSection hides itself. That is a missing backend
- * feature, not a shape mismatch to normalize around.
+ * `modules` is populated by CourseService#getByIdOrSlug and omitted on the list
+ * endpoint, where it is null. `techStack` comes from the course_tool table (V37)
+ * via CourseResponse.tools/techStack, on both the detail and the list endpoint,
+ * so a course whose tools an admin has configured renders them and one without
+ * any hides the section.
  */
 export function normalizeCourseDetail(raw) {
   const toolsList = readCollection(raw, 'techStack', 'tech_stack')

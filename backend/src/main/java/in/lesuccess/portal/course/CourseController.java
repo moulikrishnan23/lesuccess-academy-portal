@@ -215,18 +215,23 @@ public class CourseController {
                 .body(ApiResponse.success("Testimonial created successfully", service.createTestimonial(id, request)));
     }
 
-    @PutMapping("/api/admin/testimonials/{testimonialId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<TestimonialResponse>> updateTestimonial(
-            @PathVariable Long testimonialId,
-            @Valid @RequestBody TestimonialRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Testimonial updated successfully", service.updateTestimonial(testimonialId, request)));
-    }
-
-    @DeleteMapping("/api/admin/testimonials/{testimonialId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<Void> deleteTestimonial(@PathVariable Long testimonialId) {
-        service.deleteTestimonial(testimonialId);
-        return ResponseEntity.noContent().build();
-    }
+    /*
+     * PUT and DELETE /api/admin/testimonials/{id} deliberately do NOT live here.
+     *
+     * They were declared here as {testimonialId} and in TestimonialController as
+     * {id}. Two different pattern strings, so RequestMappingInfo equality saw two
+     * distinct mappings and startup succeeded — but PathPattern.SPECIFICITY_COMPARATOR
+     * scores them identically, so every real request hit
+     * "IllegalStateException: Ambiguous handler methods mapped for
+     * /api/admin/testimonials/{n}" and returned 500. That is the endpoint the admin
+     * Reviews tab uses to edit and delete a review, so both actions were broken.
+     *
+     * TestimonialController owns them because its service is the strict superset:
+     * it reassigns courseId, keeps source / reviewDate / reviewerRole / likesCount,
+     * rebalances displayOrder after a delete, and filters soft-deleted rows.
+     * CourseService.updateTestimonial did none of that.
+     *
+     * Creation stays here, at POST /api/admin/courses/{id}/testimonials — that path
+     * is nested under the course and collides with nothing.
+     */
 }

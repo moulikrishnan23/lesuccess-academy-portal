@@ -15,7 +15,7 @@ import {
   Briefcase,
   CheckCircle2,
 } from 'lucide-react'
-import { downloadSyllabus } from '../../utils/syllabusUtils.js'
+import { downloadSyllabus, hasSyllabus } from '../../utils/syllabusUtils.js'
 import { getCourseLogo } from '../../utils/imageUtils.js'
 import Skeleton, { SkeletonText } from '../../components/ui/Skeleton.jsx'
 import ErrorState from '../../components/ui/ErrorState.jsx'
@@ -45,25 +45,27 @@ function splitDuration(value, unit) {
   return { value: numeric, unit: singular }
 }
 
+/**
+ * The tech pills on a catalog card, read off the course's own tool list.
+ *
+ * GET /api/courses now serves `techStack` (CourseService#listActive), so there
+ * is a real answer for every course. There used to be a keyword ladder below
+ * this - "java" -> Java/Spring Boot/Hibernate/REST and so on - which ran for
+ * every card, because the list endpoint did not carry tools at all and the
+ * check above could never pass. It gave a course added through the admin panel
+ * whichever stack its title happened to collide with, and a generic trio when
+ * it collided with nothing.
+ *
+ * @param {object} course
+ * @returns {string[]} up to four tool names; empty when none are configured
+ */
 function getCourseTechPills(course) {
-  if (Array.isArray(course?.techStack) && course.techStack.length > 0) {
-    return course.techStack
-      .map((t) => t.itemName || t.item_name || t.toolName || t.name)
-      .filter(Boolean)
-      .slice(0, 4)
-  }
-  const text = `${course?.slug || ''} ${course?.title || ''} ${course?.category || ''}`.toLowerCase()
-  const pills = []
-  if (text.includes('java')) pills.push('Java', 'Spring Boot', 'Hibernate', 'REST')
-  else if (text.includes('python')) pills.push('Python', 'Django', 'FastAPI', 'PostgreSQL')
-  else if (text.includes('mern') || text.includes('react')) pills.push('React', 'Node.js', 'Express', 'MongoDB')
-  else if (text.includes('data science') || text.includes('machine learning')) pills.push('Python', 'Scikit-Learn', 'Pandas', 'NLP')
-  else if (text.includes('data analytics') || text.includes('power bi')) pills.push('Power BI', 'SQL', 'Advanced Excel', 'Tableau')
-  else if (text.includes('aws') || text.includes('cloud') || text.includes('devops')) pills.push('AWS', 'Docker', 'Kubernetes', 'CI/CD')
-  else if (text.includes('cyber')) pills.push('Ethical Hacking', 'Network Sec', 'SIEM', 'Kali')
-  else if (text.includes('digital') || text.includes('marketing')) pills.push('SEO', 'Google Ads', 'Meta Ads', 'Analytics')
-  else pills.push('Live Projects', 'Mentorship', 'Certification')
-  return pills.slice(0, 4)
+  if (!Array.isArray(course?.techStack)) return []
+
+  return course.techStack
+    .map((tool) => tool.itemName || tool.toolName || tool.name)
+    .filter(Boolean)
+    .slice(0, 4)
 }
 
 /* =========================================================
@@ -178,19 +180,24 @@ function CourseCard({ course, column, reduced }) {
         {/* ================= ZONE 3: DUAL-ACTION FOOTER ================= */}
         <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-6 py-3.5">
           {/* Syllabus PDF Download Button */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              downloadSyllabus(course)
-            }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition hover:border-[#07405C] hover:bg-[#07405C] hover:text-white cursor-pointer active:scale-95"
-            title={`Download ${course.title} Syllabus (PDF)`}
-          >
-            <Download size={13} />
-            <span>Syllabus</span>
-          </button>
+          {hasSyllabus(course) ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                downloadSyllabus(course)
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition hover:border-[#07405C] hover:bg-[#07405C] hover:text-white cursor-pointer active:scale-95"
+              title={`Download ${course.title} Syllabus (PDF)`}
+            >
+              <Download size={13} />
+              <span>Syllabus</span>
+            </button>
+          ) : (
+            /* Keeps Explore pinned right when there is no syllabus to offer. */
+            <span aria-hidden="true" />
+          )}
 
           {/* Explore Course Link */}
           <Link

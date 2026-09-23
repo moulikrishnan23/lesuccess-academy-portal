@@ -21,6 +21,9 @@ import {
 import apiClient from '../../../services/apiClient.js'
 import CourseBadge from '../../../components/ui/CourseBadge.jsx'
 import { getImageUrl } from '../../../utils/imageUtils.js'
+// Shared with the public offer banner: the banner rotates through exactly the
+// courses this tab lists under Group 1, so both read the test from one place.
+import { isBatchCourse } from '../../../utils/courseOfferUtils.js'
 
 const PRESET_ICONS = [
   { name: 'Java', url: '/tech/java.svg' },
@@ -618,7 +621,7 @@ export default function AdminCoursesTab({ showAlert }) {
               }`}
             >
               <Sparkles size={13} className="text-emerald-600" />
-              Batch Courses ({courses.filter((c) => Boolean(c.badge || c.badgeText || c.badgeLabel)).length})
+              Batch Courses ({courses.filter(isBatchCourse).length})
             </button>
             <button
               type="button"
@@ -659,7 +662,6 @@ export default function AdminCoursesTab({ showAlert }) {
           <p className="text-sm text-slate-500 mt-1">Get started by creating your first course.</p>
         </div>
       ) : (() => {
-        const isBatchCourse = (c) => Boolean(c.badge || c.badgeText || c.badgeLabel)
         const term = searchTerm.toLowerCase()
         const filtered = courses.filter((c) => {
           if (!showInactive && c.isActive === false) return false

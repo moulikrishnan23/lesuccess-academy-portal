@@ -1,4 +1,25 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic",
+    // Was "automatic", which turns on Eclipse JDT's annotation-based null
+    // analysis as soon as it finds a nullability annotation library on the
+    // classpath. This project has four, all pulled in transitively by the
+    // Google Sheets client: org.jspecify:jspecify, com.google.code.findbugs:jsr305
+    // (the source of the "@Nonnull" in the warnings), org.checkerframework:checker-qual
+    // and jakarta.annotation-api. Nothing in src/ uses any of them.
+    //
+    // The result was ~25 warnings of one kind only - "Null type safety:
+    // parameter 'this' ... needs unchecked conversion to conform to '@Nonnull X'"
+    // - on the method references passed to OrderRebalanceUtil across five
+    // services. They mean "JDT cannot prove this type is non-null", not "this
+    // may throw an NPE": an unbound method reference such as
+    // CompanyPartner::getDisplayOrder makes the receiver the functional
+    // parameter, and the receiver of an unannotated method carries no nullness
+    // contract to check against. javac never runs this analysis, so the Maven
+    // build was clean throughout.
+    //
+    // With no nullness annotations in the codebase the analysis cannot find a
+    // real defect either, so it was contributing noise to the Problems panel
+    // and nothing else. Set this back to "automatic" if the project ever adopts
+    // JSpecify annotations properly - then it has something to check.
+    "java.compile.nullAnalysis.mode": "disabled",
     "java.configuration.updateBuildConfiguration": "automatic"
 }

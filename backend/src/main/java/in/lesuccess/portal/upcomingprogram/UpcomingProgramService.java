@@ -6,6 +6,7 @@ import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class UpcomingProgramService {
 
     private final UpcomingProgramRepository repository;
     private final UpcomingProgramRegistrationRepository registrationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<UpcomingProgramResponse> listUpcoming(UpcomingProgramType type) {
@@ -137,6 +139,19 @@ public class UpcomingProgramService {
 
         UpcomingProgramRegistration saved = registrationRepository.save(entity);
         log.info("Upcoming program registration created: id={}, programId={}", saved.getId(), programId);
+
+        /*
+         * Program registrations were the one public form that never reached Google
+         * Sheets. The listener is AFTER_COMMIT, so a Sheets outage cannot roll back
+         * a registration the visitor has already been told succeeded — and a failed
+         * append lands in the sync_failure queue for the retry scheduler to replay.
+         *
+         * `saved.getProgram()` is the instance findOrThrow loaded, not a lazy proxy,
+         * so the listener can read the title, type and date off it after the session
+         * closes.
+         */
+        eventPublisher.publishEvent(new UpcomingProgramRegistrationCreatedEvent(this, saved));
+
         return UpcomingProgramRegistrationResponse.from(saved);
     }
 

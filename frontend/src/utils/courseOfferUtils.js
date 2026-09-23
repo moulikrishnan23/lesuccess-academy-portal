@@ -181,6 +181,72 @@ export function isEligibleCourse(course) {
 }
 
 /**
+ * Is this course in "Group 1 - Batch Courses"?
+ *
+ * The admin Courses tab splits the catalog into Group 1 (Batch Courses) and
+ * Group 2 (Normal Courses) on exactly this test, and the top offer banner shows
+ * Group 1. Both read it from here rather than re-declaring it, because a banner
+ * that disagrees with the group an admin sees in the tab is a bug nobody can
+ * explain from either file alone.
+ *
+ * Deliberately narrower than {@link isEligibleCourse}, which also admits a
+ * course carrying a computed offer percentage but no badge at all. A badge is
+ * what makes a course a batch course; an offer is something a batch course may
+ * additionally have.
+ *
+ * @param {object} course
+ * @returns {boolean}
+ */
+export function isBatchCourse(course) {
+  if (!course) return false;
+  return Boolean(course.badge || course.badgeText || course.badgeLabel);
+}
+
+/**
+ * The Group 1 courses the offer banner rotates through, highest offer first.
+ *
+ * Inactive courses are dropped here rather than by the caller: a course pulled
+ * from the site should not keep advertising itself in a banner that sits above
+ * every page.
+ *
+ * @param {Array<object>} courses full catalog from GET /api/courses
+ * @returns {Array<object>} sorted new array; empty when nothing qualifies
+ */
+export function selectBannerCourses(courses) {
+  if (!Array.isArray(courses)) return [];
+
+  const batch = courses.filter(
+    (course) => isBatchCourse(course) && course.isActive !== false && course.status !== 'INACTIVE',
+  );
+
+  return sortCoursesByOffer(batch);
+}
+
+/**
+ * The course slug a banner item points at, or null when it names none.
+ *
+ * Reads `slug` first and `linkUrl` only as a fallback, so an item carrying just
+ * a link still resolves. It never guesses from the headline text: a substring
+ * ladder used to do that, and it sent every Enroll Now click to Java Full Stack,
+ * because "java" is also a substring of "JavaScript" and of
+ * "DSA with Python / Java".
+ *
+ * @param {object} item one entry of the banner rotation
+ * @returns {string|null}
+ */
+export function resolveTargetSlug(item) {
+  if (!item) return null;
+  if (item.slug) return item.slug;
+
+  if (typeof item.linkUrl === 'string' && item.linkUrl.includes('/courses/')) {
+    const slug = item.linkUrl.replace(/.*\/courses\//, '').split(/[#?/]/)[0];
+    return slug || null;
+  }
+
+  return null;
+}
+
+/**
  * Dynamically sorts courses so that:
  * 1. Courses with highest offer percentage appear first (e.g. 50% -> 30% -> 20%).
  * 2. Courses with equal offer percentages (or no offer percentage) preserve their

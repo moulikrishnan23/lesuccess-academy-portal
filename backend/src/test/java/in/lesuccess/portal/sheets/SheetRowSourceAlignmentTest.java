@@ -14,6 +14,10 @@ import in.lesuccess.portal.lead.Lead;
 import in.lesuccess.portal.lead.LeadSheetRowSource;
 import in.lesuccess.portal.lead.LeadSource;
 import in.lesuccess.portal.lead.LeadStatus;
+import in.lesuccess.portal.upcomingprogram.UpcomingProgram;
+import in.lesuccess.portal.upcomingprogram.UpcomingProgramRegistration;
+import in.lesuccess.portal.upcomingprogram.UpcomingProgramRegistrationSheetRowSource;
+import in.lesuccess.portal.upcomingprogram.UpcomingProgramType;
 import in.lesuccess.portal.shared.sheets.SheetRow;
 import in.lesuccess.portal.shared.sheets.SheetSpec;
 import in.lesuccess.portal.shared.sheets.SyncEntityType;
@@ -22,6 +26,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -497,6 +502,7 @@ class SheetRowSourceAlignmentTest {
                     .name("Divya Ramesh")
                     .mobile("9884455667")
                     .email("divya.ramesh@gmail.com")
+                    .message("Which weekend batches are open for Data Analytics?")
                     .build();
         }
 
@@ -512,6 +518,7 @@ class SheetRowSourceAlignmentTest {
                     .name("Karthik S")
                     .mobile("9003344556")
                     .email(null)
+                    .message(null)
                     .build();
         }
 
@@ -523,31 +530,47 @@ class SheetRowSourceAlignmentTest {
         }
 
         @Test
-        @DisplayName("row still aligns when the optional email is null")
+        @DisplayName("row still aligns when the optional email and message are null")
         void rowAlignsWithNullEmail() {
             assertLayoutHolds(ConnectWithUsSheetRowSource.SPEC,
                     ConnectWithUsSheetRowSource.toRow(submissionWithoutEmail()));
         }
 
         @Test
-        @DisplayName("writes to a tab named Connect With Us, spanning columns A-D")
+        @DisplayName("writes to a tab named Connect With Us, spanning columns A-E")
         void spansExpectedRange() {
             SheetSpec spec = ConnectWithUsSheetRowSource.SPEC;
             SheetRow row = ConnectWithUsSheetRowSource.toRow(populatedSubmission());
 
             assertThat(spec.tabName()).isEqualTo("Connect With Us");
-            assertThat(spec.headers()).hasSize(4);
-            assertThat(spec.appendRange()).isEqualTo("Connect With Us!A:D");
-            assertThat(spec.headerRange()).isEqualTo("Connect With Us!A1:D1");
+            assertThat(spec.headers()).hasSize(5);
+            assertThat(spec.appendRange()).isEqualTo("Connect With Us!A:E");
+            assertThat(spec.headerRange()).isEqualTo("Connect With Us!A1:E1");
             assertThat(row.entityType()).isEqualTo(SyncEntityType.CONNECT_WITH_US);
             assertThat(row.entityId()).isEqualTo(42L);
         }
 
         @Test
-        @DisplayName("header row is exactly the four specified columns, in order")
+        @DisplayName("header row is exactly the five specified columns, in order")
         void headersAreExactlyAsSpecified() {
             assertThat(ConnectWithUsSheetRowSource.SPEC.headers())
-                    .containsExactly("Name", "Mobile", "Email", "Submitted At");
+                    .containsExactly("Name", "Mobile", "Email", "Submitted At", "Message");
+        }
+
+        /**
+         * Message is appended after Submitted At rather than slotted in beside the
+         * other typed fields. Pinned by a test because the reason is invisible in the
+         * code: rows already in the spreadsheet were written under the A-D layout, so
+         * inserting a column mid-row would leave every historical submission's
+         * timestamp sitting under the Message header.
+         */
+        @Test
+        @DisplayName("Message is last, so the original A-D columns keep their positions")
+        void messageIsAppendedAfterTheOriginalColumns() {
+            SheetSpec spec = ConnectWithUsSheetRowSource.SPEC;
+
+            assertThat(spec.headers().get(SheetSpec.columnIndex("D"))).isEqualTo("Submitted At");
+            assertThat(spec.headers().get(SheetSpec.columnIndex("E"))).isEqualTo("Message");
         }
 
         @Test
@@ -561,16 +584,20 @@ class SheetRowSourceAlignmentTest {
             assertThat(values.get(spec.headers().indexOf("Email"))).isEqualTo("divya.ramesh@gmail.com");
             assertThat(values.get(spec.headers().indexOf("Submitted At")))
                     .isEqualTo("2026-09-16 10:30:00");
+            assertThat(values.get(spec.headers().indexOf("Message")))
+                    .isEqualTo("Which weekend batches are open for Data Analytics?");
         }
 
         @Test
-        @DisplayName("a null email becomes an empty cell, never null")
+        @DisplayName("a null email or message becomes an empty cell, never null")
         void nullEmailCoercesToEmptyString() {
             SheetSpec spec = ConnectWithUsSheetRowSource.SPEC;
             List<Object> values = ConnectWithUsSheetRowSource.toRow(submissionWithoutEmail()).values();
 
             assertThat(values.get(spec.headers().indexOf("Email")))
                     .as("Email is nullable on connect_with_us").isEqualTo("");
+            assertThat(values.get(spec.headers().indexOf("Message")))
+                    .as("Message is nullable on connect_with_us").isEqualTo("");
         }
 
         /**
@@ -597,6 +624,183 @@ class SheetRowSourceAlignmentTest {
         }
     }
 
+    @Nested
+    @DisplayName("Program Registrations tab")
+    class ProgramRegistrations {
+
+        private UpcomingProgram webinar() {
+            return UpcomingProgram.builder()
+                    .id(9L)
+                    .title("Agentic AI: Build Your First Agent")
+                    .type(UpcomingProgramType.WEBINAR)
+                    .eventDate(LocalDate.of(2026, 10, 4))
+                    .mode("ONLINE")
+                    .build();
+        }
+
+        /** Every optional column filled, so column order can be checked by value. */
+        private UpcomingProgramRegistration populatedRegistration() {
+            return UpcomingProgramRegistration.builder()
+                    .id(501L)
+                    .createdAt(LocalDateTime.of(2026, 9, 20, 15, 2, 11))
+                    .program(webinar())
+                    .name("Divya Ramesh")
+                    .mobileNumber("9884455667")
+                    .email("divya.ramesh@gmail.com")
+                    .mode("OFFLINE")
+                    .venueAddress("12 Race Course Road, Coimbatore")
+                    .build();
+        }
+
+        /**
+         * Only what program_registration requires per V7: name, mobile_number and
+         * the program. Email, mode and venue_address are all nullable — the modal
+         * asks for name and mobile only, and mode/venue are snapshotted from the
+         * program, which may carry neither for an online event.
+         */
+        private UpcomingProgramRegistration minimalRegistration() {
+            return UpcomingProgramRegistration.builder()
+                    .id(502L)
+                    .createdAt(LocalDateTime.of(2026, 9, 20, 15, 9, 40))
+                    .program(webinar())
+                    .name("Karthik S")
+                    .mobileNumber("9003344556")
+                    .email(null)
+                    .mode(null)
+                    .venueAddress(null)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("row aligns with its spec")
+        void rowAlignsWithSpec() {
+            assertLayoutHolds(UpcomingProgramRegistrationSheetRowSource.SPEC,
+                    UpcomingProgramRegistrationSheetRowSource.toRow(populatedRegistration()));
+        }
+
+        @Test
+        @DisplayName("row still aligns when every optional field is null")
+        void rowAlignsWithNullOptionalFields() {
+            assertLayoutHolds(UpcomingProgramRegistrationSheetRowSource.SPEC,
+                    UpcomingProgramRegistrationSheetRowSource.toRow(minimalRegistration()));
+        }
+
+        @Test
+        @DisplayName("writes to a tab named Program Registrations, spanning columns A-I")
+        void spansExpectedRange() {
+            SheetSpec spec = UpcomingProgramRegistrationSheetRowSource.SPEC;
+            SheetRow row = UpcomingProgramRegistrationSheetRowSource.toRow(populatedRegistration());
+
+            assertThat(spec.tabName()).isEqualTo("Program Registrations");
+            assertThat(spec.headers()).hasSize(9);
+            assertThat(spec.appendRange()).isEqualTo("Program Registrations!A:I");
+            assertThat(spec.headerRange()).isEqualTo("Program Registrations!A1:I1");
+            assertThat(row.entityType()).isEqualTo(SyncEntityType.PROGRAM_REGISTRATION);
+            assertThat(row.entityId()).isEqualTo(501L);
+        }
+
+        @Test
+        @DisplayName("header row is exactly the nine specified columns, in order")
+        void headersAreExactlyAsSpecified() {
+            assertThat(UpcomingProgramRegistrationSheetRowSource.SPEC.headers())
+                    .containsExactly("Name", "Mobile Number", "Email", "Program", "Type",
+                            "Event Date", "Mode", "Venue", "Submitted At");
+        }
+
+        @Test
+        @DisplayName("values sit under the headers they belong to")
+        void valuesMatchHeaderOrder() {
+            SheetSpec spec = UpcomingProgramRegistrationSheetRowSource.SPEC;
+            List<Object> values =
+                    UpcomingProgramRegistrationSheetRowSource.toRow(populatedRegistration()).values();
+
+            assertThat(values.get(spec.headers().indexOf("Name"))).isEqualTo("Divya Ramesh");
+            assertThat(values.get(spec.headers().indexOf("Mobile Number"))).isEqualTo("9884455667");
+            assertThat(values.get(spec.headers().indexOf("Email"))).isEqualTo("divya.ramesh@gmail.com");
+            assertThat(values.get(spec.headers().indexOf("Program")))
+                    .isEqualTo("Agentic AI: Build Your First Agent");
+            assertThat(values.get(spec.headers().indexOf("Type"))).isEqualTo("WEBINAR");
+            assertThat(values.get(spec.headers().indexOf("Event Date"))).isEqualTo("2026-10-04");
+            assertThat(values.get(spec.headers().indexOf("Submitted At")))
+                    .isEqualTo("2026-09-20 15:02:11");
+        }
+
+        /**
+         * The service snapshots mode and venue onto the registration at sign-up so a
+         * program later flipped from offline to online does not rewrite the terms for
+         * everyone who already registered. The sheet must show the snapshot, not the
+         * program's current value — here they deliberately disagree.
+         */
+        @Test
+        @DisplayName("Mode and Venue come from the registration, not the program")
+        void modeAndVenueComeFromTheSnapshot() {
+            SheetSpec spec = UpcomingProgramRegistrationSheetRowSource.SPEC;
+            List<Object> values =
+                    UpcomingProgramRegistrationSheetRowSource.toRow(populatedRegistration()).values();
+
+            assertThat(values.get(spec.headers().indexOf("Mode")))
+                    .as("the program says ONLINE; the registration was taken as OFFLINE")
+                    .isEqualTo("OFFLINE");
+            assertThat(values.get(spec.headers().indexOf("Venue")))
+                    .isEqualTo("12 Race Course Road, Coimbatore");
+        }
+
+        @Test
+        @DisplayName("each nullable field becomes an empty cell, never null")
+        void nullableFieldsCoerceToEmptyString() {
+            SheetSpec spec = UpcomingProgramRegistrationSheetRowSource.SPEC;
+            List<Object> values =
+                    UpcomingProgramRegistrationSheetRowSource.toRow(minimalRegistration()).values();
+
+            assertThat(values.get(spec.headers().indexOf("Email"))).isEqualTo("");
+            assertThat(values.get(spec.headers().indexOf("Mode"))).isEqualTo("");
+            assertThat(values.get(spec.headers().indexOf("Venue"))).isEqualTo("");
+        }
+
+        /**
+         * program_id is NOT NULL, so a null program is not a state the database can
+         * hold — but toRow is a static reachable from the retry path, and a row that
+         * threw there would be retried every tick instead of landing on the sheet.
+         */
+        @Test
+        @DisplayName("a missing program leaves its three columns blank rather than throwing")
+        void missingProgramDoesNotBreakTheRow() {
+            UpcomingProgramRegistration orphan = UpcomingProgramRegistration.builder()
+                    .id(503L)
+                    .createdAt(LocalDateTime.of(2026, 9, 20, 15, 11, 0))
+                    .program(null)
+                    .name("Meera Sundaram")
+                    .mobileNumber("9812345670")
+                    .build();
+
+            SheetSpec spec = UpcomingProgramRegistrationSheetRowSource.SPEC;
+            SheetRow row = UpcomingProgramRegistrationSheetRowSource.toRow(orphan);
+
+            assertLayoutHolds(spec, row);
+            assertThat(row.values().get(spec.headers().indexOf("Program"))).isEqualTo("");
+            assertThat(row.values().get(spec.headers().indexOf("Type"))).isEqualTo("");
+            assertThat(row.values().get(spec.headers().indexOf("Event Date"))).isEqualTo("");
+        }
+
+        @Test
+        @DisplayName("append-only: locating or rewriting a row is refused outright")
+        void statusUpdateIsRefused() {
+            SheetSpec spec = UpcomingProgramRegistrationSheetRowSource.SPEC;
+
+            assertThat(spec.supportsStatusUpdate()).isFalse();
+            assertThatIllegalStateException().isThrownBy(() -> spec.statusCell(2))
+                    .withMessageContaining("append-only");
+            assertThatIllegalStateException().isThrownBy(spec::idColumnRange)
+                    .withMessageContaining("append-only");
+        }
+
+        @Test
+        @DisplayName("every column is visible: this tab hides none")
+        void hidesNoColumns() {
+            assertThat(UpcomingProgramRegistrationSheetRowSource.SPEC.hiddenColumns()).isEmpty();
+        }
+    }
+
     /**
      * Fails when a new entity starts syncing to Sheets without gaining coverage here.
      * {@code SyncEntityType} has exactly one constant per source by contract, so its
@@ -609,6 +813,6 @@ class SheetRowSourceAlignmentTest {
                 .as("a new SheetRowSource was added — give it a @Nested block in this test")
                 .containsExactlyInAnyOrder(SyncEntityType.CONTACT_MESSAGE, SyncEntityType.LEAD,
                         SyncEntityType.DEMO_BOOKING, SyncEntityType.COURSE_ENQUIRY,
-                        SyncEntityType.CONNECT_WITH_US);
+                        SyncEntityType.CONNECT_WITH_US, SyncEntityType.PROGRAM_REGISTRATION);
     }
 }
