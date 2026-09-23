@@ -46,6 +46,9 @@ class GalleryControllerTest {
     @MockitoBean
     private GalleryService galleryService;
 
+    @MockitoBean
+    private in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
+
     @BeforeEach
     void setUpMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)

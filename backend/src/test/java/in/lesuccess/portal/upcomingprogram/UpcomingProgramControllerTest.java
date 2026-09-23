@@ -49,6 +49,9 @@ class UpcomingProgramControllerTest {
     @MockitoBean
     private UpcomingProgramService service;
 
+    @MockitoBean
+    private in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
+
     @BeforeEach
     void setUpMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
