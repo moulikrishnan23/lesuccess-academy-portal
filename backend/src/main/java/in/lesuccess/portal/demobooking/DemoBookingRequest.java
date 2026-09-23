@@ -1,5 +1,6 @@
 package in.lesuccess.portal.demobooking;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -29,7 +30,15 @@ public class DemoBookingRequest {
     @Size(max = 200, message = "Course name must not exceed 200 characters")
     private String courseName;
 
+    /**
+     * The Home page demo form used to post this as {@code phone}, which this DTO
+     * never accepted — every booking from that section came back 400 "Mobile
+     * number is required". DemoClass.jsx now sends {@code mobileNumber}; the alias
+     * stays so a browser still holding the old JS bundle keeps working, and
+     * mirrors how ContactMessageRequest accepts {@code mobile} for {@code phone}.
+     */
     @Getter(AccessLevel.NONE)
+    @JsonAlias("phone")
     private String mobileNumber;
 
     /** Honeypot field — must arrive empty. Never persisted. */

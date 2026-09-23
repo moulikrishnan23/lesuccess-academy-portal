@@ -6,7 +6,6 @@ import in.lesuccess.portal.security.JwtAuthenticationFilter;
 import in.lesuccess.portal.security.JwtTokenProvider;
 import in.lesuccess.portal.shared.exception.GlobalExceptionHandler;
 
-import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,9 +45,6 @@ class UpcomingProgramControllerTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockitoBean
     private UpcomingProgramService service;

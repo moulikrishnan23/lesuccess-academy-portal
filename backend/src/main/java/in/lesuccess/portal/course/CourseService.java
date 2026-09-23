@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,11 +26,44 @@ public class CourseService {
     private final TestimonialRepository testimonialRepository;
 
     @Transactional(readOnly = true)
+    /**
+     * The public catalog.
+     *
+     * <p>Carries each course's tools, which it did not before: {@code from(entity)}
+     * passes null for them, so every card on /courses had a null tech stack and the
+     * frontend fell back to guessing a stack from keywords in the course title. A
+     * course added through the admin panel matched none of those keywords and got
+     * a generic list, which is the opposite of the dashboard being the source of
+     * truth. Modules stay out - a card needs the stack, not the syllabus.</p>
+     */
     public List<CourseResponse> listActive() {
-        return repository.findByIsActiveTrueOrderByDisplayOrderAsc()
-                .stream()
-                .map(CourseResponse::from)
+        List<Course> courses = repository.findByIsActiveTrueOrderByDisplayOrderAsc();
+        if (courses.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, List<CourseToolResponse>> toolsByCourseId = listToolsFor(
+                courses.stream().map(Course::getId).toList());
+
+        return courses.stream()
+                .map(course -> CourseResponse.from(
+                        course, null, toolsByCourseId.getOrDefault(course.getId(), List.of())))
                 .toList();
+    }
+
+    /**
+     * Tools for many courses at once, keyed by course id.
+     *
+     * <p>Reads the id off the lazy {@code course} association rather than fetch
+     * joining it: Hibernate answers getId() from the proxy's identifier without
+     * initialising it, so this stays one query.</p>
+     */
+    private Map<Long, List<CourseToolResponse>> listToolsFor(List<Long> courseIds) {
+        return toolRepository.findByCourseIdInOrderByCourseIdAscDisplayOrderAsc(courseIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        tool -> tool.getCourse().getId(),
+                        Collectors.mapping(CourseToolResponse::from, Collectors.toList())));
     }
 
     @Transactional(readOnly = true)
@@ -395,27 +430,12 @@ public class CourseService {
         return TestimonialResponse.from(saved);
     }
 
-    @Transactional
-    public TestimonialResponse updateTestimonial(Long id, TestimonialRequest request) {
-        Testimonial entity = testimonialRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Testimonial", id));
-        entity.setStudentName(request.getStudentName().trim());
-        entity.setReviewText(request.getReviewText().trim());
-        entity.setRating(request.getRating());
-        entity.setPhotoUrl(request.getPhotoUrl());
-        entity.setDisplayOrder(request.getDisplayOrder());
-        entity.setActive(request.isActive());
-        Testimonial saved = testimonialRepository.saveAndFlush(entity);
-        log.info("Testimonial updated: id={}", id);
-        return TestimonialResponse.from(saved);
-    }
-
-    @Transactional
-    public void deleteTestimonial(Long id) {
-        Testimonial entity = testimonialRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Testimonial", id));
-        entity.setDeletedAt(LocalDateTime.now());
-        testimonialRepository.save(entity);
-        log.info("Testimonial soft-deleted: id={}", id);
-    }
+    /*
+     * updateTestimonial / deleteTestimonial used to live here, behind
+     * PUT and DELETE /api/admin/testimonials/{id} on CourseController. Those two
+     * mappings collided with TestimonialController's and made the endpoint return
+     * 500 for every request; TestimonialService now owns both operations, since it
+     * handles the fields and the order rebalancing this pair silently skipped.
+     * See the note at the bottom of CourseController.
+     */
 }

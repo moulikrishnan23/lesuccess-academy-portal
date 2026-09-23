@@ -1,57 +1,70 @@
 /**
- * Syllabus download utility for LeSuccess courses.
- * Maps course records (slug, title, backend syllabusUrl) to real PDFs.
+ * Resolves the syllabus PDF for a course - from the course record, and nowhere
+ * else.
+ *
+ * This file used to pick the file by matching keywords against the slug and
+ * title ("java" -> Java-Full-Stack-Syllabus.pdf, and so on down eight rules),
+ * consult the course's own `syllabusUrl` only if none of them matched, and fall
+ * back to the Java Full Stack PDF when that was empty too. Three things were
+ * wrong with that:
+ *
+ *  1. The course record lost. A syllabus URL entered in the admin panel was
+ *     overridden by a keyword rule for every course whose name happened to
+ *     contain "java", "python", "aws" and so on.
+ *  2. It never read the field at all. courseApi normalises the backend's
+ *     `syllabusUrl` to `syllabusFileUrl`, so `course.syllabusUrl` was always
+ *     undefined and the branch guarding it was dead code.
+ *  3. Anything unmatched downloaded the Java syllabus under its own name -
+ *     Tally, ServiceNow, Gen AI, and every course an admin adds from here on,
+ *     because a keyword ladder written around the seeded catalog cannot know
+ *     about a course created after it.
+ *
+ * So: the record decides, and a course with no syllabus uploaded reports that
+ * it has none rather than handing the visitor a different course's curriculum.
  */
 
+/** Both spellings, because the normalised shape and the raw payload differ. */
+function readSyllabusUrl(course) {
+  const url = course?.syllabusFileUrl || course?.syllabusUrl;
+  return typeof url === 'string' && url.trim() ? url.trim() : null;
+}
+
+/** "Python : Full Stack Development" -> "Python-Full-Stack-Development-Syllabus.pdf" */
+function toFilename(course) {
+  const rawName = course?.title || course?.name || 'Course';
+  const cleaned = rawName
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `${cleaned || 'Course'}-Syllabus.pdf`;
+}
+
+/**
+ * @param {object} course
+ * @returns {{url: string, filename: string}|null} null when the course has no
+ *   syllabus on file - callers hide the download control rather than offering a
+ *   link to something that is not this course's syllabus.
+ */
 export const getSyllabusInfo = (course) => {
-  if (!course) {
-    return { url: '/syllabus/Java-Full-Stack-Syllabus.pdf', filename: 'Course-Syllabus.pdf' };
-  }
+  const url = readSyllabusUrl(course);
+  if (!url) return null;
 
-  const slug = (course.slug || '').toLowerCase();
-  const title = (course.title || course.name || '').toLowerCase();
-
-  if (slug.includes('python') || title.includes('python')) {
-    return { url: '/syllabus/Python-Full-Stack-Syllabus.pdf', filename: 'Python-Full-Stack-Syllabus.pdf' };
-  }
-  if (slug.includes('java') || title.includes('java')) {
-    return { url: '/syllabus/Java-Full-Stack-Syllabus.pdf', filename: 'Java-Full-Stack-Syllabus.pdf' };
-  }
-  if (slug.includes('data-analytics') || title.includes('data analytics') || title.includes('power bi')) {
-    return { url: '/syllabus/Data-Analytics-Syllabus.pdf', filename: 'Data-Analytics-Syllabus.pdf' };
-  }
-  if (slug.includes('aws') || slug.includes('devops') || title.includes('aws') || title.includes('devops')) {
-    return { url: '/syllabus/AWS-DevOps-Syllabus.pdf', filename: 'AWS-DevOps-Syllabus.pdf' };
-  }
-  if (slug.includes('mern') || title.includes('mern')) {
-    return { url: '/syllabus/MERN-Stack-Syllabus.pdf', filename: 'MERN-Stack-Syllabus.pdf' };
-  }
-  if (slug.includes('data-science') || title.includes('data science') || title.includes('machine learning')) {
-    return { url: '/syllabus/Data-Science-Syllabus.pdf', filename: 'Data-Science-Syllabus.pdf' };
-  }
-  if (slug.includes('cyber') || title.includes('cyber')) {
-    return { url: '/syllabus/Cybersecurity-Syllabus.pdf', filename: 'Cybersecurity-Syllabus.pdf' };
-  }
-  if (slug.includes('digital') || title.includes('marketing')) {
-    return { url: '/syllabus/Digital-Marketing-Syllabus.pdf', filename: 'Digital-Marketing-Syllabus.pdf' };
-  }
-
-  if (course.syllabusUrl) {
-    const rawName = course.title || course.name || 'Course';
-    const cleanName = rawName.replace(/[^a-zA-Z0-9]/g, '-') + '-Syllabus.pdf';
-    return { url: course.syllabusUrl, filename: cleanName };
-  }
-
-  const rawTitle = course.title || course.name || 'Course';
-  const fallbackFilename = rawTitle.replace(/[^a-zA-Z0-9]/g, '-') + '-Syllabus.pdf';
-  return { url: '/syllabus/Java-Full-Stack-Syllabus.pdf', filename: fallbackFilename };
+  return { url, filename: toFilename(course) };
 };
 
+/** True when there is a syllabus to offer. Lets a caller hide its button. */
+export const hasSyllabus = (course) => readSyllabusUrl(course) !== null;
+
+/**
+ * Triggers the download. A no-op when the course has no syllabus, so a stale
+ * render cannot download the wrong file.
+ */
 export const downloadSyllabus = (course) => {
-  const { url, filename } = getSyllabusInfo(course);
+  const info = getSyllabusInfo(course);
+  if (!info) return;
+
   const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
+  anchor.href = info.url;
+  anchor.download = info.filename;
   anchor.target = '_blank';
   anchor.rel = 'noopener noreferrer';
   document.body.appendChild(anchor);

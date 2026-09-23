@@ -13,7 +13,7 @@ import useCourses from "../../hooks/useCourses.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import CourseBadge from "../ui/CourseBadge.jsx";
 import { formatDuration } from "../../utils/formatters.js";
-import { downloadSyllabus } from "../../utils/syllabusUtils.js";
+import { downloadSyllabus, hasSyllabus } from "../../utils/syllabusUtils.js";
 import { getCourseLogo } from "../../utils/imageUtils.js";
 import { FloatingOrbs, TechGrid, SectionHeading } from "../ui/BackgroundMotion.jsx";
 import {
@@ -21,28 +21,18 @@ import {
   sortCoursesByOffer,
 } from "../../utils/courseOfferUtils.js";
 
-const LOGO_BY_SLUG = {
-  "full-stack-java": "/tech/java.svg",
-  "data-analytics": "/tech/powerbi.svg",
-  "python-full-stack-development": "/tech/python.svg",
-  "python-full-stack-development-course-in-coimbatore": "/tech/python.svg",
-  "aws-and-devops": "/tech/aws.svg",
-  "aws-devops": "/tech/aws.svg",
-  "mean-full-stack": "/tech/javascript.svg",
-  "mern-full-stack": "/tech/react.svg",
-  "data-science": "/tech/python.svg",
-  "artificial-intelligence-and-machine-learning": "/tech/python.svg",
-};
-
-const DEFAULT_BADGES = {
-  "full-stack-java": { badge: "MOST_ENROLLED", badgeText: "Most Enrolled" },
-  "data-analytics": { badge: "OFFER", badgeText: "30% Offer" },
-  "python-full-stack-development": { badge: "TRENDING", badgeText: "Trending" },
-  "python-full-stack-development-course-in-coimbatore": { badge: "TRENDING", badgeText: "Trending" },
-  "aws-and-devops": { badge: "HIGH_DEMAND", badgeText: "High Demand" },
-  "aws-devops": { badge: "HIGH_DEMAND", badgeText: "High Demand" },
-  "mean-full-stack": { badge: "OFFER", badgeText: "50% Offer" },
-};
+/*
+ * LOGO_BY_SLUG and DEFAULT_BADGES used to sit here: two hand-maintained maps
+ * keyed by the slugs of the originally seeded courses, supplying a logo and a
+ * badge to courses that did not carry their own.
+ *
+ * Both are gone. `iconUrl`, `badge` and `badgeText` are columns an admin fills
+ * in the Courses tab and the API serves on every course, so a map here could
+ * only ever do one of two things: override what the admin set, or invent a
+ * value for a course that deliberately has none. Neither is what the dashboard
+ * being the source of truth means. A course added today has no entry in a map
+ * written months ago anyway, which is the whole problem.
+ */
 
 function CourseCardSkeleton() {
   return (
@@ -74,18 +64,9 @@ const ChooseYourPath = () => {
     const eligible = courses.filter(isEligibleCourse);
     const sourceList = eligible.length > 0 ? eligible : courses.filter((c) => c.isActive !== false);
 
-    const sorted = sortCoursesByOffer(sourceList);
-
-    return sorted.map((course) => {
-      const defaultBadge = DEFAULT_BADGES[course.slug] || {};
-      const badge = course.badge || defaultBadge.badge;
-      const badgeText = course.badgeText || course.badgeLabel || defaultBadge.badgeText;
-      return {
-        ...course,
-        badge,
-        badgeText,
-      };
-    });
+    // Returned as-is. The badge each card shows is the badge on the course row;
+    // nothing is substituted in for a course that has none.
+    return sortCoursesByOffer(sourceList);
   }, [courses]);
 
   /*
@@ -141,7 +122,7 @@ const ChooseYourPath = () => {
                   <div className="flex items-center gap-4">
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50 p-2.5 shadow-2xs transition-all duration-300 group-hover:scale-105 group-hover:border-[#07405C]/20 group-hover:bg-[#07405C]/5">
                       <img
-                        src={getCourseLogo(course) || LOGO_BY_SLUG[course.slug] || "/tech/api.svg"}
+                        src={getCourseLogo(course)}
                         alt=""
                         width={40}
                         height={40}
@@ -193,16 +174,24 @@ const ChooseYourPath = () => {
                   </div>
                 </div>
 
-                <div className="mt-8 grid grid-cols-2 gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => downloadSyllabus(course)}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-[#07405C] py-2.5 text-xs sm:text-sm font-bold text-[#07405C] transition-all hover:bg-[#07405C] hover:text-white active:scale-95 cursor-pointer shadow-xs"
-                    title={`Download ${course.title} Syllabus (PDF)`}
-                  >
-                    <Download size={15} />
-                    <span>Syllabus</span>
-                  </button>
+                {/* One column when there is no syllabus, so Enroll Now does not
+                    sit beside a gap. */}
+                <div
+                  className={`mt-8 grid gap-3 pt-2 ${
+                    hasSyllabus(course) ? "grid-cols-2" : "grid-cols-1"
+                  }`}
+                >
+                  {hasSyllabus(course) && (
+                    <button
+                      type="button"
+                      onClick={() => downloadSyllabus(course)}
+                      className="flex items-center justify-center gap-2 rounded-xl border border-[#07405C] py-2.5 text-xs sm:text-sm font-bold text-[#07405C] transition-all hover:bg-[#07405C] hover:text-white active:scale-95 cursor-pointer shadow-xs"
+                      title={`Download ${course.title} Syllabus (PDF)`}
+                    >
+                      <Download size={15} />
+                      <span>Syllabus</span>
+                    </button>
+                  )}
 
                   <Link
                     to={`/courses/${course.slug}`}

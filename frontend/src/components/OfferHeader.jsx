@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import apiClient from "../services/apiClient.js";
 import useCourses from "../hooks/useCourses.js";
 import {
   BADGE_THEMES,
   getBadgeTheme,
   getCourseBadgeType,
   getCourseOfferPercentage,
-  isEligibleCourse,
-  sortCoursesByOffer,
+  selectBannerCourses,
+  resolveTargetSlug,
   formatCourseOfferHeadline,
 } from "../utils/courseOfferUtils.js";
 
+/**
+ * Shown only while GET /api/courses is still in flight, or if it fails outright.
+ * Each entry carries its own slug for the same reason the live items do: Enroll
+ * Now resolves its target from the item on screen and nothing else.
+ */
 const FALLBACK_ITEMS = [
   {
     badgeType: "Special Offer",
@@ -55,82 +59,70 @@ const OfferHeader = () => {
   const navigate = useNavigate();
   const { courses } = useCourses();
 
-  const [announcementsFromApi, setAnnouncementsFromApi] = useState([]);
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const timerRef = useRef(null);
 
-  // Attempt to fetch any custom announcements from backend
-  useEffect(() => {
-    const controller = new AbortController();
-    apiClient
-      .get("/api/announcements/active-all", { signal: controller.signal })
-      .then(({ data }) => {
-        const list = data?.data;
-        if (Array.isArray(list) && list.length > 0) {
-          setAnnouncementsFromApi(list);
-        }
-      })
-      .catch(() => {
-        /* Fall back gracefully to course data */
-      });
-    return () => controller.abort();
-  }, []);
+  /*
+   * The banner rotates through Group 1 - Batch Courses, straight off
+   * GET /api/courses via useCourses. selectBannerCourses applies the same test
+   * the admin Courses tab uses to fill its Group 1 table, so what rotates up here
+   * is exactly what an admin sees listed there.
+   *
+   * It used to prefer GET /api/announcements/active-all whenever that returned
+   * anything, falling back to courses only when it was empty. That path is gone.
+   * An announcement row is free text plus a link — it carries no course identity,
+   * so when it was in use Enroll Now had nothing to navigate to and fell through
+   * to guessing a course by substring-matching the headline. There is also no
+   * admin screen anywhere in the app that can create an announcement, so the
+   * override could only ever be populated by hand-written SQL.
+   */
+  const bannerItems = useMemo(() => {
+    const bannerCourses = selectBannerCourses(courses);
 
-  // Dynamically build rotating items from courses (Single source of truth)
-  const activeAnnouncements = useMemo(() => {
-    // If backend has dedicated announcement records, use them
-    if (announcementsFromApi.length > 0) {
-      return announcementsFromApi.map((item, idx) => {
-        const badgeTheme = getBadgeTheme(item, idx);
-        return {
-          ...item,
-          badgeTheme,
-          badgeType: badgeTheme.type,
-        };
-      });
+    if (bannerCourses.length === 0) {
+      // Still loading, or no course carries a badge yet.
+      return FALLBACK_ITEMS;
     }
 
-    // Filter and sort all eligible courses dynamically by offer percentage
-    const eligibleCourses = courses.filter(isEligibleCourse);
-    const sortedCourses = sortCoursesByOffer(eligibleCourses);
+    return bannerCourses.map((course, idx) => {
+      const offerPercentage = getCourseOfferPercentage(course);
+      const badgeType = getCourseBadgeType(course, idx);
+      const badgeTheme = getBadgeTheme(badgeType, idx);
 
-    if (sortedCourses.length > 0) {
-      return sortedCourses.map((course, idx) => {
-        const offerPercentage = getCourseOfferPercentage(course);
-        const badgeType = getCourseBadgeType(course, idx);
-        const badgeTheme = getBadgeTheme(badgeType, idx);
-        const text = formatCourseOfferHeadline(course, offerPercentage, badgeType);
-        const targetSlug = course.slug || "data-analytics";
+      /*
+       * Falling back to a hardcoded "data-analytics" here is what made a course
+       * with no slug silently advertise a different course's page. The server
+       * derives slug from the course name on every response, so an empty one
+       * means something is wrong with the record — better to render the item
+       * without a target and let Enroll Now fall back to the catalog.
+       */
+      const slug = course.slug || null;
 
-        return {
-          courseId: course.id,
-          slug: targetSlug,
-          title: course.title,
-          badgeType,
-          badgeTheme,
-          offerPercentage,
-          text,
-          linkUrl: `/courses/${targetSlug}`,
-          course,
-        };
-      });
-    }
-
-    // Default fallback while courses are loading or if catalog is empty
-    return FALLBACK_ITEMS;
-  }, [courses, announcementsFromApi]);
+      return {
+        courseId: course.id ?? null,
+        slug,
+        title: course.title || course.name,
+        badgeType,
+        badgeTheme,
+        offerPercentage,
+        text: formatCourseOfferHeadline(course, offerPercentage, badgeType),
+        linkUrl: slug ? `/courses/${slug}` : "/courses",
+        course,
+      };
+    });
+  }, [courses]);
 
   // 5-second rotation effect in lockstep
   useEffect(() => {
-    if (activeAnnouncements.length <= 1) return undefined;
+    if (bannerItems.length <= 1) return undefined;
 
     let fadeTimeout = null;
     timerRef.current = setInterval(() => {
       // fade out
       setVisible(false);
       fadeTimeout = setTimeout(() => {
-        setIndex((prev) => (prev + 1) % activeAnnouncements.length);
+        setIndex((prev) => (prev + 1) % bannerItems.length);
         // fade in
         setVisible(true);
       }, FADE_MS);
@@ -140,63 +132,62 @@ const OfferHeader = () => {
       clearInterval(timerRef.current);
       if (fadeTimeout) clearTimeout(fadeTimeout);
     };
-  }, [activeAnnouncements.length]);
+  }, [bannerItems.length]);
 
-  const current = activeAnnouncements[index % activeAnnouncements.length] ?? FALLBACK_ITEMS[0];
+  /*
+   * Modulo, not a reset effect. The list swaps out from under the index when the
+   * catalog arrives (4 fallback items -> however many batch courses there are),
+   * and wrapping keeps the lookup in range without a setState-in-effect that
+   * React now flags as a cascading render. The banner resumes a few positions
+   * into the real list rather than at its start, which nobody can perceive on a
+   * five-second rotation.
+   */
+  const current = bannerItems[index % bannerItems.length] ?? FALLBACK_ITEMS[0];
   const text = current.text ?? FALLBACK_ITEMS[0].text;
   const badgeTheme = current.badgeTheme ?? BADGE_THEMES["Special Offer"];
 
+  /** The slug of the course detail page currently open, or null anywhere else. */
+  const slugInUrl = useMemo(() => {
+    const match = location.pathname.match(/^\/courses\/([^/#?]+)/);
+    return match ? match[1] : null;
+  }, [location.pathname]);
+
+  /*
+   * Enroll Now goes to the course the banner is showing right now — nothing else.
+   *
+   * Two things used to break that. The first was an early return: if the visitor
+   * was on any /courses/* page it scrolled to THAT page's enroll form and never
+   * looked at the banner, so anyone reading the Java course page got the Java
+   * form back on every click no matter which course had rotated in. The second
+   * was a substring ladder that guessed a course from the headline text, where
+   * `includes("java")` also matches "JavaScript" and "DSA with Python / Java".
+   *
+   * A course carries its own slug from the API, so neither is needed: read it off
+   * the item, and the only remaining question is whether we are already on that
+   * course's page and can scroll instead of navigate.
+   */
   const handleEnrollNow = () => {
-    // 1. If user is already on a course detail page, scroll to enroll form
-    if (location.pathname.startsWith("/courses/")) {
-      const currentSlug = location.pathname.replace(/^\/courses\//, "").split("/")[0].split("#")[0];
-      if (currentSlug) {
-        const enrollEl = document.getElementById("enroll");
-        if (enrollEl) {
-          enrollEl.scrollIntoView({ behavior: "smooth", block: "center" });
-          window.setTimeout(() => {
-            enrollEl.querySelector("input")?.focus({ preventScroll: true });
-          }, 350);
-          window.history.replaceState(null, "", `/courses/${currentSlug}#enroll`);
-        } else {
-          navigate(`/courses/${currentSlug}#enroll`);
-        }
+    const targetSlug = resolveTargetSlug(current);
+
+    // Nothing identifiable to enroll in — send them to the catalog rather than
+    // to some arbitrary course's form.
+    if (!targetSlug) {
+      navigate("/courses");
+      return;
+    }
+
+    // Already reading this exact course: scroll to the form in place, which keeps
+    // the page from remounting under the visitor.
+    if (slugInUrl === targetSlug) {
+      const enrollEl = document.getElementById("enroll");
+      if (enrollEl) {
+        enrollEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(() => {
+          enrollEl.querySelector("input")?.focus({ preventScroll: true });
+        }, 350);
+        window.history.replaceState(null, "", `/courses/${targetSlug}#enroll`);
         return;
       }
-    }
-
-    // 2. Navigate directly to target course's enroll section
-    let targetSlug = current?.slug;
-
-    if (!targetSlug && current?.linkUrl && current.linkUrl.includes("/courses/")) {
-      targetSlug = current.linkUrl.replace(/.*\/courses\//, "").split("#")[0].split("/")[0];
-    }
-
-    if (!targetSlug && current?.text) {
-      const lower = current.text.toLowerCase();
-      const matched = courses.find((c) => {
-        const titleMatch = c.title && lower.includes(c.title.toLowerCase());
-        const slugMatch = c.slug && lower.includes(c.slug.replace(/-/g, " "));
-        return titleMatch || slugMatch;
-      });
-
-      if (matched) {
-        targetSlug = matched.slug;
-      } else if (lower.includes("mean")) {
-        targetSlug = "mean-full-stack";
-      } else if (lower.includes("data analytic")) {
-        targetSlug = "data-analytics";
-      } else if (lower.includes("python")) {
-        targetSlug = "python-full-stack-development";
-      } else if (lower.includes("java")) {
-        targetSlug = "full-stack-java";
-      } else if (lower.includes("aws") || lower.includes("devops")) {
-        targetSlug = "aws-and-devops";
-      }
-    }
-
-    if (!targetSlug) {
-      targetSlug = courses[0]?.slug || "data-analytics";
     }
 
     navigate(`/courses/${targetSlug}#enroll`);

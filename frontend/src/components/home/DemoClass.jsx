@@ -77,19 +77,27 @@ const DemoClass = () => {
       await apiClient.post("/api/demo-bookings", {
         name: name.trim(),
         email: email.trim(),
-        phone: cleanMobile,
+        mobileNumber: cleanMobile,
         courseName: selectedCourseName,
         website,
       });
 
       setSubmitStatus("success");
     } catch (err) {
-      const serverMsg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        "Booking failed. Please try again or reach out directly.";
+      /*
+       * apiClient rejects with the normalised ApiError from utils/apiError.js,
+       * not with the raw axios error — there is no err.response to read. Reading
+       * it meant every 400 showed the generic fallback and the server's actual
+       * field message ("Mobile number is required") never reached the visitor.
+       */
+      const fieldErrors = err?.fieldErrors ?? {};
+      const firstFieldMsg = Object.values(fieldErrors)[0];
       setSubmitStatus("error");
-      setErrorMessage(serverMsg);
+      setErrorMessage(
+        firstFieldMsg ||
+          err?.message ||
+          "Booking failed. Please try again or reach out directly.",
+      );
     } finally {
       setIsSubmitting(false);
     }
