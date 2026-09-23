@@ -30,6 +30,7 @@ import java.util.UUID;
 public class AdminGalleryController {
 
     private final GalleryService galleryService;
+    private final in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
 
     /* =========================================================
        CATEGORY CRUD
@@ -111,38 +112,10 @@ public class AdminGalleryController {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, String>>> uploadImage(
             @RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new InvalidRequestException("Cannot upload empty file");
-        }
-
-        String original = file.getOriginalFilename();
-        String ext = "";
-        if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf(".")).toLowerCase();
-        }
-
-        if (!List.of(".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif").contains(ext)) {
-            throw new InvalidRequestException("Only image files (.jpg, .jpeg, .png, .webp, .svg, .gif) are supported");
-        }
-
-        try {
-            Path uploadDir = Paths.get("uploads", "gallery");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            String filename = UUID.randomUUID().toString() + ext;
-            Path targetPath = uploadDir.resolve(filename);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-            String fileUrl = "/uploads/gallery/" + filename;
-            log.info("File uploaded successfully: {}", fileUrl);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("File uploaded successfully", Map.of("url", fileUrl, "filename", filename)));
-        } catch (IOException e) {
-            log.error("Failed to store file upload", e);
-            throw new InvalidRequestException("Failed to store file: " + e.getMessage());
-        }
+        String fileUrl = cloudinaryService.uploadImage(file, "lesuccess/gallery");
+        String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("File uploaded successfully", Map.of("url", fileUrl, "filename", filename)));
     }
 
     @PostMapping(value = "/upload-batch", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -153,38 +126,11 @@ public class AdminGalleryController {
         }
 
         List<Map<String, String>> uploaded = new ArrayList<>();
-        Path uploadDir = Paths.get("uploads", "gallery");
-        try {
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-        } catch (IOException e) {
-            throw new InvalidRequestException("Failed to create upload directory: " + e.getMessage());
-        }
-
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
-
-            String original = file.getOriginalFilename();
-            String ext = "";
-            if (original != null && original.contains(".")) {
-                ext = original.substring(original.lastIndexOf(".")).toLowerCase();
-            }
-
-            if (!List.of(".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif").contains(ext)) {
-                throw new InvalidRequestException("Unsupported file type in batch: " + original);
-            }
-
-            try {
-                String filename = UUID.randomUUID().toString() + ext;
-                Path targetPath = uploadDir.resolve(filename);
-                Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-                String fileUrl = "/uploads/gallery/" + filename;
-                uploaded.add(Map.of("url", fileUrl, "filename", filename));
-            } catch (IOException e) {
-                log.error("Failed to store file upload: " + original, e);
-                throw new InvalidRequestException("Failed to store file " + original + ": " + e.getMessage());
-            }
+            String fileUrl = cloudinaryService.uploadImage(file, "lesuccess/gallery");
+            String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
+            uploaded.add(Map.of("url", fileUrl, "filename", filename));
         }
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -200,38 +146,10 @@ public class AdminGalleryController {
         }
 
         List<String> imageUrls = new ArrayList<>();
-        Path uploadDir = Paths.get("uploads", "gallery");
-        try {
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-        } catch (IOException e) {
-            throw new InvalidRequestException("Failed to create upload directory: " + e.getMessage());
-        }
-
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
-
-            String original = file.getOriginalFilename();
-            String ext = "";
-            if (original != null && original.contains(".")) {
-                ext = original.substring(original.lastIndexOf(".")).toLowerCase();
-            }
-
-            if (!List.of(".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif").contains(ext)) {
-                throw new InvalidRequestException("Unsupported file format: " + original + ". Supported: JPG, PNG, WebP, GIF, SVG");
-            }
-
-            try {
-                String filename = UUID.randomUUID().toString() + ext;
-                Path targetPath = uploadDir.resolve(filename);
-                Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-                String fileUrl = "/uploads/gallery/" + filename;
-                imageUrls.add(fileUrl);
-            } catch (IOException e) {
-                log.error("Failed to save uploaded file: " + original, e);
-                throw new InvalidRequestException("Failed to store file " + original + ": " + e.getMessage());
-            }
+            String fileUrl = cloudinaryService.uploadImage(file, "lesuccess/gallery");
+            imageUrls.add(fileUrl);
         }
 
         List<GalleryImageResponse> created = galleryService.createBatchImages(categoryId, imageUrls);

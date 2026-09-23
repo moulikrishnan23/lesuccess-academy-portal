@@ -214,8 +214,8 @@ const HeroVideo = () => {
                   onLoadedMetadata={(e) => {
                     e.currentTarget.currentTime = 0;
                   }}
-                  onTimeUpdate={handleTimeUpdate}
                 >
+                  <source src="https://res.cloudinary.com/mknetwyg/video/upload/v1790162815/lesuccess/video/CompanyIntro.mp4" type="video/mp4" />
                   <source src="/video/CompanyIntro.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>

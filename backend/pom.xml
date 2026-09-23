@@ -137,6 +137,13 @@
 			<version>${jsoup.version}</version>
 		</dependency>
 
+		<!-- Cloudinary SDK for Media Storage -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.38.0</version>
+		</dependency>
+
 		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>

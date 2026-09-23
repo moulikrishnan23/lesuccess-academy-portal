@@ -21,6 +21,7 @@ import java.util.List;
 public class UpcomingProgramController {
 
     private final UpcomingProgramService service;
+    private final in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
 
     /** Public — upcoming active programs, optionally filtered by type. */
     @GetMapping("/api/upcoming-programs")
@@ -123,35 +124,9 @@ public class UpcomingProgramController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
     public ResponseEntity<ApiResponse<java.util.Map<String, String>>> uploadImage(
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Cannot upload empty file");
-        }
-
-        String original = file.getOriginalFilename();
-        String ext = "";
-        if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf(".")).toLowerCase();
-        }
-
-        if (!java.util.List.of(".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif").contains(ext)) {
-            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Only image files (.jpg, .jpeg, .png, .webp, .svg, .gif) are supported");
-        }
-
-        try {
-            java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads", "programs");
-            if (!java.nio.file.Files.exists(uploadDir)) {
-                java.nio.file.Files.createDirectories(uploadDir);
-            }
-
-            String filename = java.util.UUID.randomUUID().toString() + ext;
-            java.nio.file.Path targetPath = uploadDir.resolve(filename);
-            java.nio.file.Files.copy(file.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-
-            String fileUrl = "/uploads/programs/" + filename;
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Program image uploaded successfully", java.util.Map.of("url", fileUrl, "filename", filename)));
-        } catch (java.io.IOException e) {
-            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Failed to store file: " + e.getMessage());
-        }
+        String fileUrl = cloudinaryService.uploadImage(file, "lesuccess/programs");
+        String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "program";
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Program image uploaded successfully", java.util.Map.of("url", fileUrl, "filename", filename)));
     }
 }

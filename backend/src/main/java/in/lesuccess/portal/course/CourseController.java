@@ -21,6 +21,7 @@ public class CourseController {
     // ── Course CRUD ───────────────────────────────────────────────────────────
 
     private final CourseService service;
+    private final in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
 
     /** Public — active courses ordered by displayOrder (home page cards + booking dropdown). */
     @GetMapping("/api/courses")
@@ -86,36 +87,10 @@ public class CourseController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<java.util.Map<String, String>>> uploadLogo(
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Cannot upload empty file");
-        }
-
-        String original = file.getOriginalFilename();
-        String ext = "";
-        if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf(".")).toLowerCase();
-        }
-
-        if (!java.util.List.of(".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif").contains(ext)) {
-            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Only image files (.jpg, .jpeg, .png, .webp, .svg, .gif) are supported");
-        }
-
-        try {
-            java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads", "courses");
-            if (!java.nio.file.Files.exists(uploadDir)) {
-                java.nio.file.Files.createDirectories(uploadDir);
-            }
-
-            String filename = java.util.UUID.randomUUID().toString() + ext;
-            java.nio.file.Path targetPath = uploadDir.resolve(filename);
-            java.nio.file.Files.copy(file.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-
-            String fileUrl = "/uploads/courses/" + filename;
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Logo uploaded successfully", java.util.Map.of("url", fileUrl, "filename", filename)));
-        } catch (java.io.IOException e) {
-            throw new in.lesuccess.portal.shared.exception.InvalidRequestException("Failed to store file: " + e.getMessage());
-        }
+        String fileUrl = cloudinaryService.uploadImage(file, "lesuccess/courses");
+        String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "logo";
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Logo uploaded successfully", java.util.Map.of("url", fileUrl, "filename", filename)));
     }
 
     // ── Modules ───────────────────────────────────────────────────────────────

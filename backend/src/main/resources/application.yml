@@ -111,6 +111,12 @@ lesuccess:
     # pending row is eligible on every pass, which is the hammering this prevents.
     retry-backoff-minutes: ${SHEETS_RETRY_BACKOFF_MINUTES:30}
 
+  # Cloudinary Media Storage
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+
 # Logging
 logging:
   level:
