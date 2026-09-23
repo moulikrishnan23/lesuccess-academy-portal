@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -169,14 +170,31 @@ public class GoogleSheetsConfig {
         }
 
         if (StringUtils.hasText(credentialsPath)) {
-            log.info("Loading Google Sheets credentials from file: {}", credentialsPath);
-            return new FileInputStream(credentialsPath);
+            File file = new File(credentialsPath);
+            if (file.exists() && file.isFile()) {
+                log.info("Loading Google Sheets credentials from file: {}", credentialsPath);
+                return new FileInputStream(file);
+            }
+            log.warn("Configured credentials-path '{}' does not exist on disk.", credentialsPath);
+        }
+
+        // Automatic local dev fallbacks for convenience if key file is present in project
+        File localFile = new File("lesuccess-portal-507808-ae617d22c951.json");
+        if (localFile.exists() && localFile.isFile()) {
+            log.info("Loading Google Sheets credentials from local directory: {}", localFile.getAbsolutePath());
+            return new FileInputStream(localFile);
+        }
+
+        File parentFile = new File("../lesuccess-portal-507808-ae617d22c951.json");
+        if (parentFile.exists() && parentFile.isFile()) {
+            log.info("Loading Google Sheets credentials from parent directory: {}", parentFile.getAbsolutePath());
+            return new FileInputStream(parentFile);
         }
 
         // Fail fast and name the variables: silently disabling the sync would let a
         // misconfigured production deploy look healthy while dropping every submission.
         throw new IllegalStateException(
-                "Google Sheets sync is enabled (lesuccess.sheets.enabled=true) but no credentials were supplied. "
+                "Google Sheets sync is enabled (lesuccess.sheets.enabled=true) but no valid credentials were found. "
                         + "Set LESUCCESS_SHEETS_CREDENTIALS_BASE64 (base64-encoded service account JSON — preferred "
                         + "for production), or SHEETS_CREDENTIALS_PATH (path to the key file — local dev). "
                         + "Alternatively set LESUCCESS_SHEETS_ENABLED=false to turn the sync off.");

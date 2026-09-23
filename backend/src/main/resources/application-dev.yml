@@ -36,9 +36,9 @@ lesuccess:
       - http://localhost:3000
 
   sheets:
-    enabled: ${LESUCCESS_SHEETS_ENABLED:true}
+    enabled: ${LESUCCESS_SHEETS_ENABLED:false}
     spreadsheet-id: ${SHEETS_SPREADSHEET_ID:1Cu0m1eIfJXKFiY-1TPPP5E3myawKgcqa-GjKw6GWtfU}
-    credentials-path: ${SHEETS_CREDENTIALS_PATH:C:/Users/mouli/OneDrive/Desktop/Le Landing web/lesuccess-academy-portal/lesuccess-portal-507808-ae617d22c951.json}
+    credentials-path: ${SHEETS_CREDENTIALS_PATH:}
 
 
 logging:
