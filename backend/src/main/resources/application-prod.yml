@@ -41,6 +41,9 @@ lesuccess:
   cors:
     allowed-origins:
       - ${CORS_ALLOWED_ORIGIN:https://lesuccess.in}
+    allowed-origin-patterns:
+      - https://*.vercel.app
+      - https://*.lesuccess.in
 
   sheets:
     enabled: ${LESUCCESS_SHEETS_ENABLED:false}

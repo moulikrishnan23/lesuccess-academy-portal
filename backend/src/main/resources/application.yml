@@ -75,6 +75,8 @@ lesuccess:
   cors:
     allowed-origins:
       - http://localhost:5173
+    allowed-origin-patterns:
+      - https://*.vercel.app
 
   # Google Sheets sync
   sheets:

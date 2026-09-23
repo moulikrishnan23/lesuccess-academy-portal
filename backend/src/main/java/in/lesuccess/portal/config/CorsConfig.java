@@ -24,7 +24,24 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        
+        List<String> origins = corsProperties.getAllowedOrigins();
+        if (origins != null && !origins.isEmpty()) {
+            config.setAllowedOrigins(origins);
+        }
+
+        // Support allowed origin patterns (wildcard patterns like https://*.vercel.app)
+        // Works seamlessly with allowCredentials(true)
+        java.util.List<String> patterns = new java.util.ArrayList<>();
+        if (corsProperties.getAllowedOriginPatterns() != null && !corsProperties.getAllowedOriginPatterns().isEmpty()) {
+            patterns.addAll(corsProperties.getAllowedOriginPatterns());
+        }
+        // Always ensure Vercel preview deployments are permitted
+        if (!patterns.contains("https://*.vercel.app")) {
+            patterns.add("https://*.vercel.app");
+        }
+        config.setAllowedOriginPatterns(patterns);
+
         // PATCH is required by the demo-booking and course-order endpoints
         // (PATCH /api/admin/demo-bookings/{id}/status and
         // PATCH /api/admin/courses/{id}/order). Without it the browser's

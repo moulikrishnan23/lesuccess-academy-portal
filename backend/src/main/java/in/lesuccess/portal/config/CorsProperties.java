@@ -21,11 +21,22 @@ public class CorsProperties {
     /** Origins permitted to call the API. Never '*' — credentials are allowed. */
     private List<String> allowedOrigins = new ArrayList<>();
 
+    /** Origin patterns permitted to call the API (e.g. "https://*.vercel.app"). Supports wildcards. */
+    private List<String> allowedOriginPatterns = new ArrayList<>();
+
     public List<String> getAllowedOrigins() {
         return allowedOrigins;
     }
 
     public void setAllowedOrigins(List<String> allowedOrigins) {
         this.allowedOrigins = allowedOrigins;
+    }
+
+    public List<String> getAllowedOriginPatterns() {
+        return allowedOriginPatterns;
+    }
+
+    public void setAllowedOriginPatterns(List<String> allowedOriginPatterns) {
+        this.allowedOriginPatterns = allowedOriginPatterns;
     }
 }
