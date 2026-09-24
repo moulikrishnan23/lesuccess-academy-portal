@@ -17,7 +17,7 @@ const AboutSection = () => {
   const reduced = useReducedMotion();
 
   return (
-    <section id="about-section" className="relative w-full bg-[#F5F8FC] px-6 py-18 sm:px-10 lg:px-20 overflow-hidden">
+    <section id="about-section" className="relative w-full bg-[#F5F8FC] px-6 py-18 sm:px-10 lg:px-20 overflow-hidden transition-colors duration-200">
       {/* Subtle Background Motion */}
       <FloatingOrbs variant="default" />
 

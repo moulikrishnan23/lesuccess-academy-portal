@@ -1,17 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Mail, Phone, MapPin, MessageCircle, Send, ChevronDown } from "lucide-react";
-import { FaInstagram, FaFacebookF, FaLinkedinIn, FaYoutube } from "react-icons/fa";
-
+import { SOCIAL_LINKS } from "../data/socialLinks.js";
 import useContactSubmit from "../hooks/useContactSubmit.js";
 import { validateContactForm } from "../utils/validation.js";
-
-const SOCIALS = [
-  { icon: FaInstagram, href: "https://www.instagram.com/lesuccess_academy/", label: "Instagram" },
-  { icon: FaFacebookF, href: "https://www.facebook.com/lesuccessacademy/", label: "Facebook" },
-  { icon: FaLinkedinIn, href: "https://www.linkedin.com/company/lesuccess-academy/", label: "LinkedIn" },
-  { icon: MessageCircle, href: "https://wa.me/918012060000", label: "WhatsApp" },
-  { icon: FaYoutube, href: "https://www.youtube.com/@lesuccessacademy", label: "YouTube" },
-];
 
 const initialForm = {
   name: "",
@@ -373,13 +364,13 @@ export default function Contact() {
               <div className="pt-2 border-t border-white/10 relative z-10">
                 <p className="text-sm font-semibold mb-3 text-slate-200">Follow Us</p>
                 <div className="flex items-center gap-2.5">
-                  {SOCIALS.map(({ icon: Icon, href, label }) => (
+                  {SOCIAL_LINKS.map(({ icon: Icon, href, name }) => (
                     <a
-                      key={label}
+                      key={name}
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={label}
+                      aria-label={name}
                       className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-gradient-to-r hover:from-[#F44246] hover:to-[#CA164B] hover:scale-110 active:scale-95 transition-all shadow-xs"
                     >
                       <Icon size={16} />

@@ -1,19 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Star,
   ChevronLeft,
   ChevronRight,
   Heart,
-  Share2,
-  MoreVertical,
   Info,
   ExternalLink,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
-import apiClient from "../../services/apiClient.js";
 import { GOOGLE_REVIEWS, GOOGLE_REVIEWS_META } from "../../data/googleReviews.js";
+import { useAppData } from "../../context/AppDataContext.jsx";
 
 const AVATAR_COLORS = [
   "bg-[#07405C]",
@@ -33,43 +31,31 @@ function getAvatarColor(name = "") {
 
 export default function Testimonials() {
   const reduced = useReducedMotion();
-  const [reviews, setReviews] = useState(GOOGLE_REVIEWS);
+  const { testimonials } = useAppData();
+  const { data: apiTestimonials } = testimonials;
+
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [likedMap, setLikedMap] = useState({});
   const [startIndex, setStartIndex] = useState(0);
 
-  // Fetch dynamically from backend database API
-  useEffect(() => {
-    let isMounted = true;
-    apiClient
-      .get("/api/testimonials")
-      .then((res) => {
-        if (!isMounted) return;
-        const apiData = Array.isArray(res) ? res : res?.data;
-        if (Array.isArray(apiData) && apiData.length > 0) {
-          const mapped = apiData.map((t) => ({
-            id: t.id,
-            name: t.studentName,
-            reviewCount: t.reviewerRole || "1 review",
-            course: t.courseName || "",
-            rating: t.rating || 5,
-            date: t.reviewDate || "Recently",
-            text: t.reviewText,
-            likesCount: t.likesCount || 0,
-            photoUrl: t.photoUrl,
-            verified: true,
-          }));
-          setReviews(mapped);
-        }
-      })
-      .catch((_err) => {
-        // Fallback to local authentic GOOGLE_REVIEWS on error
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  // Map API data if present, otherwise use verified GOOGLE_REVIEWS
+  const reviews = useMemo(() => {
+    if (Array.isArray(apiTestimonials) && apiTestimonials.length > 0) {
+      return apiTestimonials.map((t) => ({
+        id: t.id,
+        name: t.studentName,
+        reviewCount: t.reviewerRole || "1 review",
+        course: t.courseName || "",
+        rating: t.rating || 5,
+        date: t.reviewDate || "Recently",
+        text: t.reviewText,
+        likesCount: t.likesCount || 0,
+        photoUrl: t.photoUrl,
+        verified: true,
+      }));
+    }
+    return GOOGLE_REVIEWS;
+  }, [apiTestimonials]);
 
   const cardsPerPage = 3;
   const maxStart = Math.max(0, reviews.length - cardsPerPage);
@@ -100,7 +86,7 @@ export default function Testimonials() {
   const visibleReviews = sortedReviews.slice(startIndex, startIndex + cardsPerPage);
 
   return (
-    <section className="relative w-full bg-slate-50/70 py-20 px-4 sm:px-8 lg:px-16 overflow-hidden">
+    <section className="relative w-full bg-slate-50/70 py-20 px-4 sm:px-8 lg:px-16 overflow-hidden transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -205,7 +191,7 @@ export default function Testimonials() {
                   onClick={goPrev}
                   disabled={startIndex === 0}
                   aria-label="Previous review"
-                  className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 items-center justify-center rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 items-center justify-center rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
                 >
                   <ChevronLeft size={22} />
                 </button>
@@ -214,7 +200,7 @@ export default function Testimonials() {
                   onClick={goNext}
                   disabled={startIndex >= maxStart}
                   aria-label="Next review"
-                  className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 items-center justify-center rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 items-center justify-center rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
                 >
                   <ChevronRight size={22} />
                 </button>
@@ -237,7 +223,7 @@ export default function Testimonials() {
                     className="group flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs hover:shadow-[0_16px_36px_rgba(7,64,92,0.08)] hover:-translate-y-1.5 hover:border-slate-300 transition-all duration-300"
                   >
                     <div>
-                      {/* Reviewer Header: Avatar, Name, Review Count, 3-dots */}
+                      {/* Reviewer Header: Avatar, Name, Review Count */}
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           {review.photoUrl ? (
@@ -264,72 +250,72 @@ export default function Testimonials() {
                             </p>
                           </div>
                         </div>
-
-                    </div>
-                    {/* Stars and Date */}
-                    <div className="mt-3 flex items-center gap-2">
-                      <div className="flex text-[#ffb800]">
-                        {[...Array(review.rating || 5)].map((_, i) => (
-                          <Star key={i} size={15} fill="#ffb800" stroke="#ffb800" />
-                        ))}
                       </div>
-                      <span className="text-xs text-slate-500 font-medium">
-                        {review.date}
-                      </span>
+
+                      {/* Stars and Date */}
+                      <div className="mt-3 flex items-center gap-2">
+                        <div className="flex text-[#ffb800]">
+                          {[...Array(review.rating || 5)].map((_, i) => (
+                            <Star key={i} size={15} fill="#ffb800" stroke="#ffb800" />
+                          ))}
+                        </div>
+                        <span className="text-xs text-slate-500 font-medium">
+                          {review.date}
+                        </span>
+                      </div>
+
+                      {/* Review Text with ... More toggle */}
+                      <p className="mt-3 text-sm text-slate-700 leading-relaxed font-normal">
+                        {isExpanded || review.text.length <= 160 ? (
+                          review.text
+                        ) : (
+                          <>
+                            {review.text.slice(0, 160)}
+                            <span>... </span>
+                            <button
+                              type="button"
+                              onClick={() => toggleExpand(review.id)}
+                              className="text-slate-500 hover:text-slate-900 font-medium text-xs inline underline cursor-pointer"
+                            >
+                              More
+                            </button>
+                          </>
+                        )}
+                      </p>
                     </div>
 
-                    {/* Review Text with ... More toggle */}
-                    <p className="mt-3 text-sm text-slate-700 leading-relaxed font-normal">
-                      {isExpanded || review.text.length <= 160 ? (
-                        review.text
-                      ) : (
-                        <>
-                          {review.text.slice(0, 160)}
-                          <span>... </span>
-                          <button
-                            type="button"
-                            onClick={() => toggleExpand(review.id)}
-                            className="text-slate-500 hover:text-slate-900 font-medium text-xs inline underline cursor-pointer"
-                          >
-                            More
-                          </button>
-                        </>
+                    {/* Footer Actions: Heart/Like and Course Tag */}
+                    <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => toggleLike(review.id, review.likesCount)}
+                          aria-label="Like review"
+                          className={`inline-flex items-center gap-1.5 text-xs font-semibold transition cursor-pointer ${
+                            isLiked
+                              ? "text-[#DF1E26]"
+                              : "text-slate-400 hover:text-[#DF1E26]"
+                          }`}
+                        >
+                          <Heart
+                            size={16}
+                            className={isLiked ? "fill-[#DF1E26] text-[#DF1E26]" : ""}
+                          />
+                          {displayLikes > 0 && <span>{displayLikes}</span>}
+                        </button>
+                      </div>
+
+                      {review.course && (
+                        <span className="text-[11px] font-bold text-[#DF1E26] bg-[#DF1E26]/10 px-2.5 py-0.5 rounded-full border border-[#DF1E26]/20">
+                          {review.course}
+                        </span>
                       )}
-                    </p>
-                  </div>
-
-                  {/* Footer Actions: Heart/Like and Course Tag */}
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <button
-                        type="button"
-                        onClick={() => toggleLike(review.id, review.likesCount)}
-                        aria-label="Like review"
-                        className={`inline-flex items-center gap-1.5 text-xs font-semibold transition cursor-pointer ${
-                          isLiked
-                            ? "text-[#DF1E26]"
-                            : "text-slate-400 hover:text-[#DF1E26]"
-                        }`}
-                      >
-                        <Heart
-                          size={16}
-                          className={isLiked ? "fill-[#DF1E26] text-[#DF1E26]" : ""}
-                        />
-                        {displayLikes > 0 && <span>{displayLikes}</span>}
-                      </button>
                     </div>
-
-                    {review.course && (
-                      <span className="text-[11px] font-bold text-[#DF1E26] bg-[#DF1E26]/10 px-2.5 py-0.5 rounded-full border border-[#DF1E26]/20">
-                        {review.course}
-                      </span>
-                    )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </section>

@@ -16,6 +16,7 @@ import { formatDuration } from "../../utils/formatters.js";
 import { downloadSyllabus } from "../../utils/syllabusUtils.js";
 import { getCourseLogo } from "../../utils/imageUtils.js";
 import { FloatingOrbs, TechGrid, SectionHeading } from "../ui/BackgroundMotion.jsx";
+import ErrorState from "../ui/ErrorState.jsx";
 import {
   isEligibleCourse,
   sortCoursesByOffer,
@@ -62,8 +63,8 @@ function CourseCardSkeleton() {
 }
 
 const ChooseYourPath = () => {
-  const { courses, isLoading, error } = useCourses();
-  useReducedMotion(); // Hook for reduced motion preferences
+  const { courses, isLoading, error, refetch } = useCourses();
+  useReducedMotion();
 
   // Dynamically filter and sort courses:
   // 1. Highest offer percentage first (e.g. 50% -> 30% -> 20%)
@@ -88,15 +89,8 @@ const ChooseYourPath = () => {
     });
   }, [courses]);
 
-  /*
-   * A failed catalog fetch hides the section rather than putting an error box
-   * on the marketing home page — the rest of the page still sells the academy,
-   * and the navbar still reaches /courses.
-   */
-  if (error || (!isLoading && featured.length === 0)) return null;
-
   return (
-    <section className="relative w-full bg-[#F5F8FC] px-6 py-20 sm:px-10 lg:px-20 overflow-hidden">
+    <section className="relative w-full bg-[#F5F8FC] px-6 py-20 sm:px-10 lg:px-20 overflow-hidden transition-colors duration-200">
       {/* Purposeful Background Motion */}
       <FloatingOrbs variant="default" />
       <TechGrid opacity="opacity-[0.025]" />
@@ -111,7 +105,16 @@ const ChooseYourPath = () => {
           description="Master production-grade engineering practices through rigorous project-based learning, real-world codebase development, and dedicated placement support."
         />
 
-        {isLoading ? (
+        {error ? (
+          <div className="mt-14 max-w-xl mx-auto">
+            <ErrorState
+              title="Unable to load courses"
+              message="Could not load the course catalog from the server. Please check your connection and try again."
+              onRetry={refetch}
+              retryLabel="Retry"
+            />
+          </div>
+        ) : isLoading ? (
           <div
             aria-busy="true"
             aria-label="Loading featured courses"

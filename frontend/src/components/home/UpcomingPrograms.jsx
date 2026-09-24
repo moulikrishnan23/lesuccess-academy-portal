@@ -21,6 +21,7 @@ import { fadeUp, motionSafe, ONCE_IN_VIEW } from '../../animations/variants.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
 import { listUpcoming } from '../../services/upcomingProgramApi.js'
 import { getImageUrl } from '../../utils/imageUtils.js'
+import { useAppData } from '../../context/AppDataContext.jsx'
 import ProgramRegistrationModal from './ProgramRegistrationModal.jsx'
 
 const INTERVAL_MS = 7000
@@ -90,9 +91,10 @@ function formatTimeRange(startStr, endStr) {
 
 export default function UpcomingPrograms() {
   const reduced = useReducedMotion()
+  const { programs } = useAppData()
+  const { status, data: allPrograms, error, refetch } = programs
+  const loading = status === 'loading'
   const [selectedCategory, setSelectedCategory] = useState('ALL') // 'ALL' | 'WEBINAR' | 'WORKSHOP' | 'INTERNSHIP'
-  const [allPrograms, setAllPrograms] = useState([])
-  const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
   const [direction, setDirection] = useState(1) // 1 = forward, -1 = backward
@@ -110,6 +112,7 @@ export default function UpcomingPrograms() {
     setIsRegisterModalOpen(false)
     setSelectedProgramForModal(null)
   }
+
   const [registeredEvents, setRegisteredEvents] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('lesuccess_registered_events') || '{}')
@@ -129,34 +132,6 @@ export default function UpcomingPrograms() {
       return updated
     })
   }
-
-  /* =======================================================
-     FETCH UPCOMING PROGRAMS (100% DYNAMIC - NO HARDCODED DATA)
-  ======================================================= */
-  useEffect(() => {
-    const controller = new AbortController()
-    const fetchPrograms = async () => {
-      setLoading(true)
-      try {
-        const list = await listUpcoming(null, { signal: controller.signal })
-        if (Array.isArray(list)) {
-          setAllPrograms(list)
-        } else {
-          setAllPrograms([])
-        }
-      } catch (error) {
-        if (error?.name !== 'AbortError') {
-          console.warn('Upcoming programs fetch error:', error)
-          setAllPrograms([])
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPrograms()
-    return () => controller.abort()
-  }, [])
 
   /* =======================================================
      FILTERED PROGRAMS BY CATEGORY
@@ -323,6 +298,24 @@ export default function UpcomingPrograms() {
         {loading ? (
           <div className="mt-12 flex min-h-[360px] items-center justify-center rounded-3xl bg-white/5 border border-white/10 p-12">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+          </div>
+        ) : status === 'error' ? (
+          <div className="mt-12 mx-auto max-w-xl rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 p-8 sm:p-12 text-center text-white shadow-2xl">
+            <h3 className="text-xl sm:text-2xl font-bold text-white">
+              Unable to load upcoming programs
+            </h3>
+            <p className="mt-3 text-sm text-white/80 max-w-md mx-auto leading-relaxed">
+              We could not connect to the server to load scheduled events. Please check your network and retry.
+            </p>
+            <div className="mt-7">
+              <button
+                type="button"
+                onClick={refetch}
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#07405C] shadow-lg transition hover:bg-slate-100 active:scale-95 cursor-pointer"
+              >
+                Retry
+              </button>
+            </div>
           </div>
         ) : allPrograms.length === 0 ? (
           /* Clean empty state when no upcoming events exist */

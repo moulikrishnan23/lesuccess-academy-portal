@@ -27,6 +27,7 @@ import LoginPage from "./pages/Auth/LoginPage.jsx";
 import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
 import TrainerDashboard from "./pages/Trainer/TrainerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { AppDataProvider } from "./context/AppDataContext.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import useAdminShortcut from "./hooks/useAdminShortcut.js";
 
@@ -44,12 +45,6 @@ const AppContent = () => {
   // Enquiry popup modal visibility (starts closed on open, interactive launcher available)
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
 
-  useEffect(() => {
-    if (isLoginPage) {
-      setIsEnquiryOpen(false);
-    }
-  }, [isLoginPage]);
-
   /*
    * =========================================================
    * HEADER STATES
@@ -59,8 +54,18 @@ const AppContent = () => {
   // Navbar visibility while scrolling
   const [navbarVisible, setNavbarVisible] = useState(true);
 
-  // Hide both headers when footer is visible
-  const [footerVisible, setFooterVisible] = useState(false);
+  // Desktop vs mobile viewport tracking (breakpoint >= 1024px / lg)
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   /*
    * =========================================================
@@ -249,54 +254,20 @@ const AppContent = () => {
 
   /*
    * =========================================================
-   * FOOTER OBSERVER
-   * =========================================================
-   *
-   * Footer visible:
-   *     OfferHeader hides
-   *     Navbar hides
-   *
-   * Footer not visible:
-   *     Normal scroll behaviour resumes
-   */
-
-  useEffect(() => {
-    const footer = document.querySelector("footer");
-
-    if (!footer) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setFooterVisible(entry.isIntersecting);
-      },
-      {
-        threshold: 0.01,
-      }
-    );
-
-    observer.observe(footer);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  /*
-   * =========================================================
    * NAVBAR POSITION
    * =========================================================
    *
-   * Navbar always stays below OfferHeader.
+   * Navbar always stays below OfferHeader on desktop.
    */
 
   const navbarTop = offerHeaderHeight;
 
   /*
    * =========================================================
-   * TOTAL HEADER HEIGHT
+   * TOTAL HEADER HEIGHT (DESKTOP)
    * =========================================================
    *
-   * This reserves space in the page so the fixed
+   * Reserves space in the page so the fixed desktop
    * headers don't cover the page content.
    */
 
@@ -305,102 +276,66 @@ const AppContent = () => {
 
   /*
    * =========================================================
-   * FINAL VISIBILITY
-   * =========================================================
-   *
-   * OfferHeader (red banner) hides when the footer is visible — it competes
-   * for the same fixed position and is less important than the site navigation.
-   *
-   * Navbar: only depends on scroll direction. It does NOT hide when the footer
-   * is visible — that was a bug where scrolling to the bottom of any page made
-   * the main navigation disappear, leaving users with no way to navigate.
-   */
-
-  const showOfferHeader = !footerVisible;
-
-  const showNavbar = navbarVisible;
-
-  /*
-   * =========================================================
    * PUBLISH HEADER HEIGHTS TO CSS
    * =========================================================
-   *
-   * The header is fixed and its height is measured at runtime, so anything
-   * that has to sit below it — the course page's section tabs, its sticky
-   * enroll card, the scroll offset for in-page anchors — cannot hardcode a
-   * number. Those all used their own guesses and ended up underneath it.
-   *
-   * --app-header      the header height right now, which drops to just the
-   *                   offer bar while the navbar is hidden. Anything sticky
-   *                   that should ride along with the navbar uses this.
-   * --app-header-max  the height with the navbar shown. Anything that must
-   *                   never be covered, whatever the navbar is doing, uses
-   *                   this.
    */
   useEffect(() => {
     const root = document.documentElement;
-    const visible = offerHeaderHeight + (showNavbar ? navbarHeight : 0);
+    root.style.setProperty("--offer-header-h", `${offerHeaderHeight}px`);
+    root.style.setProperty("--navbar-h", `${navbarHeight}px`);
 
-    root.style.setProperty("--app-header", `${visible}px`);
+    // On mobile (< 1024px), navbar is fixed at the BOTTOM of the viewport.
+    // The only fixed element at the top of the mobile viewport is OfferHeader.
+    // On desktop (>= 1024px), navbar is fixed at the TOP below OfferHeader.
+    // When desktop navbar hides on scroll down (navbarVisible === false),
+    // the only visible top element is OfferHeader.
+    const currentHeader =
+      offerHeaderHeight + (isDesktop && navbarVisible ? navbarHeight : 0);
+
+    root.style.setProperty("--app-header", `${currentHeader}px`);
     root.style.setProperty(
       "--app-header-max",
-      `${offerHeaderHeight + navbarHeight}px`
+      `${offerHeaderHeight + (isDesktop ? navbarHeight : 0)}px`
     );
-  }, [offerHeaderHeight, navbarHeight, showNavbar]);
+  }, [offerHeaderHeight, navbarHeight, navbarVisible, isDesktop]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-surface text-ink transition-colors duration-200">
 
       {/* =====================================================
-          OFFER HEADER
+          OFFER HEADER (ALWAYS FIXED & VISIBLE)
       ===================================================== */}
 
       {!isDashboard && (
         <div
           ref={offerHeaderRef}
-          className={`
-            fixed
-            left-0
-            top-0
-            z-60
-            w-full
-            transition-transform
-            duration-300
-            ease-in-out
-            ${
-              showOfferHeader
-                ? "translate-y-0"
-                : "-translate-y-full"
-            }
-          `}
+          className="fixed left-0 top-0 z-60 w-full shadow-xs"
         >
           <OfferHeader />
         </div>
       )}
 
       {/* =====================================================
-          NAVBAR
+          NAVBAR:
+          - On mobile (< 1024px): Fixed at BOTTOM of viewport,
+            always visible.
+          - On desktop (>= 1024px): Fixed at TOP below OfferHeader,
+            scroll-responsive (hides on scroll down, shows on scroll up).
       ===================================================== */}
 
       {!isDashboard && (
         <div
           ref={navbarRef}
-          className={`
-            fixed
-            left-0
-            z-50
-            w-full
-            transition-transform
-            duration-300
-            ease-in-out
-            ${
-              showNavbar
-                ? "translate-y-0"
-                : "-translate-y-full"
-            }
-          `}
+          className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+            isDesktop
+              ? navbarVisible
+                ? "translate-y-0 opacity-100 shadow-xs"
+                : "-translate-y-full opacity-0 pointer-events-none"
+              : "translate-y-0 opacity-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+          }`}
           style={{
-            top: `${navbarTop}px`,
+            top: isDesktop ? `${navbarTop}px` : "auto",
+            bottom: isDesktop ? "auto" : "0px",
           }}
         >
           <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
@@ -408,23 +343,37 @@ const AppContent = () => {
       )}
 
       {/* =====================================================
-          HEADER SPACE
+          TOP HEADER SPACE:
+          - On mobile (< 1024px): Spacer height is ONLY offerHeaderHeight,
+            so Hero / page content starts IMMEDIATELY below OfferHeader!
+          - On desktop (>= 1024px): Spacer height is totalHeaderHeight
+            (offerHeaderHeight + navbarHeight), so content starts below Navbar.
       ===================================================== */}
 
       {!isDashboard && (
-        <div
-          aria-hidden="true"
-          style={{
-            height: `${totalHeaderHeight}px`,
-          }}
-        />
+        <>
+          <div
+            aria-hidden="true"
+            className="block lg:hidden"
+            style={{
+              height: `${offerHeaderHeight}px`,
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="hidden lg:block"
+            style={{
+              height: `${totalHeaderHeight}px`,
+            }}
+          />
+        </>
       )}
 
       {/* =====================================================
           PAGE ROUTES
       ===================================================== */}
 
-      <main>
+      <main className="flex-1 pb-4 lg:pb-0">
         <ScrollToTop />
         <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
@@ -559,7 +508,7 @@ const AppContent = () => {
 
 
       {!isDashboard && (
-        <div>
+        <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
           <Footer/>
         </div>
       )}
@@ -579,9 +528,11 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <AppDataProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </AppDataProvider>
   );
 };
 

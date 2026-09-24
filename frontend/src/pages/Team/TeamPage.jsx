@@ -17,157 +17,29 @@ import {
   Star,
 } from "lucide-react";
 import { FaLinkedinIn } from "react-icons/fa";
-import apiClient from "../../services/apiClient.js";
+import { useAppData } from "../../context/AppDataContext.jsx";
 import { getImageUrl } from "../../utils/imageUtils.js";
+import ErrorState, { EmptyState } from "../../components/ui/ErrorState.jsx";
 
-const DEFAULT_TEAM_MEMBERS = [
-  // Management Team
-  {
-    id: 1,
-    name: "Rathinavel Rajagopal",
-    role: "Director",
-    department: "Management Team",
-    category: "Management Team",
-    email: "rathinavelrajagopal@lesuccess.in",
-    image: "/home/team/Rathinavel.png",
-    experience: "25+ Years in IT Leadership & Strategic Consulting",
-    bio: "Over 25 years of global executive experience steering high-impact technology initiatives, enterprise solution architecture, and higher-education skill transformation programs. Dedicated to making world-class engineering education accessible.",
-    skills: "Enterprise Architecture, Strategic Consulting, Cloud Strategy, Technology Leadership, Business Transformation",
-    featured: true,
-  },
-  {
-    id: 2,
-    name: "Uma Devi P K",
-    role: "CEO",
-    department: "Management Team",
-    category: "Management Team",
-    email: "uma@lesuccess.in",
-    image: "/home/team/UmaDevi.png",
-    experience: "20+ Years in Education & IT Management",
-    bio: "Visionary leader passionate about empowering the next generation of software engineers through outcome-driven curriculum, corporate alignment, and personalized career mentorship.",
-    skills: "Educational Leadership, Talent Acceleration, Strategic Management, Corporate Relations, Academic Partnerships",
-    featured: true,
-  },
-  {
-    id: 3,
-    name: "Muralidharan R",
-    role: "Vice President",
-    department: "Management Team",
-    category: "Management Team",
-    email: "murali.r@lesuccess.in",
-    image: "/home/team/Muralidharan.png",
-    experience: "18+ Years in Software Engineering & Delivery",
-    bio: "Steers training operations and academic excellence, ensuring industry-grade software architecture standards, clean coding disciplines, and modern cloud practices in all LeSuccess courses.",
-    skills: "Java Architecture, Distributed Systems, Curriculum Engineering, Agile Leadership, Engineering Management",
-    featured: true,
-  },
-  {
-    id: 4,
-    name: "Felix R",
-    role: "Assistant Vice President",
-    department: "Management Team",
-    category: "Management Team",
-    email: "felix@lesuccess.in",
-    image: "/home/team/Felix.png",
-    experience: "15+ Years in IT Solutions & Learning Delivery",
-    bio: "Leads enterprise corporate training delivery, client consulting, and talent readiness programs for Fortune 500 tech partners and fast-growing Indian engineering centers.",
-    skills: "Corporate Training, Solution Consulting, Full Stack Engineering, Client Success",
-    featured: false,
-  },
-  {
-    id: 5,
-    name: "Kennedy R",
-    role: "AGM - Corporate Relationship",
-    department: "Management Team",
-    category: "Management Team",
-    email: "kennedy@lesuccess.in",
-    image: "/home/team/Kennedy.png",
-    experience: "14+ Years in Industry Relations & Placements",
-    bio: "Bridges LeSuccess with top MNCs and high-growth startups across India to create exclusive hiring channels, campus drives, and placement opportunities for all graduates.",
-    skills: "Campus Placements, Corporate Hiring Partnerships, Industry Alliances, Career Counseling",
-    featured: false,
-  },
-
-  // Our Mentors
-  {
-    id: 6,
-    name: "Arun Kumar K",
-    role: "Technical Lead & Senior Trainer",
-    department: "Our Mentors",
-    category: "Our Mentors",
-    email: "arunkumar@lesuccess.in",
-    image: "/home/team/ArunKumar.png",
-    experience: "10+ Years in Java Full Stack & Microservices",
-    bio: "Hands-on tech lead specializing in scalable Java enterprise applications, Spring Boot microservices, and React frontends. Mentors learners on real-world projects and interview coding rounds.",
-    skills: "Java 21, Spring Boot, Microservices, React, Docker, Kubernetes, MySQL",
-    featured: false,
-  },
-  {
-    id: 7,
-    name: "Kirubakaran M",
-    role: "Full Stack Java Mentor",
-    department: "Our Mentors",
-    category: "Our Mentors",
-    email: "kiruba@lesuccess.in",
-    image: "/home/team/dummy.png",
-    experience: "7+ Years in Full Stack Development",
-    bio: "Passionate developer and educator specializing in Core Java, RESTful APIs, and modern frontend frameworks. Known for interactive teaching and practical debugging sessions.",
-    skills: "Java, Spring Boot, React, JavaScript, SQL, REST APIs",
-    featured: false,
-  },
-  {
-    id: 8,
-    name: "Saranya V",
-    role: "Data Science & Python Instructor",
-    department: "Our Mentors",
-    category: "Our Mentors",
-    email: "saranya@lesuccess.in",
-    image: "/home/team/dummy.png",
-    experience: "6+ Years in Data Analytics & Machine Learning",
-    bio: "Specializes in Python, Data Analytics, Pandas, and business intelligence tools. Guides students through building real-time dashboards and predictive models.",
-    skills: "Python, Pandas, Power BI, SQL, Data Analytics, Machine Learning",
-    featured: false,
-  },
-  {
-    id: 9,
-    name: "Naveen Raj",
-    role: "Cloud & DevOps Specialist",
-    department: "Our Mentors",
-    category: "Our Mentors",
-    email: "naveen@lesuccess.in",
-    image: "/home/team/dummy.png",
-    experience: "8+ Years in Cloud & Site Reliability",
-    bio: "Expert cloud architect specializing in AWS solutions, Docker containerization, Kubernetes clusters, and automated CI/CD pipelines for production deployments.",
-    skills: "AWS, Docker, Kubernetes, Jenkins, CI/CD, Linux, Terraform",
-    featured: false,
-  },
-  {
-    id: 10,
-    name: "Dinesh Kumar",
-    role: "Corporate Training Consultant",
-    department: "Our Mentors",
-    category: "Our Mentors",
-    email: "dinesh@lesuccess.in",
-    image: "/home/team/dummy.png",
-    experience: "9+ Years in Enterprise Learning Delivery",
-    bio: "Consults with corporate HR and engineering teams to design bespoke employee upskilling and fresher-onboarding bootcamps.",
-    skills: "Corporate Upskilling, Technical Consulting, Talent Development",
-    featured: false,
-  },
-  {
-    id: 11,
-    name: "Keerthana S",
-    role: "Student Placement Officer",
-    department: "Our Mentors",
-    category: "Our Mentors",
-    email: "keerthana@lesuccess.in",
-    image: "/home/team/dummy.png",
-    experience: "5+ Years in Career Counseling & Placements",
-    bio: "Dedicated career coach conducting resume audits, mock interviews, and scheduling corporate interview drives for every batch.",
-    skills: "Placement Coordination, Resume Building, Interview Coaching, Student Support",
-    featured: false,
-  },
-];
+function TeamSkeletonGrid() {
+  return (
+    <section className="py-16 bg-[#f8fbfe]">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center">
+              <div className="aspect-[383/400] w-full rounded-3xl bg-slate-200 animate-pulse" />
+              <div className="-mt-10 w-[calc(100%-24px)] rounded-2xl bg-[#07405C] p-5 shadow-lg border border-slate-100 flex flex-col items-center gap-2">
+                <div className="h-5 w-32 bg-white/20 rounded-md animate-pulse" />
+                <div className="h-3.5 w-24 bg-white/15 rounded-md animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 const isFeaturedMember = (m) => Boolean(m?.featured || m?.isFeatured);
 
@@ -300,42 +172,11 @@ const TeamMemberCard = ({ member, onSelect }) => {
 };
 
 export default function TeamPage() {
-  const [teamMembers, setTeamMembers] = useState(DEFAULT_TEAM_MEMBERS);
-  const [categories, setCategories] = useState(['Management Team', 'Our Mentors']);
+  const { team } = useAppData();
+  const { status, data: teamMembers, categories, error, refetch } = team;
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
   const [modalEmailCopied, setModalEmailCopied] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchTeam() {
-      try {
-        const [teamRes, catRes] = await Promise.allSettled([
-          apiClient.get("/api/team-members"),
-          apiClient.get("/api/team-categories"),
-        ]);
-
-        if (teamRes.status === 'fulfilled' && teamRes.value?.data?.data && Array.isArray(teamRes.value.data.data) && teamRes.value.data.data.length > 0) {
-          if (isMounted) setTeamMembers(teamRes.value.data.data);
-        }
-
-        if (catRes.status === 'fulfilled' && catRes.value?.data?.data && Array.isArray(catRes.value.data.data)) {
-          const names = catRes.value.data.data.map((c) => c.name);
-          const combined = Array.from(new Set(['Management Team', 'Our Mentors', ...names]));
-          if (isMounted) setCategories(combined);
-        }
-      } catch (err) {
-        // Fall back to default roster
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-    fetchTeam();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   // Handle ESC key and scroll lock
   useEffect(() => {
@@ -419,35 +260,64 @@ export default function TeamPage() {
       </section>
 
       {/* Top Category Filter Bar */}
-      <section className="border-b border-slate-100 bg-white py-4 shadow-2xs">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Filter By Category:</span>
-            <span className="text-xs font-semibold text-[#07405C] bg-[#07405C]/10 px-2.5 py-0.5 rounded-full">
-              {filteredMembers.length} {filteredMembers.length === 1 ? 'Profile' : 'Profiles'}
-            </span>
-          </div>
+      {status === 'success' && teamMembers.length > 0 && (
+        <section className="border-b border-slate-100 bg-white py-4 shadow-2xs">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Filter By Category:</span>
+              <span className="text-xs font-semibold text-[#07405C] bg-[#07405C]/10 px-2.5 py-0.5 rounded-full">
+                {filteredMembers.length} {filteredMembers.length === 1 ? 'Profile' : 'Profiles'}
+              </span>
+            </div>
 
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-1.5 p-1 bg-slate-100 rounded-2xl">
-            {['All', ...categories].map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  selectedCategory === cat
-                    ? 'bg-[#07405C] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-1.5 p-1 bg-slate-100 rounded-2xl">
+              {['All', ...categories].map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    selectedCategory === cat
+                      ? 'bg-[#07405C] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
+        </section>
+      )}
+
+      {/* Loading Skeleton Grid */}
+      {status === 'loading' && <TeamSkeletonGrid />}
+
+      {/* Connection / Backend Failure Error State */}
+      {status === 'error' && (
+        <div className="py-24 max-w-xl mx-auto px-6">
+          <ErrorState
+            title="Unable to load team members"
+            message="We could not connect to the database to retrieve our team members. Please check your network and try again."
+            onRetry={refetch}
+            retryLabel="Retry Connection"
+          />
         </div>
-      </section>
+      )}
 
-      {selectedCategory === 'All' ? (
+      {/* Empty State */}
+      {status === 'empty' && (
+        <div className="py-24 max-w-xl mx-auto px-6">
+          <EmptyState
+            title="No team members found"
+            message="Our team roster is currently being updated. Please check back shortly."
+          />
+        </div>
+      )}
+
+      {/* Success State */}
+      {status === 'success' && teamMembers.length > 0 && (
+        selectedCategory === 'All' ? (
         <>
           {/* Management Team Section */}
           <section className="py-16 bg-[#f8fbfe]">
@@ -564,6 +434,7 @@ export default function TeamPage() {
             )}
           </div>
         </section>
+        )
       )}
 
       {/* Join the Academy Banner */}

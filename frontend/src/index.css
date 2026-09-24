@@ -2,7 +2,7 @@
 
 /*
   LeSuccess Academy — design tokens taken from the reference PDFs
-  (Course_Page, Contact_Page, Service_Page, homa page).
+  (Course_Page, Contact_Page, Service_Page, home page).
 
   Do not invent values here. Every colour below appears in those documents:
   navy for headings and dark bands, a red→pink gradient for every CTA, gold for
@@ -38,10 +38,24 @@
   --color-danger: #c62828;
   --color-danger-soft: #fdecec;
 
-  --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
   --radius-card: 0.75rem;
+}
+
+:root {
+  --color-surface: #ffffff;
+  --color-section: #f6f9fc;
+  --color-card: #ffffff;
+  --color-card-border: rgba(203, 213, 225, 0.9);
+  --color-ink: #101010;
+  --color-ink-soft: #4b5563;
+  --color-ink-muted: #8a97a6;
+  --color-line: #e3e9ef;
+  --color-line-strong: #cfd9e3;
+  --color-nav-bg: rgba(255, 255, 255, 0.95);
+  --color-nav-border: rgba(226, 232, 240, 0.8);
 }
 
 @layer base {
@@ -75,6 +89,17 @@
   h4 {
     color: var(--color-navy-800);
     font-family: var(--font-display);
+  }
+
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  [data-theme='dark'] h1,
+  [data-theme='dark'] h2,
+  [data-theme='dark'] h3,
+  [data-theme='dark'] h4 {
+    color: #f8fafc;
   }
 
   /* One focus treatment for the whole site. */
@@ -209,10 +234,10 @@
 
   /* LeSuccess Card Design System */
   .card-premium {
-    background-color: #ffffff;
+    background-color: var(--color-card, #ffffff);
     border-radius: 1.25rem;
-    border: 1px solid rgba(203, 213, 225, 0.9);
-    box-shadow: 0 4px 20px rgba(7, 64, 92, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--color-card-border, rgba(203, 213, 225, 0.9));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
     transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
