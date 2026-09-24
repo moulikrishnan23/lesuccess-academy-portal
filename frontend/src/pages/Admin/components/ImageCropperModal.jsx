@@ -29,10 +29,10 @@ export default function ImageCropperModal({
   const [rotation, setRotation] = useState(0)
   const [flipH, setFlipH] = useState(false)
   const [aspectRatio, setAspectRatio] = useState(4 / 3) // Standard 4:3 ratio matching public card
-  const [aspectLabel, setAspectLabel] = useState('4:3 (Card Standard)')
   const [imageLoaded, setImageLoaded] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [imageDims, setImageDims] = useState({ width: 0, height: 0 })
+  const [isDragging, setIsDragging] = useState(false)
 
   const containerRef = useRef(null)
   const imageRef = useRef(null)
@@ -41,7 +41,11 @@ export default function ImageCropperModal({
   const panStartRef = useRef({ x: 0, y: 0 })
 
   // Reset adjustments when modal opens or a new image source is passed
-  useEffect(() => {
+  const [prevImageSrc, setPrevImageSrc] = useState(imageSrc)
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
+  if (imageSrc !== prevImageSrc || isOpen !== prevIsOpen) {
+    setPrevImageSrc(imageSrc)
+    setPrevIsOpen(isOpen)
     if (isOpen) {
       setZoom(1)
       setPan({ x: 0, y: 0 })
@@ -50,7 +54,7 @@ export default function ImageCropperModal({
       setImageLoaded(false)
       setLoadError(false)
     }
-  }, [isOpen, imageSrc])
+  }
 
   // Pre-load image to get natural dimensions without CORS failure
   useEffect(() => {
@@ -81,6 +85,7 @@ export default function ImageCropperModal({
   const handleMouseDown = (e) => {
     e.preventDefault()
     isDraggingRef.current = true
+    setIsDragging(true)
     dragStartRef.current = { x: e.clientX, y: e.clientY }
     panStartRef.current = { ...pan }
   }
@@ -100,12 +105,14 @@ export default function ImageCropperModal({
 
   const handleMouseUp = () => {
     isDraggingRef.current = false
+    setIsDragging(false)
   }
 
   // Touch handlers
   const handleTouchStart = (e) => {
     if (e.touches.length === 1) {
       isDraggingRef.current = true
+      setIsDragging(true)
       dragStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
       panStartRef.current = { ...pan }
     }
@@ -123,6 +130,7 @@ export default function ImageCropperModal({
 
   const handleTouchEnd = () => {
     isDraggingRef.current = false
+    setIsDragging(false)
   }
 
   // Mouse wheel to zoom
@@ -276,7 +284,6 @@ export default function ImageCropperModal({
                   type="button"
                   onClick={() => {
                     setAspectRatio(item.ratio)
-                    setAspectLabel(item.label)
                   }}
                   className={`px-3 py-1 rounded-lg transition cursor-pointer ${
                     aspectRatio === item.ratio
@@ -341,7 +348,7 @@ export default function ImageCropperModal({
                       flipH ? -1 : 1
                     }, 1) scale(${zoom})`,
                     transformOrigin: 'center center',
-                    transition: isDraggingRef.current ? 'none' : 'transform 0.05s ease-out',
+                    transition: isDragging ? 'none' : 'transform 0.05s ease-out',
                   }}
                   className="pointer-events-none select-none"
                 />
