@@ -27,6 +27,7 @@ import {
   MessageSquare,
   Briefcase,
   Menu,
+  Video,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import apiClient from '../../services/apiClient.js'
@@ -37,6 +38,7 @@ import AdminTeamTab from './components/AdminTeamTab.jsx'
 import AdminCompaniesTab from './components/AdminCompaniesTab.jsx'
 import AdminUsersTab from './components/AdminUsersTab.jsx'
 import AdminOverviewTab from './components/AdminOverviewTab.jsx'
+import AdminHeroVideoTab from './components/AdminHeroVideoTab.jsx'
 import AdminFormSubmissionsTab from './components/AdminFormSubmissionsTab.jsx'
 import AdminReviewsTab from './components/AdminReviewsTab.jsx'
 import AdminMessagesTab from './components/AdminMessagesTab.jsx'
@@ -460,6 +462,7 @@ export default function AdminDashboard() {
           <nav className="flex space-x-1 sm:space-x-2 py-2">
             {[
               { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+              { id: 'hero-video', label: 'Hero Video', icon: Video },
               { id: 'gallery', label: 'Gallery', icon: Folder },
               { id: 'courses', label: 'Courses', icon: BookOpen },
               { id: 'programs', label: 'Programs & Events', icon: Calendar },
@@ -562,6 +565,7 @@ export default function AdminDashboard() {
             {activeTab === 'overview' && (
               <AdminOverviewTab onNavigateTab={(tab) => setActiveTab(tab)} showAlert={showAlert} />
             )}
+            {activeTab === 'hero-video' && <AdminHeroVideoTab showAlert={showAlert} />}
             {activeTab === 'courses' && <AdminCoursesTab showAlert={showAlert} />}
             {activeTab === 'programs' && <AdminProgramsTab showAlert={showAlert} />}
             {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}

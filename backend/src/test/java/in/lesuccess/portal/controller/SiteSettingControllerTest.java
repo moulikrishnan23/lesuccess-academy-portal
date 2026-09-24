@@ -52,6 +52,9 @@ class SiteSettingControllerTest {
     @MockitoBean
     private SiteSettingService service;
 
+    @MockitoBean
+    private in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
+
     private static final String BASE_URL = "/api/settings";
 
     @BeforeEach

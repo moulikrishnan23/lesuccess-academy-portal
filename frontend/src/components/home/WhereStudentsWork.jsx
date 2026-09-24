@@ -80,7 +80,7 @@ const WhereStudentsWork = () => {
   }, []);
 
   return (
-    <section className="overflow-hidden bg-white py-14">
+    <section className="overflow-hidden bg-white py-14 transition-colors duration-200">
       {/* Heading */}
       <div className="mb-12 flex flex-col items-center">
         <div className="mb-4 flex items-center gap-2 rounded-full border border-[#07405C]/30 bg-[#07405C]/5 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#07405C]">

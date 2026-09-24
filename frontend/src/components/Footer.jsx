@@ -23,33 +23,7 @@ const QUICK_LINKS = [
   { name: "Contact & Support", path: "/contact" },
 ];
 
-const SOCIALS = [
-  {
-    icon: FaInstagram,
-    href: "https://www.instagram.com/lesuccess_academy/",
-    label: "Instagram",
-  },
-  {
-    icon: FaLinkedinIn,
-    href: "https://www.linkedin.com/company/lesuccess-academy/",
-    label: "LinkedIn",
-  },
-  {
-    icon: MessageCircle,
-    href: "https://wa.me/918012060000",
-    label: "WhatsApp",
-  },
-  {
-    icon: FaYoutube,
-    href: "https://www.youtube.com/@lesuccessacademy",
-    label: "YouTube",
-  },
-  {
-    icon: FaFacebookF,
-    href: "https://www.facebook.com/lesuccessacademy/",
-    label: "Facebook",
-  },
-];
+import { SOCIAL_LINKS } from "../data/socialLinks.js";
 
 export default function Footer() {
   return (
@@ -162,13 +136,13 @@ export default function Footer() {
               Follow our social channels for regular batch announcements, free webinars, and student placement spotlights.
             </p>
             <div className="flex flex-wrap gap-2.5 pt-2">
-              {SOCIALS.map(({ icon: Icon, href, label }) => (
+              {SOCIAL_LINKS.map(({ icon: Icon, href, name }) => (
                 <a
-                  key={label}
+                  key={name}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={label}
+                  aria-label={name}
                   className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 text-white flex items-center justify-center hover:bg-[#DF1E26] hover:border-[#DF1E26] hover:scale-110 active:scale-95 transition-all shadow-sm"
                 >
                   <Icon size={16} />

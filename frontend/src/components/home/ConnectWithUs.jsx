@@ -90,8 +90,8 @@ export default function ConnectWithUs() {
           />
         </div>
 
-        {/* Form container: Elevated crisp white card */}
-        <form onSubmit={handleSubmit} className="mt-10 max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl border border-white/20 text-slate-800">
+        {/* Form container: Elevated card */}
+        <form onSubmit={handleSubmit} className="mt-10 max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl border border-white/20 text-slate-800 transition-colors duration-200">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4 text-left">
             {/* Name */}
             <div>

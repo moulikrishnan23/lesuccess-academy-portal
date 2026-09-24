@@ -64,7 +64,8 @@ public class SiteSettingService {
         }
 
         updates.forEach((key, value) -> {
-            SiteSetting setting = repository.findById(key).orElseThrow();
+            SiteSetting setting = repository.findById(key)
+                    .orElseGet(() -> SiteSetting.builder().key(key).build());
             setting.setValue(value);
             repository.save(setting);
         });
@@ -82,9 +83,13 @@ public class SiteSettingService {
             return InvalidRequestException.fieldError(
                     key, "Value must not exceed " + MAX_VALUE_LENGTH + " characters");
         }
-        if (!repository.existsById(key)) {
+        if (!repository.existsById(key) && !isAllowedKey(key)) {
             return InvalidRequestException.fieldError(key, "Unknown setting key");
         }
         return null;
+    }
+
+    private boolean isAllowedKey(String key) {
+        return "hero_video_url".equals(key) || "hero_video_enabled".equals(key);
     }
 }

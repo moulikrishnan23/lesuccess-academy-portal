@@ -1,15 +1,8 @@
 import { useState } from "react";
-import { Mail, Phone, MapPin, Instagram, Facebook, Linkedin, Youtube, MessageCircle, Send, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
 import useContactSubmit from "../hooks/useContactSubmit.js";
 import { normalizeMobile } from "../utils/validation.js";
-
-const SOCIALS = [
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: MessageCircle, href: "#", label: "WhatsApp" },
-  { icon: Youtube, href: "#", label: "YouTube" },
-];
+import { SOCIAL_LINKS } from "../data/socialLinks.js";
 
 const initialForm = {
   name: "",
@@ -257,11 +250,13 @@ export default function GetInTouch() {
             <div>
               <p className="text-sm font-semibold mb-2">Follow Us</p>
               <div className="flex gap-2">
-                {SOCIALS.map(({ icon: Icon, href, label }) => (
+                {SOCIAL_LINKS.map(({ icon: Icon, href, name }) => (
                   <a
-                    key={label}
+                    key={name}
                     href={href}
-                    aria-label={label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={name}
                     className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                   >
                     <Icon size={16} />

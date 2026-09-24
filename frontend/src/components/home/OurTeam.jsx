@@ -1,38 +1,24 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Users, Mail, ArrowRight, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
-import apiClient from "../../services/apiClient.js";
+import { useAppData } from "../../context/AppDataContext.jsx";
 import { getImageUrl } from "../../utils/imageUtils.js";
+import ErrorState from "../ui/ErrorState.jsx";
 
-const DEFAULT_TEAM_MEMBERS = [
-  {
-    id: 1,
-    name: "Rathinavel Rajagopal",
-    role: "Director",
-    email: "rathinavelrajagopal@lesuccess.in",
-    image: "/home/team/Rathinavel.png",
-    featured: true,
-  },
-  {
-    id: 2,
-    name: "Uma Devi P K",
-    role: "CEO",
-    email: "uma@lesuccess.in",
-    image: "/home/team/UmaDevi.png",
-    featured: true,
-  },
-  {
-    id: 3,
-    name: "Muralidharan R",
-    role: "Vice President",
-    email: "murali.r@lesuccess.in",
-    image: "/home/team/Muralidharan.png",
-    featured: true,
-  },
-];
+function TeamCardSkeleton() {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="aspect-[383/400] w-full rounded-3xl bg-slate-200 animate-pulse" />
+      <div className="-mt-10 w-[calc(100%-24px)] rounded-2xl bg-[#07405C] p-5 shadow-lg border border-slate-100 flex flex-col items-center gap-2">
+        <div className="h-5 w-32 bg-white/20 rounded-md animate-pulse" />
+        <div className="h-3.5 w-24 bg-white/15 rounded-md animate-pulse" />
+      </div>
+    </div>
+  );
+}
 
 const FeaturedTeamCard = ({ member }) => {
   const imgSrc = member.imageUrl
@@ -41,7 +27,7 @@ const FeaturedTeamCard = ({ member }) => {
 
   return (
     <div className="group relative flex flex-col items-center transition-all duration-300 hover:-translate-y-2">
-      {/* Background Image Container with TeamBg.png — designed normal state */}
+      {/* Background Image Container with TeamBg.png */}
       <div
         className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center bg-no-repeat shadow-[0_4px_20px_rgba(7,64,92,0.06)] border border-slate-200/90 transition-all duration-300 group-hover:shadow-[0_20px_40px_rgba(7,64,92,0.12)] group-hover:border-[#07405C]/35"
         style={{ backgroundImage: "url('/home/TeamBg.png')" }}
@@ -55,7 +41,7 @@ const FeaturedTeamCard = ({ member }) => {
           }}
         />
 
-        {/* Yellow Featured badge with Star icon — matching Admin Team UI */}
+        {/* Yellow Featured badge with Star icon */}
         <span className="absolute top-4 right-4 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs z-10 select-none tracking-wide">
           <Star size={11} className="text-amber-950" fill="currentColor" />
           <span>Featured</span>
@@ -86,33 +72,20 @@ const FeaturedTeamCard = ({ member }) => {
 
 export default function OurTeam() {
   const reduced = useReducedMotion();
-  const [featuredMembers, setFeaturedMembers] = useState(DEFAULT_TEAM_MEMBERS);
+  const { team } = useAppData();
+  const { status, data: teamMembers, error, refetch } = team;
 
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchTeam() {
-      try {
-        const res = await apiClient.get("/api/team-members");
-        if (res?.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-          const apiFeatured = res.data.data
-            .filter((m) => m.featured || m.displayOrder <= 3)
-            .slice(0, 3);
-          if (isMounted && apiFeatured.length > 0) {
-            setFeaturedMembers(apiFeatured);
-          }
-        }
-      } catch (err) {
-        // Fall back to default
-      }
+  const featuredMembers = useMemo(() => {
+    if (!Array.isArray(teamMembers) || teamMembers.length === 0) return [];
+    const featured = teamMembers.filter((m) => m.featured || m.isFeatured);
+    if (featured.length >= 3) {
+      return featured.slice(0, 3);
     }
-    fetchTeam();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return teamMembers.slice(0, 3);
+  }, [teamMembers]);
 
   return (
-    <section className="w-full bg-[#f8fbfe] py-20 px-6 sm:px-10 lg:px-20 overflow-hidden">
+    <section className="w-full bg-[#f8fbfe] py-20 px-6 sm:px-10 lg:px-20 overflow-hidden transition-colors duration-200">
       <div className="mx-auto max-w-7xl text-center">
         <motion.div
           variants={motionSafe(fadeUp, reduced)}
@@ -135,23 +108,55 @@ export default function OurTeam() {
           </p>
         </motion.div>
 
-        {/* Featured 3-Card Grid */}
-        <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-          {featuredMembers.map((member) => (
-            <FeaturedTeamCard key={member.name || member.id} member={member} />
-          ))}
-        </div>
+        {/* Content based on status */}
+        {status === "loading" && (
+          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+            <TeamCardSkeleton />
+            <TeamCardSkeleton />
+            <TeamCardSkeleton />
+          </div>
+        )}
 
-        {/* View All Team Members CTA Button */}
-        <div className="mt-14 flex justify-center">
-          <Link
-            to="/our-team"
-            className="group inline-flex items-center gap-2.5 rounded-xl bg-[#07405C] px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:bg-[#024D72] hover:shadow-xl hover:gap-3.5"
-          >
-            View All Team Members
-            <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
+        {status === "error" && (
+          <div className="mt-14 max-w-xl mx-auto">
+            <ErrorState
+              title="Unable to load team members"
+              message="We could not connect to the server to load our leadership team. Please check your connection or retry."
+              onRetry={refetch}
+              retryLabel="Retry"
+            />
+          </div>
+        )}
+
+        {status === "empty" && (
+          <div className="mt-14 max-w-md mx-auto p-8 rounded-2xl border border-dashed border-slate-300 bg-white">
+            <p className="text-sm font-semibold text-slate-600">
+              Team members will be announced shortly.
+            </p>
+          </div>
+        )}
+
+        {status === "success" && featuredMembers.length > 0 && (
+          <>
+            {/* Featured 3-Card Grid */}
+            <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+              {featuredMembers.map((member) => (
+                <FeaturedTeamCard key={member.name || member.id} member={member} />
+              ))}
+            </div>
+
+            {/* View All Team Members CTA Button */}
+            <div className="mt-14 flex justify-center">
+              <Link
+                to="/our-team"
+                className="group inline-flex items-center gap-2.5 rounded-xl bg-[#07405C] px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:bg-[#024D72] hover:shadow-xl hover:gap-3.5"
+              >
+                View All Team Members
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

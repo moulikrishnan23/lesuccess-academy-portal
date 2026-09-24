@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useCourses from "../hooks/useCourses.js";
+import { SOCIAL_LINKS } from "../data/socialLinks.js";
 import {
   BADGE_THEMES,
   getBadgeTheme,
@@ -154,19 +155,11 @@ const OfferHeader = () => {
 
   /*
    * Enroll Now goes to the course the banner is showing right now — nothing else.
-   *
-   * Two things used to break that. The first was an early return: if the visitor
-   * was on any /courses/* page it scrolled to THAT page's enroll form and never
-   * looked at the banner, so anyone reading the Java course page got the Java
-   * form back on every click no matter which course had rotated in. The second
-   * was a substring ladder that guessed a course from the headline text, where
-   * `includes("java")` also matches "JavaScript" and "DSA with Python / Java".
-   *
-   * A course carries its own slug from the API, so neither is needed: read it off
-   * the item, and the only remaining question is whether we are already on that
-   * course's page and can scroll instead of navigate.
+   * If already on that course's detail page, smoothly scrolls to #enroll.
+   * If on a different course or any other page, navigates to /courses/${targetSlug}#enroll.
    */
-  const handleEnrollNow = () => {
+  const handleEnrollNow = (e) => {
+    e?.preventDefault?.();
     const targetSlug = resolveTargetSlug(current);
 
     // Nothing identifiable to enroll in — send them to the catalog rather than
@@ -194,53 +187,80 @@ const OfferHeader = () => {
   };
 
   return (
-    <div className="w-full bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white shadow-xs">
-      <div className="mx-auto flex min-h-11 flex-wrap items-center justify-center gap-2 sm:gap-3 px-4 py-1.5 sm:py-2 text-center">
-        {/* Synchronized rotating badge with dynamic theme and smooth color transitions */}
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold tracking-wide uppercase border select-none shrink-0 transition-colors duration-300 ease-in-out ${badgeTheme.badgeClasses}`}
-          style={{
-            opacity: visible ? 1 : 0,
-            transition: `opacity ${FADE_MS}ms ease-in-out, background-color 300ms ease-in-out, border-color 300ms ease-in-out, color 300ms ease-in-out`,
-          }}
-        >
-          {badgeTheme.type}
-        </span>
+    <div className="w-full bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white shadow-xs select-none">
+      <div className="mx-auto flex min-h-10 sm:min-h-11 max-w-7xl items-center justify-between gap-1.5 sm:gap-4 px-2.5 sm:px-6 py-1 sm:py-1.5">
+        
+        {/* Left balance spacer on larger screens so center content stays centered */}
+        <div className="hidden lg:flex items-center shrink-0 w-32" aria-hidden="true" />
 
-        <p
-          className="text-xs font-semibold sm:text-sm md:text-base tracking-wide"
-          style={{
-            opacity: visible ? 1 : 0,
-            transition: `opacity ${FADE_MS}ms ease-in-out`,
-          }}
-        >
-          {text}
-        </p>
+        {/* Center: Synchronized dynamic rotating offer badge, copy and CTA */}
+        <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2.5 flex-wrap text-center px-1">
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2 sm:px-2.5 py-0.5 text-[9px] sm:text-[11px] font-bold tracking-wide uppercase border select-none shrink-0 transition-colors duration-300 ease-in-out ${badgeTheme.badgeClasses}`}
+            style={{
+              opacity: visible ? 1 : 0,
+              transition: `opacity ${FADE_MS}ms ease-in-out, background-color 300ms ease-in-out, border-color 300ms ease-in-out, color 300ms ease-in-out`,
+            }}
+          >
+            {badgeTheme.type}
+          </span>
 
-        <button
-          type="button"
-          onClick={handleEnrollNow}
-          className="
-            animate-[pulse_1.2s_ease-in-out_infinite]
-            rounded-lg
-            bg-white
-            px-4
-            py-1.5
-            text-xs
-            sm:text-sm
-            font-bold
-            text-[#DF1E26]
-            shadow-sm
-            transition
-            duration-200
-            hover:bg-slate-100
-            active:scale-95
-            cursor-pointer
-            shrink-0
-          "
-        >
-          Enroll Now
-        </button>
+          <p
+            className="text-[11px] font-semibold sm:text-xs md:text-sm tracking-wide max-w-[180px] sm:max-w-none truncate sm:whitespace-normal"
+            style={{
+              opacity: visible ? 1 : 0,
+              transition: `opacity ${FADE_MS}ms ease-in-out`,
+            }}
+            title={text}
+          >
+            {text}
+          </p>
+
+          <button
+            type="button"
+            onClick={handleEnrollNow}
+            className="
+              animate-[pulse_1.2s_ease-in-out_infinite]
+              rounded-md sm:rounded-lg
+              bg-white
+              px-2 sm:px-3.5
+              py-0.5 sm:py-1
+              text-[10px] sm:text-xs
+              font-bold
+              text-[#DF1E26]
+              shadow-xs
+              transition
+              duration-200
+              hover:bg-slate-100
+              active:scale-95
+              cursor-pointer
+              shrink-0
+            "
+          >
+            Enroll Now
+          </button>
+        </div>
+
+        {/* Right: Official LeSuccess Social Media Links */}
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {SOCIAL_LINKS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a
+                key={item.name}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`LeSuccess on ${item.name}`}
+                title={`Follow LeSuccess on ${item.name}`}
+                className={`inline-flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-xs transition hover:bg-white/25 hover:scale-110 active:scale-95 ${item.hoverClass}`}
+              >
+                <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              </a>
+            );
+          })}
+        </div>
+
       </div>
     </div>
   );

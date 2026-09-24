@@ -194,7 +194,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
             {/* Header */}
             <div className="pr-10">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DF1E26]/10 px-3 py-1 text-xs font-bold text-[#DF1E26] mb-2">
-                FAST TRACK CONSULTATION
+                CAREER COUNSELING
               </span>
               <h2
                 id="enquiry-modal-title"
