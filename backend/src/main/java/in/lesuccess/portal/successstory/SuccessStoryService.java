@@ -141,8 +141,7 @@ public class SuccessStoryService {
         SuccessStoryImage image = imageRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SuccessStoryImage", id));
 
-        image.setDeletedAt(LocalDateTime.now());
-        imageRepository.save(image);
+        imageRepository.delete(image);
 
         List<SuccessStoryImage> remaining = imageRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
         List<SuccessStoryImage> modified = OrderRebalanceUtil.rebalance(
@@ -227,8 +226,7 @@ public class SuccessStoryService {
         SuccessStoryReel reel = reelRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SuccessStoryReel", id));
 
-        reel.setDeletedAt(LocalDateTime.now());
-        reelRepository.save(reel);
+        reelRepository.delete(reel);
 
         List<SuccessStoryReel> remaining = reelRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
         List<SuccessStoryReel> modified = OrderRebalanceUtil.rebalance(

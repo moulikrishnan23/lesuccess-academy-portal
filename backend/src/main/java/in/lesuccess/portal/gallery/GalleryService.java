@@ -183,8 +183,7 @@ public class GalleryService {
         GalleryCategory category = categoryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("GalleryCategory", id));
 
-        category.setDeletedAt(LocalDateTime.now());
-        categoryRepository.save(category);
+        categoryRepository.delete(category);
 
         List<GalleryCategory> remaining = categoryRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
         List<GalleryCategory> modified = OrderRebalanceUtil.rebalance(
@@ -307,8 +306,7 @@ public class GalleryService {
         GalleryImage image = imageRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("GalleryImage", id));
 
-        image.setDeletedAt(LocalDateTime.now());
-        imageRepository.save(image);
+        imageRepository.delete(image);
 
         List<GalleryImage> remaining = imageRepository.findAllByCategoryIdAndDeletedAtIsNullOrderByDisplayOrderAscIdAsc(image.getCategoryId());
         List<GalleryImage> modified = OrderRebalanceUtil.rebalance(

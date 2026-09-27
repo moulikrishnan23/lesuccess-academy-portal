@@ -142,8 +142,7 @@ public class TeamMemberService {
     public void delete(Long id) {
         TeamMember member = repository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TeamMember", id));
-        member.setDeletedAt(LocalDateTime.now());
-        repository.save(member);
+        repository.delete(member);
 
         // Rebalance remaining members to close gaps
         List<TeamMember> remaining = repository.findAllByOrderByDisplayOrderAscIdAsc();
