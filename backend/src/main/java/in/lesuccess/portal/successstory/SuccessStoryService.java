@@ -19,6 +19,7 @@ public class SuccessStoryService {
 
     private final SuccessStoryImageRepository imageRepository;
     private final SuccessStoryReelRepository reelRepository;
+    private final in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
 
     /* =========================================================
        PUBLIC READ OPERATIONS
@@ -142,6 +143,10 @@ public class SuccessStoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("SuccessStoryImage", id));
 
         imageRepository.delete(image);
+        
+        if (image.getImageUrl() != null) {
+            cloudinaryService.deleteAsset(image.getImageUrl());
+        }
 
         List<SuccessStoryImage> remaining = imageRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
         List<SuccessStoryImage> modified = OrderRebalanceUtil.rebalance(
