@@ -7,7 +7,7 @@ import { toApiError } from '../utils/apiError.js'
  */
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
-  timeout: 60000, // 60s to allow sleeping/cold-starting backend containers to boot
+  timeout: 300000, // 300s (5 min) to allow Render Free Tier cold starts
   headers: { 'Content-Type': 'application/json' },
 })
 
