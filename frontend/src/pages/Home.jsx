@@ -8,6 +8,7 @@ import OurTeam from '../components/home/OurTeam'
 import LifeAtLeSuccess from '../components/home/LifeAtLeSuccess'
 import WhereStudentsWork from '../components/home/WhereStudentsWork'
 import Testimonials from "../components/home/Testimonials"
+import SuccessStoriesSection from '../components/home/SuccessStoriesSection'
 import ConnectWithUs from '../components/home/ConnectWithUs'
 
 const Home = () => {
@@ -22,6 +23,7 @@ const Home = () => {
       <UpcomingPrograms/>
       <OurTeam/>
       <LifeAtLeSuccess/>
+      <SuccessStoriesSection/>
       <WhereStudentsWork/>
       <Testimonials/>
       <ConnectWithUs/>

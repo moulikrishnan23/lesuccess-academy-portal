@@ -5,6 +5,7 @@ import {
   useState,
 } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+import { useAppData } from "./context/AppDataContext.jsx";
 
 import Navbar from "./components/Navbar";
 import OfferHeader from "./components/OfferHeader";
@@ -23,13 +24,73 @@ import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
 import ServicePage from "./pages/Services/ServicePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
 import GalleryPage from "./pages/Gallery/GalleryPage.jsx";
+import SuccessStoriesPage from './pages/SuccessStories/SuccessStoriesPage.jsx';
 import LoginPage from "./pages/Auth/LoginPage.jsx";
 import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
+import InitialReelExperience from "./components/common/InitialReelExperience.jsx";
 import TrainerDashboard from "./pages/Trainer/TrainerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { AppDataProvider } from "./context/AppDataContext.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import useAdminShortcut from "./hooks/useAdminShortcut.js";
+
+function HomeRoute() {
+  const { successStories } = useAppData();
+  const [userDismissed, setUserDismissed] = useState(false);
+
+  const isSessionDone = () => {
+    try {
+      return sessionStorage.getItem("lesuccess_initial_entry_done") === "true";
+    } catch {
+      return false;
+    }
+  };
+
+  const isItemActive = (item) => Boolean(item?.isActive ?? item?.active ?? false);
+  const activeReels = (successStories.data?.reels || [])
+    .filter(isItemActive)
+    .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+
+  const handleContinue = useCallback(() => {
+    try {
+      sessionStorage.setItem("lesuccess_initial_entry_done", "true");
+    } catch {
+      /* ignore storage access error */
+    }
+    setUserDismissed(true);
+  }, []);
+
+  // If already dismissed in this session, render Home normally
+  if (userDismissed || isSessionDone()) {
+    return <Home />;
+  }
+
+  // If success stories data is still loading, show a subtle brand loader — do NOT show Home page first!
+  if (successStories.status === "loading" || successStories.status === "idle") {
+    return (
+      <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#07405C] text-white">
+        <div className="h-10 w-10 rounded-full border-4 border-white/20 border-t-[#DF1E26] animate-spin mb-3" />
+        <p className="text-xs font-semibold tracking-wider uppercase text-slate-300">Loading LeSuccess Academy...</p>
+      </div>
+    );
+  }
+
+  // If there are active reels, show the Success Stories popup first! (Home is covered by popup)
+  if (activeReels.length > 0) {
+    return (
+      <>
+        <Home />
+        <InitialReelExperience
+          activeReels={activeReels}
+          onContinue={handleContinue}
+        />
+      </>
+    );
+  }
+
+  // Requirement 8: If no active reels, do not show popup, show Home normally
+  return <Home />;
+}
 
 const AppContent = () => {
   const location = useLocation();
@@ -383,7 +444,17 @@ const AppContent = () => {
               path="/"
               element={
                 <PageTransition>
-                  <Home />
+                  <HomeRoute />
+                </PageTransition>
+              }
+            />
+
+            {/* Success Stories */}
+            <Route
+              path="/success-stories"
+              element={
+                <PageTransition>
+                  <SuccessStoriesPage />
                 </PageTransition>
               }
             />

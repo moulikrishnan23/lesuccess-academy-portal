@@ -28,6 +28,7 @@ import {
   Briefcase,
   Menu,
   Video,
+  Award,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import apiClient from '../../services/apiClient.js'
@@ -42,6 +43,7 @@ import AdminHeroVideoTab from './components/AdminHeroVideoTab.jsx'
 import AdminFormSubmissionsTab from './components/AdminFormSubmissionsTab.jsx'
 import AdminReviewsTab from './components/AdminReviewsTab.jsx'
 import AdminMessagesTab from './components/AdminMessagesTab.jsx'
+import AdminSuccessStoriesTab from './components/AdminSuccessStoriesTab.jsx'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -468,6 +470,7 @@ export default function AdminDashboard() {
               { id: 'programs', label: 'Programs & Events', icon: Calendar },
               { id: 'team', label: 'Team Members', icon: UsersIcon },
               { id: 'reviews', label: 'Reviews', icon: Star },
+              { id: 'success-stories', label: 'Success Stories', icon: Award },
               { id: 'companies', label: 'Companies', icon: Building2 },
               { id: 'users', label: 'User Management', icon: ShieldCheck },
             ].map((tab) => {
@@ -570,6 +573,7 @@ export default function AdminDashboard() {
             {activeTab === 'programs' && <AdminProgramsTab showAlert={showAlert} />}
             {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}
             {activeTab === 'reviews' && <AdminReviewsTab showAlert={showAlert} />}
+            {activeTab === 'success-stories' && <AdminSuccessStoriesTab showAlert={showAlert} />}
             {activeTab === 'companies' && <AdminCompaniesTab showAlert={showAlert} />}
             {activeTab === 'users' && <AdminUsersTab showAlert={showAlert} />}
             {activeTab === 'messages' && <AdminMessagesTab showAlert={showAlert} />}

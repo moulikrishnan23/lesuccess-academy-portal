@@ -7,15 +7,32 @@ import { toApiError } from '../utils/apiError.js'
  */
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
-  timeout: 15000,
+  timeout: 60000, // 60s to allow sleeping/cold-starting backend containers to boot
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Reject with our normalized ApiError so no component ever touches
-// `err.response.data.errors` directly.
+// Safe retry for idempotent GET requests on network failures / timeouts (e.g. backend spin-up)
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(toApiError(error)),
+  async (error) => {
+    const config = error?.config
+    if (
+      config &&
+      config.method?.toLowerCase() === 'get' &&
+      !config._retry &&
+      (error.code === 'ECONNABORTED' ||
+        !error.response ||
+        error.response.status === 502 ||
+        error.response.status === 503 ||
+        error.response.status === 504)
+    ) {
+      config._retry = true
+      // Wait 3s before retrying
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+      return apiClient(config)
+    }
+    return Promise.reject(toApiError(error))
+  },
 )
 
 export default apiClient

@@ -4,12 +4,7 @@ import {
   Users,
   Mail,
   ArrowRight,
-  Sparkles,
-  Award,
   X,
-  Briefcase,
-  ExternalLink,
-  GraduationCap,
   Clock,
   Layers,
   Copy,
@@ -173,7 +168,7 @@ const TeamMemberCard = ({ member, onSelect }) => {
 
 export default function TeamPage() {
   const { team } = useAppData();
-  const { status, data: teamMembers, categories, error, refetch } = team;
+  const { status, data: teamMembers, categories, refetch } = team;
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedMember, setSelectedMember] = useState(null);
   const [modalEmailCopied, setModalEmailCopied] = useState(false);
@@ -471,18 +466,18 @@ export default function TeamPage() {
       {/* Interactive Member Details Modal */}
       {selectedMember && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+          className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-sm animate-fadeIn pt-[calc(var(--offer-header-h,44px)+1rem)] pb-20 sm:pb-6"
           onClick={() => setSelectedMember(null)}
         >
           <div
-            className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl transition-all"
+            className="relative w-full max-w-3xl max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               onClick={() => setSelectedMember(null)}
               aria-label="Close profile"
-              className="absolute right-5 top-5 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              className="absolute right-5 top-5 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer z-10"
             >
               <X size={20} />
             </button>
@@ -510,7 +505,7 @@ export default function TeamPage() {
               </div>
 
               {/* Member Details */}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-[#DF1E26]/10 px-3 py-1 text-xs font-bold text-[#DF1E26]">
                     <Layers size={12} className="text-[#DF1E26]" />
@@ -524,10 +519,10 @@ export default function TeamPage() {
                   )}
                 </div>
 
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-[#101010] tracking-tight">
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-[#101010] tracking-tight break-words">
                   {selectedMember.name}
                 </h3>
-                <p className="text-base font-semibold text-[#DF1E26] mt-1">
+                <p className="text-base font-semibold text-[#DF1E26] mt-1 break-words">
                   {selectedMember.role || selectedMember.designation}
                 </p>
 
@@ -576,14 +571,14 @@ export default function TeamPage() {
                 {/* Contact & Social */}
                 <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center gap-3">
                   {selectedMember.email && (
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 max-w-full">
                       <a
                         href={`mailto:${selectedMember.email}`}
                         title={`Send email to ${selectedMember.email}`}
-                        className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-[#024D72]"
+                        className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-3.5 sm:px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-[#024D72] max-w-full"
                       >
-                        <Mail size={14} />
-                        <span>{selectedMember.email}</span>
+                        <Mail size={14} className="shrink-0" />
+                        <span className="truncate max-w-[190px] xs:max-w-xs">{selectedMember.email}</span>
                       </a>
                       <button
                         type="button"
@@ -594,7 +589,7 @@ export default function TeamPage() {
                             setTimeout(() => setModalEmailCopied(false), 2000);
                           }
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer shrink-0"
                         title="Copy email address"
                       >
                         {modalEmailCopied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}

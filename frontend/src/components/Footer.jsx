@@ -1,11 +1,5 @@
 import { Link } from "react-router-dom";
-import { MessageCircle, ArrowRight, Mail, Phone, MapPin } from "lucide-react";
-import {
-  FaFacebookF,
-  FaInstagram,
-  FaLinkedinIn,
-  FaYoutube,
-} from "react-icons/fa";
+import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
 
 const COURSES = [
   { name: "Python: Full Stack Development", slug: "python-full-stack" },
@@ -19,6 +13,7 @@ const QUICK_LINKS = [
   { name: "Corporate Services", path: "/services" },
   { name: "Mentors & Team", path: "/our-team" },
   { name: "Courses Catalog", path: "/courses" },
+  { name: "Success Stories", path: "/success-stories" },
   { name: "Campus Gallery", path: "/gallery" },
   { name: "Contact & Support", path: "/contact" },
 ];

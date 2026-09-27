@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Download,
   Search,
@@ -9,10 +9,7 @@ import {
   Sparkles,
   ArrowRight,
   BookOpen,
-  Award,
-  Layers,
   GraduationCap,
-  Briefcase,
   CheckCircle2,
 } from 'lucide-react'
 import { downloadSyllabus, hasSyllabus } from '../../utils/syllabusUtils.js'
@@ -28,7 +25,6 @@ import {
   fadeUp,
   ITEM_IN_VIEW,
   motionSafe,
-  ONCE_IN_VIEW,
 } from '../../animations/variants.js'
 
 /* =========================================================
@@ -104,10 +100,10 @@ function CourseCard({ course, column, reduced }) {
         {/* CLICKABLE UPPER + MIDDLE BODY */}
         <Link
           to={`/courses/${course.slug}`}
-          className="flex flex-col flex-1 p-6 text-left cursor-pointer"
+          className="flex flex-col flex-1 p-4 sm:p-6 text-left cursor-pointer min-w-0"
         >
           {/* ================= ZONE 1: HEADER ================= */}
-          <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
             {/* Course Tech Logo + Category Pill */}
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-200 p-2 shadow-xs transition-transform duration-300 group-hover:scale-105 group-hover:bg-white">
@@ -125,14 +121,14 @@ function CourseCard({ course, column, reduced }) {
               </div>
 
               <div className="min-w-0">
-                <span className="inline-block truncate text-[11px] font-bold uppercase tracking-wider text-[#07405C] bg-[#07405C]/10 px-2 py-0.5 rounded-md">
+                <span className="inline-block truncate text-[11px] font-bold uppercase tracking-wider text-[#07405C] bg-[#07405C]/10 px-2 py-0.5 rounded-md max-w-full">
                   {course.categoryGroup || course.category || 'Technology Track'}
                 </span>
                 {badgeLabel && (
                   <div className="mt-1">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#DF1E26] to-[#F44246] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs">
-                      <Sparkles size={9} />
-                      <span>{badgeLabel}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#DF1E26] to-[#F44246] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs max-w-full">
+                      <Sparkles size={9} className="shrink-0" />
+                      <span className="truncate">{badgeLabel}</span>
                     </span>
                   </div>
                 )}
@@ -142,7 +138,7 @@ function CourseCard({ course, column, reduced }) {
             {/* Duration Badge */}
             {duration ? (
               <div className="flex items-center gap-1 rounded-lg bg-slate-50 px-2.5 py-1 text-slate-700 border border-slate-200/80 shrink-0">
-                <Clock size={12} className="text-[#07405C]" />
+                <Clock size={12} className="text-[#07405C] shrink-0" />
                 <span className="text-xs font-bold text-slate-900">{duration.value}</span>
                 <span className="text-[11px] font-medium text-slate-500 capitalize">{duration.unit}</span>
               </div>
@@ -150,12 +146,12 @@ function CourseCard({ course, column, reduced }) {
           </div>
 
           {/* ================= ZONE 2: BODY ================= */}
-          <div className="grow">
-            <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-[#07405C] transition-colors line-clamp-2 leading-snug">
+          <div className="grow min-w-0">
+            <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-[#07405C] transition-colors line-clamp-2 leading-snug break-words">
               {course.title}
             </h3>
 
-            <p className="mt-2 text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+            <p className="mt-2 text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed break-words">
               {course.shortDescription ||
                 course.description ||
                 'Comprehensive hands-on training with real-world industry project modules, 1-on-1 mentor guidance, and placement support.'}
@@ -167,7 +163,7 @@ function CourseCard({ course, column, reduced }) {
                 {techPills.map((tech, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700 group-hover:bg-slate-200/70 transition-colors"
+                    className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700 group-hover:bg-slate-200/70 transition-colors max-w-full truncate"
                   >
                     {tech}
                   </span>
@@ -178,7 +174,7 @@ function CourseCard({ course, column, reduced }) {
         </Link>
 
         {/* ================= ZONE 3: DUAL-ACTION FOOTER ================= */}
-        <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-6 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-4 sm:px-6 py-3.5">
           {/* Syllabus PDF Download Button */}
           {hasSyllabus(course) ? (
             <button
@@ -188,10 +184,10 @@ function CourseCard({ course, column, reduced }) {
                 e.stopPropagation()
                 downloadSyllabus(course)
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition hover:border-[#07405C] hover:bg-[#07405C] hover:text-white cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition hover:border-[#07405C] hover:bg-[#07405C] hover:text-white cursor-pointer active:scale-95 shrink-0"
               title={`Download ${course.title} Syllabus (PDF)`}
             >
-              <Download size={13} />
+              <Download size={13} className="shrink-0" />
               <span>Syllabus</span>
             </button>
           ) : (
@@ -202,10 +198,10 @@ function CourseCard({ course, column, reduced }) {
           {/* Explore Course Link */}
           <Link
             to={`/courses/${course.slug}`}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#07405C] group-hover:text-[#DF1E26] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#07405C] group-hover:text-[#DF1E26] transition-colors cursor-pointer shrink-0 ml-auto"
           >
             <span>View Details</span>
-            <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
+            <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1 shrink-0" />
           </Link>
         </div>
       </div>

@@ -191,10 +191,10 @@ const OfferHeader = () => {
       <div className="mx-auto flex min-h-10 sm:min-h-11 max-w-7xl items-center justify-between gap-1.5 sm:gap-4 px-2.5 sm:px-6 py-1 sm:py-1.5">
         
         {/* Left balance spacer on larger screens so center content stays centered */}
-        <div className="hidden lg:flex items-center shrink-0 w-32" aria-hidden="true" />
+        <div className="hidden md:flex items-center shrink-0 w-32" aria-hidden="true" />
 
         {/* Center: Synchronized dynamic rotating offer badge, copy and CTA */}
-        <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2.5 flex-wrap text-center px-1">
+        <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2.5 flex-nowrap sm:flex-wrap text-center px-1 min-w-0">
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2 sm:px-2.5 py-0.5 text-[9px] sm:text-[11px] font-bold tracking-wide uppercase border select-none shrink-0 transition-colors duration-300 ease-in-out ${badgeTheme.badgeClasses}`}
             style={{
@@ -206,7 +206,7 @@ const OfferHeader = () => {
           </span>
 
           <p
-            className="text-[11px] font-semibold sm:text-xs md:text-sm tracking-wide max-w-[180px] sm:max-w-none truncate sm:whitespace-normal"
+            className="text-[11px] font-semibold sm:text-xs md:text-sm tracking-wide truncate sm:whitespace-normal max-w-[190px] xs:max-w-[260px] sm:max-w-none"
             style={{
               opacity: visible ? 1 : 0,
               transition: `opacity ${FADE_MS}ms ease-in-out`,
@@ -241,8 +241,8 @@ const OfferHeader = () => {
           </button>
         </div>
 
-        {/* Right: Official LeSuccess Social Media Links */}
-        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+        {/* Right: Official LeSuccess Social Media Links (hidden on mobile to give room to offer text) */}
+        <div className="hidden md:flex items-center gap-1 sm:gap-1.5 shrink-0 w-32 justify-end">
           {SOCIAL_LINKS.map((item) => {
             const Icon = item.icon;
             return (

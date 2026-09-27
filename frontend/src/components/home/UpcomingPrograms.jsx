@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   CalendarDays,
   Clock3,
@@ -6,20 +6,17 @@ import {
   Award,
   MapPin,
   Building2,
-  Landmark,
   ChevronLeft,
   ChevronRight,
   User,
   Briefcase,
   Code2,
   Sparkles,
-  Layers,
   CheckCircle2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from '../../animations/variants.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
-import { listUpcoming } from '../../services/upcomingProgramApi.js'
 import { getImageUrl } from '../../utils/imageUtils.js'
 import { useAppData } from '../../context/AppDataContext.jsx'
 import ProgramRegistrationModal from './ProgramRegistrationModal.jsx'
@@ -92,7 +89,7 @@ function formatTimeRange(startStr, endStr) {
 export default function UpcomingPrograms() {
   const reduced = useReducedMotion()
   const { programs } = useAppData()
-  const { status, data: allPrograms, error, refetch } = programs
+  const { status, data: allPrograms, refetch } = programs
   const loading = status === 'loading'
   const [selectedCategory, setSelectedCategory] = useState('ALL') // 'ALL' | 'WEBINAR' | 'WORKSHOP' | 'INTERNSHIP'
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -468,18 +465,6 @@ export default function UpcomingPrograms() {
                         </p>
                       </div>
                     )}
-
-                    {/* Clean Bottom Info Bar (No duplicate avatar overlay) */}
-                    <div className="relative z-10 pt-4 border-t border-white/15 flex items-center justify-between text-xs text-white/80">
-                      <span className="truncate font-semibold">
-                        {eventType === 'INTERNSHIP'
-                          ? 'LeSuccess Innovation Cell'
-                          : currentProgram?.speakerName || 'LeSuccess Faculty'}
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 bg-white/10 px-2 py-0.5 rounded-md">
-                        {currentProgram?.label || eventType}
-                      </span>
-                    </div>
                   </div>
 
                   {/* RIGHT CONTENT COLUMN (7 COLS) */}

@@ -61,6 +61,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    max-width: 100%;
     /*
       Clearance for anchored sections, measured rather than guessed.
 
@@ -77,6 +79,8 @@
 
   body {
     margin: 0;
+    overflow-x: hidden;
+    max-width: 100%;
     background-color: var(--color-surface);
     color: var(--color-ink-soft);
     font-family: var(--font-sans);
@@ -329,4 +333,12 @@
 
 .courselogo {
   animation: moveCourses 3s ease-in-out infinite;
+}
+
+/* Responsive Instagram Embeds */
+.instagram-reel-container iframe {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  border-radius: 16px !important;
 }

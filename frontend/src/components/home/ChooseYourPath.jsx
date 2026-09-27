@@ -71,7 +71,7 @@ const ChooseYourPath = () => {
   }, [courses]);
 
   return (
-    <section className="relative w-full bg-[#F5F8FC] px-6 py-20 sm:px-10 lg:px-20 overflow-hidden transition-colors duration-200">
+    <section className="relative w-full bg-[#F5F8FC] px-4 py-20 sm:px-6 lg:px-20 overflow-hidden transition-colors duration-200">
       {/* Purposeful Background Motion */}
       <FloatingOrbs variant="default" />
       <TechGrid opacity="opacity-[0.025]" />
@@ -86,16 +86,16 @@ const ChooseYourPath = () => {
           description="Master production-grade engineering practices through rigorous project-based learning, real-world codebase development, and dedicated placement support."
         />
 
-        {error ? (
+        {error && courses.length === 0 ? (
           <div className="mt-14 max-w-xl mx-auto">
             <ErrorState
               title="Unable to load courses"
-              message="Could not load the course catalog from the server. Please check your connection and try again."
+              message="We're unable to load course information right now. Please try again."
               onRetry={refetch}
               retryLabel="Retry"
             />
           </div>
-        ) : isLoading ? (
+        ) : isLoading && courses.length === 0 ? (
           <div
             aria-busy="true"
             aria-label="Loading featured courses"
@@ -110,20 +110,15 @@ const ChooseYourPath = () => {
             {featured.map((course) => (
               <div
                 key={course.slug || course.id}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-8 shadow-[0_4px_20px_rgba(7,64,92,0.06)] hover:shadow-[0_22px_45px_rgba(7,64,92,0.12)] hover:-translate-y-2 hover:border-[#07405C]/35 transition-all duration-300 text-left"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-4 sm:p-6 md:p-8 shadow-[0_4px_20px_rgba(7,64,92,0.06)] hover:shadow-[0_22px_45px_rgba(7,64,92,0.12)] hover:-translate-y-2 hover:border-[#07405C]/35 transition-all duration-300 text-left min-w-0"
               >
                 {/* Subtle top brand accent line with faint resting presence */}
                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#DF1E26] via-[#CA164B] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
 
-                {(course.badge || course.badgeLabel || course.badgeText) && (
-                  <div className="absolute right-6 top-6 z-10">
-                    <CourseBadge badge={course.badge} badgeText={course.badgeLabel || course.badgeText} />
-                  </div>
-                )}
-
-                <div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50 p-2.5 shadow-2xs transition-all duration-300 group-hover:scale-105 group-hover:border-[#07405C]/20 group-hover:bg-[#07405C]/5">
+                <div className="min-w-0">
+                  {/* TOP ROW: Logo on left, Badge on right in natural flow - NEVER covering title! */}
+                  <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                    <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50 p-2 sm:p-2.5 shadow-2xs transition-all duration-300 group-hover:scale-105 group-hover:border-[#07405C]/20 group-hover:bg-[#07405C]/5">
                       <img
                         src={getCourseLogo(course)}
                         alt=""
@@ -132,47 +127,54 @@ const ChooseYourPath = () => {
                         className="h-full w-full object-contain"
                       />
                     </div>
-                    <div className="pr-16">
-                      <h3 className="text-xl font-bold text-[#101010] sm:text-2xl leading-tight">
-                        <Link
-                          to={`/courses/${course.slug}`}
-                          className="inline-flex items-center gap-1.5 transition-colors duration-200 hover:text-[#DF1E26] group-hover:text-[#07405C]"
-                        >
-                          <span>{course.title}</span>
-                          <ArrowUpRight
-                            size={18}
-                            className="opacity-0 -translate-x-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0 text-[#DF1E26] shrink-0"
-                          />
-                        </Link>
-                      </h3>
-                      {course.category && (
-                        <span className="text-xs font-semibold text-slate-400 mt-1 block">
-                          {course.category}
-                        </span>
-                      )}
-                    </div>
+
+                    {(course.badge || course.badgeLabel || course.badgeText) && (
+                      <div className="shrink-0 flex justify-end">
+                        <CourseBadge badge={course.badge} badgeText={course.badgeLabel || course.badgeText} />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-[#101010] leading-snug break-words">
+                      <Link
+                        to={`/courses/${course.slug}`}
+                        className="inline-flex items-center gap-1.5 transition-colors duration-200 hover:text-[#DF1E26] group-hover:text-[#07405C]"
+                      >
+                        <span className="min-w-0 break-words">{course.title}</span>
+                        <ArrowUpRight
+                          size={18}
+                          className="opacity-0 -translate-x-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0 text-[#DF1E26] shrink-0"
+                        />
+                      </Link>
+                    </h3>
+                    {course.category && (
+                      <span className="text-xs font-semibold text-slate-400 mt-1 block truncate">
+                        {course.category}
+                      </span>
+                    )}
                   </div>
 
                   {course.shortDescription && (
-                    <p className="mt-4 text-sm leading-relaxed text-slate-600 line-clamp-2">
+                    <p className="mt-4 text-xs sm:text-sm leading-relaxed text-slate-600 line-clamp-2">
                       {course.shortDescription}
                     </p>
                   )}
 
-                  <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5 text-xs font-semibold text-slate-700">
-                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#07405C]/15">
-                      <Clock3 size={14} className="text-[#07405C]" />
-                      {formatDuration(course.durationValue, course.durationUnit)}
+                  <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5 text-xs font-semibold text-slate-700 min-w-0">
+                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#07405C]/15 min-w-0">
+                      <Clock3 size={14} className="text-[#07405C] shrink-0" />
+                      <span className="truncate">{formatDuration(course.durationValue, course.durationUnit)}</span>
                     </span>
 
-                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#07405C]/15">
-                      <Monitor size={14} className="text-[#07405C]" />
-                      Offline / Online
+                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#07405C]/15 min-w-0">
+                      <Monitor size={14} className="text-[#07405C] shrink-0" />
+                      <span className="truncate">Offline / Online</span>
                     </span>
 
-                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#DF1E26]/20">
-                      <BriefcaseBusiness size={14} className="text-[#DF1E26]" />
-                      Placement Cell
+                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#DF1E26]/20 min-w-0">
+                      <BriefcaseBusiness size={14} className="text-[#DF1E26] shrink-0" />
+                      <span className="truncate">Placement Cell</span>
                     </span>
                   </div>
                 </div>
@@ -181,26 +183,26 @@ const ChooseYourPath = () => {
                     sit beside a gap. */}
                 <div
                   className={`mt-8 grid gap-3 pt-2 ${
-                    hasSyllabus(course) ? "grid-cols-2" : "grid-cols-1"
+                    hasSyllabus(course) ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"
                   }`}
                 >
                   {hasSyllabus(course) && (
                     <button
                       type="button"
                       onClick={() => downloadSyllabus(course)}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-[#07405C] py-2.5 text-xs sm:text-sm font-bold text-[#07405C] transition-all hover:bg-[#07405C] hover:text-white active:scale-95 cursor-pointer shadow-xs"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-[#07405C] py-2.5 text-xs sm:text-sm font-bold text-[#07405C] transition-all hover:bg-[#07405C] hover:text-white active:scale-95 cursor-pointer shadow-xs min-w-0"
                       title={`Download ${course.title} Syllabus (PDF)`}
                     >
-                      <Download size={15} />
-                      <span>Syllabus</span>
+                      <Download size={15} className="shrink-0" />
+                      <span className="truncate">Syllabus</span>
                     </button>
                   )}
 
                   <Link
                     to={`/courses/${course.slug}`}
-                    className="flex items-center justify-center rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer"
+                    className="flex items-center justify-center rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer min-w-0"
                   >
-                    Enroll Now
+                    <span className="truncate">Enroll Now</span>
                   </Link>
                 </div>
               </div>
