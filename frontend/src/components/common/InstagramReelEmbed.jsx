@@ -1,6 +1,5 @@
 import { useState, useId } from 'react'
 import { FaInstagram } from 'react-icons/fa6'
-import { ExternalLink } from 'lucide-react'
 import { getCleanReelUrl, getReelShortcode } from '../../utils/instagramEmbed.js'
 
 /**
@@ -9,16 +8,14 @@ import { getCleanReelUrl, getReelShortcode } from '../../utils/instagramEmbed.js
  * Requirements strictly met:
  * 1. ONLY one play control (Instagram's native play button inside the video). ZERO custom play button overlays.
  * 2. Precision windowing technique clips out Instagram top header (avatar, username, follow button).
- * 3. Precision 4:5 aspect ratio clips out Instagram bottom engagement icons (likes, comments, share, caption, and Instagram's duplicate link).
- * 4. Shows exactly ONE clean CTA below the video labeled "View on Instagram".
- * 5. Strict uniform card dimensions, rounded corners, and subtle shadow across all views.
+ * 3. Shows full vertical Reel with Instagram's native "View on Instagram" bottom action.
+ * 4. Strict uniform card dimensions, rounded corners, and subtle shadow across all views.
  */
 export default function InstagramReelEmbed({
   reelUrl,
   title = 'Instagram Reel',
   maxWidth,
   className = '',
-  showViewMore = true,
 }) {
   const [hasError, setHasError] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -43,19 +40,6 @@ export default function InstagramReelEmbed({
           <p className="text-xs font-semibold text-slate-300 mb-1 line-clamp-2">{title || 'Student Success Story'}</p>
           <p className="text-[11px] text-slate-500 mb-3">Reel preview temporarily unavailable</p>
         </div>
-        {showViewMore && (
-          <div className="w-full py-2.5 px-3 text-center border-t border-slate-100 bg-white shrink-0">
-            <a
-              href={canonicalUrl || reelUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#0095F6] hover:text-[#00376B] hover:underline transition"
-            >
-              <span>View on Instagram</span>
-              <ExternalLink size={11} />
-            </a>
-          </div>
-        )}
       </div>
     )
   }
@@ -67,8 +51,8 @@ export default function InstagramReelEmbed({
       className={`relative w-full rounded-2xl bg-white border border-slate-200/80 overflow-hidden shadow-xs transition-shadow hover:shadow-md ${className}`}
       style={maxWidth ? { maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth } : undefined}
     >
-      {/* Precision 4:5 Video Window Container */}
-      <div className="relative w-full aspect-[4/5] overflow-hidden bg-black select-none">
+      {/* Vertical Video Window Container - aspect-[46/65] crops immediately after the horizontal line below 'View more on Instagram' */}
+      <div className="relative w-full aspect-[46/65] overflow-hidden bg-black select-none">
         {/* Loading Skeleton / Placeholder while iframe loads */}
         {!isLoaded && (
           <div className="absolute inset-0 z-0 bg-slate-950 flex flex-col items-center justify-center p-4">
@@ -81,10 +65,10 @@ export default function InstagramReelEmbed({
 
         {/* 
           Iframe windowing:
-          - top: -56px crops the Instagram top header bar (avatar, username, follow button)
-          - aspect-[4/5] height crops Instagram bottom action bar (heart, comments, share, 15 likes, Add comment)
-          - Only the native video and its native Instagram play triangle are visible!
-          - Absolutely NO custom play button overlay added.
+          - top: -52px crops only the top header bar (generic avatar/follow button)
+          - height: calc(100% + 95px) ensures internal layout renders completely
+          - Native Instagram 'View more on Instagram' area remains visible
+          - Aspect ratio 46/65 (0.7077) clips out all engagement icons (likes, comments, share, bookmark)
         */}
         <iframe
           id={titleId}
@@ -92,8 +76,8 @@ export default function InstagramReelEmbed({
           title={title || 'Instagram Reel Video'}
           className="absolute left-0 w-full border-0 transition-opacity duration-300 pointer-events-auto"
           style={{
-            top: '-56px',
-            height: 'calc(100% + 220px)',
+            top: '-52px',
+            height: 'calc(100% + 95px)',
             opacity: isLoaded ? 1 : 0,
           }}
           scrolling="no"
@@ -104,20 +88,6 @@ export default function InstagramReelEmbed({
           onError={() => setHasError(true)}
         />
       </div>
-
-      {/* Exactly ONE clean CTA below the video */}
-      {showViewMore && (
-        <div className="w-full py-2.5 px-3 text-center border-t border-slate-100 bg-white shrink-0">
-          <a
-            href={canonicalUrl || reelUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-xs font-semibold text-[#0095F6] hover:text-[#00376B] hover:underline transition"
-          >
-            View on Instagram
-          </a>
-        </div>
-      )}
     </div>
   )
 }

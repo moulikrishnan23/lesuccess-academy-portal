@@ -74,4 +74,12 @@ public class CourseEnquiryController {
         return ResponseEntity.ok(ApiResponse.success("Course enquiries retrieved successfully",
                 service.list(courseId, search, pageable)));
     }
+
+    /** Primary Admin only — soft delete individual course enquiry. */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("@primaryAdminSecurity.isPrimaryAdmin()")
+    public ResponseEntity<Void> deleteCourseEnquiry(@PathVariable Long id) {
+        service.softDelete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

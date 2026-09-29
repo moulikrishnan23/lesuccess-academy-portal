@@ -158,6 +158,15 @@ public class LeadService {
         return LeadResponse.from(saved);
     }
 
+    @Transactional
+    public void softDelete(Long id) {
+        Lead entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead", id));
+        entity.setDeletedAt(java.time.LocalDateTime.now());
+        repository.save(entity);
+        log.info("Lead soft-deleted: id={}", id);
+    }
+
     /**
      * Rejected with 400 rather than silently ignored: a form posting a source the
      * backend drops on the floor would look like a working integration while

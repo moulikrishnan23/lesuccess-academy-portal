@@ -1,0 +1,286 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 4136 >>
+stream
+q
+0.875 0.118 0.149 rg
+0 770 595 72 re f
+Q
+BT
+/F1 20 Tf
+1 1 1 rg
+40 805 Td
+(LeSuccess Academy) Tj
+ET
+BT
+/F2 10 Tf
+1 1 1 rg
+40 785 Td
+(Learn . Educate . Succeed  |  Official Course Syllabus) Tj
+ET
+BT
+/F1 16 Tf
+0.027 0.251 0.361 rg
+40 735 Td
+(Artificial Intelligence and Machine Learning) Tj
+ET
+BT
+/F2 10 Tf
+0.3 0.3 0.3 rg
+40 715 Td
+(Duration: 3-6 Months  |  Mode: HYBRID  |  100% Placement Support) Tj
+ET
+q
+0.85 0.85 0.85 RG
+1.5 w
+40 700 m 555 700 l S
+Q
+BT
+/F1 12 Tf
+0.1 0.1 0.1 rg
+40 680 Td
+(Detailed Curriculum & Module Outline:) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 657 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 657 Td
+(Module 1: Python and Maths for AI) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 641 Td
+(Python, NumPy, and the linear algebra, probability and calculus that training actually uses) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 619 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 619 Td
+(Module 2: Data Preparation and Feature Engineering) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 603 Td
+(Cleaning, encoding, scaling and splitting data without leaking the answer into training) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 581 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 581 Td
+(Module 3: Supervised Learning) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 565 Td
+(Regression, classification, decision trees and ensembles with Scikit-learn, on real datasets) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 543 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 543 Td
+(Module 4: Unsupervised Learning) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 527 Td
+(Clustering, dimensionality reduction and anomaly detection, and how to judge them without label) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 505 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 505 Td
+(Module 5: Model Evaluation and Optimisation) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 489 Td
+(Cross-validation, confusion matrices, ROC curves, regularisation and hyperparameter tuning) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 467 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 467 Td
+(Module 6: Neural Network Fundamentals) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 451 Td
+(Perceptrons, activation functions, backpropagation and gradient descent, built from scratch onc) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 429 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 429 Td
+(Module 7: Deep Learning with TensorFlow and Keras) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 413 Td
+(Building, training and checkpointing networks, and reading a training curve that has gone wrong) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 391 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 391 Td
+(Module 8: PyTorch Essentials) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 375 Td
+(Tensors, autograd and custom training loops - the framework most research code you will read us) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 353 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 353 Td
+(Module 9: Computer Vision with CNNs) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 337 Td
+(Convolutions, pooling, augmentation and transfer learning on an image classification project) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 315 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 315 Td
+(Module 10: Natural Language Processing) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 299 Td
+(Text preprocessing, embeddings, sequence models and an introduction to transformer architecture) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 277 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 277 Td
+(Module 11: Model Deployment and MLOps Basics) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 261 Td
+(Serving a model behind an API, versioning, monitoring and retraining as data drifts) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 239 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 239 Td
+(Module 12: Capstone AI Project) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 223 Td
+(A complete project from dataset to deployed model, defended in a technical review) Tj
+ET
+q
+0.96 0.96 0.96 rg
+0 0 595 50 re f
+0.85 0.85 0.85 RG
+0.5 w
+0 50 m 595 50 l S
+Q
+BT
+/F1 8.5 Tf
+0.3 0.3 0.3 rg
+40 28 Td
+(LeSuccess Academy - Accelerate Your Tech Career with Live Industry Projects) Tj
+ET
+BT
+/F2 8 Tf
+0.5 0.5 0.5 rg
+40 16 Td
+(Visit: www.lesuccess.in  |  Phone: +91 80120 60000  |  Email: info@lesuccess.in  |  Coimbatore, TN) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000257 00000 n 
+0000004444 00000 n 
+0000004519 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+4589
+%%EOF

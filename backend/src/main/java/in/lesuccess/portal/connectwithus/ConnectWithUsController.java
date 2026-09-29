@@ -75,4 +75,12 @@ public class ConnectWithUsController {
                 "Connect-with-us submissions retrieved successfully",
                 service.list(search, pageable)));
     }
+
+    /** Primary Admin only — soft delete individual submission. */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("@primaryAdminSecurity.isPrimaryAdmin()")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.softDelete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -81,4 +81,12 @@ public class DemoBookingController {
 
         return ResponseEntity.ok(ApiResponse.success("Status updated successfully", service.updateStatus(id, request)));
     }
+
+    /** Primary Admin only — soft delete individual demo booking. */
+    @DeleteMapping("/api/admin/demo-bookings/{id}")
+    @PreAuthorize("@primaryAdminSecurity.isPrimaryAdmin()")
+    public ResponseEntity<Void> deleteDemoBooking(@PathVariable Long id) {
+        service.softDelete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Slf4j
@@ -110,6 +111,14 @@ public class DemoBookingService {
         log.info("Demo booking status updated: id={}, status={}", id, request.getStatus());
         eventPublisher.publishEvent(new DemoBookingStatusUpdatedEvent(this, id, request.getStatus()));
         return DemoBookingResponse.from(saved);
+    }
+
+    @Transactional
+    public void softDelete(Long id) {
+        DemoBooking entity = findOrThrow(id);
+        entity.setDeletedAt(LocalDateTime.now());
+        repository.save(entity);
+        log.info("Demo booking soft-deleted: id={}", id);
     }
 
     private DemoBooking findOrThrow(Long id) {

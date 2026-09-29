@@ -61,11 +61,21 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  const isPrimaryAdmin = Boolean(
+    user &&
+    (user.role === 'ADMIN' || user.role === 'PRIMARY_ADMIN' || user.role === 'SUPER_ADMIN') &&
+    (user.email?.toLowerCase() === 'admin@lesuccess.in' ||
+     user.username?.toLowerCase() === 'admin' ||
+     user.role === 'PRIMARY_ADMIN' ||
+     user.role === 'SUPER_ADMIN')
+  )
+
   const value = {
     token,
     user,
     isAuthenticated: Boolean(token && user),
     isAdmin: user?.role === 'ADMIN',
+    isPrimaryAdmin,
     isTrainer: user?.role === 'TRAINER',
     loading,
     login,

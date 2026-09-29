@@ -3,10 +3,6 @@ import {
   Search,
   Download,
   Eye,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Filter,
   RefreshCw,
   Trash2,
   CalendarCheck,
@@ -20,6 +16,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
+import { useAuth } from '../../../context/AuthContext.jsx'
 
 const FORM_CONFIGS = {
   'demo-bookings': {
@@ -201,7 +198,7 @@ function formatDate(dateStr) {
       minute: '2-digit',
       hour12: true,
     })
-  } catch (_e) {
+  } catch {
     return dateStr
   }
 }
@@ -222,6 +219,7 @@ function getStatusBadge(status) {
 }
 
 export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', showAlert }) {
+  const { isPrimaryAdmin } = useAuth()
   const config = FORM_CONFIGS[formType] || FORM_CONFIGS['demo-bookings']
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -233,6 +231,8 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
   const [totalElements, setTotalElements] = useState(0)
   const [selectedItem, setSelectedItem] = useState(null)
   const [updatingId, setUpdatingId] = useState(null)
+  const [deleteModalItem, setDeleteModalItem] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -262,7 +262,7 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
         setItems([])
         setTotalElements(0)
       }
-    } catch (err) {
+    } catch {
       setItems([])
       setTotalElements(0)
       if (showAlert) showAlert(`Failed to load ${config.title}`, 'error')
@@ -338,6 +338,30 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
       if (showAlert) showAlert(err?.message || 'Failed to update status', 'error')
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  // Primary Admin soft delete handler
+  const handleDeleteSubmission = async () => {
+    if (!deleteModalItem) return
+    setIsDeleting(true)
+    try {
+      await apiClient.delete(`${config.endpoint}/${deleteModalItem.id}`)
+      if (showAlert) showAlert('Submission deleted successfully')
+      setDeleteModalItem(null)
+      if (selectedItem && selectedItem.id === deleteModalItem.id) {
+        setSelectedItem(null)
+      }
+      fetchData()
+    } catch (err) {
+      if (showAlert) {
+        showAlert(
+          err?.response?.data?.message || err?.message || 'Failed to delete submission',
+          'error'
+        )
+      }
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -570,6 +594,16 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
                         >
                           <Eye size={15} />
                         </button>
+                        {isPrimaryAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => setDeleteModalItem(item)}
+                            className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer"
+                            title="Delete Submission"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -719,12 +753,88 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
                   </div>
                 </div>
               ) : <div />}
+              <div className="flex items-center gap-2">
+                {isPrimaryAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const toDelete = selectedItem
+                      setSelectedItem(null)
+                      setDeleteModalItem(toDelete)
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition cursor-pointer"
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedItem(null)}
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal (Primary Admin Only) */}
+      {deleteModalItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn"
+          onClick={() => !isDeleting && setDeleteModalItem(null)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Delete Form Submission</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Primary Admin Action</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Are you sure you want to delete this submission from{' '}
+              <span className="font-semibold text-slate-900">
+                {resolveFieldValue(deleteModalItem, 'name') || 'this user'}
+              </span>
+              ? This submission will be removed from the active list.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-3">
               <button
                 type="button"
-                onClick={() => setSelectedItem(null)}
-                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                onClick={() => setDeleteModalItem(null)}
+                disabled={isDeleting}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer disabled:opacity-50"
               >
-                Close
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteSubmission}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-rose-700 transition cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <RefreshCw size={14} className="animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={14} />
+                    <span>Delete</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

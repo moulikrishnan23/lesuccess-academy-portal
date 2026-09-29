@@ -251,17 +251,8 @@ export default function InitialReelExperience({ activeReels = [], onContinue }) 
                 className="text-xs sm:text-sm font-bold text-white truncate"
                 title={currentReel.title || 'Student Success Story'}
               >
-                {currentReel.title || 'Student Success Story'}
+              {currentReel.title || 'Student Success Story'}
               </h4>
-              <a
-                href={canonicalUrl || currentReel.reelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0095F6] hover:text-sky-300 transition mt-0.5"
-              >
-                <span>View on Instagram</span>
-                <ExternalLink size={10} />
-              </a>
             </div>
 
             {/* Circular (+) Action Button matching reference */}

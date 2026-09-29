@@ -3,7 +3,6 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
-  Heart,
   Info,
   ExternalLink,
 } from "lucide-react";
@@ -11,7 +10,6 @@ import { motion } from "framer-motion";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import { GOOGLE_REVIEWS, GOOGLE_REVIEWS_META } from "../../data/googleReviews.js";
-import { useAppData } from "../../context/AppDataContext.jsx";
 
 const AVATAR_COLORS = [
   "bg-[#07405C]",
@@ -31,31 +29,12 @@ function getAvatarColor(name = "") {
 
 export default function Testimonials() {
   const reduced = useReducedMotion();
-  const { testimonials } = useAppData();
-  const { data: apiTestimonials } = testimonials;
 
   const [expandedIds, setExpandedIds] = useState(new Set());
-  const [likedMap, setLikedMap] = useState({});
   const [startIndex, setStartIndex] = useState(0);
 
-  // Map API data if present, otherwise use verified GOOGLE_REVIEWS
-  const reviews = useMemo(() => {
-    if (Array.isArray(apiTestimonials) && apiTestimonials.length > 0) {
-      return apiTestimonials.map((t) => ({
-        id: t.id,
-        name: t.studentName,
-        reviewCount: t.reviewerRole || "1 review",
-        course: t.courseName || "",
-        rating: t.rating || 5,
-        date: t.reviewDate || "Recently",
-        text: t.reviewText,
-        likesCount: t.likesCount || 0,
-        photoUrl: t.photoUrl,
-        verified: true,
-      }));
-    }
-    return GOOGLE_REVIEWS;
-  }, [apiTestimonials]);
+  // Use only verified Google Reviews
+  const reviews = GOOGLE_REVIEWS;
 
   const cardsPerPage = 3;
   const maxStart = Math.max(0, reviews.length - cardsPerPage);
@@ -69,16 +48,6 @@ export default function Testimonials() {
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
-    });
-  };
-
-  const toggleLike = (id, defaultCount) => {
-    setLikedMap((prev) => {
-      const current = prev[id];
-      if (current) {
-        return { ...prev, [id]: null };
-      }
-      return { ...prev, [id]: (defaultCount || 0) + 1 };
     });
   };
 
@@ -211,11 +180,6 @@ export default function Testimonials() {
               {visibleReviews.map((review) => {
                 const initial = review.name ? review.name.trim().charAt(0).toUpperCase() : "S";
                 const isExpanded = expandedIds.has(review.id);
-                const displayLikes =
-                  likedMap[review.id] !== undefined
-                    ? likedMap[review.id]
-                    : review.likesCount || 0;
-                const isLiked = !!likedMap[review.id];
 
                 return (
                   <div
@@ -284,33 +248,14 @@ export default function Testimonials() {
                       </p>
                     </div>
 
-                    {/* Footer Actions: Heart/Like and Course Tag */}
-                    <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <button
-                          type="button"
-                          onClick={() => toggleLike(review.id, review.likesCount)}
-                          aria-label="Like review"
-                          className={`inline-flex items-center gap-1.5 text-xs font-semibold transition cursor-pointer ${
-                            isLiked
-                              ? "text-[#DF1E26]"
-                              : "text-slate-400 hover:text-[#DF1E26]"
-                          }`}
-                        >
-                          <Heart
-                            size={16}
-                            className={isLiked ? "fill-[#DF1E26] text-[#DF1E26]" : ""}
-                          />
-                          {displayLikes > 0 && <span>{displayLikes}</span>}
-                        </button>
-                      </div>
-
-                      {review.course && (
+                    {/* Footer: Course Tag */}
+                    {review.course && (
+                      <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-end">
                         <span className="text-[11px] font-bold text-[#DF1E26] bg-[#DF1E26]/10 px-2.5 py-0.5 rounded-full border border-[#DF1E26]/20">
                           {review.course}
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}

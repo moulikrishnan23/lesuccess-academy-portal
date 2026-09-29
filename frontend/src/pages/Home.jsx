@@ -16,7 +16,6 @@ const Home = () => {
     <div>
       <HeroVideo />
       <AboutSection/>
-
       <WhyChooseUs/>
       <DemoClass/>
       <ChooseYourPath/>

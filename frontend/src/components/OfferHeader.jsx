@@ -188,15 +188,15 @@ const OfferHeader = () => {
 
   return (
     <div className="w-full bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white shadow-xs select-none">
-      <div className="mx-auto flex min-h-10 sm:min-h-11 max-w-7xl items-center justify-between gap-1.5 sm:gap-4 px-2.5 sm:px-6 py-1 sm:py-1.5">
+      <div className="mx-auto flex min-h-9 sm:min-h-10 max-w-7xl items-center justify-between gap-1 sm:gap-3 px-2 sm:px-4 lg:px-6 py-1">
         
-        {/* Left balance spacer on larger screens so center content stays centered */}
-        <div className="hidden md:flex items-center shrink-0 w-32" aria-hidden="true" />
+        {/* Left balance spacer on desktop so center content stays perfectly centered */}
+        <div className="hidden lg:flex items-center shrink-0 w-36 xl:w-44" aria-hidden="true" />
 
         {/* Center: Synchronized dynamic rotating offer badge, copy and CTA */}
-        <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2.5 flex-nowrap sm:flex-wrap text-center px-1 min-w-0">
+        <div className="flex flex-1 items-center justify-between sm:justify-center gap-1 sm:gap-2.5 lg:gap-3 min-w-0">
           <span
-            className={`inline-flex items-center gap-1 rounded-full px-2 sm:px-2.5 py-0.5 text-[9px] sm:text-[11px] font-bold tracking-wide uppercase border select-none shrink-0 transition-colors duration-300 ease-in-out ${badgeTheme.badgeClasses}`}
+            className={`inline-flex items-center rounded-full px-1.5 sm:px-2.5 py-0.5 text-[8.5px] sm:text-[10.5px] font-bold tracking-wide uppercase border select-none shrink-0 transition-colors duration-300 ease-in-out ${badgeTheme.badgeClasses}`}
             style={{
               opacity: visible ? 1 : 0,
               transition: `opacity ${FADE_MS}ms ease-in-out, background-color 300ms ease-in-out, border-color 300ms ease-in-out, color 300ms ease-in-out`,
@@ -206,7 +206,7 @@ const OfferHeader = () => {
           </span>
 
           <p
-            className="text-[11px] font-semibold sm:text-xs md:text-sm tracking-wide truncate sm:whitespace-normal max-w-[190px] xs:max-w-[260px] sm:max-w-none"
+            className="text-[10px] sm:text-xs md:text-sm font-semibold tracking-tight sm:tracking-normal leading-[1.15] sm:leading-tight line-clamp-2 lg:line-clamp-1 min-w-0 flex-1 sm:flex-initial sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl text-center px-1"
             style={{
               opacity: visible ? 1 : 0,
               transition: `opacity ${FADE_MS}ms ease-in-out`,
@@ -223,9 +223,9 @@ const OfferHeader = () => {
               animate-[pulse_1.2s_ease-in-out_infinite]
               rounded-md sm:rounded-lg
               bg-white
-              px-2 sm:px-3.5
+              px-2 sm:px-3
               py-0.5 sm:py-1
-              text-[10px] sm:text-xs
+              text-[9.5px] sm:text-xs
               font-bold
               text-[#DF1E26]
               shadow-xs
@@ -235,14 +235,15 @@ const OfferHeader = () => {
               active:scale-95
               cursor-pointer
               shrink-0
+              whitespace-nowrap
             "
           >
             Enroll Now
           </button>
         </div>
 
-        {/* Right: Official LeSuccess Social Media Links (hidden on mobile to give room to offer text) */}
-        <div className="hidden md:flex items-center gap-1 sm:gap-1.5 shrink-0 w-32 justify-end">
+        {/* Right: Official LeSuccess Social Media Links */}
+        <div className="hidden lg:flex items-center gap-1 sm:gap-1.5 shrink-0 w-36 xl:w-44 justify-end">
           {SOCIAL_LINKS.map((item) => {
             const Icon = item.icon;
             return (

@@ -74,8 +74,9 @@ public class ContactController {
                 contactService.updateStatus(id, request.getStatus())));
     }
 
+    /** Primary Admin only — soft delete individual contact message. */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("@primaryAdminSecurity.isPrimaryAdmin()")
     public ResponseEntity<Void> deleteContactMessage(@PathVariable Long id) {
         contactService.softDelete(id);
         return ResponseEntity.noContent().build();

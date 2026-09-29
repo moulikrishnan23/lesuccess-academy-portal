@@ -13,6 +13,7 @@ import PublicLayout from "./components/layout/PublicLayout.jsx";
 import PageTransition from "./components/layout/PageTransition.jsx";
 import Footer from "./components/Footer.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import BackToTop from "./components/common/BackToTop.jsx";
 import { AnimatePresence } from "framer-motion";
 
 import Home from "./pages/Home";
@@ -23,6 +24,7 @@ import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
 import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
 import ServicePage from "./pages/Services/ServicePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
+import ConnectWithUsPopupTrigger from "./components/common/ConnectWithUsPopupTrigger.jsx";
 import GalleryPage from "./pages/Gallery/GalleryPage.jsx";
 import SuccessStoriesPage from './pages/SuccessStories/SuccessStoriesPage.jsx';
 import LoginPage from "./pages/Auth/LoginPage.jsx";
@@ -583,6 +585,14 @@ const AppContent = () => {
           <Footer/>
         </div>
       )}
+
+      {/* Global Back to Top Button for Public Pages */}
+      {!isDashboard && <BackToTop />}
+
+      {/* =====================================================
+          CONNECT WITH US POPUP (Triggered after ~3 sections)
+      ===================================================== */}
+      {!isDashboard && !isLoginPage && <ConnectWithUsPopupTrigger />}
 
       {/* =====================================================
           COURSE ENQUIRY POPUP MODAL (Triggered by Navbar/CTAs)

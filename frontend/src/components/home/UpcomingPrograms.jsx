@@ -38,9 +38,8 @@ function formatDate(dateStr) {
     const date = new Date(y, m - 1, d)
     if (Number.isNaN(date.getTime())) return null
     return date.toLocaleDateString('en-IN', {
-      weekday: 'long',
-      month: 'short',
       day: 'numeric',
+      month: 'long',
       year: 'numeric',
     })
   } catch {
@@ -508,7 +507,7 @@ export default function UpcomingPrograms() {
                           <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
                             Date
                           </span>
-                          <span className="block text-xs font-bold text-slate-900 truncate">
+                          <span className="block text-xs font-bold text-slate-900">
                             {formattedDate}
                           </span>
                         </div>
@@ -523,7 +522,7 @@ export default function UpcomingPrograms() {
                           <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
                             Timing
                           </span>
-                          <span className="block text-xs font-bold text-slate-900 truncate">
+                          <span className="block text-xs font-bold text-slate-900">
                             {formattedTime}
                           </span>
                         </div>

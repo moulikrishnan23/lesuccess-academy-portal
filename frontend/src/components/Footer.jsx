@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
 
 const COURSES = [
-  { name: "Python: Full Stack Development", slug: "python-full-stack" },
-  { name: "Java: Full Stack Development", slug: "java-full-stack" },
+  { name: "Python: Full Stack Development", slug: "python-full-stack-development" },
+  { name: "Java: Full Stack Development", slug: "full-stack-java" },
   { name: "Data Analytics & AI", slug: "data-analytics" },
-  { name: "DevOps with AWS Cloud", slug: "aws-devops" },
+  { name: "DevOps with AWS Cloud", slug: "aws-and-devops" },
 ];
 
 const QUICK_LINKS = [

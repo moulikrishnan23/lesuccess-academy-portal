@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "connect_with_us")
+@org.hibernate.annotations.SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -46,6 +47,9 @@ public class ConnectWithUs {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @PrePersist
     protected void onCreate() {
