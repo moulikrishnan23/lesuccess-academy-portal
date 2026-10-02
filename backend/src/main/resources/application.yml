@@ -126,7 +126,7 @@ lesuccess:
 # loads, every Spring AI auto-configuration is excluded (see
 # ChatbotEnvironmentPostProcessor) and /api/chat returns 404.
 chatbot:
-  enabled: ${CHATBOT_ENABLED:false}
+  enabled: ${CHATBOT_ENABLED:true}
 
 # Spring AI — only read when chatbot.enabled=true.
 spring.ai:
@@ -137,17 +137,13 @@ spring.ai:
       text: google-genai
   google:
     genai:
-      # No default, deliberately — see PRODUCTION-SECRETS.md. Gemini Developer API
-      # (API key) mode; no project-id/location, so the Vertex AI path is never taken.
-      api-key: ${GEMINI_API_KEY}
+      api-key: ${GEMINI_API_KEY:}
       chat:
         model: gemini-3.8-flash
         temperature: 0.2
         max-output-tokens: 600
       embedding:
-        # Same key, same Gemini Developer API mode. Embedding has its own connection
-        # properties in Spring AI, so the key is repeated rather than inherited.
-        api-key: ${GEMINI_API_KEY}
+        api-key: ${GEMINI_API_KEY:}
         text:
           # Current stable Gemini embedding model. 768 of its 3072 dimensions is a
           # Google-recommended size; Gemini auto-normalises truncated output, and it

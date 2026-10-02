@@ -38,11 +38,20 @@ function ChatWidgetInner({ onOpenEnquiry }) {
   const toggle = useCallback(() => {
     setHasLoaded(true)
     setHasUnread(false)
-    setIsOpen((open) => !open)
+    setIsOpen((open) => {
+      const next = !open
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lesuccess-chat-toggle', { detail: { open: next } }))
+      }
+      return next
+    })
   }, [])
 
   const close = useCallback(({ returnFocus = true } = {}) => {
     setIsOpen(false)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('lesuccess-chat-toggle', { detail: { open: false } }))
+    }
     if (returnFocus) launcherRef.current?.focus()
   }, [])
 

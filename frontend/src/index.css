@@ -360,15 +360,26 @@
   BackToTop's z-40), window z-65 (over the navbar's z-50 and the offer header's
   z-60, under every modal at z-70 and above).
 */
+:root {
+  --chat-launcher-size: 3.5rem;
+  --chat-launcher-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --chat-launcher-bottom: 2rem;
+  }
+}
+
 @layer components {
   .chat-anchor {
-    --chat-launcher-size: 3rem;
-    --chat-launcher-bottom: calc(8.25rem + env(safe-area-inset-bottom, 0px));
+    --chat-launcher-size: 3.5rem;
+    --chat-launcher-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
   }
 
   @media (min-width: 1024px) {
     .chat-anchor {
-      --chat-launcher-bottom: 5.75rem;
+      --chat-launcher-bottom: 2rem;
     }
   }
 
@@ -395,6 +406,27 @@
       height: min(600px, 80vh, calc(100dvh - var(--chat-window-bottom) - var(--app-header, 0px) - 1rem));
       padding: 0;
       border-radius: var(--radius-card);
+    }
+  }
+
+  /* Connect With Us popup floating directly above the chatbot launcher */
+  .connect-popup {
+    position: fixed;
+    right: 1rem;
+    bottom: calc(var(--chat-launcher-bottom) + var(--chat-launcher-size) + 0.75rem);
+    z-index: 55;
+    max-height: min(540px, calc(100dvh - var(--chat-launcher-bottom) - var(--chat-launcher-size) - 2rem));
+  }
+
+  @media (min-width: 640px) {
+    .connect-popup {
+      right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .connect-popup {
+      right: 2rem;
     }
   }
 

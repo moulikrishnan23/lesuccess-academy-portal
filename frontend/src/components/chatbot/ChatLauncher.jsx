@@ -1,11 +1,10 @@
-import { MessageCircle, X } from 'lucide-react'
+import { X } from 'lucide-react'
 
 /**
  * The round button that opens the chatbot. Always in the bundle, so it is kept
  * tiny; everything else loads on its first click (see ChatWidget).
  *
- * Its position comes from `.chat-launcher` in index.css, which stacks it above
- * BackToTop and the mobile bottom bars.
+ * Its position comes from `.chat-launcher` in index.css, placed at the bottom right.
  */
 export default function ChatLauncher({ ref, open, hasUnread, onClick }) {
   return (
@@ -16,18 +15,25 @@ export default function ChatLauncher({ ref, open, hasUnread, onClick }) {
       aria-label="Open chat with LeSuccess assistant"
       aria-expanded={open}
       aria-controls={open ? 'ls-chat-window' : undefined}
-      className="chat-launcher z-45 right-4 sm:right-6 lg:right-8 flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-white shadow-[0_4px_16px_rgba(244,66,70,0.35)] transition-transform duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+      title={open ? "Close chat" : "Chat with LeSuccess Assistant"}
+      className="chat-launcher z-45 right-4 sm:right-6 lg:right-8 flex h-14 w-14 items-center justify-center rounded-full bg-[#0a0f1d] text-white shadow-[0_4px_20px_rgba(0,0,0,0.45)] border border-white/20 transition-all duration-200 hover:scale-105 hover:border-white/40 active:scale-95 cursor-pointer overflow-hidden p-0"
     >
       {open ? (
-        <X size={22} strokeWidth={2.5} aria-hidden="true" />
+        <X size={24} strokeWidth={2.5} aria-hidden="true" className="text-white" />
       ) : (
-        <MessageCircle size={22} strokeWidth={2.25} aria-hidden="true" />
+        <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full">
+          <img
+            src="/logo/LeSuccess_Logo_Chatbot.gif"
+            alt="Chat with LeSuccess"
+            className="h-full w-full object-cover scale-[1.22] pointer-events-none select-none rounded-full"
+          />
+        </div>
       )}
       {hasUnread && !open && (
         <span
           data-testid="chat-unread-dot"
           aria-hidden="true"
-          className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-gold"
+          className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-gold shadow-sm"
         />
       )}
     </button>

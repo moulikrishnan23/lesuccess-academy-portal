@@ -48,7 +48,7 @@ export default function InstagramReelEmbed({
 
   return (
     <div
-      className={`relative w-full rounded-2xl bg-white border border-slate-200/80 overflow-hidden shadow-xs transition-shadow hover:shadow-md ${className}`}
+      className={`relative w-full rounded-2xl bg-black border border-slate-800/80 overflow-hidden shadow-xs transition-shadow hover:shadow-md ${className}`}
       style={maxWidth ? { maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth } : undefined}
     >
       {/* Vertical Video Window Container - aspect-[46/65] crops immediately after the horizontal line below 'View more on Instagram' */}
@@ -65,9 +65,8 @@ export default function InstagramReelEmbed({
 
         {/* 
           Iframe windowing:
-          - top: -52px crops only the top header bar (generic avatar/follow button)
-          - height: calc(100% + 95px) ensures internal layout renders completely
-          - Native Instagram 'View more on Instagram' area remains visible
+          - top: -56px cleanly crops out Instagram top header bar and separator line
+          - height: calc(100% + 99px) ensures full vertical reel layout and native 'View more on Instagram' area
           - Aspect ratio 46/65 (0.7077) clips out all engagement icons (likes, comments, share, bookmark)
         */}
         <iframe
@@ -76,8 +75,8 @@ export default function InstagramReelEmbed({
           title={title || 'Instagram Reel Video'}
           className="absolute left-0 w-full border-0 transition-opacity duration-300 pointer-events-auto"
           style={{
-            top: '-52px',
-            height: 'calc(100% + 95px)',
+            top: '-56px',
+            height: 'calc(100% + 99px)',
             opacity: isLoaded ? 1 : 0,
           }}
           scrolling="no"

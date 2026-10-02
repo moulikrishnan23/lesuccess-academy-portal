@@ -174,7 +174,7 @@ export default function ChatWindow({ open, onClose, onDisabled, onUnreadReply, o
           exit={hiddenState}
           transition={transition}
           style={{ transformOrigin: 'bottom right' }}
-          className="chat-window z-65 flex flex-col overflow-hidden bg-surface font-sans text-ink sm:right-6 sm:border sm:border-line sm:shadow-card lg:right-8"
+          className="chat-window z-50 flex flex-col overflow-hidden bg-surface font-sans text-ink sm:right-6 sm:border sm:border-line sm:shadow-card lg:right-8"
         >
           <header className="flex items-center gap-3 bg-navy-800 px-4 py-3 text-white">
             <div className="min-w-0 flex-1">

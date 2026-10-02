@@ -56,6 +56,16 @@ lesuccess:
     api-key: ${CLOUDINARY_API_KEY:}
     api-secret: ${CLOUDINARY_API_SECRET:}
 
+chatbot:
+  enabled: ${CHATBOT_ENABLED:false}
+
+spring.ai:
+  google:
+    genai:
+      api-key: ${GEMINI_API_KEY:}
+      embedding:
+        api-key: ${GEMINI_API_KEY:}
+
 logging:
   level:
     in.lesuccess.portal: INFO

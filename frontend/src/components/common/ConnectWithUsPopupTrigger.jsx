@@ -27,11 +27,22 @@ export default function ConnectWithUsPopupTrigger() {
     lastDismissedScrollRef.current = null;
   }, [location.pathname]);
 
-  // Scroll detection
+  // Close popup if chatbot window opens so they don't overlap
+  useEffect(() => {
+    const handleChatToggle = (e) => {
+      if (e.detail?.open) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('lesuccess-chat-toggle', handleChatToggle);
+    return () => window.removeEventListener('lesuccess-chat-toggle', handleChatToggle);
+  }, []);
+
+  // Scroll & timer detection
   useEffect(() => {
     if (isPermanentlyDisabled) return undefined;
 
-    const handleScroll = () => {
+    const checkTrigger = () => {
       if (isOpen || triggeredThisPageRef.current) return;
 
       try {
@@ -46,15 +57,13 @@ export default function ConnectWithUsPopupTrigger() {
         /* ignore storage access error */
       }
 
-      // Approximately 3 major sections of content (around 1200px - 1400px or ~1.8 viewport heights)
-      const threshold = Math.max(1100, (window.innerHeight || 800) * 1.6);
+      const threshold = Math.min(800, Math.max(450, (window.innerHeight || 800) * 0.7));
       const currentScroll = window.scrollY || window.pageYOffset || 0;
 
       if (currentScroll >= threshold) {
-        // If user recently dismissed it, avoid re-opening until they have scrolled further
         if (
           lastDismissedScrollRef.current !== null &&
-          Math.abs(currentScroll - lastDismissedScrollRef.current) < 1000
+          Math.abs(currentScroll - lastDismissedScrollRef.current) < 800
         ) {
           return;
         }
@@ -64,11 +73,37 @@ export default function ConnectWithUsPopupTrigger() {
       }
     };
 
+    const handleScroll = () => {
+      checkTrigger();
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     // Check initial scroll in case user reloaded midway down the page
     handleScroll();
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Timer fallback: prompt after 10s of page visit if not already triggered
+    const timer = setTimeout(() => {
+      if (!isOpen && !triggeredThisPageRef.current) {
+        try {
+          if (
+            localStorage.getItem(STORAGE_KEY) === 'true' ||
+            sessionStorage.getItem(STORAGE_KEY) === 'true'
+          ) {
+            setIsPermanentlyDisabled(true);
+            return;
+          }
+        } catch {
+          /* ignore storage access error */
+        }
+        triggeredThisPageRef.current = true;
+        setIsOpen(true);
+      }
+    }, 10000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timer);
+    };
   }, [isOpen, isPermanentlyDisabled]);
 
   const handleClose = () => {

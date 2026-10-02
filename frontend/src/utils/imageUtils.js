@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../services/apiClient.js'
+
 /**
  * Resolves an image URL to a valid loadable URL across environments.
  *
@@ -26,7 +28,7 @@ export const getImageUrl = (url, fallback = '') => {
     return trimmed
   }
 
-  const apiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
+  const apiBase = API_BASE_URL
 
   // Backend upload path
   if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {

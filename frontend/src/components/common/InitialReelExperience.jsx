@@ -199,7 +199,7 @@ export default function InitialReelExperience({ activeReels = [], onContinue }) 
 
         {/* Center Active Reel Card (Main Focus) */}
         <div
-          className="relative w-[280px] xs:w-[300px] sm:w-[320px] shrink-0 rounded-3xl overflow-hidden border border-white/20 bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] z-20 transition-all duration-300"
+          className="relative w-[280px] xs:w-[300px] sm:w-[320px] shrink-0 rounded-3xl overflow-hidden border border-white/10 bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] z-20 transition-all duration-300"
         >
           {/* Close Button (✕) at top-right of the card matching ASCII reference */}
           <button
@@ -238,7 +238,7 @@ export default function InitialReelExperience({ activeReels = [], onContinue }) 
                   reelUrl={currentReel.reelUrl}
                   title={currentReel.title}
                   showViewMore={false}
-                  className="!rounded-none !border-0 !shadow-none"
+                  className="!rounded-none !border-0 !shadow-none !bg-transparent"
                 />
               </motion.div>
             </AnimatePresence>
