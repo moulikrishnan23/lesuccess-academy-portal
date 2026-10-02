@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class TeamMemberService {
 
     private final TeamMemberRepository repository;
+    private final in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
 
     @Transactional(readOnly = true)
     public List<TeamMemberResponse> listActive() {
@@ -142,8 +143,11 @@ public class TeamMemberService {
     public void delete(Long id) {
         TeamMember member = repository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TeamMember", id));
-        member.setDeletedAt(LocalDateTime.now());
-        repository.save(member);
+        repository.delete(member);
+        
+        if (member.getImageUrl() != null) {
+            cloudinaryService.deleteAsset(member.getImageUrl());
+        }
 
         // Rebalance remaining members to close gaps
         List<TeamMember> remaining = repository.findAllByOrderByDisplayOrderAscIdAsc();

@@ -76,4 +76,12 @@ public class LeadController {
         return ResponseEntity.ok(ApiResponse.success("Status updated successfully",
                 leadService.updateStatus(id, request.getStatus())));
     }
+
+    /** Primary Admin only — soft delete individual lead. */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("@primaryAdminSecurity.isPrimaryAdmin()")
+    public ResponseEntity<Void> deleteLead(@PathVariable Long id) {
+        leadService.softDelete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

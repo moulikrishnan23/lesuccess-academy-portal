@@ -60,7 +60,7 @@ const WhyChooseUs = () => {
   const reduced = useReducedMotion();
 
   return (
-    <section className="relative w-full bg-[#F8FAFC] px-6 py-20 sm:px-10 lg:px-20 border-y border-slate-100/80 overflow-hidden">
+    <section className="relative w-full bg-[#F8FAFC] px-6 py-20 sm:px-10 lg:px-20 border-y border-slate-100/80 overflow-hidden transition-colors duration-200">
       {/* Purposeful Background Motion: Floating Orbs & Tech Grid */}
       <FloatingOrbs variant="full" />
       <TechGrid opacity="opacity-[0.03]" />

@@ -21,6 +21,7 @@ public class GalleryService {
 
     private final GalleryCategoryRepository categoryRepository;
     private final GalleryImageRepository imageRepository;
+    private final in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
 
     /* =========================================================
        PUBLIC READ OPERATIONS
@@ -183,8 +184,20 @@ public class GalleryService {
         GalleryCategory category = categoryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("GalleryCategory", id));
 
-        category.setDeletedAt(LocalDateTime.now());
-        categoryRepository.save(category);
+        // Fetch all images for this category to delete their Cloudinary assets
+        List<GalleryImage> images = imageRepository.findAllByCategoryIdAndDeletedAtIsNullOrderByDisplayOrderAscIdAsc(id);
+        
+        categoryRepository.delete(category);
+        
+        // Delete assets after successful DB deletion
+        if (category.getCoverImageUrl() != null) {
+            cloudinaryService.deleteAsset(category.getCoverImageUrl());
+        }
+        for (GalleryImage img : images) {
+            if (img.getImageUrl() != null) {
+                cloudinaryService.deleteAsset(img.getImageUrl());
+            }
+        }
 
         List<GalleryCategory> remaining = categoryRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
         List<GalleryCategory> modified = OrderRebalanceUtil.rebalance(
@@ -307,8 +320,11 @@ public class GalleryService {
         GalleryImage image = imageRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("GalleryImage", id));
 
-        image.setDeletedAt(LocalDateTime.now());
-        imageRepository.save(image);
+        imageRepository.delete(image);
+        
+        if (image.getImageUrl() != null) {
+            cloudinaryService.deleteAsset(image.getImageUrl());
+        }
 
         List<GalleryImage> remaining = imageRepository.findAllByCategoryIdAndDeletedAtIsNullOrderByDisplayOrderAscIdAsc(image.getCategoryId());
         List<GalleryImage> modified = OrderRebalanceUtil.rebalance(

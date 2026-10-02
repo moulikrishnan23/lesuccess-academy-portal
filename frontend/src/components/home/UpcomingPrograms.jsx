@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   CalendarDays,
   Clock3,
@@ -6,21 +6,19 @@ import {
   Award,
   MapPin,
   Building2,
-  Landmark,
   ChevronLeft,
   ChevronRight,
   User,
   Briefcase,
   Code2,
   Sparkles,
-  Layers,
   CheckCircle2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from '../../animations/variants.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
-import { listUpcoming } from '../../services/upcomingProgramApi.js'
 import { getImageUrl } from '../../utils/imageUtils.js'
+import { useAppData } from '../../context/AppDataContext.jsx'
 import ProgramRegistrationModal from './ProgramRegistrationModal.jsx'
 
 const INTERVAL_MS = 7000
@@ -40,9 +38,8 @@ function formatDate(dateStr) {
     const date = new Date(y, m - 1, d)
     if (Number.isNaN(date.getTime())) return null
     return date.toLocaleDateString('en-IN', {
-      weekday: 'long',
-      month: 'short',
       day: 'numeric',
+      month: 'long',
       year: 'numeric',
     })
   } catch {
@@ -90,9 +87,10 @@ function formatTimeRange(startStr, endStr) {
 
 export default function UpcomingPrograms() {
   const reduced = useReducedMotion()
+  const { programs } = useAppData()
+  const { status, data: allPrograms, refetch } = programs
+  const loading = status === 'loading'
   const [selectedCategory, setSelectedCategory] = useState('ALL') // 'ALL' | 'WEBINAR' | 'WORKSHOP' | 'INTERNSHIP'
-  const [allPrograms, setAllPrograms] = useState([])
-  const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
   const [direction, setDirection] = useState(1) // 1 = forward, -1 = backward
@@ -110,6 +108,7 @@ export default function UpcomingPrograms() {
     setIsRegisterModalOpen(false)
     setSelectedProgramForModal(null)
   }
+
   const [registeredEvents, setRegisteredEvents] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('lesuccess_registered_events') || '{}')
@@ -129,34 +128,6 @@ export default function UpcomingPrograms() {
       return updated
     })
   }
-
-  /* =======================================================
-     FETCH UPCOMING PROGRAMS (100% DYNAMIC - NO HARDCODED DATA)
-  ======================================================= */
-  useEffect(() => {
-    const controller = new AbortController()
-    const fetchPrograms = async () => {
-      setLoading(true)
-      try {
-        const list = await listUpcoming(null, { signal: controller.signal })
-        if (Array.isArray(list)) {
-          setAllPrograms(list)
-        } else {
-          setAllPrograms([])
-        }
-      } catch (error) {
-        if (error?.name !== 'AbortError') {
-          console.warn('Upcoming programs fetch error:', error)
-          setAllPrograms([])
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPrograms()
-    return () => controller.abort()
-  }, [])
 
   /* =======================================================
      FILTERED PROGRAMS BY CATEGORY
@@ -324,6 +295,24 @@ export default function UpcomingPrograms() {
           <div className="mt-12 flex min-h-[360px] items-center justify-center rounded-3xl bg-white/5 border border-white/10 p-12">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
           </div>
+        ) : status === 'error' ? (
+          <div className="mt-12 mx-auto max-w-xl rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 p-8 sm:p-12 text-center text-white shadow-2xl">
+            <h3 className="text-xl sm:text-2xl font-bold text-white">
+              Unable to load upcoming programs
+            </h3>
+            <p className="mt-3 text-sm text-white/80 max-w-md mx-auto leading-relaxed">
+              We could not connect to the server to load scheduled events. Please check your network and retry.
+            </p>
+            <div className="mt-7">
+              <button
+                type="button"
+                onClick={refetch}
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#07405C] shadow-lg transition hover:bg-slate-100 active:scale-95 cursor-pointer"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
         ) : allPrograms.length === 0 ? (
           /* Clean empty state when no upcoming events exist */
           <div className="mt-12 mx-auto max-w-xl rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 p-8 sm:p-12 text-center text-white shadow-2xl">
@@ -475,18 +464,6 @@ export default function UpcomingPrograms() {
                         </p>
                       </div>
                     )}
-
-                    {/* Clean Bottom Info Bar (No duplicate avatar overlay) */}
-                    <div className="relative z-10 pt-4 border-t border-white/15 flex items-center justify-between text-xs text-white/80">
-                      <span className="truncate font-semibold">
-                        {eventType === 'INTERNSHIP'
-                          ? 'LeSuccess Innovation Cell'
-                          : currentProgram?.speakerName || 'LeSuccess Faculty'}
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 bg-white/10 px-2 py-0.5 rounded-md">
-                        {currentProgram?.label || eventType}
-                      </span>
-                    </div>
                   </div>
 
                   {/* RIGHT CONTENT COLUMN (7 COLS) */}
@@ -530,7 +507,7 @@ export default function UpcomingPrograms() {
                           <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
                             Date
                           </span>
-                          <span className="block text-xs font-bold text-slate-900 truncate">
+                          <span className="block text-xs font-bold text-slate-900">
                             {formattedDate}
                           </span>
                         </div>
@@ -545,7 +522,7 @@ export default function UpcomingPrograms() {
                           <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
                             Timing
                           </span>
-                          <span className="block text-xs font-bold text-slate-900 truncate">
+                          <span className="block text-xs font-bold text-slate-900">
                             {formattedTime}
                           </span>
                         </div>

@@ -27,6 +27,8 @@ import {
   MessageSquare,
   Briefcase,
   Menu,
+  Video,
+  Award,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import apiClient from '../../services/apiClient.js'
@@ -37,9 +39,11 @@ import AdminTeamTab from './components/AdminTeamTab.jsx'
 import AdminCompaniesTab from './components/AdminCompaniesTab.jsx'
 import AdminUsersTab from './components/AdminUsersTab.jsx'
 import AdminOverviewTab from './components/AdminOverviewTab.jsx'
+import AdminHeroVideoTab from './components/AdminHeroVideoTab.jsx'
 import AdminFormSubmissionsTab from './components/AdminFormSubmissionsTab.jsx'
 import AdminReviewsTab from './components/AdminReviewsTab.jsx'
 import AdminMessagesTab from './components/AdminMessagesTab.jsx'
+import AdminSuccessStoriesTab from './components/AdminSuccessStoriesTab.jsx'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -460,11 +464,13 @@ export default function AdminDashboard() {
           <nav className="flex space-x-1 sm:space-x-2 py-2">
             {[
               { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+              { id: 'hero-video', label: 'Hero Video', icon: Video },
               { id: 'gallery', label: 'Gallery', icon: Folder },
               { id: 'courses', label: 'Courses', icon: BookOpen },
               { id: 'programs', label: 'Programs & Events', icon: Calendar },
               { id: 'team', label: 'Team Members', icon: UsersIcon },
               { id: 'reviews', label: 'Reviews', icon: Star },
+              { id: 'success-stories', label: 'Success Stories', icon: Award },
               { id: 'companies', label: 'Companies', icon: Building2 },
               { id: 'users', label: 'User Management', icon: ShieldCheck },
             ].map((tab) => {
@@ -562,10 +568,12 @@ export default function AdminDashboard() {
             {activeTab === 'overview' && (
               <AdminOverviewTab onNavigateTab={(tab) => setActiveTab(tab)} showAlert={showAlert} />
             )}
+            {activeTab === 'hero-video' && <AdminHeroVideoTab showAlert={showAlert} />}
             {activeTab === 'courses' && <AdminCoursesTab showAlert={showAlert} />}
             {activeTab === 'programs' && <AdminProgramsTab showAlert={showAlert} />}
             {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}
             {activeTab === 'reviews' && <AdminReviewsTab showAlert={showAlert} />}
+            {activeTab === 'success-stories' && <AdminSuccessStoriesTab showAlert={showAlert} />}
             {activeTab === 'companies' && <AdminCompaniesTab showAlert={showAlert} />}
             {activeTab === 'users' && <AdminUsersTab showAlert={showAlert} />}
             {activeTab === 'messages' && <AdminMessagesTab showAlert={showAlert} />}

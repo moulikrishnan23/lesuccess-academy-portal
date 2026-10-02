@@ -56,21 +56,42 @@ export default function AdminProgramsTab({ showAlert }) {
   })
 
   useEffect(() => {
-    fetchPrograms()
-  }, [])
-
-  // Body scroll lock
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = 'hidden'
-      return () => {
-        document.body.style.overflow = 'unset'
+    let ignore = false
+    const load = async () => {
+      try {
+        const { data } = await apiClient.get('/api/admin/upcoming-programs?size=100')
+        let items = []
+        if (Array.isArray(data?.data?.content)) {
+          items = data.data.content
+        } else if (Array.isArray(data?.data?.items)) {
+          items = data.data.items
+        } else if (Array.isArray(data?.data)) {
+          items = data.data
+        }
+        if (!ignore) setPrograms(items)
+      } catch (err) {
+        console.warn('Fallback to public /api/upcoming-programs:', err)
+        try {
+          const { data } = await apiClient.get('/api/upcoming-programs')
+          const items = Array.isArray(data?.data) ? data.data : []
+          if (!ignore) setPrograms(items)
+        } catch {
+          if (!ignore) {
+            showAlert?.('Failed to load programs list', 'error')
+            setPrograms([])
+          }
+        }
+      } finally {
+        if (!ignore) setLoading(false)
       }
     }
-  }, [isModalOpen])
+    load()
+    return () => {
+      ignore = true
+    }
+  }, [showAlert])
 
   const fetchPrograms = async () => {
-    setLoading(true)
     try {
       const { data } = await apiClient.get('/api/admin/upcoming-programs?size=100')
       let items = []
@@ -88,7 +109,7 @@ export default function AdminProgramsTab({ showAlert }) {
         const { data } = await apiClient.get('/api/upcoming-programs')
         const items = Array.isArray(data?.data) ? data.data : []
         setPrograms(items)
-      } catch (pubErr) {
+      } catch {
         showAlert?.('Failed to load programs list', 'error')
         setPrograms([])
       }
@@ -96,6 +117,16 @@ export default function AdminProgramsTab({ showAlert }) {
       setLoading(false)
     }
   }
+
+  // Body scroll lock
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = 'unset'
+      }
+    }
+  }, [isModalOpen])
 
   const openCreateModal = (defaultType = 'WEBINAR') => {
     setEditingProgram(null)
@@ -278,7 +309,7 @@ export default function AdminProgramsTab({ showAlert }) {
       await apiClient.delete(`/api/admin/upcoming-programs/${prog.id}`)
       showAlert?.('Program deleted')
       fetchPrograms()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to delete program', 'error')
     }
   }

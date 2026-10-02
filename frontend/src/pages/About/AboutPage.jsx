@@ -289,7 +289,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4 text-center">
             {STATS.map((stat) => (
               <div key={stat.label} className="p-4">
-                <p className="text-4xl sm:text-5xl font-black text-[#DF1E26] tracking-tight">
+                <p className="text-4xl sm:text-5xl font-black text-[#e52f35] tracking-tight">
                   <StatCounter
                     target={stat.target}
                     suffix={stat.suffix}

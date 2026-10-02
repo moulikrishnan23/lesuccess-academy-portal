@@ -84,6 +84,40 @@ public class CloudinaryService {
         return uploadLocally(file, folder);
     }
 
+    /**
+     * Delete an asset from Cloudinary using its secure URL.
+     * @param secureUrl the full Cloudinary URL
+     */
+    public void deleteAsset(String secureUrl) {
+        if (cloudinary != null && secureUrl != null && secureUrl.contains("res.cloudinary.com")) {
+            try {
+                // Extract public_id from URL: e.g. https://res.cloudinary.com/.../upload/v1234/folder/file.png
+                // The public_id includes the folder structure but excludes the extension and version prefix
+                int uploadIndex = secureUrl.indexOf("/upload/");
+                if (uploadIndex > -1) {
+                    String afterUpload = secureUrl.substring(uploadIndex + 8);
+                    // Remove version tag if present (e.g. v1234567/)
+                    if (afterUpload.matches("^v\\d+/.*")) {
+                        afterUpload = afterUpload.replaceFirst("^v\\d+/", "");
+                    }
+                    // Remove extension
+                    int extIndex = afterUpload.lastIndexOf(".");
+                    if (extIndex > -1) {
+                        afterUpload = afterUpload.substring(0, extIndex);
+                    }
+                    
+                    String publicId = afterUpload;
+                    String resourceType = secureUrl.contains("/video/") ? "video" : "image";
+                    
+                    cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType));
+                    log.info("Deleted asset from Cloudinary: {}", publicId);
+                }
+            } catch (Exception e) {
+                log.error("Failed to delete asset from Cloudinary: {}", secureUrl, e);
+            }
+        }
+    }
+
     private String uploadLocally(MultipartFile file, String folder) {
         try {
             String subFolder = folder.replace("lesuccess/", "");

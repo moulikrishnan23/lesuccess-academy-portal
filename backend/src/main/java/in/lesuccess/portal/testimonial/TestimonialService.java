@@ -140,9 +140,7 @@ public class TestimonialService {
     public void delete(Long id) {
         Testimonial entity = repository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Testimonial", id));
-        entity.setDeletedAt(LocalDateTime.now());
-        entity.setActive(false);
-        repository.save(entity);
+        repository.delete(entity);
 
         List<Testimonial> remaining = repository.findAllByOrderByDisplayOrderAscIdAsc();
         List<Testimonial> modified = OrderRebalanceUtil.rebalance(

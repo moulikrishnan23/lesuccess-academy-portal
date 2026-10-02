@@ -87,6 +87,15 @@ public class ConnectWithUsService {
         return PageResponse.from(page.map(ConnectWithUsResponse::from));
     }
 
+    @Transactional
+    public void softDelete(Long id) {
+        ConnectWithUs entity = repository.findById(id)
+                .orElseThrow(() -> new in.lesuccess.portal.shared.exception.ResourceNotFoundException("Connect with us submission", id));
+        entity.setDeletedAt(java.time.LocalDateTime.now());
+        repository.save(entity);
+        log.info("Connect-with-us submission soft-deleted: id={}", id);
+    }
+
     /** Last four digits only — a full mobile number does not belong in the logs. */
     private static String tail(String mobile) {
         return mobile == null || mobile.length() < 4 ? "????" : mobile.substring(mobile.length() - 4);

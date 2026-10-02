@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft,
@@ -12,18 +12,34 @@ import {
 } from 'lucide-react'
 import apiClient from '../../services/apiClient.js'
 import { getImageUrl } from '../../utils/imageUtils.js'
+import ErrorState from '../../components/ui/ErrorState.jsx'
+
+function normalizeList(val) {
+  if (Array.isArray(val)) return val
+  if (val && Array.isArray(val.data)) return val.data
+  return []
+}
 
 export default function GalleryPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeSlug = searchParams.get('folder') || searchParams.get('album')
 
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState(() => {
+    try {
+      const cached = localStorage.getItem('lesuccess_cache_gallery_v1')
+      return cached ? normalizeList(JSON.parse(cached)) : []
+    } catch {
+      return []
+    }
+  })
   const [currentFolder, setCurrentFolder] = useState(null)
   const [parentFolder, setParentFolder] = useState(null)
   const [breadcrumbs, setBreadcrumbs] = useState([{ name: 'Gallery', slug: null }])
   const [subcategories, setSubcategories] = useState([])
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
   const [lightboxIndex, setLightboxIndex] = useState(null)
 
   // Navigate to folder or root
@@ -39,11 +55,40 @@ export default function GalleryPage() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true)
+      setError(null)
       try {
         if (!activeSlug) {
           // Root level
-          const { data } = await apiClient.get('/api/gallery/categories')
-          setCategories(data?.data || [])
+          try {
+            const { data } = await apiClient.get('/api/gallery/categories')
+            const catList = normalizeList(data)
+            setCategories(catList)
+            if (catList.length > 0) {
+              try {
+                localStorage.setItem('lesuccess_cache_gallery_v1', JSON.stringify({ data: catList, savedAt: Date.now() }))
+              } catch {
+                // Ignore storage errors
+              }
+            }
+          } catch (fetchErr) {
+            console.warn('Failed to fetch gallery categories, checking cache:', fetchErr)
+            const cachedStr = localStorage.getItem('lesuccess_cache_gallery_v1')
+            if (cachedStr) {
+              try {
+                const parsed = JSON.parse(cachedStr)
+                const cachedList = normalizeList(parsed)
+                if (cachedList.length > 0) {
+                  setCategories(cachedList)
+                } else {
+                  setError('Failed to load gallery categories')
+                }
+              } catch {
+                setError('Failed to load gallery categories')
+              }
+            } else {
+              setError('Failed to load gallery categories')
+            }
+          }
           setCurrentFolder(null)
           setParentFolder(null)
           setBreadcrumbs([{ name: 'Gallery', slug: null }])
@@ -87,11 +132,11 @@ export default function GalleryPage() {
 
           // Fetch subcategories
           const subRes = await apiClient.get(`/api/gallery/categories/${cat.id}/subcategories`)
-          setSubcategories(subRes?.data?.data || [])
+          setSubcategories(normalizeList(subRes?.data))
 
           // Fetch images
           const imgRes = await apiClient.get(`/api/gallery/categories/${cat.id}/images`)
-          setImages(imgRes?.data?.data || [])
+          setImages(normalizeList(imgRes?.data))
         }
       } catch (err) {
         console.error('Failed to load gallery view:', err)
@@ -102,7 +147,7 @@ export default function GalleryPage() {
     }
 
     loadData()
-  }, [activeSlug, navigateTo])
+  }, [activeSlug, navigateTo, retryCount])
 
   // Back button handler
   const handleBack = () => {
@@ -115,29 +160,35 @@ export default function GalleryPage() {
 
   // Lightbox handlers
   const openLightbox = (index) => setLightboxIndex(index)
-  const closeLightbox = () => setLightboxIndex(null)
-  const nextImage = () => {
-    if (lightboxIndex !== null && images.length > 0) {
-      setLightboxIndex((lightboxIndex + 1) % images.length)
-    }
-  }
-  const prevImage = () => {
-    if (lightboxIndex !== null && images.length > 0) {
-      setLightboxIndex((lightboxIndex - 1 + images.length) % images.length)
-    }
-  }
+  const closeLightbox = useCallback(() => setLightboxIndex(null), [])
+  const nextImage = useCallback(() => {
+    setLightboxIndex((prev) => {
+      if (prev === null || images.length === 0) return null
+      return (prev + 1) % images.length
+    })
+  }, [images.length])
+  const prevImage = useCallback(() => {
+    setLightboxIndex((prev) => {
+      if (prev === null || images.length === 0) return null
+      return (prev - 1 + images.length) % images.length
+    })
+  }, [images.length])
 
   // Handle keyboard navigation for lightbox
   useEffect(() => {
+    if (lightboxIndex === null) return
     const handleKeyDown = (e) => {
-      if (lightboxIndex === null) return
       if (e.key === 'Escape') closeLightbox()
       if (e.key === 'ArrowRight') nextImage()
       if (e.key === 'ArrowLeft') prevImage()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [lightboxIndex, images])
+  }, [lightboxIndex, closeLightbox, nextImage, prevImage])
+
+  const safeCategories = normalizeList(categories)
+  const safeSubcategories = normalizeList(subcategories)
+  const safeImages = normalizeList(images)
 
   return (
     <div className="min-h-screen bg-[#F5F8FC]/50 py-12 px-4 sm:px-6 lg:px-12">
@@ -195,11 +246,20 @@ export default function GalleryPage() {
         </div>
 
         {/* =====================================================
-            LOADING STATE
+            LOADING / ERROR STATE
         ===================================================== */}
-        {loading ? (
+        {loading && safeCategories.length === 0 ? (
           <div className="flex min-h-[40vh] items-center justify-center">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#07405C]" />
+          </div>
+        ) : error && safeCategories.length === 0 ? (
+          <div className="max-w-md mx-auto py-12">
+            <ErrorState
+              title="Unable to load gallery"
+              message="We're having trouble loading the gallery right now. Please check your connection and try again."
+              onRetry={() => setRetryCount((c) => c + 1)}
+              retryLabel="Try Again"
+            />
           </div>
         ) : (
           <>
@@ -208,7 +268,7 @@ export default function GalleryPage() {
             =================================================== */}
             {!currentFolder && (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {categories.map((cat) => (
+                {safeCategories.map((cat) => (
                   <motion.div
                     key={cat.id}
                     whileHover={{ y: -5 }}
@@ -265,17 +325,27 @@ export default function GalleryPage() {
               </div>
             )}
 
+            {!currentFolder && safeCategories.length === 0 && !error && (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center max-w-md mx-auto">
+                <ImageIcon size={48} className="mx-auto text-slate-400 mb-3" />
+                <h3 className="text-lg font-bold text-slate-700">No photo categories yet</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  New campus life and events moments will be added here soon.
+                </p>
+              </div>
+            )}
+
             {/* ===================================================
                 FOLDER VIEW: SUBCATEGORIES (IF ANY)
             =================================================== */}
-            {currentFolder && subcategories.length > 0 && (
+            {currentFolder && safeSubcategories.length > 0 && (
               <div className="mb-12">
                 <h2 className="mb-6 font-display text-xl font-bold text-[#101010] flex items-center gap-2">
                   <Folder size={20} className="text-[#07405C]" />
                   <span>Subfolders / Albums</span>
                 </h2>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  {subcategories.map((sub) => (
+                  {safeSubcategories.map((sub) => (
                     <motion.div
                       key={sub.id}
                       whileHover={{ y: -4 }}
@@ -327,10 +397,10 @@ export default function GalleryPage() {
             {/* ===================================================
                 FOLDER VIEW: PHOTO GRID (IMAGE ONLY DISPLAY)
             =================================================== */}
-            {currentFolder && images.length > 0 && (
+            {currentFolder && safeImages.length > 0 && (
               <div>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  {images.map((img, idx) => (
+                  {safeImages.map((img, idx) => (
                     <motion.div
                       key={img.id}
                       whileHover={{ y: -4, scale: 1.01 }}
@@ -351,7 +421,7 @@ export default function GalleryPage() {
             )}
 
             {/* Empty Folder State */}
-            {currentFolder && subcategories.length === 0 && images.length === 0 && (
+            {currentFolder && safeSubcategories.length === 0 && safeImages.length === 0 && (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
                 <ImageIcon size={48} className="mx-auto text-slate-400 mb-3" />
                 <h3 className="text-lg font-bold text-slate-700">No photos in this folder yet</h3>
@@ -367,7 +437,7 @@ export default function GalleryPage() {
             INTERACTIVE LIGHTBOX MODAL
         ===================================================== */}
         <AnimatePresence>
-          {lightboxIndex !== null && images[lightboxIndex] && (
+          {lightboxIndex !== null && safeImages[lightboxIndex] && (
             <div
               role="dialog"
               aria-modal="true"
@@ -384,7 +454,7 @@ export default function GalleryPage() {
               </button>
 
               {/* Prev Button */}
-              {images.length > 1 && (
+              {safeImages.length > 1 && (
                 <button
                   type="button"
                   onClick={prevImage}
@@ -396,7 +466,7 @@ export default function GalleryPage() {
               )}
 
               {/* Next Button */}
-              {images.length > 1 && (
+              {safeImages.length > 1 && (
                 <button
                   type="button"
                   onClick={nextImage}
@@ -416,7 +486,7 @@ export default function GalleryPage() {
                 className="relative max-h-[90vh] max-w-5xl overflow-hidden rounded-2xl bg-transparent text-center flex flex-col items-center justify-center"
               >
                 <img
-                  src={getImageUrl(images[lightboxIndex].imageUrl)}
+                  src={getImageUrl(safeImages[lightboxIndex].imageUrl)}
                   alt="Gallery photo"
                   className="max-h-[85vh] w-auto max-w-full object-contain mx-auto rounded-xl shadow-2xl"
                 />

@@ -189,6 +189,15 @@ public class UpcomingProgramService {
         return resp;
     }
 
+    @Transactional
+    public void softDeleteRegistration(Long id) {
+        UpcomingProgramRegistration registration = registrationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Program registration", id));
+        registration.setDeletedAt(LocalDateTime.now());
+        registrationRepository.save(registration);
+        log.info("Upcoming program registration soft-deleted: id={}", id);
+    }
+
     private UpcomingProgram findOrThrow(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Upcoming program", id));

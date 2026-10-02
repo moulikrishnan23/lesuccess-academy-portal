@@ -1,0 +1,238 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 3266 >>
+stream
+q
+0.875 0.118 0.149 rg
+0 770 595 72 re f
+Q
+BT
+/F1 20 Tf
+1 1 1 rg
+40 805 Td
+(LeSuccess Academy) Tj
+ET
+BT
+/F2 10 Tf
+1 1 1 rg
+40 785 Td
+(Learn . Educate . Succeed  |  Official Course Syllabus) Tj
+ET
+BT
+/F1 16 Tf
+0.027 0.251 0.361 rg
+40 735 Td
+(Gen AI) Tj
+ET
+BT
+/F2 10 Tf
+0.3 0.3 0.3 rg
+40 715 Td
+(Duration: 3-6 Months  |  Mode: ONLINE  |  100% Placement Support) Tj
+ET
+q
+0.85 0.85 0.85 RG
+1.5 w
+40 700 m 555 700 l S
+Q
+BT
+/F1 12 Tf
+0.1 0.1 0.1 rg
+40 680 Td
+(Detailed Curriculum & Module Outline:) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 657 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 657 Td
+(Module 1: How Language Models Work) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 641 Td
+(Tokens, embeddings, context windows, temperature and why the same prompt gives different answer) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 619 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 619 Td
+(Module 2: Prompt Engineering) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 603 Td
+(Instructions, examples, structure and iteration - building prompts that hold up on inputs you d) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 581 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 581 Td
+(Module 3: Working with the OpenAI API) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 565 Td
+(Requests, streaming, structured output, function and tool calling from application code) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 543 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 543 Td
+(Module 4: Open Models and Hugging Face) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 527 Td
+(Finding, running and comparing open models, and the trade-offs against hosted APIs) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 505 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 505 Td
+(Module 5: Embeddings and Vector Search) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 489 Td
+(Chunking documents, generating embeddings, and retrieving the right context for a question) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 467 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 467 Td
+(Module 6: Retrieval Augmented Generation) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 451 Td
+(Building a RAG application over your own documents, with citations and honest "I do not know" b) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 429 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 429 Td
+(Module 7: Fine-Tuning Basics) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 413 Td
+(When fine-tuning beats prompting and retrieval, dataset preparation, and what it costs to maint) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 391 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 391 Td
+(Module 8: Evaluation, Safety and Cost) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 375 Td
+(Testing output quality, catching hallucinations, guarding against prompt injection and controll) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 353 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 353 Td
+(Module 9: Capstone Gen AI Project) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 337 Td
+(A working application built on a model, evaluated against real examples and demonstrated) Tj
+ET
+q
+0.96 0.96 0.96 rg
+0 0 595 50 re f
+0.85 0.85 0.85 RG
+0.5 w
+0 50 m 595 50 l S
+Q
+BT
+/F1 8.5 Tf
+0.3 0.3 0.3 rg
+40 28 Td
+(LeSuccess Academy - Accelerate Your Tech Career with Live Industry Projects) Tj
+ET
+BT
+/F2 8 Tf
+0.5 0.5 0.5 rg
+40 16 Td
+(Visit: www.lesuccess.in  |  Phone: +91 80120 60000  |  Email: info@lesuccess.in  |  Coimbatore, TN) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000257 00000 n 
+0000003574 00000 n 
+0000003649 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3719
+%%EOF

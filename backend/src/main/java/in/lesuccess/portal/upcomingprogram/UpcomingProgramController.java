@@ -129,4 +129,12 @@ public class UpcomingProgramController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Program image uploaded successfully", java.util.Map.of("url", fileUrl, "filename", filename)));
     }
+
+    /** Primary Admin only — soft delete individual program registration. */
+    @DeleteMapping("/api/admin/upcoming-programs/registrations/{id}")
+    @PreAuthorize("@primaryAdminSecurity.isPrimaryAdmin()")
+    public ResponseEntity<Void> deleteRegistration(@PathVariable Long id) {
+        service.softDeleteRegistration(id);
+        return ResponseEntity.noContent().build();
+    }
 }

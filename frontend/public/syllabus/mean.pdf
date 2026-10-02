@@ -1,0 +1,286 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 4056 >>
+stream
+q
+0.875 0.118 0.149 rg
+0 770 595 72 re f
+Q
+BT
+/F1 20 Tf
+1 1 1 rg
+40 805 Td
+(LeSuccess Academy) Tj
+ET
+BT
+/F2 10 Tf
+1 1 1 rg
+40 785 Td
+(Learn . Educate . Succeed  |  Official Course Syllabus) Tj
+ET
+BT
+/F1 16 Tf
+0.027 0.251 0.361 rg
+40 735 Td
+(MEAN Full Stack) Tj
+ET
+BT
+/F2 10 Tf
+0.3 0.3 0.3 rg
+40 715 Td
+(Duration: 3-6 Months  |  Mode: HYBRID  |  100% Placement Support) Tj
+ET
+q
+0.85 0.85 0.85 RG
+1.5 w
+40 700 m 555 700 l S
+Q
+BT
+/F1 12 Tf
+0.1 0.1 0.1 rg
+40 680 Td
+(Detailed Curriculum & Module Outline:) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 657 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 657 Td
+(Module 1: JavaScript Foundations) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 641 Td
+(Types, scope, closures and ES6+ syntax - the base TypeScript and Angular are built on) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 619 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 619 Td
+(Module 2: HTML5, CSS3 and Responsive Layout) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 603 Td
+(Semantic markup, flexbox and grid, and templates that stay maintainable inside a component fram) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 581 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 581 Td
+(Module 3: TypeScript Essentials) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 565 Td
+(Types, interfaces, generics and decorators, and why an Angular codebase is unmanageable without) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 543 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 543 Td
+(Module 4: Angular Fundamentals) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 527 Td
+(Components, templates, data binding, directives and pipes, built around one application you kee) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 505 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 505 Td
+(Module 5: Services, Dependency Injection and RxJS) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 489 Td
+(Shared state, HTTP calls and observables - the part of Angular that decides whether the app sca) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 467 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 467 Td
+(Module 6: Angular Routing and Forms) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 451 Td
+(Route guards, lazy loading, reactive forms and validation that gives users a usable error messa) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 429 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 429 Td
+(Module 7: Node.js Fundamentals) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 413 Td
+(The runtime, modules, the event loop, npm and debugging server-side JavaScript) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 391 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 391 Td
+(Module 8: Express and REST APIs) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 375 Td
+(Routing, middleware, validation and status codes, exercised from Postman before the UI exists) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 353 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 353 Td
+(Module 9: MongoDB and Mongoose) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 337 Td
+(Schema design, relationships, indexes and aggregation against a realistic dataset) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 315 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 315 Td
+(Module 10: Authentication and Security) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 299 Td
+(JWT, guards, roles, password hashing and the common ways a web app leaks data) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 277 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 277 Td
+(Module 11: Testing, Git and Deployment) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 261 Td
+(Unit tests, branching, pull requests, Docker and getting the application onto a real host) Tj
+ET
+q
+0.875 0.118 0.149 rg
+40 239 4 10 re f
+Q
+BT
+/F1 10 Tf
+0.15 0.15 0.15 rg
+52 239 Td
+(Module 12: Capstone Project) Tj
+ET
+BT
+/F2 8.5 Tf
+0.45 0.45 0.45 rg
+52 223 Td
+(A complete MEAN application built to a brief, reviewed and defended in a mock technical intervi) Tj
+ET
+q
+0.96 0.96 0.96 rg
+0 0 595 50 re f
+0.85 0.85 0.85 RG
+0.5 w
+0 50 m 595 50 l S
+Q
+BT
+/F1 8.5 Tf
+0.3 0.3 0.3 rg
+40 28 Td
+(LeSuccess Academy - Accelerate Your Tech Career with Live Industry Projects) Tj
+ET
+BT
+/F2 8 Tf
+0.5 0.5 0.5 rg
+40 16 Td
+(Visit: www.lesuccess.in  |  Phone: +91 80120 60000  |  Email: info@lesuccess.in  |  Coimbatore, TN) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000257 00000 n 
+0000004364 00000 n 
+0000004439 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+4509
+%%EOF

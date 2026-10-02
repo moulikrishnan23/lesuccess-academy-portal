@@ -17,6 +17,7 @@ import java.util.Map;
 public class SiteSettingController {
 
     private final SiteSettingService service;
+    private final in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
 
     /**
      * How long a client or CDN may serve this response without revalidating.
@@ -45,5 +46,22 @@ public class SiteSettingController {
 
         return ResponseEntity.ok(ApiResponse.success(
                 "Settings updated successfully", service.updateAll(updates)));
+    }
+
+    /**
+     * Admin — upload and replace the Home Hero video file directly to Cloudinary
+     * and persist its secure URL in site settings.
+     */
+    @PostMapping(value = "/hero-video", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadHeroVideo(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+
+        String videoUrl = cloudinaryService.uploadVideo(file, "lesuccess/video");
+        Map<String, String> updated = service.updateAll(Map.of(
+                "hero_video_url", videoUrl,
+                "hero_video_enabled", "true"
+        ));
+        return ResponseEntity.ok(ApiResponse.success("Hero video uploaded successfully", updated));
     }
 }

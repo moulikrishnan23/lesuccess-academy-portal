@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import CourseHero from '../../../components/sections/CourseHero.jsx'
@@ -11,7 +11,7 @@ import TechStackSection from '../../../components/sections/TechStackSection.jsx'
 import ModulesAccordion from '../../../components/sections/ModulesAccordion.jsx'
 import CertificateSection from '../../../components/sections/CertificateSection.jsx'
 import TestimonialCarousel from '../../../components/carousel/TestimonialCarousel.jsx'
-import MobileEnrollBar from '../../../components/forms/MobileEnrollBar.jsx'
+import DemoClass from '../../../components/home/DemoClass.jsx'
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from '../../../animations/variants.js'
 import ErrorState from '../../../components/ui/ErrorState.jsx'
 import Skeleton, { SkeletonText } from '../../../components/ui/Skeleton.jsx'
@@ -94,6 +94,7 @@ export default function CourseDetailPage() {
       toPlainText(course?.shortDescription) || toPlainText(course?.description),
   })
 
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false)
   const enrollFormRef = useRef(null)
 
   /**
@@ -183,7 +184,7 @@ export default function CourseDetailPage() {
       <CourseHero
         course={course}
         onEnrollClick={scrollToEnroll}
-        onFreeDemoClick={scrollToEnroll}
+        onFreeDemoClick={() => setIsDemoModalOpen(true)}
       />
 
       <CourseTabs tabs={tabs} />
@@ -204,7 +205,7 @@ export default function CourseDetailPage() {
         static half way through it; with the reviews below, the certificate is
         no longer the end of the runway.
       */}
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 pb-24 md:pb-0">
         {/*
           The card widens only once there is room to spare. At exactly lg the
           container is barely wider than the card plus the certificate's
@@ -249,13 +250,8 @@ export default function CourseDetailPage() {
             viewport={ONCE_IN_VIEW}
             /*
               Pinned below both the site header and the course tab bar, using
-              the heights they publish rather than a fixed guess — top-24 was
-              96px against a header that measures 134, so the card sat partly
-              behind it. --app-header-max, not --app-header: the card should
-              not shuffle up and down as the navbar hides on scroll.
-
-              Below lg the card drops into the flow beneath the content and
-              MobileEnrollBar carries the CTA.
+              the heights they publish rather than a fixed guess.
+              Below lg the card drops into the flow beneath the content.
             */
             className="lg:sticky lg:self-start transition-[top] duration-300 ease-in-out"
             style={{
@@ -272,10 +268,12 @@ export default function CourseDetailPage() {
         </div>
       </div>
 
-      <MobileEnrollBar
-        course={course}
-        onEnrollClick={scrollToEnroll}
-        formRef={enrollFormRef}
+      {/* Shared Free Live Demo Modal with Course Pre-selection */}
+      <DemoClass
+        isModal={true}
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+        initialCourseName={course?.title || course?.name || ''}
       />
     </>
   )

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,6 +102,15 @@ public class CourseEnquiryService {
         }
 
         return PageResponse.from(page.map(enquiry -> CourseEnquiryResponse.from(enquiry, resolveCourseTitle(enquiry.getCourseId()))));
+    }
+
+    @Transactional
+    public void softDelete(Long id) {
+        CourseEnquiry entity = repository.findById(id)
+                .orElseThrow(() -> new in.lesuccess.portal.shared.exception.ResourceNotFoundException("Course enquiry", id));
+        entity.setDeletedAt(LocalDateTime.now());
+        repository.save(entity);
+        log.info("Course enquiry soft-deleted: id={}", id);
     }
 
     private String resolveCourseTitle(Long cId) {

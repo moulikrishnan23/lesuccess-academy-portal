@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, Calendar, Clock, Video, Briefcase, CheckCircle2, Send, AlertCircle, MapPin, Copy } from 'lucide-react'
+import { X, Calendar, Clock, Video, CheckCircle2, Send, AlertCircle, MapPin, Copy } from 'lucide-react'
 import apiClient from '../../services/apiClient.js'
 import { normalizeMobile } from '../../utils/validation.js'
 
@@ -54,7 +54,6 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
   const resolvedType = (program?.type || activeType || 'WEBINAR').toUpperCase()
   const isWebinar = resolvedType === 'WEBINAR'
   const isWorkshop = resolvedType === 'WORKSHOP'
-  const isInternship = resolvedType === 'INTERNSHIP'
 
   const eventTypeName = isWebinar ? 'Webinar' : isWorkshop ? 'Workshop' : 'Internship'
   const modalHeading = isWebinar
@@ -193,7 +192,7 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
           role="dialog"
           aria-modal="true"
           aria-labelledby="program-modal-title"
-          className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 pt-[calc(var(--offer-header-h,44px)+1rem)] pb-20 sm:pb-6"
         >
           {/* Backdrop */}
           <motion.div
@@ -211,7 +210,7 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl z-10 overflow-hidden"
+            className="relative w-full max-w-lg max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-3xl bg-white p-5 sm:p-8 shadow-2xl z-10 border border-slate-100"
           >
             {/* Close Button */}
             <button

@@ -161,7 +161,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="enquiry-modal-title"
-          className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 pt-[calc(var(--offer-header-h,44px)+1rem)] pb-20 sm:pb-6"
         >
           {/* Backdrop */}
           <motion.div
@@ -179,7 +179,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl rounded-3xl bg-white p-6 sm:p-8 md:p-10 shadow-2xl z-10 overflow-hidden border border-slate-100"
+            className="relative w-full max-w-2xl max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-3xl bg-white p-5 sm:p-8 md:p-10 shadow-2xl z-10 border border-slate-100"
           >
             {/* Top-Right Circular Close Button */}
             <button
@@ -194,7 +194,7 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
             {/* Header */}
             <div className="pr-10">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DF1E26]/10 px-3 py-1 text-xs font-bold text-[#DF1E26] mb-2">
-                FAST TRACK CONSULTATION
+                CAREER COUNSELING
               </span>
               <h2
                 id="enquiry-modal-title"

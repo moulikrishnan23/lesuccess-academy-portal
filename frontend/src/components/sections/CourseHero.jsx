@@ -207,19 +207,15 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
             Free Demo
           </Button>
           
-          {/* Hidden when the course has no syllabus on file. It used to always
-              render, and handed the visitor the Java Full Stack PDF. */}
-          {hasSyllabus(course) && (
-            <Button
-              variant="onDark"
-              size="lg"
-              onClick={() => downloadSyllabus(course)}
-              title={`Download ${course.title} Syllabus (PDF)`}
-            >
-              <Download size={16} className="inline mr-1.5" />
-              Download Syllabus
-            </Button>
-          )}
+          <Button
+            variant="onDark"
+            size="lg"
+            onClick={() => downloadSyllabus(course)}
+            title={`Download ${course?.title || 'Course'} Syllabus (PDF)`}
+          >
+            <Download size={16} className="inline mr-1.5" />
+            Download Syllabus
+          </Button>
           <Button variant="primary" size="lg" onClick={onEnrollClick}>
             Enroll Now
           </Button>
