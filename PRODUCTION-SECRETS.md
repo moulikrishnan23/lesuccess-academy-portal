@@ -138,6 +138,35 @@ a debugging trap, since the prefixed one silently wins.
 
 ---
 
+## Secret inventory: `GEMINI_API_KEY`
+
+| | |
+|---|---|
+| **Used by** | The website chatbot (`POST /api/chat`), `spring.ai.google.genai.api-key` |
+| **Needed when** | `CHATBOT_ENABLED=true`. With the chatbot off it is never read and may stay unset |
+| **Kind** | Short single-line API key, passed as an env var and used directly (no base64) |
+| **Default** | None. `application.yml` has `${GEMINI_API_KEY}` with no fallback |
+| **Missing or blank** | With the chatbot on, startup fails and the error names `GEMINI_API_KEY` (`ChatbotConfig`) |
+| **Where it comes from** | Google AI Studio / Gemini Developer API (API-key auth). This is not a Vertex AI service account, so there is no JSON key file |
+
+> **Production must use a billing-enabled key, not the free tier.** Free-tier keys have low
+> rate limits, so a busy day turns into chatbot 503s, and they come with different data-use
+> terms: on the free tier, prompts and responses may be used to improve Google's products. Visitor
+> questions go into those prompts. Create the production key in a Google Cloud project with
+> billing enabled, and keep free-tier keys for local development only.
+
+The key never reaches a browser. The chatbot's 503 response is a fixed generic message, and
+the server log masks key-shaped values (`AIza…`, `key=…`) in provider errors.
+
+The same key is used for embeddings (`gemini-embedding-2`, via
+`spring.ai.google.genai.embedding.api-key`). The index is built by sending the public course,
+module, service and process-step prose to Google, so indexing needs the key too. That prose is
+already published on the website, and prices, durations and dates are masked out before
+embedding. One rebuild makes one embedding call per indexed document (~44 today), debounced
+after admin edits.
+
+---
+
 ## Checklist for a new secret
 
 1. Env var, not a file in the image

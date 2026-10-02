@@ -1,9 +1,11 @@
 package in.lesuccess.portal.serviceoffering;
 
+import in.lesuccess.portal.chatbot.ChatKnowledgeChangedEvent;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,7 @@ import java.util.List;
 public class ServiceOfferingService {
 
     private final ServiceOfferingRepository repository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Public read — PUBLISHED rows only, ordered by displayOrder.
@@ -50,6 +53,7 @@ public class ServiceOfferingService {
         ServiceOffering saved = repository.save(entity);
         log.info("Service offering created: id={}, category={}, title={}",
                 saved.getId(), saved.getCategory(), saved.getTitle());
+        publishKnowledgeChanged();
         return ServiceOfferingResponse.from(saved);
     }
 
@@ -69,6 +73,7 @@ public class ServiceOfferingService {
 
         ServiceOffering saved = repository.saveAndFlush(entity);
         log.info("Service offering updated: id={}", id);
+        publishKnowledgeChanged();
         return ServiceOfferingResponse.from(saved);
     }
 
@@ -78,6 +83,12 @@ public class ServiceOfferingService {
         entity.setDeletedAt(LocalDateTime.now());
         repository.save(entity);
         log.info("Service offering soft-deleted: id={}", id);
+        publishKnowledgeChanged();
+    }
+
+    /** Stale chatbot knowledge - see CourseService#publishKnowledgeChanged. */
+    private void publishKnowledgeChanged() {
+        eventPublisher.publishEvent(new ChatKnowledgeChangedEvent());
     }
 
     private ServiceOffering findOrThrow(Long id) {

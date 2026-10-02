@@ -1,11 +1,13 @@
 package in.lesuccess.portal.course;
 
+import in.lesuccess.portal.chatbot.ChatKnowledgeChangedEvent;
 import in.lesuccess.portal.shared.dto.PageResponse;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
 import in.lesuccess.portal.shared.util.OrderRebalanceUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ public class CourseService {
     private final CourseModuleRepository moduleRepository;
     private final CourseToolRepository toolRepository;
     private final TestimonialRepository testimonialRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     /**
@@ -158,6 +161,7 @@ public class CourseService {
             syncModules(saved.getId(), request.getModules());
         }
 
+        publishKnowledgeChanged();
         return CourseResponse.from(saved, listModules(saved.getId()), listTools(saved.getId()));
     }
 
@@ -206,6 +210,7 @@ public class CourseService {
             syncModules(refreshed.getId(), request.getModules());
         }
 
+        publishKnowledgeChanged();
         return CourseResponse.from(refreshed, listModules(refreshed.getId()), listTools(refreshed.getId()));
     }
 
@@ -241,6 +246,16 @@ public class CourseService {
         }
 
         log.info("Course soft-deleted: id={}", id);
+        publishKnowledgeChanged();
+    }
+
+    /**
+     * Tells the chatbot its course knowledge is stale. Delivered after commit,
+     * debounced, and a no-op while the chatbot is disabled. Calling it more than
+     * once in one request (create + syncModules + syncTools) is harmless.
+     */
+    private void publishKnowledgeChanged() {
+        eventPublisher.publishEvent(new ChatKnowledgeChangedEvent());
     }
 
     public Course findOrThrow(Long id) {
@@ -275,6 +290,7 @@ public class CourseService {
                 .build();
         CourseModule saved = moduleRepository.save(entity);
         log.info("Course module created: id={}, courseId={}", saved.getId(), courseId);
+        publishKnowledgeChanged();
         return CourseModuleResponse.from(saved);
     }
 
@@ -287,6 +303,7 @@ public class CourseService {
         entity.setDisplayOrder(request.getDisplayOrder());
         CourseModule saved = moduleRepository.saveAndFlush(entity);
         log.info("Course module updated: id={}", moduleId);
+        publishKnowledgeChanged();
         return CourseModuleResponse.from(saved);
     }
 
@@ -297,12 +314,14 @@ public class CourseService {
         }
         moduleRepository.deleteById(moduleId);
         log.info("Course module deleted: id={}", moduleId);
+        publishKnowledgeChanged();
     }
 
     @Transactional
     public List<CourseModuleResponse> syncModules(Long courseId, List<CourseModuleRequest> moduleRequests) {
         Course course = findOrThrow(courseId);
         moduleRepository.deleteByCourseId(courseId);
+        publishKnowledgeChanged();
         if (moduleRequests == null || moduleRequests.isEmpty()) {
             return java.util.Collections.emptyList();
         }
@@ -348,6 +367,7 @@ public class CourseService {
                 .build();
         CourseTool saved = toolRepository.save(entity);
         log.info("Course tool created: id={}, courseId={}", saved.getId(), courseId);
+        publishKnowledgeChanged();
         return CourseToolResponse.from(saved);
     }
 
@@ -363,6 +383,7 @@ public class CourseService {
         entity.setDisplayOrder(request.getDisplayOrder());
         CourseTool saved = toolRepository.saveAndFlush(entity);
         log.info("Course tool updated: id={}", toolId);
+        publishKnowledgeChanged();
         return CourseToolResponse.from(saved);
     }
 
@@ -373,12 +394,14 @@ public class CourseService {
         }
         toolRepository.deleteById(toolId);
         log.info("Course tool deleted: id={}", toolId);
+        publishKnowledgeChanged();
     }
 
     @Transactional
     public List<CourseToolResponse> syncTools(Long courseId, List<CourseToolRequest> toolRequests) {
         Course course = findOrThrow(courseId);
         toolRepository.deleteByCourseId(courseId);
+        publishKnowledgeChanged();
         if (toolRequests == null || toolRequests.isEmpty()) {
             return java.util.Collections.emptyList();
         }
