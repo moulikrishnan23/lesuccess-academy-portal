@@ -83,7 +83,7 @@ public class CourseResponse {
 
     public static CourseResponse from(Course entity, List<CourseModuleResponse> modules, List<CourseToolResponse> tools) {
         String name = entity.getName();
-        String slug = toSlug(name);
+        String slug = CourseSlug.of(name);
         String roleBullets = entity.getRoleBullets();
 
         return CourseResponse.builder()
@@ -117,18 +117,5 @@ public class CourseResponse {
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
-    }
-
-    /**
-     * Converts a course name to a URL-safe slug.
-     * "Python : Full Stack Development" → "python-full-stack-development"
-     */
-    public static String toSlug(String name) {
-        if (name == null) return "";
-        return name.toLowerCase()
-                .replaceAll("[^a-z0-9\\s-]", "")   // strip punctuation
-                .trim()
-                .replaceAll("\\s+", "-")             // spaces → dashes
-                .replaceAll("-{2,}", "-");            // collapse consecutive dashes
     }
 }

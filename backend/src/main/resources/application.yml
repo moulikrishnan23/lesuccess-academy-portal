@@ -61,7 +61,12 @@ lesuccess:
     trusted-proxies: ""
     # Public form endpoints to throttle. Exact paths, POST only — add a new
     # public form here rather than editing RateLimitFilter.
-    protected-paths: /api/contact-messages,/api/leads,/api/course-enquiries,/api/connect-with-us,/api/demo-bookings
+    protected-paths: /api/contact-messages,/api/leads,/api/course-enquiries,/api/connect-with-us,/api/demo-bookings,/api/chat
+    # Protected paths that get their own per-minute bucket instead of sharing the
+    # per-hour form bucket above. A path listed here must ALSO be in
+    # protected-paths, which is what switches throttling on for it at all.
+    per-minute-paths: /api/chat
+    requests-per-minute: 20
 
   # Shared lead-capture protections (Contact form and Leads form alike)
   lead-capture:
@@ -117,8 +122,44 @@ lesuccess:
     api-key: ${CLOUDINARY_API_KEY:}
     api-secret: ${CLOUDINARY_API_SECRET:}
 
+# Website chatbot (POST /api/chat). Off by default: when false, no chatbot bean
+# loads, every Spring AI auto-configuration is excluded (see
+# ChatbotEnvironmentPostProcessor) and /api/chat returns 404.
+chatbot:
+  enabled: ${CHATBOT_ENABLED:false}
+
+# Spring AI — only read when chatbot.enabled=true.
+spring.ai:
+  model:
+    # Exactly one chat model and one text embedding model, both Gemini.
+    chat: google-genai
+    embedding:
+      text: google-genai
+  google:
+    genai:
+      # No default, deliberately — see PRODUCTION-SECRETS.md. Gemini Developer API
+      # (API key) mode; no project-id/location, so the Vertex AI path is never taken.
+      api-key: ${GEMINI_API_KEY}
+      chat:
+        model: gemini-3.8-flash
+        temperature: 0.2
+        max-output-tokens: 600
+      embedding:
+        # Same key, same Gemini Developer API mode. Embedding has its own connection
+        # properties in Spring AI, so the key is repeated rather than inherited.
+        api-key: ${GEMINI_API_KEY}
+        text:
+          # Current stable Gemini embedding model. 768 of its 3072 dimensions is a
+          # Google-recommended size; Gemini auto-normalises truncated output, and it
+          # quarters the in-memory index. Spring AI 2.0.1 sends no task_type, which
+          # gemini-embedding-2 rejects anyway.
+          model: gemini-embedding-2
+          dimensions: 768
+
 # Logging
 logging:
   level:
     in.lesuccess.portal: INFO
     org.springframework.security: INFO
+    # SimpleVectorStore logs one INFO line per embedded document — ~200 per rebuild.
+    org.springframework.ai.vectorstore.SimpleVectorStore: WARN

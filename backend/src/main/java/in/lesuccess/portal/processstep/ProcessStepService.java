@@ -1,9 +1,11 @@
 package in.lesuccess.portal.processstep;
 
+import in.lesuccess.portal.chatbot.ChatKnowledgeChangedEvent;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import java.util.List;
 public class ProcessStepService {
 
     private final ProcessStepRepository repository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<ProcessStepResponse> listAll() {
@@ -40,6 +43,12 @@ public class ProcessStepService {
 
         ProcessStep saved = repository.saveAndFlush(entity);
         log.info("Process step updated: id={}, stepNumber={}", id, saved.getStepNumber());
+        publishKnowledgeChanged();
         return ProcessStepResponse.from(saved);
+    }
+
+    /** Stale chatbot knowledge - see CourseService#publishKnowledgeChanged. */
+    private void publishKnowledgeChanged() {
+        eventPublisher.publishEvent(new ChatKnowledgeChangedEvent());
     }
 }

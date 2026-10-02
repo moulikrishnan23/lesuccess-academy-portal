@@ -71,6 +71,24 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    /**
+     * The chatbot's model call failed. The message is deliberately generic — the
+     * provider's own error text never leaves the server (see
+     * {@link ChatbotUnavailableException}).
+     */
+    @ExceptionHandler(ChatbotUnavailableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleChatbotUnavailable(ChatbotUnavailableException ex) {
+        Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+        // Provider messages can echo the request, so key-shaped values are masked
+        // even in the server log: logs are shipped and shared more widely than env vars.
+        String detail = cause.getMessage() == null ? "" : cause.getMessage()
+                .replaceAll("AIza[0-9A-Za-z_\\-]+", "AIza***")
+                .replaceAll("(?i)(key=)[^&\\s\"']+", "$1***");
+        log.error("Chatbot unavailable: {}: {}", cause.getClass().getName(), detail);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiResponse.error("The assistant is temporarily unavailable. Please try again shortly."));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
