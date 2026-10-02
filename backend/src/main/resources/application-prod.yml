@@ -62,8 +62,12 @@ chatbot:
 spring.ai:
   google:
     genai:
+      project-id: ${GOOGLE_GENAI_PROJECT_ID:lesuccess-portal}
+      location: ${GOOGLE_GENAI_LOCATION:us-central1}
       api-key: ${GEMINI_API_KEY:}
       embedding:
+        project-id: ${GOOGLE_GENAI_PROJECT_ID:lesuccess-portal}
+        location: ${GOOGLE_GENAI_LOCATION:us-central1}
         api-key: ${GEMINI_API_KEY:}
 
 logging:

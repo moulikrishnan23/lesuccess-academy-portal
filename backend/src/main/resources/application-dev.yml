@@ -41,13 +41,17 @@ lesuccess:
     credentials-path: ${SHEETS_CREDENTIALS_PATH:}
 
 chatbot:
-  enabled: ${CHATBOT_ENABLED:true}
+  enabled: ${CHATBOT_ENABLED:false}
 
 spring.ai:
   google:
     genai:
+      project-id: ${GOOGLE_GENAI_PROJECT_ID:lesuccess-portal}
+      location: ${GOOGLE_GENAI_LOCATION:us-central1}
       api-key: ${GEMINI_API_KEY:}
       embedding:
+        project-id: ${GOOGLE_GENAI_PROJECT_ID:lesuccess-portal}
+        location: ${GOOGLE_GENAI_LOCATION:us-central1}
         api-key: ${GEMINI_API_KEY:}
 
 

@@ -12,6 +12,7 @@ import in.lesuccess.portal.shared.dto.PageResponse;
 import in.lesuccess.portal.shared.exception.GlobalExceptionHandler;
 import in.lesuccess.portal.security.JwtAuthenticationFilter;
 import in.lesuccess.portal.security.JwtTokenProvider;
+import in.lesuccess.portal.security.PrimaryAdminSecurity;
 
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
@@ -74,6 +75,9 @@ class ContactControllerTest {
 
     @MockitoBean
     private ContactService contactService;
+
+    @MockitoBean(name = "primaryAdminSecurity", enforceOverride = false)
+    private PrimaryAdminSecurity primaryAdminSecurity;
 
     private static final String BASE_URL = "/api/contact-messages";
 
@@ -416,6 +420,7 @@ class ContactControllerTest {
         @DisplayName("Existing ID → 204, no body")
         @WithMockUser(roles = "ADMIN")
         void existingId_shouldReturn204() throws Exception {
+            when(primaryAdminSecurity.isPrimaryAdmin()).thenReturn(true);
             doNothing().when(contactService).softDelete(1L);
 
             mockMvc.perform(delete(BASE_URL + "/1"))

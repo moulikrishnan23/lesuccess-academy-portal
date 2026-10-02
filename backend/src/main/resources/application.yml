@@ -126,7 +126,7 @@ lesuccess:
 # loads, every Spring AI auto-configuration is excluded (see
 # ChatbotEnvironmentPostProcessor) and /api/chat returns 404.
 chatbot:
-  enabled: ${CHATBOT_ENABLED:true}
+  enabled: ${CHATBOT_ENABLED:false}
 
 # Spring AI — only read when chatbot.enabled=true.
 spring.ai:
@@ -137,12 +137,16 @@ spring.ai:
       text: google-genai
   google:
     genai:
+      project-id: ${GOOGLE_GENAI_PROJECT_ID:lesuccess-portal}
+      location: ${GOOGLE_GENAI_LOCATION:us-central1}
       api-key: ${GEMINI_API_KEY:}
       chat:
         model: gemini-3.8-flash
         temperature: 0.2
         max-output-tokens: 600
       embedding:
+        project-id: ${GOOGLE_GENAI_PROJECT_ID:lesuccess-portal}
+        location: ${GOOGLE_GENAI_LOCATION:us-central1}
         api-key: ${GEMINI_API_KEY:}
         text:
           # Current stable Gemini embedding model. 768 of its 3072 dimensions is a
