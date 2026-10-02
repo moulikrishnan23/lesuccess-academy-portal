@@ -102,3 +102,27 @@ export async function mockSubmitLead(payload) {
 
   return { id: Math.round(Math.random() * 10000), ...payload }
 }
+
+/** Stable, so a follow-up message continues the same mock conversation. */
+const MOCK_CHAT_SESSION_ID = 'mock-session-00000000-0000-4000-8000-000000000000'
+
+/**
+ * POST /api/chat. A canned reply after ~600 ms, shaped exactly like the live
+ * contract: { sessionId, reply, sources }, not wrapped in ApiResponse.
+ * ?mockState=error answers 503 so the "model unavailable" state is reachable.
+ */
+export async function mockSendChatMessage({ message }) {
+  await delay(forcedState() === 'slow' ? 5000 : 600)
+
+  if (forcedState() === 'error') {
+    throw makeApiError(503, 'The assistant is temporarily unavailable. Please try again shortly.')
+  }
+
+  return {
+    sessionId: MOCK_CHAT_SESSION_ID,
+    reply:
+      `This is a mock reply to: "${message}".\n\n` +
+      'Turn VITE_USE_MOCKS off to talk to the real assistant.',
+    sources: [{ type: 'COURSE', sourceUrl: '/courses/python-full-stack-development' }],
+  }
+}

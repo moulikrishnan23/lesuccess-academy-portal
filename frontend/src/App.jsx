@@ -14,6 +14,7 @@ import PageTransition from "./components/layout/PageTransition.jsx";
 import Footer from "./components/Footer.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import BackToTop from "./components/common/BackToTop.jsx";
+import ChatWidget from "./components/chatbot/ChatWidget.jsx";
 import { AnimatePresence } from "framer-motion";
 
 import Home from "./pages/Home";
@@ -588,6 +589,14 @@ const AppContent = () => {
 
       {/* Global Back to Top Button for Public Pages */}
       {!isDashboard && <BackToTop />}
+
+      {/* =====================================================
+          CHATBOT (public pages only; VITE_CHATBOT_ENABLED gates it,
+          and the window code loads on the first launcher click)
+      ===================================================== */}
+      {!isDashboard && !isLoginPage && (
+        <ChatWidget onOpenEnquiry={() => setIsEnquiryOpen(true)} />
+      )}
 
       {/* =====================================================
           CONNECT WITH US POPUP (Triggered after ~3 sections)
