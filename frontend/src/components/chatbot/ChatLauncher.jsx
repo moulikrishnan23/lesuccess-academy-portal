@@ -25,7 +25,7 @@ export default function ChatLauncher({ ref, open, hasUnread, onClick }) {
           <img
             src="/logo/LeSuccess_Logo_Chatbot.gif"
             alt="Chat with LeSuccess"
-            className="h-full w-full object-cover scale-[1.22] pointer-events-none select-none rounded-full"
+            className="h-full w-full object-cover scale-[1.05] pointer-events-none select-none rounded-full"
           />
         </div>
       )}

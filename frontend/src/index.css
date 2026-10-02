@@ -413,9 +413,9 @@
   .connect-popup {
     position: fixed;
     right: 1rem;
-    bottom: calc(var(--chat-launcher-bottom) + var(--chat-launcher-size) + 0.75rem);
+    bottom: calc(var(--chat-launcher-bottom) + var(--chat-launcher-size) + 0.5rem);
     z-index: 55;
-    max-height: min(540px, calc(100dvh - var(--chat-launcher-bottom) - var(--chat-launcher-size) - 2rem));
+    max-height: calc(100dvh - var(--chat-launcher-bottom) - var(--chat-launcher-size) - 1.5rem);
   }
 
   @media (min-width: 640px) {

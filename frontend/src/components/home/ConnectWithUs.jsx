@@ -8,6 +8,7 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
   // Honeypot. Never shown to a person, so anything in it came from a bot.
   const [website, setWebsite] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [clientError, setClientError] = useState("");
 
   const { submit, isSubmitting, error, fieldErrors, reset } =
     useConnectWithUsSubmit();
@@ -37,16 +38,44 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (clientError) setClientError("");
   };
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!form.name.trim() || !form.mobile.trim() || isSubmitting) return;
+    if (isSubmitting) return;
+
+    const trimmedName = form.name.trim();
+    const trimmedMobile = form.mobile.trim();
+    const trimmedEmail = form.email.trim();
+
+    if (!trimmedName) {
+      setClientError("Name is required");
+      return;
+    }
+
+    if (!trimmedEmail) {
+      setClientError("Email is required");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setClientError("Please provide a valid email address");
+      return;
+    }
+
+    if (!trimmedMobile) {
+      setClientError("Mobile number is required");
+      return;
+    }
+
+    setClientError("");
 
     const accepted = await submit({
-      name: form.name.trim(),
-      mobile: form.mobile.trim(),
-      email: form.email.trim(),
+      name: trimmedName,
+      mobile: trimmedMobile,
+      email: trimmedEmail,
       message: form.message ? form.message.trim() : undefined,
       website,
     });
@@ -69,13 +98,13 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
     }, isModal ? 2200 : 6000);
   };
 
-  const errorMessage = error
-    ? fieldErrors.mobile ||
-      fieldErrors.email ||
+  const errorMessage = clientError || (error
+    ? fieldErrors.email ||
+      fieldErrors.mobile ||
       fieldErrors.name ||
       error.message ||
       "Something went wrong. Please try again."
-    : "";
+    : "");
 
   const formElement = (
     <>
@@ -94,14 +123,14 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
       </div>
 
       <form onSubmit={handleSubmit} className={isModal ? "" : "mt-10 max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl border border-white/20 text-slate-800 transition-colors duration-200"}>
-        <div className={isModal ? "flex flex-col gap-3 mb-3 text-left" : "grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4 text-left"}>
+        <div className={isModal ? "flex flex-col gap-2 mb-2 text-left" : "grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4 text-left"}>
           {/* Name */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor={`${uid}-name`}>
+            <label className={`block font-semibold text-slate-700 ${isModal ? "text-[11px] mb-0.5" : "text-xs mb-1"}`} htmlFor={`${uid}-name`}>
               Name *
             </label>
             <div className="relative">
-              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#07405C]" />
+              <User size={isModal ? 13 : 15} className={`absolute top-1/2 -translate-y-1/2 text-[#07405C] ${isModal ? "left-2.5" : "left-3.5"}`} />
               <input
                 id={`${uid}-name`}
                 type="text"
@@ -110,8 +139,8 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Enter Your Name"
-                className={`w-full bg-[#F5F8FC] border border-slate-200 rounded-xl pl-9 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
-                  isModal ? "py-2.5 text-xs sm:text-sm" : "py-3 pl-10 pr-4 text-sm"
+                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
+                  isModal ? "py-1.5 pl-8 pr-2.5 text-xs rounded-lg" : "py-3 pl-10 pr-4 text-sm rounded-xl"
                 }`}
               />
             </div>
@@ -119,20 +148,21 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
 
           {/* Email */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor={`${uid}-email`}>
-              Email
+            <label className={`block font-semibold text-slate-700 ${isModal ? "text-[11px] mb-0.5" : "text-xs mb-1"}`} htmlFor={`${uid}-email`}>
+              Email *
             </label>
             <div className="relative">
-              <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#07405C]" />
+              <Mail size={isModal ? 13 : 15} className={`absolute top-1/2 -translate-y-1/2 text-[#07405C] ${isModal ? "left-2.5" : "left-3.5"}`} />
               <input
                 id={`${uid}-email`}
                 type="email"
                 name="email"
+                required
                 value={form.email}
                 onChange={handleChange}
                 placeholder="Enter Email ID"
-                className={`w-full bg-[#F5F8FC] border border-slate-200 rounded-xl pl-9 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
-                  isModal ? "py-2.5 text-xs sm:text-sm" : "py-3 pl-10 pr-4 text-sm"
+                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
+                  isModal ? "py-1.5 pl-8 pr-2.5 text-xs rounded-lg" : "py-3 pl-10 pr-4 text-sm rounded-xl"
                 }`}
               />
             </div>
@@ -140,11 +170,11 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
 
           {/* Phone */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor={`${uid}-mobile`}>
+            <label className={`block font-semibold text-slate-700 ${isModal ? "text-[11px] mb-0.5" : "text-xs mb-1"}`} htmlFor={`${uid}-mobile`}>
               Phone Number *
             </label>
             <div className="relative">
-              <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#07405C]" />
+              <Phone size={isModal ? 13 : 15} className={`absolute top-1/2 -translate-y-1/2 text-[#07405C] ${isModal ? "left-2.5" : "left-3.5"}`} />
               <input
                 id={`${uid}-mobile`}
                 type="tel"
@@ -153,8 +183,8 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
                 value={form.mobile}
                 onChange={handleChange}
                 placeholder="Enter Mobile Number"
-                className={`w-full bg-[#F5F8FC] border border-slate-200 rounded-xl pl-9 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
-                  isModal ? "py-2.5 text-xs sm:text-sm" : "py-3 pl-10 pr-4 text-sm"
+                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
+                  isModal ? "py-1.5 pl-8 pr-2.5 text-xs rounded-lg" : "py-3 pl-10 pr-4 text-sm rounded-xl"
                 }`}
               />
             </div>
@@ -162,12 +192,12 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
         </div>
 
         {/* Message Textarea */}
-        <div className={`text-left ${isModal ? "mb-3" : "mb-6"}`}>
-          <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor={`${uid}-msg`}>
+        <div className={`text-left ${isModal ? "mb-2" : "mb-6"}`}>
+          <label className={`block font-semibold text-slate-700 ${isModal ? "text-[11px] mb-0.5" : "text-xs mb-1"}`} htmlFor={`${uid}-msg`}>
             Message (Optional)
           </label>
           <div className="relative">
-            <MessageSquare size={15} className="absolute left-3.5 top-3 text-[#07405C]" />
+            <MessageSquare size={isModal ? 13 : 15} className={`absolute text-[#07405C] ${isModal ? "left-2.5 top-2.5" : "left-3.5 top-3"}`} />
             <textarea
               id={`${uid}-msg`}
               name="message"
@@ -175,8 +205,8 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
               value={form.message}
               onChange={handleChange}
               placeholder="How can we help you?"
-              className={`w-full bg-[#F5F8FC] border border-slate-200 rounded-xl pl-9 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all resize-none ${
-                isModal ? "py-2 text-xs sm:text-sm" : "py-3 pl-10 pr-4 text-sm"
+              className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all resize-none ${
+                isModal ? "py-1.5 pl-8 pr-2.5 text-xs rounded-lg" : "py-3 pl-10 pr-4 text-sm rounded-xl"
               }`}
             />
           </div>
@@ -186,23 +216,23 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white font-bold rounded-xl hover:brightness-105 active:scale-98 transition shadow-lg disabled:opacity-50 cursor-pointer ${
-              isModal ? "py-2.5 px-6 text-sm" : "sm:w-auto min-w-[240px] py-3.5 px-8"
+            className={`w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white font-bold hover:brightness-105 active:scale-98 transition shadow-md disabled:opacity-50 cursor-pointer ${
+              isModal ? "py-2 px-5 text-xs rounded-lg" : "sm:w-auto min-w-[240px] py-3.5 px-8 text-sm rounded-xl shadow-lg"
             }`}
           >
-            {isSubmitting ? "Submitting..." : "Submit Inquiry"} <Send size={15} />
+            {isSubmitting ? "Submitting..." : "Submit Inquiry"} <Send size={isModal ? 13 : 15} />
           </button>
         </div>
 
         {submitted && (
-          <div className="mt-3 flex items-center justify-center gap-2 text-emerald-600 text-xs sm:text-sm font-semibold">
-            <CheckCircle size={16} />
+          <div className="mt-2.5 flex items-center justify-center gap-1.5 text-emerald-600 text-xs sm:text-sm font-semibold">
+            <CheckCircle size={15} />
             <span>Thank you! Your inquiry has been received.</span>
           </div>
         )}
 
         {errorMessage && (
-          <p className="mt-3 text-xs sm:text-sm font-semibold text-red-600">
+          <p className="mt-2.5 text-xs sm:text-sm font-semibold text-red-600">
             {errorMessage}
           </p>
         )}
@@ -213,7 +243,7 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
   if (isModal) {
     return (
       <div
-        className="connect-popup w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px] overflow-y-auto rounded-3xl bg-white p-5 sm:p-6 shadow-2xl text-slate-800 border border-slate-200/90 animate-in fade-in slide-in-from-bottom-3 duration-300"
+        className="connect-popup w-[calc(100vw-2rem)] sm:w-[310px] max-w-[310px] overflow-y-auto rounded-2xl bg-white p-3.5 sm:p-4 shadow-2xl text-slate-800 border border-slate-200/90 animate-in fade-in slide-in-from-bottom-3 duration-300"
         role="dialog"
         aria-modal="false"
         aria-labelledby={`${uid}-modal-title`}
@@ -223,19 +253,19 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+          className="absolute top-3 right-3 p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
         >
-          <X size={18} />
+          <X size={16} />
         </button>
 
-        <div className="text-left mb-3 pr-6">
-          <span className="inline-flex items-center gap-1 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#07405C] mb-1.5 tracking-wider uppercase">
+        <div className="text-left mb-2 pr-6">
+          <span className="inline-flex items-center gap-1 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-2 py-0.5 text-[9px] font-bold text-[#07405C] mb-1 tracking-wider uppercase">
             GET IN TOUCH
           </span>
-          <h3 id={`${uid}-modal-title`} className="text-lg sm:text-xl font-black text-[#101010] tracking-tight">
+          <h3 id={`${uid}-modal-title`} className="text-base sm:text-lg font-black text-[#101010] tracking-tight">
             Connect with <span className="text-[#DF1E26]">Us</span>
           </h3>
-          <p className="mt-0.5 text-slate-600 text-xs leading-relaxed">
+          <p className="mt-0.5 text-slate-600 text-[11px] leading-snug">
             Have questions about courses or careers? Reach out to us.
           </p>
         </div>
