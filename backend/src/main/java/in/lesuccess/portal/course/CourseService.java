@@ -95,10 +95,14 @@ public class CourseService {
         }
 
         String targetSlug = idOrSlug.trim().toLowerCase();
-        return repository.findAll().stream()
-                .filter(c -> CourseResponse.toSlug(c.getName()).equalsIgnoreCase(targetSlug)
+        List<Course> courses = repository.findAll();
+        // Current slugs and exact names first, so an old-style slug can never
+        // shadow another course's current one; then the pre-2026-10 slugs.
+        return courses.stream()
+                .filter(c -> CourseSlug.of(c.getName()).equals(targetSlug)
                         || c.getName().equalsIgnoreCase(idOrSlug.trim()))
                 .findFirst()
+                .or(() -> courses.stream().filter(c -> CourseSlug.matches(c.getName(), targetSlug)).findFirst())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + idOrSlug));
     }
 
