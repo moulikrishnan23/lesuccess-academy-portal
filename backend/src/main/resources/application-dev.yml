@@ -49,6 +49,8 @@ spring.ai:
       project-id: ${GOOGLE_GENAI_PROJECT_ID:lesuccess-portal}
       location: ${GOOGLE_GENAI_LOCATION:us-central1}
       api-key: ${GEMINI_API_KEY:}
+      chat:
+        model: ${GEMINI_MODEL:gemini-1.5-flash}
       embedding:
         project-id: ${GOOGLE_GENAI_PROJECT_ID:lesuccess-portal}
         location: ${GOOGLE_GENAI_LOCATION:us-central1}

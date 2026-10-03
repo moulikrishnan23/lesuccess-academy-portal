@@ -141,7 +141,7 @@ spring.ai:
       location: ${GOOGLE_GENAI_LOCATION:us-central1}
       api-key: ${GEMINI_API_KEY:}
       chat:
-        model: gemini-3.8-flash
+        model: ${GEMINI_MODEL:gemini-1.5-flash}
         temperature: 0.2
         max-output-tokens: 600
       embedding:
