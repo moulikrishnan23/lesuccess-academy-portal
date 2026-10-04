@@ -61,7 +61,13 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
+    /*
+      overflow-x: clip (not hidden!) prevents horizontal scroll without
+      creating a new scroll container. Using `hidden` would establish a new
+      BFC/scroll container and break `position: sticky` on any descendant
+      — most visibly the Enroll form on the Course Detail page.
+    */
+    overflow-x: clip;
     max-width: 100%;
     /*
       Clearance for anchored sections, measured rather than guessed.
@@ -79,7 +85,7 @@
 
   body {
     margin: 0;
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100%;
     background-color: var(--color-surface);
     color: var(--color-ink-soft);
@@ -388,12 +394,20 @@
     bottom: var(--chat-launcher-bottom);
   }
 
-  /* Below sm: a full-screen sheet that clears the notch and the home indicator. */
+  /* Below sm: a viewport-aware mobile sheet accounting for fixed OfferHeader and mobile bottom nav */
   .chat-window {
     position: fixed;
-    inset: 0;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    top: var(--offer-header-h, 44px);
+    bottom: calc(var(--navbar-h, 3.75rem) + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    width: min(100%, 100vw);
+    max-width: 100vw;
+    height: auto;
+    max-height: calc(100dvh - var(--offer-header-h, 44px) - var(--navbar-h, 3.75rem) - env(safe-area-inset-bottom, 0px));
+    padding: 0;
+    z-index: 55;
+    box-sizing: border-box;
   }
 
   /* sm and up: a 380px card anchored just above the launcher, never under the header. */
@@ -401,32 +415,65 @@
     .chat-window {
       --chat-window-bottom: calc(var(--chat-launcher-bottom) + var(--chat-launcher-size) + 0.75rem);
       inset: auto;
+      top: auto;
       bottom: var(--chat-window-bottom);
-      width: 380px;
+      right: 1.5rem;
+      left: auto;
+      width: min(380px, calc(100vw - 3rem));
+      max-width: calc(100vw - 3rem);
       height: min(600px, 80vh, calc(100dvh - var(--chat-window-bottom) - var(--app-header, 0px) - 1rem));
       padding: 0;
       border-radius: var(--radius-card);
+      z-index: 55;
     }
   }
 
-  /* Connect With Us popup floating directly above the chatbot launcher */
+  @media (min-width: 1024px) {
+    .chat-window {
+      right: 2rem;
+      max-width: calc(100vw - 4rem);
+    }
+  }
+
+  /* Connect With Us popup floating cleanly above the launcher, or side-by-side if chat is open */
   .connect-popup {
     position: fixed;
     right: 1rem;
+    left: auto;
     bottom: calc(var(--chat-launcher-bottom) + var(--chat-launcher-size) + 0.5rem);
-    z-index: 55;
+    z-index: 60;
+    width: min(310px, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
     max-height: calc(100dvh - var(--chat-launcher-bottom) - var(--chat-launcher-size) - 1.5rem);
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 639.98px) {
+    .connect-popup {
+      right: 1rem;
+      left: 1rem;
+      margin-left: auto;
+      margin-right: auto;
+      bottom: calc(var(--chat-launcher-bottom) + var(--chat-launcher-size) + 0.5rem);
+      width: calc(100vw - 2rem);
+      max-width: calc(100vw - 2rem);
+      max-height: calc(100dvh - var(--offer-header-h, 44px) - var(--navbar-h, 3.75rem) - 2rem);
+    }
   }
 
   @media (min-width: 640px) {
     .connect-popup {
       right: 1.5rem;
+      left: auto;
+      width: 310px;
     }
   }
 
   @media (min-width: 1024px) {
     .connect-popup {
       right: 2rem;
+      left: auto;
+      width: 310px;
     }
   }
 

@@ -34,7 +34,7 @@ export default function WhyLearnSection({ course, isLoading }) {
       >
         <SectionHeading
           id="why-learn-title"
-          title={subject ? `Why Learn ${subject}?` : 'About this course'}
+          title={subject ? (subject.trim().toLowerCase().startsWith('why') ? subject.trim() : `Why Learn ${subject.trim()}?`) : 'Why Learn?'}
         />
 
         <div className="mt-6">

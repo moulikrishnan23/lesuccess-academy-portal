@@ -179,6 +179,25 @@ public class GalleryService {
     }
 
     @Transactional
+    public GalleryCategoryResponse updateCategoryOrder(Long id, int targetOrder) {
+        GalleryCategory category = categoryRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new ResourceNotFoundException("GalleryCategory", id));
+
+        List<GalleryCategory> allCategories = categoryRepository.findAllByDeletedAtIsNullOrderByDisplayOrderAscIdAsc();
+        List<GalleryCategory> modified = OrderRebalanceUtil.reorder(
+                allCategories, id, targetOrder,
+                GalleryCategory::getId, GalleryCategory::getDisplayOrder, GalleryCategory::setDisplayOrder);
+
+        if (!modified.isEmpty()) {
+            categoryRepository.saveAll(modified);
+        }
+
+        GalleryCategory refreshed = categoryRepository.findByIdAndDeletedAtIsNull(id).orElse(category);
+        log.info("Gallery category order updated: id={}, order={}", id, refreshed.getDisplayOrder());
+        return toCategoryResponse(refreshed);
+    }
+
+    @Transactional
     public void deleteCategory(Long id) {
         GalleryCategory category = categoryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("GalleryCategory", id));
@@ -311,6 +330,25 @@ public class GalleryService {
 
         GalleryImage refreshed = imageRepository.findByIdAndDeletedAtIsNull(id).orElse(image);
         log.info("Gallery image updated: id={}, order={}", refreshed.getId(), refreshed.getDisplayOrder());
+        return GalleryImageResponse.from(refreshed);
+    }
+
+    @Transactional
+    public GalleryImageResponse updateImageOrder(Long id, int targetOrder) {
+        GalleryImage image = imageRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new ResourceNotFoundException("GalleryImage", id));
+
+        List<GalleryImage> categoryImages = imageRepository.findAllByCategoryIdAndDeletedAtIsNullOrderByDisplayOrderAscIdAsc(image.getCategoryId());
+        List<GalleryImage> modified = OrderRebalanceUtil.reorder(
+                categoryImages, id, targetOrder,
+                GalleryImage::getId, GalleryImage::getDisplayOrder, GalleryImage::setDisplayOrder);
+
+        if (!modified.isEmpty()) {
+            imageRepository.saveAll(modified);
+        }
+
+        GalleryImage refreshed = imageRepository.findByIdAndDeletedAtIsNull(id).orElse(image);
+        log.info("Gallery image order updated: id={}, order={}", id, refreshed.getDisplayOrder());
         return GalleryImageResponse.from(refreshed);
     }
 

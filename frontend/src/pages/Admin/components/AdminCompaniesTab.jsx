@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Edit2, Trash2, Building2, Upload, X } from 'lucide-react'
+import { Plus, Edit2, Trash2, Building2, Upload, X, ChevronUp, ChevronDown } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
 
@@ -154,6 +154,21 @@ export default function AdminCompaniesTab({ showAlert }) {
     }
   }
 
+  const handleMoveCompany = async (c, direction, rowList) => {
+    const currentIdx = rowList.findIndex((item) => item.id === c.id)
+    if (currentIdx === -1) return
+    const targetIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1
+    if (targetIdx < 0 || targetIdx >= rowList.length) return
+    const targetOrder = rowList[targetIdx].displayOrder || (targetIdx + 1)
+    try {
+      await apiClient.put(`/api/admin/companies/${c.id}/order?displayOrder=${targetOrder}`)
+      showAlert?.('Company order updated successfully')
+      fetchCompanies()
+    } catch (err) {
+      showAlert?.('Failed to update company order', 'error')
+    }
+  }
+
   const row1Companies = companies.filter((c) => (c.rowNumber || 1) === 1)
   const row2Companies = companies.filter((c) => c.rowNumber === 2)
 
@@ -208,7 +223,7 @@ export default function AdminCompaniesTab({ showAlert }) {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {row1Companies.map((c) => (
+              {row1Companies.map((c, idx) => (
                 <div
                   key={c.id}
                   className="group relative flex flex-col items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-[#084b66]/40 hover:shadow-md"
@@ -222,11 +237,33 @@ export default function AdminCompaniesTab({ showAlert }) {
                   </div>
                   <div className="w-full text-center mt-2 pt-2 border-t border-slate-100">
                     <p className="font-semibold text-xs text-slate-800 truncate">{c.name}</p>
-                    <div className="flex items-center justify-center gap-2 mt-2">
+                    <div className="flex items-center justify-center gap-1.5 mt-2">
+                      {/* Reordering Controls */}
+                      <div className="inline-flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 mr-0.5">
+                        <button
+                          type="button"
+                          onClick={() => handleMoveCompany(c, 'up', row1Companies)}
+                          disabled={idx <= 0}
+                          className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                          title="Move Earlier"
+                        >
+                          <ChevronUp size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveCompany(c, 'down', row1Companies)}
+                          disabled={idx >= row1Companies.length - 1}
+                          className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                          title="Move Later"
+                        >
+                          <ChevronDown size={12} />
+                        </button>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => openEditModal(c)}
-                        className="rounded p-1 text-slate-400 hover:text-[#084b66] hover:bg-slate-100"
+                        className="rounded p-1 text-slate-400 hover:text-[#084b66] hover:bg-slate-100 transition cursor-pointer"
                         title="Edit"
                       >
                         <Edit2 size={13} />
@@ -234,7 +271,7 @@ export default function AdminCompaniesTab({ showAlert }) {
                       <button
                         type="button"
                         onClick={() => handleDelete(c)}
-                        className="rounded p-1 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        className="rounded p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                         title="Delete"
                       >
                         <Trash2 size={13} />
@@ -265,7 +302,7 @@ export default function AdminCompaniesTab({ showAlert }) {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {row2Companies.map((c) => (
+              {row2Companies.map((c, idx) => (
                 <div
                   key={c.id}
                   className="group relative flex flex-col items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-[#084b66]/40 hover:shadow-md"
@@ -279,11 +316,33 @@ export default function AdminCompaniesTab({ showAlert }) {
                   </div>
                   <div className="w-full text-center mt-2 pt-2 border-t border-slate-100">
                     <p className="font-semibold text-xs text-slate-800 truncate">{c.name}</p>
-                    <div className="flex items-center justify-center gap-2 mt-2">
+                    <div className="flex items-center justify-center gap-1.5 mt-2">
+                      {/* Reordering Controls */}
+                      <div className="inline-flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 mr-0.5">
+                        <button
+                          type="button"
+                          onClick={() => handleMoveCompany(c, 'up', row2Companies)}
+                          disabled={idx <= 0}
+                          className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                          title="Move Earlier"
+                        >
+                          <ChevronUp size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveCompany(c, 'down', row2Companies)}
+                          disabled={idx >= row2Companies.length - 1}
+                          className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                          title="Move Later"
+                        >
+                          <ChevronDown size={12} />
+                        </button>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => openEditModal(c)}
-                        className="rounded p-1 text-slate-400 hover:text-[#084b66] hover:bg-slate-100"
+                        className="rounded p-1 text-slate-400 hover:text-[#084b66] hover:bg-slate-100 transition cursor-pointer"
                         title="Edit"
                       >
                         <Edit2 size={13} />
@@ -291,7 +350,7 @@ export default function AdminCompaniesTab({ showAlert }) {
                       <button
                         type="button"
                         onClick={() => handleDelete(c)}
-                        className="rounded p-1 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        className="rounded p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                         title="Delete"
                       >
                         <Trash2 size={13} />

@@ -309,15 +309,142 @@ const DemoClass = ({
     </div>
   );
 
+  // Modal-optimized form content to fit laptop viewports without scrolling
+  const modalFormContent = (
+    <div className="mx-auto max-w-2xl text-center relative z-10">
+      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider backdrop-blur-md">
+        <Sparkles size={12} className="text-[#F44246]" />
+        <span>Experience Before You Enroll</span>
+      </div>
+
+      <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+        Book Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-red-400">Free Live Demo</span> Today!
+      </h2>
+
+      <p className="mt-1 text-xs sm:text-sm text-slate-200 max-w-lg mx-auto">
+        Experience our live hands-on teaching methodology, interactive coding labs, and mentor guidance firsthand.
+      </p>
+
+      {/* Honeypot */}
+      <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+        <label htmlFor="modal-demo-website">Leave this field empty</label>
+        <input
+          id="modal-demo-website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
+
+      <div className="mx-auto mt-4 sm:mt-5 grid gap-2.5 sm:gap-3 sm:grid-cols-2 text-left">
+        {/* Name */}
+        <div className="relative">
+          <User
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/70 z-10 pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Your Full Name *"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-3 text-white text-xs sm:text-sm outline-none placeholder:text-slate-300/80 focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all"
+          />
+        </div>
+
+        {/* Email */}
+        <div className="relative">
+          <Mail
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/70 z-10 pointer-events-none"
+          />
+          <input
+            type="email"
+            placeholder="Email Address *"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-3 text-white text-xs sm:text-sm outline-none placeholder:text-slate-300/80 focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all"
+          />
+        </div>
+
+        {/* Mobile Number */}
+        <div className="relative">
+          <Phone
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/70 z-10 pointer-events-none"
+          />
+          <input
+            type="tel"
+            placeholder="Mobile Number *"
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
+            className="w-full rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-3 text-white text-xs sm:text-sm outline-none placeholder:text-slate-300/80 focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all"
+          />
+        </div>
+
+        {/* Course Select */}
+        <div className="relative">
+          <GraduationCap
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/70 z-10 pointer-events-none"
+          />
+
+          <select
+            value={selectedCourseName}
+            onChange={(e) => setSelectedCourseName(e.target.value)}
+            className="w-full appearance-none rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-8 text-white text-xs sm:text-sm outline-none focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all cursor-pointer"
+          >
+            <option value="" className="text-gray-800 bg-white">
+              Select Course *
+            </option>
+
+            {dropdownCourses.map((course, i) => (
+              <option
+                key={course.id ?? `fallback-${i}`}
+                value={course.title}
+                className="text-gray-800 bg-white"
+              >
+                {course.title}
+              </option>
+            ))}
+          </select>
+
+          <ChevronDown
+            size={16}
+            className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/70 z-10"
+          />
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <div className="mt-4 sm:mt-5 flex justify-center">
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="w-full sm:w-auto min-w-[220px] rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-2.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_20px_rgba(244,66,70,0.4)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
+        >
+          {isSubmitting ? "Reserving Your Seat..." : "Reserve Free Demo Seat"}
+        </button>
+      </div>
+
+      {submitStatus === "error" && (
+        <p className="mt-2 text-xs font-semibold text-rose-300">{errorMessage}</p>
+      )}
+    </div>
+  );
+
   // If rendered as a modal popup (e.g. from Course Detail Page)
   if (isModal) {
     return createPortal(
       <div
-        className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+        className="fixed inset-0 z-70 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={onClose}
       >
         <div
-          className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] p-6 sm:p-10 text-white shadow-2xl border border-white/10"
+          className="relative w-full max-w-2xl max-h-[96vh] rounded-3xl bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] text-white shadow-2xl border border-white/10 p-5 sm:p-7 md:p-8"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Top-Right Circular Close Button */}
@@ -325,9 +452,9 @@ const DemoClass = ({
             type="button"
             onClick={onClose}
             aria-label="Close demo modal"
-            className="absolute right-4 top-4 sm:right-6 sm:top-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition cursor-pointer z-20"
+            className="absolute right-4 top-4 sm:right-6 sm:top-6 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition cursor-pointer z-20"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
 
           {/* Ambient background glows */}
@@ -340,7 +467,7 @@ const DemoClass = ({
             className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#DF1E26]/10 blur-3xl pointer-events-none"
           />
 
-          {submitStatus === "success" ? successContent : formContent}
+          {submitStatus === "success" ? successContent : modalFormContent}
         </div>
       </div>,
       document.body

@@ -73,15 +73,12 @@ const FeaturedTeamCard = ({ member }) => {
 export default function OurTeam() {
   const reduced = useReducedMotion();
   const { team } = useAppData();
-  const { status, data: teamMembers, error, refetch } = team;
+  const { status, data: teamMembers, refetch } = team;
 
   const featuredMembers = useMemo(() => {
-    if (!Array.isArray(teamMembers) || teamMembers.length === 0) return [];
-    const featured = teamMembers.filter((m) => m.featured || m.isFeatured);
-    if (featured.length >= 3) {
-      return featured.slice(0, 3);
-    }
-    return teamMembers.slice(0, 3);
+    const list = Array.isArray(teamMembers) ? teamMembers : [];
+    const featured = list.filter((m) => m.featured || m.isFeatured);
+    return featured.length >= 3 ? featured.slice(0, 3) : list.slice(0, 3);
   }, [teamMembers]);
 
   return (
@@ -103,7 +100,7 @@ export default function OurTeam() {
           </h2>
 
           <p className="mx-auto mt-4 max-w-3xl text-base text-gray-600 sm:text-lg">
-            Dedicated leaders and technology mentors shaping modern careers with passion,
+            Dedicated leaders and technical experts shaping modern careers with passion,
             integrity, and industry excellence.
           </p>
         </motion.div>

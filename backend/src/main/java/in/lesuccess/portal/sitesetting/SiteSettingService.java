@@ -90,6 +90,9 @@ public class SiteSettingService {
     }
 
     private boolean isAllowedKey(String key) {
-        return "hero_video_url".equals(key) || "hero_video_enabled".equals(key);
+        return "hero_video_url".equals(key)
+                || "hero_video_enabled".equals(key)
+                || "chatbot_mode".equals(key)
+                || "chatbot_enabled".equals(key);
     }
 }

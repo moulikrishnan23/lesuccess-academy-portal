@@ -24,6 +24,9 @@ import {
   ONCE_IN_VIEW,
 } from "../../animations/variants.js";
 import { FloatingOrbs, TechGrid, SectionHeading } from "../../components/ui/BackgroundMotion.jsx";
+import ScrollReveal from "../../animations/ScrollReveal.jsx";
+import ParallaxElement from "../../animations/ParallaxElement.jsx";
+import FloatingElement from "../../animations/FloatingElement.jsx";
 
 const STATS = [
   { target: 37, suffix: "K+", label: "Students Trained", sub: "Across multiple batches" },
@@ -128,9 +131,9 @@ export default function AboutPage() {
       {/* =====================================================
           HERO & BREADCRUMB
       ===================================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#F5F8FC] to-white py-16 lg:py-20">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#F5F8FC] to-white py-10 sm:py-12 lg:py-14">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
             <Link to="/" className="hover:text-[#07405C] transition-colors">
               Home
             </Link>
@@ -138,40 +141,40 @@ export default function AboutPage() {
             <span className="text-[#DF1E26]">About Us</span>
           </div>
 
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
             <motion.div
               variants={motionSafe(fadeLeft, reduced)}
               initial="hidden"
               whileInView="visible"
               viewport={ONCE_IN_VIEW}
             >
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-4 py-1.5 text-xs font-bold text-[#07405C] shadow-xs mb-6">
-                <Sparkles size={14} className="text-[#DF1E26]" />
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-3.5 py-1 text-xs font-bold text-[#07405C] shadow-xs mb-3.5">
+                <Sparkles size={13} className="text-[#DF1E26]" />
                 ABOUT LESUCCESS ACADEMY
               </span>
 
-              <h1 className="text-4xl font-extrabold tracking-tight text-[#101010] sm:text-5xl lg:text-5xl leading-tight">
+              <h1 className="text-3xl font-extrabold tracking-tight text-[#101010] sm:text-4xl lg:text-4xl leading-tight">
                 Empowering Next-Gen{" "}
                 <span className="text-[#DF1E26]">Tech Talent</span> in Coimbatore
               </h1>
 
-              <p className="mt-6 text-lg leading-relaxed text-slate-600">
+              <p className="mt-4 text-base sm:text-lg leading-relaxed text-slate-600">
                 LeSuccess is a premier technical learning accelerator and talent development firm.
                 We bridge the critical gap between academic education and modern industry standards,
                 preparing students and working professionals for high-impact tech careers.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-4">
+              <div className="mt-6 flex flex-wrap gap-3.5">
                 <Link
                   to="/courses"
-                  className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-7 py-3.5 text-sm font-bold text-white shadow-md transition hover:brightness-105 active:scale-98 cursor-pointer"
+                  className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:brightness-105 active:scale-98 cursor-pointer"
                 >
                   <span>Explore Courses</span>
                   <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
                 <Link
                   to="/our-team"
-                  className="inline-flex items-center gap-2 rounded-xl border border-[#07405C] px-7 py-3.5 text-sm font-bold text-[#07405C] transition hover:bg-[#07405C] hover:text-white active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-xl border border-[#07405C] px-6 py-3 text-sm font-bold text-[#07405C] transition hover:bg-[#07405C] hover:text-white active:scale-98 cursor-pointer"
                 >
                   Meet Our Team
                 </Link>
@@ -185,17 +188,17 @@ export default function AboutPage() {
               viewport={ONCE_IN_VIEW}
               className="relative"
             >
-              <div className="relative overflow-hidden rounded-3xl border-4 border-white shadow-2xl">
+              <div className="relative overflow-hidden rounded-3xl border-4 border-white shadow-2xl max-h-[380px] lg:max-h-[420px]">
                 <img
                   src={aboutImage}
                   alt="LeSuccess Learning Center"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full max-h-[380px] lg:max-h-[420px] object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 hidden sm:flex items-center gap-3 rounded-2xl bg-[#07405C] p-5 text-white shadow-xl">
-                <ShieldCheck size={36} className="text-[#DF1E26] shrink-0" />
+              <div className="absolute -bottom-4 -left-4 hidden sm:flex items-center gap-3 rounded-2xl bg-[#07405C] p-4 text-white shadow-xl">
+                <ShieldCheck size={32} className="text-[#DF1E26] shrink-0" />
                 <div>
-                  <p className="text-xl font-extrabold leading-none">100% Verified</p>
+                  <p className="text-lg font-extrabold leading-none">100% Verified</p>
                   <p className="text-xs text-slate-200 mt-1">Hands-on Practical Training</p>
                 </div>
               </div>
@@ -207,72 +210,72 @@ export default function AboutPage() {
       {/* =====================================================
           MISSION & VISION
       ===================================================== */}
-      <section className="py-16 lg:py-24 bg-[#F5F8FC]">
+      <section className="py-12 lg:py-16 bg-[#F5F8FC]">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-4 py-1.5 text-xs font-bold text-[#07405C]">
+          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-3.5 py-1 text-xs font-bold text-[#07405C]">
               OUR PURPOSE
             </span>
-            <h2 className="text-3xl font-extrabold text-[#101010] sm:text-4xl mt-4">
+            <h2 className="text-2xl font-extrabold text-[#101010] sm:text-3xl lg:text-4xl mt-3">
               Guiding Every Student Toward{" "}
               <span className="text-[#DF1E26]">Career Excellence</span>
             </h2>
-            <p className="text-slate-600 mt-4 text-base sm:text-lg">
+            <p className="text-slate-600 mt-3 text-sm sm:text-base">
               We believe quality tech education should be accessible, practical, and directly aligned
               with what top companies look for in engineering candidates.
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             {/* Mission */}
-            <div className="relative rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition hover:shadow-[0_20px_40px_rgba(7,64,92,0.1)] hover:border-[#07405C]">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#07405C]/10 text-[#07405C] mb-6">
-                <Target size={28} />
+            <div className="relative rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition hover:shadow-[0_20px_40px_rgba(7,64,92,0.1)] hover:border-[#07405C]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#07405C]/10 text-[#07405C] mb-4">
+                <Target size={24} />
               </div>
-              <h3 className="text-2xl font-bold text-[#101010] mb-4">Our Mission</h3>
-              <p className="text-base leading-relaxed text-slate-600">
+              <h3 className="text-xl font-bold text-[#101010] mb-2.5">Our Mission</h3>
+              <p className="text-sm sm:text-base leading-relaxed text-slate-600">
                 To provide accessible, high-impact technology training through experiential learning,
                 expert mentorship, and real-world project portfolios that empower students to enter the
                 industry with high confidence and immediate job-readiness.
               </p>
-              <ul className="mt-6 space-y-2.5 text-sm text-slate-600">
+              <ul className="mt-4 space-y-2 text-xs sm:text-sm text-slate-600">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-[#DF1E26] shrink-0" />
+                  <CheckCircle2 size={15} className="text-[#DF1E26] shrink-0" />
                   Hands-on project work from day one
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-[#DF1E26] shrink-0" />
+                  <CheckCircle2 size={15} className="text-[#DF1E26] shrink-0" />
                   Continuous mentoring and milestone evaluations
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-[#DF1E26] shrink-0" />
+                  <CheckCircle2 size={15} className="text-[#DF1E26] shrink-0" />
                   Ethical and transparent placement guidance
                 </li>
               </ul>
             </div>
 
             {/* Vision */}
-            <div className="relative rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition hover:shadow-[0_20px_40px_rgba(223,30,38,0.1)] hover:border-[#DF1E26]">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#DF1E26]/10 text-[#DF1E26] mb-6">
-                <Eye size={28} />
+            <div className="relative rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition hover:shadow-[0_20px_40px_rgba(223,30,38,0.1)] hover:border-[#DF1E26]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#DF1E26]/10 text-[#DF1E26] mb-4">
+                <Eye size={24} />
               </div>
-              <h3 className="text-2xl font-bold text-[#101010] mb-4">Our Vision</h3>
-              <p className="text-base leading-relaxed text-slate-600">
+              <h3 className="text-xl font-bold text-[#101010] mb-2.5">Our Vision</h3>
+              <p className="text-sm sm:text-base leading-relaxed text-slate-600">
                 To emerge as South India's most trusted technology career accelerator and academic
                 partner, creating an ecosystem where motivated learners transform into world-class software
                 engineers, analysts, and tech innovators.
               </p>
-              <ul className="mt-6 space-y-2.5 text-sm text-slate-600">
+              <ul className="mt-4 space-y-2 text-xs sm:text-sm text-slate-600">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-[#07405C] shrink-0" />
+                  <CheckCircle2 size={15} className="text-[#07405C] shrink-0" />
                   Transform non-tech & fresh graduates into skilled developers
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-[#07405C] shrink-0" />
+                  <CheckCircle2 size={15} className="text-[#07405C] shrink-0" />
                   Bridge corporate workforce upskilling needs
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-[#07405C] shrink-0" />
+                  <CheckCircle2 size={15} className="text-[#07405C] shrink-0" />
                   Foster a vibrant learning and alumni community
                 </li>
               </ul>
@@ -323,11 +326,8 @@ export default function AboutPage() {
             className="mb-16"
           />
 
-          <motion.div
-            variants={motionSafe(staggerContainer, reduced)}
-            initial="hidden"
-            whileInView="visible"
-            viewport={ONCE_IN_VIEW}
+          <ScrollReveal
+            staggerChildren={true}
             className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"
           >
             {PILLARS.map((pillar) => {
@@ -335,7 +335,7 @@ export default function AboutPage() {
               return (
                 <motion.div
                   key={pillar.title}
-                  variants={motionSafe(fadeUp, reduced)}
+                  variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }}
                   className="group relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:border-[#07405C]/35 hover:shadow-[0_20px_40px_rgba(7,64,92,0.1)] shadow-[0_4px_20px_rgba(7,64,92,0.05)] cursor-default"
                 >
                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#DF1E26] via-[#CA164B] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
@@ -351,7 +351,7 @@ export default function AboutPage() {
                 </motion.div>
               );
             })}
-          </motion.div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -395,14 +395,22 @@ export default function AboutPage() {
       ===================================================== */}
       <section className="relative overflow-hidden py-20 bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] text-white text-center">
         {/* Decorative ambient subtle glow */}
-        <div
-          aria-hidden="true"
-          className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#DF1E26]/10 blur-3xl pointer-events-none"
-        />
+        <ParallaxElement offset={30} className="absolute -top-24 -left-24">
+          <FloatingElement duration={4} yOffset={10}>
+            <div
+              aria-hidden="true"
+              className="h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
+            />
+          </FloatingElement>
+        </ParallaxElement>
+        <ParallaxElement offset={-30} className="absolute -bottom-24 -right-24">
+          <FloatingElement duration={5} yOffset={15} delay={1}>
+            <div
+              aria-hidden="true"
+              className="h-80 w-80 rounded-full bg-[#DF1E26]/10 blur-3xl pointer-events-none"
+            />
+          </FloatingElement>
+        </ParallaxElement>
 
         <div className="relative z-10 mx-auto max-w-4xl px-6">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-sm">

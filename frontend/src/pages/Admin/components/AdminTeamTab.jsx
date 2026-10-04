@@ -3,6 +3,31 @@ import { Plus, Edit2, Trash2, Users, Upload, X, Star, ChevronUp, ChevronDown } f
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
 
+const formatCategoryName = (raw) => {
+  if (!raw) return 'Tech Visionaries'
+  const lower = raw.trim().toLowerCase()
+  if (
+    lower === 'management team' ||
+    lower === 'management visionaries' ||
+    lower === 'management' ||
+    lower.includes('executive')
+  ) {
+    return 'Management Visionaries'
+  }
+  if (
+    lower === 'technical leadership team' ||
+    lower === 'tech visionaries' ||
+    lower === 'our mentors' ||
+    lower.includes('technical leadership') ||
+    lower.includes('mentor') ||
+    lower.includes('trainer') ||
+    lower.includes('instructor')
+  ) {
+    return 'Tech Visionaries'
+  }
+  return raw
+}
+
 export default function AdminTeamTab({ showAlert }) {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -45,19 +70,31 @@ export default function AdminTeamTab({ showAlert }) {
   const fetchCategories = async () => {
     try {
       const { data } = await apiClient.get('/api/team-categories')
-      const cats = Array.isArray(data?.data) ? data.data : []
-      if (cats.length > 0) {
-        setCategories(cats)
+      const rawCats = Array.isArray(data?.data) ? data.data : []
+      const cats = rawCats.map((c) => ({
+        ...c,
+        name: formatCategoryName(c.name),
+      }))
+      const uniqueCats = []
+      const seen = new Set()
+      cats.forEach((c) => {
+        if (!seen.has(c.name)) {
+          seen.add(c.name)
+          uniqueCats.push(c)
+        }
+      })
+      if (uniqueCats.length > 0) {
+        setCategories(uniqueCats)
       } else {
         setCategories([
-          { id: 1, name: 'Management Team' },
-          { id: 2, name: 'Our Mentors' },
+          { id: 1, name: 'Management Visionaries' },
+          { id: 2, name: 'Tech Visionaries' },
         ])
       }
     } catch (_err) {
       setCategories([
-        { id: 1, name: 'Management Team' },
-        { id: 2, name: 'Our Mentors' },
+        { id: 1, name: 'Management Visionaries' },
+        { id: 2, name: 'Tech Visionaries' },
       ])
     }
   }
@@ -131,7 +168,7 @@ export default function AdminTeamTab({ showAlert }) {
     setForm({
       name: '',
       role: '',
-      department: categories[0]?.name || 'Management Team',
+      department: categories[0]?.name || 'Management Visionaries',
       experience: '',
       skills: '',
       email: '',
@@ -260,7 +297,7 @@ export default function AdminTeamTab({ showAlert }) {
 
   const categoryFilteredMembers = selectedCategory === 'ALL'
     ? members
-    : members.filter((m) => (m.department || m.category) === selectedCategory)
+    : members.filter((m) => formatCategoryName(m.department || m.category) === selectedCategory)
 
   return (
     <div className="space-y-8">
@@ -347,7 +384,7 @@ export default function AdminTeamTab({ showAlert }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {featuredMembers.map((m) => {
                   const globalIdx = members.findIndex((item) => item.id === m.id)
-                  const categoryName = m.category || m.department || 'Management Team'
+                  const categoryName = formatCategoryName(m.category || m.department || 'Management Visionaries')
 
                   return (
                     <div
@@ -486,7 +523,7 @@ export default function AdminTeamTab({ showAlert }) {
                 </button>
 
                 {categories.map((cat) => {
-                  const count = members.filter((m) => (m.department || m.category) === cat.name).length
+                  const count = members.filter((m) => formatCategoryName(m.department || m.category) === cat.name).length
                   const isSelected = selectedCategory === cat.name
                   return (
                     <button
@@ -518,7 +555,7 @@ export default function AdminTeamTab({ showAlert }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {categoryFilteredMembers.map((m) => {
                   const globalIdx = members.findIndex((item) => item.id === m.id)
-                  const categoryName = m.category || m.department || 'Management Team'
+                  const categoryName = formatCategoryName(m.category || m.department || 'Management Visionaries')
                   const isFeatured = isMemberFeatured(m)
 
                   return (

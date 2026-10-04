@@ -70,9 +70,16 @@ function getCourseTechPills(course) {
 
 function CourseCard({ course, column, reduced }) {
   const duration = splitDuration(course.durationValue, course.durationUnit)
-  const badgeLabel = course.badgeLabel || course.badgeText || (course.badge ? course.badge.replace(/_/g, ' ') : null)
+  const batchCode =
+    course.batch ||
+    course.batchCode ||
+    course.code ||
+    course.courseCode ||
+    course.badgeLabel ||
+    course.badgeText ||
+    (course.badge ? course.badge.replace(/_/g, ' ') : null)
+  const hasBatch = Boolean(batchCode && String(batchCode).trim().length > 0)
   const techPills = getCourseTechPills(course)
-  const isFeatured = Boolean(badgeLabel)
 
   return (
     <motion.li
@@ -84,127 +91,225 @@ function CourseCard({ course, column, reduced }) {
       whileHover={reduced ? undefined : cardHover.hover}
       className="h-full list-none"
     >
-      <div
-        className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-300 bg-white hover:-translate-y-1.5 ${
-          isFeatured
-            ? 'border-[#07405C]/30 shadow-md shadow-[#07405C]/5 hover:border-[#07405C] hover:shadow-xl hover:shadow-[#07405C]/15'
-            : 'border-slate-200/80 shadow-xs hover:border-[#07405C]/50 hover:shadow-xl hover:shadow-slate-200/70'
-        }`}
-      >
-        {/* Top Accent Bar on Hover */}
-        <span
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#07405C] via-[#024D72] to-[#DF1E26] origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100 z-10"
-        />
+      {hasBatch ? (
+        /* FULL RED BRANDED CARD FOR COURSES WITH BATCH/CODE */
+        <div className="group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[#CA164B]/40 bg-gradient-to-br from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white shadow-lg shadow-[#DF1E26]/20 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-[#CA164B]/35">
+          {/* Top Sheen */}
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/40 to-transparent"
+          />
 
-        {/* CLICKABLE UPPER + MIDDLE BODY */}
-        <Link
-          to={`/courses/${course.slug}`}
-          className="flex flex-col flex-1 p-4 sm:p-6 text-left cursor-pointer min-w-0"
-        >
-          {/* ================= ZONE 1: HEADER ================= */}
-          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-            {/* Course Tech Logo + Category Pill */}
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-200 p-2 shadow-xs transition-transform duration-300 group-hover:scale-105 group-hover:bg-white">
-                <img
-                  src={getCourseLogo(course)}
-                  alt={`${course.title} icon`}
-                  width="32"
-                  height="32"
-                  className="h-full w-full object-contain"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src = '/tech/api.svg'
-                  }}
-                />
-              </div>
-
-              <div className="min-w-0">
-                <span className="inline-block truncate text-[11px] font-bold uppercase tracking-wider text-[#07405C] bg-[#07405C]/10 px-2 py-0.5 rounded-md max-w-full">
-                  {course.categoryGroup || course.category || 'Technology Track'}
-                </span>
-                {badgeLabel && (
-                  <div className="mt-1">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#DF1E26] to-[#F44246] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs max-w-full">
-                      <Sparkles size={9} className="shrink-0" />
-                      <span className="truncate">{badgeLabel}</span>
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Duration Badge */}
-            {duration ? (
-              <div className="flex items-center gap-1 rounded-lg bg-slate-50 px-2.5 py-1 text-slate-700 border border-slate-200/80 shrink-0">
-                <Clock size={12} className="text-[#07405C] shrink-0" />
-                <span className="text-xs font-bold text-slate-900">{duration.value}</span>
-                <span className="text-[11px] font-medium text-slate-500 capitalize">{duration.unit}</span>
-              </div>
-            ) : null}
-          </div>
-
-          {/* ================= ZONE 2: BODY ================= */}
-          <div className="grow min-w-0">
-            <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-[#07405C] transition-colors line-clamp-2 leading-snug break-words">
-              {course.title}
-            </h3>
-
-            <p className="mt-2 text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed break-words">
-              {course.shortDescription ||
-                course.description ||
-                'Comprehensive hands-on training with real-world industry project modules, 1-on-1 mentor guidance, and placement support.'}
-            </p>
-
-            {/* Tech Stack Pills */}
-            {techPills.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-1.5">
-                {techPills.map((tech, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700 group-hover:bg-slate-200/70 transition-colors max-w-full truncate"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </Link>
-
-        {/* ================= ZONE 3: DUAL-ACTION FOOTER ================= */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-4 sm:px-6 py-3.5">
-          {/* Syllabus PDF Download Button */}
-          {hasSyllabus(course) ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                downloadSyllabus(course)
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition hover:border-[#07405C] hover:bg-[#07405C] hover:text-white cursor-pointer active:scale-95 shrink-0"
-              title={`Download ${course.title} Syllabus (PDF)`}
-            >
-              <Download size={13} className="shrink-0" />
-              <span>Syllabus</span>
-            </button>
-          ) : (
-            /* Keeps Explore pinned right when there is no syllabus to offer. */
-            <span aria-hidden="true" />
-          )}
-
-          {/* Explore Course Link */}
+          {/* CLICKABLE UPPER + MIDDLE BODY */}
           <Link
             to={`/courses/${course.slug}`}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#07405C] group-hover:text-[#DF1E26] transition-colors cursor-pointer shrink-0 ml-auto"
+            className="flex flex-col flex-1 p-4 sm:p-6 text-left cursor-pointer min-w-0"
           >
-            <span>View Details</span>
-            <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1 shrink-0" />
+            {/* ================= ZONE 1: HEADER ================= */}
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Course Tech Logo (Solid White background for contrast) */}
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white border border-white/30 p-2 shadow-xs transition-transform duration-300 group-hover:scale-105">
+                  <img
+                    src={getCourseLogo(course)}
+                    alt={`${course.title} icon`}
+                    width="32"
+                    height="32"
+                    className="h-full w-full object-contain"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = '/tech/api.svg'
+                    }}
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <span className="inline-block truncate text-[11px] font-bold uppercase tracking-wider text-white/90 bg-white/15 border border-white/20 px-2 py-0.5 rounded-md max-w-full backdrop-blur-xs">
+                    {course.categoryGroup || course.category || 'Technology Track'}
+                  </span>
+                  <div className="mt-1">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/20 border border-white/30 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs max-w-full backdrop-blur-xs">
+                      <Sparkles size={9} className="shrink-0 text-white" />
+                      <span className="truncate">{batchCode}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Duration Badge */}
+              {duration ? (
+                <div className="flex items-center gap-1 rounded-lg bg-white/15 px-2.5 py-1 text-white border border-white/20 backdrop-blur-xs shrink-0">
+                  <Clock size={12} className="text-white shrink-0" />
+                  <span className="text-xs font-bold text-white">{duration.value}</span>
+                  <span className="text-[11px] font-medium text-white/80 capitalize">{duration.unit}</span>
+                </div>
+              ) : null}
+            </div>
+
+            {/* ================= ZONE 2: BODY ================= */}
+            <div className="grow min-w-0">
+              <h3 className="font-display text-lg font-bold text-white group-hover:text-white/90 transition-colors line-clamp-2 leading-snug break-words">
+                {course.title}
+              </h3>
+
+              <p className="mt-2 text-xs sm:text-sm text-white/90 line-clamp-2 leading-relaxed break-words">
+                {course.shortDescription ||
+                  course.description ||
+                  'Comprehensive hands-on training with real-world industry project modules, 1-on-1 mentor guidance, and placement support.'}
+              </p>
+
+              {/* Tech Stack Pills */}
+              {techPills.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                  {techPills.map((tech, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center rounded-md bg-white/15 border border-white/20 px-2 py-0.5 text-[11px] font-medium text-white group-hover:bg-white/25 transition-colors max-w-full truncate backdrop-blur-xs"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </Link>
+
+          {/* ================= ZONE 3: DUAL-ACTION FOOTER ================= */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/20 px-4 sm:px-6 py-3.5" style={{ background: 'linear-gradient(#F44246, #CA164B)' }}>
+            {hasSyllabus(course) ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  downloadSyllabus(course)
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/60 bg-white/10 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:border-white hover:bg-white hover:text-[#CA164B] cursor-pointer active:scale-95 shrink-0"
+                title={`Download ${course.title} Syllabus (PDF)`}
+              >
+                <Download size={13} className="shrink-0" />
+                <span>Syllabus</span>
+              </button>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+
+            <Link
+              to={`/courses/${course.slug}`}
+              className="inline-flex items-center gap-1.5 text-xs font-bold rounded-lg bg-white text-[#DF1E26] hover:bg-white/95 px-3 py-1.5 shadow-sm transition-all cursor-pointer shrink-0 ml-auto"
+            >
+              <span>View Details</span>
+              <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1 shrink-0" />
+            </Link>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* NORMAL STYLING FOR COURSES WITHOUT BATCH */
+        <div className="group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:border-[#07405C]/50 hover:shadow-xl hover:shadow-slate-200/70">
+          {/* Top Accent Bar on Hover */}
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#DF1E26] via-[#CA164B] to-[#F44246] origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100 z-10"
+          />
+
+          {/* CLICKABLE UPPER + MIDDLE BODY */}
+          <Link
+            to={`/courses/${course.slug}`}
+            className="flex flex-col flex-1 p-4 sm:p-6 text-left cursor-pointer min-w-0"
+          >
+            {/* ================= ZONE 1: HEADER ================= */}
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+              {/* Course Tech Logo + Category Pill */}
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-200 p-2 shadow-xs transition-transform duration-300 group-hover:scale-105 group-hover:bg-white">
+                  <img
+                    src={getCourseLogo(course)}
+                    alt={`${course.title} icon`}
+                    width="32"
+                    height="32"
+                    className="h-full w-full object-contain"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = '/tech/api.svg'
+                    }}
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <span className="inline-block truncate text-[11px] font-bold uppercase tracking-wider text-[#07405C] bg-[#07405C]/10 px-2 py-0.5 rounded-md max-w-full">
+                    {course.categoryGroup || course.category || 'Technology Track'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Duration Badge */}
+              {duration ? (
+                <div className="flex items-center gap-1 rounded-lg bg-slate-50 px-2.5 py-1 text-slate-700 border border-slate-200/80 shrink-0">
+                  <Clock size={12} className="text-[#07405C] shrink-0" />
+                  <span className="text-xs font-bold text-slate-900">{duration.value}</span>
+                  <span className="text-[11px] font-medium text-slate-500 capitalize">{duration.unit}</span>
+                </div>
+              ) : null}
+            </div>
+
+            {/* ================= ZONE 2: BODY ================= */}
+            <div className="grow min-w-0">
+              <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-[#07405C] transition-colors line-clamp-2 leading-snug break-words">
+                {course.title}
+              </h3>
+
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed break-words">
+                {course.shortDescription ||
+                  course.description ||
+                  'Comprehensive hands-on training with real-world industry project modules, 1-on-1 mentor guidance, and placement support.'}
+              </p>
+
+              {/* Tech Stack Pills */}
+              {techPills.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                  {techPills.map((tech, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700 group-hover:bg-slate-200/70 transition-colors max-w-full truncate"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Link>
+
+          {/* ================= ZONE 3: DUAL-ACTION FOOTER ================= */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-4 sm:px-6 py-3.5">
+            {hasSyllabus(course) ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  downloadSyllabus(course)
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition hover:border-[#07405C] hover:bg-[#07405C] hover:text-white cursor-pointer active:scale-95 shrink-0"
+                title={`Download ${course.title} Syllabus (PDF)`}
+              >
+                <Download size={13} className="shrink-0" />
+                <span>Syllabus</span>
+              </button>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+
+            <Link
+              to={`/courses/${course.slug}`}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#07405C] group-hover:text-[#DF1E26] transition-colors cursor-pointer shrink-0 ml-auto"
+            >
+              <span>View Details</span>
+              <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1 shrink-0" />
+            </Link>
+          </div>
+        </div>
+      )}
     </motion.li>
   )
 }
@@ -377,15 +482,15 @@ export default function CourseCatalogPage() {
             {/* Quick Feature Pills */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-white/85">
               <span className="flex items-center gap-1.5 bg-white/10 border border-white/15 px-3 py-1.5 rounded-full backdrop-blur-xs">
-                <CheckCircle2 size={14} className="text-emerald-400" />
+                <CheckCircle2 size={14} className="text-[#F44246]" />
                 <span>20+ Tech Specializations</span>
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 border border-white/15 px-3 py-1.5 rounded-full backdrop-blur-xs">
-                <CheckCircle2 size={14} className="text-emerald-400" />
+                <CheckCircle2 size={14} className="text-[#F44246]" />
                 <span>100% Practical Live Projects</span>
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 border border-white/15 px-3 py-1.5 rounded-full backdrop-blur-xs">
-                <CheckCircle2 size={14} className="text-emerald-400" />
+                <CheckCircle2 size={14} className="text-[#F44246]" />
                 <span>Placement Support & Mock Interviews</span>
               </span>
             </div>

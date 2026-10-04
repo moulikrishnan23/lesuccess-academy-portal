@@ -79,7 +79,7 @@ export default function MobileEnrollBar({ course, onEnrollClick, formRef }) {
               )}
 
               {course.discountLabel ? (
-                <p className="text-[0.6875rem] font-semibold text-green">
+                <p className="text-[0.6875rem] font-semibold text-[#DF1E26]">
                   {course.discountLabel}
                 </p>
               ) : null}

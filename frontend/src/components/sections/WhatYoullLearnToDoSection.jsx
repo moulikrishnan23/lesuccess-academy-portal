@@ -29,17 +29,43 @@ import useReducedMotion from '../../hooks/useReducedMotion.js'
 export default function WhatYoullLearnToDoSection({ course }) {
   const reduced = useReducedMotion()
 
-  const heading = course?.roleHeading
-  const columns = course?.roleColumns ?? []
-  const bullets = course?.roleBullets ?? []
+  const rawHeading = course?.roleHeading
+  let heading = rawHeading
+  if (!heading && course?.title) {
+    const cleanTitle = course.title.trim()
+    heading = cleanTitle.toLowerCase().startsWith('what is') ? cleanTitle : `What is ${cleanTitle}?`
+  }
 
-  /*
-   * Nothing to say about the role means no section. Seeding covers every
-   * published course, so this is a guard against a half-filled admin form
-   * rather than an expected state — a heading over an empty list reads as a
-   * broken page, an absent section reads as a shorter one.
-   */
-  if (!heading || bullets.length === 0) return null
+  let intro = course?.roleIntro
+  if (intro && heading && intro.trim().toLowerCase().startsWith(heading.trim().toLowerCase())) {
+    intro = intro.trim().slice(heading.trim().length).replace(/^[:\-\s]+/, '').trim()
+  }
+
+  const columns = course?.roleColumns ?? []
+
+  // Support array from roleBulletsList or roleBullets, or string parsing
+  let bullets = []
+  if (Array.isArray(course?.roleBulletsList) && course.roleBulletsList.length > 0) {
+    bullets = course.roleBulletsList
+  } else if (Array.isArray(course?.roleBullets) && course.roleBullets.length > 0) {
+    bullets = course.roleBullets
+  } else if (typeof course?.roleBullets === 'string' && course.roleBullets.trim()) {
+    try {
+      const parsed = JSON.parse(course.roleBullets)
+      if (Array.isArray(parsed)) {
+        bullets = parsed
+      } else {
+        bullets = course.roleBullets.split('\n').map((s) => s.trim()).filter(Boolean)
+      }
+    } catch {
+      bullets = course.roleBullets.split('\n').map((s) => s.trim()).filter(Boolean)
+    }
+  }
+
+  const hasRoleSection = Boolean(heading || intro || columns.length > 0)
+  const hasBullets = bullets.length > 0
+
+  if (!hasRoleSection && !hasBullets) return null
 
   return (
     <motion.section
@@ -50,32 +76,50 @@ export default function WhatYoullLearnToDoSection({ course }) {
       viewport={ONCE_IN_VIEW}
       className="mt-12"
     >
-      <SectionHeading id="role-title" title={heading} lede={course?.roleIntro || undefined} />
+      {hasRoleSection && (
+        <div>
+          <SectionHeading id="role-title" title={heading || 'What is this role?'} lede={intro || undefined} />
 
-      {columns.length > 0 ? (
-        <dl
-          className={`mt-6 grid gap-x-10 gap-y-5 ${
-            columns.length > 1 ? 'sm:grid-cols-2' : ''
-          }`}
-        >
-          {columns.map((column) => (
-            <div key={column.label}>
-              <dt className="text-[0.9375rem] font-semibold text-navy-800">
-                {column.label}
-              </dt>
-              <dd className="mt-1.5 text-[0.9375rem] leading-[1.9] text-ink-soft">
-                {column.description}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      ) : null}
+          {columns.length > 0 ? (
+            <dl
+              className={`mt-6 grid gap-x-10 gap-y-5 ${
+                columns.length > 1 ? 'sm:grid-cols-2' : ''
+              }`}
+            >
+              {columns.map((column) => (
+                <div key={column.label}>
+                  <dt className="text-[0.9375rem] font-semibold text-navy-800">
+                    {column.label}
+                  </dt>
+                  <dd className="mt-1.5 text-[0.9375rem] leading-[1.9] text-ink-soft">
+                    {column.description}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+        </div>
+      )}
 
-      <ul className="mt-5 list-disc space-y-2 pl-5 text-[0.9375rem] leading-[1.9] text-ink-soft marker:text-ink-muted">
-        {bullets.map((bullet) => (
-          <li key={bullet}>{bullet}</li>
-        ))}
-      </ul>
+      {hasBullets && (
+        <div className={hasRoleSection ? 'mt-10 pt-8 border-t border-slate-200/80' : ''}>
+          <h3 className="text-xl sm:text-2xl font-bold text-navy-800 tracking-tight flex items-center gap-2 mb-4">
+            <span className="inline-block w-2 h-6 bg-[#DF1E26] rounded-full mr-1" />
+            Topics You Will Learn
+          </h3>
+          <ul className="grid sm:grid-cols-2 gap-3 mt-4">
+            {bullets.map((bullet, idx) => (
+              <li
+                key={idx}
+                className="flex items-start gap-2.5 text-[0.9375rem] text-slate-700 bg-slate-50/80 p-3 rounded-xl border border-slate-200/80 shadow-2xs hover:border-[#DF1E26]/20 transition-colors"
+              >
+                <span className="mt-1.5 h-2 w-2 rounded-full bg-[#DF1E26] shrink-0" />
+                <span className="leading-relaxed font-medium">{bullet}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </motion.section>
   )
 }

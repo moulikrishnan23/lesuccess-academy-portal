@@ -204,9 +204,9 @@ export default function UpcomingPrograms() {
       accent: 'border-l-4 border-l-amber-500',
     },
     INTERNSHIP: {
-      bg: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-sm shadow-emerald-600/20',
+      bg: 'bg-gradient-to-r from-[#DF1E26] to-[#CA164B] text-white shadow-sm shadow-[#DF1E26]/20',
       tag: 'Internship Program',
-      accent: 'border-l-4 border-l-emerald-500',
+      accent: 'border-l-4 border-l-[#DF1E26]',
     },
   }[eventType] || {
     bg: 'bg-[#07405C] text-white',
@@ -420,9 +420,9 @@ export default function UpcomingPrograms() {
                     {eventType === 'INTERNSHIP' ? (
                       <div className="relative z-10 my-auto py-6 text-center">
                         <div className="mx-auto h-20 w-20 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center shadow-inner mb-4">
-                          <Briefcase size={36} className="text-emerald-400" />
+                          <Briefcase size={36} className="text-[#F44246]" />
                         </div>
-                        <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/20 border border-emerald-400/30 px-3 py-1 text-xs font-bold text-emerald-300">
+                        <div className="inline-flex items-center gap-2 rounded-lg bg-[#DF1E26]/20 border border-[#F44246]/30 px-3 py-1 text-xs font-bold text-white">
                           <Code2 size={13} />
                           <span>Live Industry Internship</span>
                         </div>

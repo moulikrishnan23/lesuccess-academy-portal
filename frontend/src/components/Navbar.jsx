@@ -108,7 +108,7 @@ const Navbar = ({ onOpenEnquiry }) => {
           {/* =====================================================
               DESKTOP NAVIGATION (>= 1024px / lg)
           ===================================================== */}
-          <div className="hidden items-center gap-6 xl:gap-8 lg:flex">
+          <div className="hidden items-center gap-3.5 xl:gap-7 lg:flex">
             {/* Home */}
             <NavLink to="/" className={navLinkClass}>
               Home

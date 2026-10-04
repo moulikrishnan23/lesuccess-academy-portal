@@ -243,11 +243,7 @@ export default function CourseDetailPage() {
             />
           </div>
 
-          <motion.div
-            variants={motionSafe(fadeUp, reduced)}
-            initial="hidden"
-            whileInView="visible"
-            viewport={ONCE_IN_VIEW}
+          <div
             /*
               Pinned below both the site header and the course tab bar, using
               the heights they publish rather than a fixed guess.
@@ -264,7 +260,7 @@ export default function CourseDetailPage() {
               courseName={course?.name || course?.title}
               discountLabel={course?.discountLabel}
             />
-          </motion.div>
+          </div>
         </div>
       </div>
 

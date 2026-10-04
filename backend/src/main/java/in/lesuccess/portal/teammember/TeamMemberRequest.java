@@ -52,6 +52,6 @@ public class TeamMemberRequest {
         if (department != null && !department.trim().isEmpty()) {
             return department.trim();
         }
-        return "Our Mentors";
+        return "Technical Leadership Team";
     }
 }

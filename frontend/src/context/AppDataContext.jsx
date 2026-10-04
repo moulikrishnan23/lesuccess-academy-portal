@@ -93,7 +93,7 @@ export function AppDataProvider({ children }) {
     return {
       status: cached && cached.data.length > 0 ? "success" : "loading",
       data: cached ? cached.data : [],
-      categories: cached?.categories || ["Management Team", "Our Mentors"],
+      categories: cached?.categories || ["Management Visionaries", "Tech Visionaries"],
       isCached: Boolean(cached && cached.data.length > 0),
       error: null,
     };
@@ -119,15 +119,30 @@ export function AppDataProvider({ children }) {
         const members = Array.isArray(teamRes.value.data.data)
           ? teamRes.value.data.data
           : [];
-        let categories = ["Management Team", "Our Mentors"];
+        let categories = ["Management Visionaries", "Tech Visionaries"];
         if (
           catRes.status === "fulfilled" &&
           catRes.value?.data?.data &&
           Array.isArray(catRes.value.data.data)
         ) {
-          const names = catRes.value.data.data.map((c) => c.name);
+          const names = catRes.value.data.data.map((c) => {
+            const raw = (c.name || '').trim();
+            const lower = raw.toLowerCase();
+            if (lower === 'management team' || lower === 'management visionaries' || lower === 'management') {
+              return 'Management Visionaries';
+            }
+            if (
+              lower === 'technical leadership team' ||
+              lower === 'tech visionaries' ||
+              lower === 'our mentors' ||
+              lower.includes('technical leadership')
+            ) {
+              return 'Tech Visionaries';
+            }
+            return raw;
+          });
           categories = Array.from(
-            new Set(["Management Team", "Our Mentors", ...names])
+            new Set(["Management Visionaries", "Tech Visionaries", ...names])
           );
         }
         if (members.length > 0) {

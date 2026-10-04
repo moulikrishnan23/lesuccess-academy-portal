@@ -29,6 +29,9 @@ import {
   Menu,
   Video,
   Award,
+  Bot,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import apiClient from '../../services/apiClient.js'
@@ -44,6 +47,7 @@ import AdminFormSubmissionsTab from './components/AdminFormSubmissionsTab.jsx'
 import AdminReviewsTab from './components/AdminReviewsTab.jsx'
 import AdminMessagesTab from './components/AdminMessagesTab.jsx'
 import AdminSuccessStoriesTab from './components/AdminSuccessStoriesTab.jsx'
+import AdminChatbotTab from './components/AdminChatbotTab.jsx'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -186,6 +190,21 @@ export default function AdminDashboard() {
       fetchCategories()
     } catch (err) {
       showAlert('Failed to delete folder', 'error')
+    }
+  }
+
+  const handleMoveCategory = async (cat, direction) => {
+    const currentIdx = categories.findIndex((item) => item.id === cat.id)
+    if (currentIdx === -1) return
+    const targetIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1
+    if (targetIdx < 0 || targetIdx >= categories.length) return
+    const targetOrder = categories[targetIdx].displayOrder || (targetIdx + 1)
+    try {
+      await apiClient.put(`/api/admin/gallery/categories/${cat.id}/order?displayOrder=${targetOrder}`)
+      showAlert('Folder order updated successfully')
+      fetchCategories()
+    } catch (err) {
+      showAlert('Failed to update folder order', 'error')
     }
   }
 
@@ -413,6 +432,23 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleMoveImage = async (img, direction) => {
+    const currentIdx = images.findIndex((item) => item.id === img.id)
+    if (currentIdx === -1) return
+    const targetIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1
+    if (targetIdx < 0 || targetIdx >= images.length) return
+    const targetOrder = images[targetIdx].displayOrder || (targetIdx + 1)
+    try {
+      await apiClient.put(`/api/admin/gallery/images/${img.id}/order?displayOrder=${targetOrder}`)
+      showAlert('Photo order updated successfully')
+      if (selectedCategory) {
+        fetchCategoryImages(selectedCategory.id)
+      }
+    } catch (err) {
+      showAlert('Failed to update photo order', 'error')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* =====================================================
@@ -465,6 +501,7 @@ export default function AdminDashboard() {
             {[
               { id: 'overview', label: 'Overview', icon: LayoutDashboard },
               { id: 'hero-video', label: 'Hero Video', icon: Video },
+              { id: 'chatbot', label: 'Chatbot Mode', icon: Bot },
               { id: 'gallery', label: 'Gallery', icon: Folder },
               { id: 'courses', label: 'Courses', icon: BookOpen },
               { id: 'programs', label: 'Programs & Events', icon: Calendar },
@@ -569,6 +606,7 @@ export default function AdminDashboard() {
               <AdminOverviewTab onNavigateTab={(tab) => setActiveTab(tab)} showAlert={showAlert} />
             )}
             {activeTab === 'hero-video' && <AdminHeroVideoTab showAlert={showAlert} />}
+            {activeTab === 'chatbot' && <AdminChatbotTab showAlert={showAlert} />}
             {activeTab === 'courses' && <AdminCoursesTab showAlert={showAlert} />}
             {activeTab === 'programs' && <AdminProgramsTab showAlert={showAlert} />}
             {activeTab === 'team' && <AdminTeamTab showAlert={showAlert} />}
@@ -630,7 +668,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {categories.map((cat) => (
+                {categories.map((cat, idx) => (
                   <div
                     key={cat.id}
                     className="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition hover:shadow-md"
@@ -691,6 +729,28 @@ export default function AdminDashboard() {
                         </button>
 
                         <div className="flex items-center gap-1">
+                          {/* Reordering Controls */}
+                          <div className="inline-flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 mr-1">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveCategory(cat, 'up')}
+                              disabled={idx <= 0}
+                              className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                              title="Move Up"
+                            >
+                              <ChevronUp size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveCategory(cat, 'down')}
+                              disabled={idx >= categories.length - 1}
+                              className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                              title="Move Down"
+                            >
+                              <ChevronDown size={13} />
+                            </button>
+                          </div>
+
                           <button
                             type="button"
                             onClick={() => openEditCategoryModal(cat)}
@@ -784,21 +844,47 @@ export default function AdminDashboard() {
                         </p>
                       )}
 
-                      <div className="mt-3 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-2.5">
-                        <button
-                          type="button"
-                          onClick={() => openEditImageModal(img)}
-                          className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
-                        >
-                          <Edit2 size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteImage(img.id)}
-                          className="rounded-lg p-1 text-red-500 hover:bg-red-50 hover:text-red-700"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
+                        {/* Reordering Controls */}
+                        <div className="inline-flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50">
+                          <button
+                            type="button"
+                            onClick={() => handleMoveImage(img, 'up')}
+                            disabled={idx <= 0}
+                            className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                            title="Move Up"
+                          >
+                            <ChevronUp size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveImage(img, 'down')}
+                            disabled={idx >= images.length - 1}
+                            className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                            title="Move Down"
+                          >
+                            <ChevronDown size={13} />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openEditImageModal(img)}
+                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                            title="Edit Photo"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteImage(img.id)}
+                            className="rounded-lg p-1 text-red-500 hover:bg-red-50 hover:text-red-700"
+                            title="Delete Photo"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

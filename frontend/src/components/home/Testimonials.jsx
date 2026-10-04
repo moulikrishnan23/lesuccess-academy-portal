@@ -9,6 +9,8 @@ import {
 import { motion } from "framer-motion";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
+import ScrollReveal from "../../animations/ScrollReveal.jsx";
+import { useAppData } from "../../context/AppDataContext.jsx";
 import { GOOGLE_REVIEWS, GOOGLE_REVIEWS_META } from "../../data/googleReviews.js";
 
 const AVATAR_COLORS = [
@@ -29,12 +31,18 @@ function getAvatarColor(name = "") {
 
 export default function Testimonials() {
   const reduced = useReducedMotion();
+  const { testimonials } = useAppData();
 
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [startIndex, setStartIndex] = useState(0);
 
-  // Use only verified Google Reviews
-  const reviews = GOOGLE_REVIEWS;
+  // Use dynamic testimonials from Admin / DB, fallback to verified Google Reviews
+  const reviews = useMemo(() => {
+    if (testimonials?.data && Array.isArray(testimonials.data) && testimonials.data.length > 0) {
+      return testimonials.data;
+    }
+    return GOOGLE_REVIEWS;
+  }, [testimonials?.data]);
 
   const cardsPerPage = 3;
   const maxStart = Math.max(0, reviews.length - cardsPerPage);
@@ -51,20 +59,22 @@ export default function Testimonials() {
     });
   };
 
-  const sortedReviews = [...reviews].sort((a, b) => (b.rating || 5) - (a.rating || 5));
+  // Preserve admin displayOrder without overriding by rating
+  const sortedReviews = useMemo(() => {
+    return [...reviews].sort((a, b) => {
+      if (typeof a.displayOrder === 'number' && typeof b.displayOrder === 'number' && a.displayOrder !== b.displayOrder) {
+        return a.displayOrder - b.displayOrder;
+      }
+      return 0;
+    });
+  }, [reviews]);
   const visibleReviews = sortedReviews.slice(startIndex, startIndex + cardsPerPage);
 
   return (
     <section className="relative w-full bg-slate-50/70 py-20 px-4 sm:px-8 lg:px-16 overflow-hidden transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <motion.div
-          variants={motionSafe(fadeUp, reduced)}
-          initial="hidden"
-          whileInView="visible"
-          viewport={ONCE_IN_VIEW}
-          className="text-center max-w-3xl mx-auto mb-10"
-        >
+        <ScrollReveal className="text-center max-w-3xl mx-auto mb-10">
           <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/30 bg-[#07405C]/5 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#07405C]">
             Student Testimonials
           </span>
@@ -74,7 +84,7 @@ export default function Testimonials() {
           <p className="mt-2 text-base text-slate-600">
             Real feedback from graduates who transformed their careers with LeSuccess Academy.
           </p>
-        </motion.div>
+        </ScrollReveal>
 
         {/* Google Reviews Style Card */}
         <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/50 p-6 sm:p-10 transition-all">
@@ -177,14 +187,14 @@ export default function Testimonials() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {visibleReviews.map((review) => {
+              {visibleReviews.map((review, idx) => {
                 const initial = review.name ? review.name.trim().charAt(0).toUpperCase() : "S";
                 const isExpanded = expandedIds.has(review.id);
 
                 return (
+                  <ScrollReveal key={review.id} delay={idx * 0.1}>
                   <div
-                    key={review.id}
-                    className="group flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs hover:shadow-[0_16px_36px_rgba(7,64,92,0.08)] hover:-translate-y-1.5 hover:border-slate-300 transition-all duration-300"
+                    className="group h-full flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs hover:shadow-[0_16px_36px_rgba(7,64,92,0.08)] hover:-translate-y-1.5 hover:border-slate-300 transition-all duration-300"
                   >
                     <div>
                       {/* Reviewer Header: Avatar, Name, Review Count */}
@@ -257,6 +267,7 @@ export default function Testimonials() {
                       </div>
                     )}
                   </div>
+                  </ScrollReveal>
                 );
               })}
             </div>

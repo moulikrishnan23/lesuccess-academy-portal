@@ -76,6 +76,12 @@ public class UpcomingProgramRequest {
     @lombok.Builder.Default
     private Boolean isActive = true;
 
+    private Integer displayOrder;
+
+    public int getEffectiveDisplayOrder() {
+        return displayOrder != null && displayOrder > 0 ? displayOrder : 0;
+    }
+
     public boolean isActive() {
         return isActive == null || isActive;
     }

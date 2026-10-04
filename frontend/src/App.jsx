@@ -14,7 +14,9 @@ import PageTransition from "./components/layout/PageTransition.jsx";
 import Footer from "./components/Footer.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import BackToTop from "./components/common/BackToTop.jsx";
+import BasicChatbot from "./components/chatbot/BasicChatbot.jsx";
 import ChatWidget from "./components/chatbot/ChatWidget.jsx";
+import useSiteSettings from "./hooks/useSiteSettings.js";
 import { AnimatePresence } from "framer-motion";
 
 import Home from "./pages/Home";
@@ -97,6 +99,7 @@ function HomeRoute() {
 
 const AppContent = () => {
   const location = useLocation();
+  const { settings } = useSiteSettings();
 
   // Ctrl+Shift+Alt+1 jumps to the admin area. Mounted here because this is the
   // one component inside both BrowserRouter and AuthProvider.
@@ -365,7 +368,6 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-surface text-ink transition-colors duration-200">
-
       {/* =====================================================
           OFFER HEADER (ALWAYS FIXED & VISIBLE)
       ===================================================== */}
@@ -437,7 +439,7 @@ const AppContent = () => {
           PAGE ROUTES
       ===================================================== */}
 
-      <main className="flex-1 pb-4 lg:pb-0">
+      <main className="flex-1 pb-4 lg:pb-0 [overflow-x:clip] w-full max-w-full">
         <ScrollToTop />
         <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
@@ -591,12 +593,17 @@ const AppContent = () => {
       {!isDashboard && <BackToTop />}
 
       {/* =====================================================
-          CHATBOT (public pages only; VITE_CHATBOT_ENABLED gates it,
-          and the window code loads on the first launcher click)
+          CHATBOT (Admin Switchable: API Chatbot vs Normal Chatbot)
+          Only ONE chatbot is active and rendered at a time.
       ===================================================== */}
-      {!isDashboard && !isLoginPage && (
-        <ChatWidget onOpenEnquiry={() => setIsEnquiryOpen(true)} />
+      {!isDashboard && !isLoginPage && settings?.chatbot_enabled !== 'false' && (
+        settings?.chatbot_mode?.toUpperCase() === 'API' ? (
+          <ChatWidget onOpenEnquiry={() => setIsEnquiryOpen(true)} />
+        ) : (
+          <BasicChatbot onOpenEnquiry={() => setIsEnquiryOpen(true)} />
+        )
       )}
+
 
       {/* =====================================================
           CONNECT WITH US POPUP (Triggered after ~3 sections)

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import org.junit.jupiter.api.Nested;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -20,4 +22,20 @@ class GeminiModelConfigTest {
     void geminiModelDefault_shouldBeGemini15Flash() {
         assertThat(configuredChatModel).isEqualTo("gemini-1.5-flash");
     }
+
+    @Nested
+    @SpringBootTest(properties = "GEMINI_MODEL=gemini-3.8-flash")
+    @ActiveProfiles("test")
+    class DynamicOverrideTest {
+
+        @Value("${spring.ai.google.genai.chat.model}")
+        private String overriddenChatModel;
+
+        @Test
+        @DisplayName("spring.ai.google.genai.chat.model resolves to GEMINI_MODEL when defined")
+        void geminiModel_shouldBeOverriddenByEnvVar() {
+            assertThat(overriddenChatModel).isEqualTo("gemini-3.8-flash");
+        }
+    }
 }
+

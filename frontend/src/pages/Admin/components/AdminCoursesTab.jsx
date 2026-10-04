@@ -17,6 +17,8 @@ import {
   ListOrdered,
   FileText,
   Loader2,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import CourseBadge from '../../../components/ui/CourseBadge.jsx'
@@ -373,6 +375,7 @@ export default function AdminCoursesTab({ showAlert }) {
       description: form.description?.trim() || null,
       roleHeading: form.roleHeading?.trim() || null,
       roleIntro: form.roleIntro?.trim() || null,
+      roleBullets: roleBullets.filter((b) => b && b.trim()).join('\n'),
       roleBulletsList: roleBullets.filter((b) => b && b.trim()),
       durationMonths: Number(form.durationMonths) || null,
       mode: form.mode,
@@ -427,6 +430,21 @@ export default function AdminCoursesTab({ showAlert }) {
       fetchCourses()
     } catch (err) {
       showAlert?.('Failed to delete course', 'error')
+    }
+  }
+
+  const handleMoveCourse = async (course, direction, currentList) => {
+    const currentIdx = currentList.findIndex((item) => item.id === course.id)
+    if (currentIdx === -1) return
+    const targetIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1
+    if (targetIdx < 0 || targetIdx >= currentList.length) return
+    const targetOrder = currentList[targetIdx].displayOrder || (targetIdx + 1)
+    try {
+      await apiClient.put(`/api/admin/courses/${course.id}/order?displayOrder=${targetOrder}`)
+      showAlert?.('Course order updated successfully')
+      fetchCourses()
+    } catch (err) {
+      showAlert?.('Failed to update course order', 'error')
     }
   }
 
@@ -616,11 +634,11 @@ export default function AdminCoursesTab({ showAlert }) {
               onClick={() => setSelectedGroup('batch')}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 selectedGroup === 'batch'
-                  ? 'bg-white text-emerald-700 shadow-2xs'
+                  ? 'bg-white text-[#DF1E26] shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Sparkles size={13} className="text-emerald-600" />
+              <Sparkles size={13} className="text-[#DF1E26]" />
               Batch Courses ({courses.filter(isBatchCourse).length})
             </button>
             <button
@@ -698,7 +716,7 @@ export default function AdminCoursesTab({ showAlert }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {list.map((c) => {
+                    {list.map((c, idx) => {
                       const hasBatch = isBatchCourse(c)
                       return (
                         <tr key={c.id} className="hover:bg-slate-50/70 transition">
@@ -722,8 +740,8 @@ export default function AdminCoursesTab({ showAlert }) {
                           </td>
                           <td className="px-6 py-4">
                             {hasBatch ? (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <Sparkles size={12} className="text-emerald-600" />
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#DF1E26]/10 text-[#DF1E26] border border-[#DF1E26]/30">
+                                <Sparkles size={12} className="text-[#DF1E26]" />
                                 Batch Course
                               </span>
                             ) : (
@@ -758,11 +776,33 @@ export default function AdminCoursesTab({ showAlert }) {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <div className="inline-flex items-center gap-2">
+                            <div className="inline-flex items-center gap-1.5">
+                              {/* Reordering Controls */}
+                              <div className="inline-flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 mr-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveCourse(c, 'up', list)}
+                                  disabled={idx <= 0}
+                                  className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                                  title="Move Up"
+                                >
+                                  <ChevronUp size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveCourse(c, 'down', list)}
+                                  disabled={idx >= list.length - 1}
+                                  className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#084b66] disabled:opacity-25 transition cursor-pointer"
+                                  title="Move Down"
+                                >
+                                  <ChevronDown size={13} />
+                                </button>
+                              </div>
+
                               <button
                                 type="button"
                                 onClick={() => openEditModal(c)}
-                                className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-[#084b66] transition"
+                                className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-[#084b66] transition cursor-pointer"
                                 title="Edit Course"
                               >
                                 <Edit2 size={16} />
@@ -770,7 +810,7 @@ export default function AdminCoursesTab({ showAlert }) {
                               <button
                                 type="button"
                                 onClick={() => handleDelete(c)}
-                                className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition"
+                                className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
                                 title="Delete Course"
                               >
                                 <Trash2 size={16} />
@@ -794,7 +834,7 @@ export default function AdminCoursesTab({ showAlert }) {
               <div>
                 <div className="flex items-center justify-between mb-3 px-1">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 shadow-2xs">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white shadow-2xs">
                       <Sparkles size={16} />
                     </div>
                     <div>
@@ -802,11 +842,11 @@ export default function AdminCoursesTab({ showAlert }) {
                       <p className="text-xs text-slate-500">Courses currently running with active batch schedules and featured badges</p>
                     </div>
                   </div>
-                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#DF1E26]/10 text-[#DF1E26] border border-[#DF1E26]/30">
                     {batchCourses.length} {batchCourses.length === 1 ? 'Course' : 'Courses'}
                   </span>
                 </div>
-                {renderTable(batchCourses, 'Batch Courses', Sparkles, 'emerald')}
+                {renderTable(batchCourses, 'Batch Courses', Sparkles, 'red')}
               </div>
             )}
 
@@ -1560,14 +1600,14 @@ export default function AdminCoursesTab({ showAlert }) {
                   <div>
                     <h4 className="text-sm font-bold text-slate-900">Course Page Copy & Description</h4>
                     <p className="text-xs text-slate-500">
-                      Manage the detailed course description and career role overview shown to visitors.
+                      Manage the database-driven sections displayed on the Course Details page: "Why Learn?", "What is?", and "Topics You Will Learn".
                     </p>
                   </div>
 
-                  {/* Why Learn Description */}
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
-                      "Why Learn {form.category || form.name}?" Section Description
+                  {/* 1. Why Learn Description */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#084b66]">
+                      1. "Why Learn?" Section Description (course.description)
                     </label>
                     <textarea
                       rows={5}
@@ -1576,33 +1616,33 @@ export default function AdminCoursesTab({ showAlert }) {
                       placeholder="Enter the detailed paragraph explaining why students should learn this course. Supports plain text or HTML <p> tags..."
                       className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs text-slate-800 focus:border-[#084b66] focus:outline-none"
                     />
-                    <span className="text-[11px] text-slate-400 mt-1 block">
-                      Displayed on the Course Details page right below the banner tabs.
+                    <span className="text-[11px] text-slate-400 block">
+                      Displayed on the Course Details page under the "Why Learn {form.category || form.name || 'Course'}?" section.
                     </span>
                   </div>
 
-                  {/* What does a [Role] do? */}
+                  {/* 2. What is? & Topics You Will Learn */}
                   <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-4">
                     <div className="text-xs font-bold uppercase tracking-wider text-[#084b66]">
-                      Career Role Section ("What does a [Role] do?")
+                      2. "What is?" Section Copy (course.role_heading & course.role_intro)
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">
-                        Role Heading
+                        "What is?" Section Heading (role_heading)
                       </label>
                       <input
                         type="text"
                         value={form.roleHeading}
                         onChange={(e) => setForm({ ...form, roleHeading: e.target.value })}
-                        placeholder="e.g. What does a Full Stack Developer do?"
+                        placeholder="e.g. What does a Full Stack Developer do? / What is Full Stack Java?"
                         className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs focus:border-[#084b66] focus:outline-none"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">
-                        Role Intro Paragraph
+                        "What is?" Intro Paragraph (role_intro)
                       </label>
                       <textarea
                         rows={2}
@@ -1613,13 +1653,13 @@ export default function AdminCoursesTab({ showAlert }) {
                       />
                     </div>
 
-                    {/* Role Bullets */}
-                    <div className="space-y-2 pt-1 border-t border-slate-200/60">
+                    {/* 3. Topics You Will Learn */}
+                    <div className="space-y-2 pt-3 border-t border-slate-200/80">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs font-medium text-slate-700">
-                          Role Responsibilities (Bullet Points)
+                        <label className="block text-xs font-bold uppercase tracking-wider text-[#084b66]">
+                          3. "Topics You Will Learn" (role_bullets)
                         </label>
-                        <span className="text-[11px] text-slate-400">{roleBullets.length} bullets</span>
+                        <span className="text-[11px] font-semibold text-[#DF1E26] bg-[#DF1E26]/10 px-2 py-0.5 rounded-full">{roleBullets.length} topics</span>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -1627,7 +1667,7 @@ export default function AdminCoursesTab({ showAlert }) {
                           type="text"
                           value={newBulletText}
                           onChange={(e) => setNewBulletText(e.target.value)}
-                          placeholder="e.g. Design the application structure, APIs, and database..."
+                          placeholder="e.g. Design enterprise APIs, microservices, and databases..."
                           className="flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-1.5 text-xs focus:border-[#084b66] focus:outline-none"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -1639,10 +1679,10 @@ export default function AdminCoursesTab({ showAlert }) {
                         <button
                           type="button"
                           onClick={handleAddRoleBullet}
-                          className="inline-flex items-center gap-1 rounded-xl bg-slate-200 hover:bg-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition"
+                          className="inline-flex items-center gap-1 rounded-xl bg-[#DF1E26] hover:bg-[#b8141b] px-3.5 py-1.5 text-xs font-semibold text-white transition cursor-pointer"
                         >
                           <Plus size={14} />
-                          <span>Add</span>
+                          <span>Add Topic</span>
                         </button>
                       </div>
 
@@ -1651,9 +1691,9 @@ export default function AdminCoursesTab({ showAlert }) {
                           {roleBullets.map((bullet, bIdx) => (
                             <div
                               key={bIdx}
-                              className="flex items-center gap-2 bg-white rounded-lg p-2 border border-slate-200 text-xs"
+                              className="flex items-center gap-2 bg-white rounded-lg p-2 border border-slate-200 text-xs shadow-2xs"
                             >
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#DF1E26] shrink-0" />
                               <input
                                 type="text"
                                 value={bullet}

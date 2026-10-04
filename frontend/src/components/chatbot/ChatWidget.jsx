@@ -1,5 +1,6 @@
-import { lazy, Suspense, useCallback, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useRef, useState, useEffect } from 'react'
 import ChatLauncher from './ChatLauncher.jsx'
+import LeBotWelcomeBubble from './LeBotWelcomeBubble.jsx'
 
 /*
  * Loaded on the first launcher click, never before. ChatWindow pulls in useChat,
@@ -34,24 +35,26 @@ function ChatWidgetInner({ onOpenEnquiry }) {
   const [isDisabled, setIsDisabled] = useState(false)
   const [hasUnread, setHasUnread] = useState(false)
   const launcherRef = useRef(null)
+  const isFirstMountRef = useRef(true)
+
+  useEffect(() => {
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false
+      return
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('lesuccess-chat-toggle', { detail: { open: isOpen } }))
+    }
+  }, [isOpen])
 
   const toggle = useCallback(() => {
     setHasLoaded(true)
     setHasUnread(false)
-    setIsOpen((open) => {
-      const next = !open
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('lesuccess-chat-toggle', { detail: { open: next } }))
-      }
-      return next
-    })
+    setIsOpen((open) => !open)
   }, [])
 
   const close = useCallback(({ returnFocus = true } = {}) => {
     setIsOpen(false)
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('lesuccess-chat-toggle', { detail: { open: false } }))
-    }
     if (returnFocus) launcherRef.current?.focus()
   }, [])
 
@@ -66,6 +69,7 @@ function ChatWidgetInner({ onOpenEnquiry }) {
 
   return (
     <div className="chat-anchor contents">
+      <LeBotWelcomeBubble isOpen={isOpen} onOpenChat={toggle} />
       <ChatLauncher ref={launcherRef} open={isOpen} hasUnread={hasUnread} onClick={toggle} />
       {hasLoaded && (
         <Suspense fallback={null}>

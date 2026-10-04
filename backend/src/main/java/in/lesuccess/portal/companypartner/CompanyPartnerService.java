@@ -106,6 +106,26 @@ public class CompanyPartnerService {
     }
 
     @Transactional
+    public CompanyPartnerResponse updateOrder(Long id, int targetOrder) {
+        CompanyPartner partner = repository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new ResourceNotFoundException("CompanyPartner", id));
+        int targetRow = partner.getRowNumber();
+        List<CompanyPartner> rowPartners = repository.findAllByOrderByRowNumberAscDisplayOrderAscIdAsc()
+                .stream()
+                .filter(p -> p.getRowNumber() == targetRow)
+                .collect(Collectors.toList());
+        List<CompanyPartner> modified = OrderRebalanceUtil.reorder(
+                rowPartners, id, targetOrder,
+                CompanyPartner::getId, CompanyPartner::getDisplayOrder, CompanyPartner::setDisplayOrder);
+        if (!modified.isEmpty()) {
+            repository.saveAll(modified);
+        }
+        CompanyPartner refreshed = repository.findByIdAndDeletedAtIsNull(id).orElse(partner);
+        log.info("Company partner order updated: id={}, order={}", id, refreshed.getDisplayOrder());
+        return CompanyPartnerResponse.from(refreshed);
+    }
+
+    @Transactional
     public void delete(Long id) {
         CompanyPartner partner = repository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("CompanyPartner", id));

@@ -27,10 +27,10 @@ export const BADGE_THEMES = {
   },
   "High Demand": {
     type: "High Demand",
-    badgeClasses: "bg-emerald-500/30 text-white border-emerald-300/40 shadow-xs",
-    background: "bg-emerald-500/30",
+    badgeClasses: "bg-gradient-to-r from-[#DF1E26] to-[#CA164B] text-white border-white/20 shadow-xs",
+    background: "bg-gradient-to-r from-[#DF1E26] to-[#CA164B]",
     textColor: "text-white",
-    borderColor: "border-emerald-300/40",
+    borderColor: "border-white/20",
   },
 };
 
@@ -259,19 +259,19 @@ export function sortCoursesByOffer(courses) {
   if (!Array.isArray(courses)) return [];
 
   return [...courses].sort((a, b) => {
-    const offerA = getCourseOfferPercentage(a);
-    const offerB = getCourseOfferPercentage(b);
-
-    // Highest offer percentage first
-    if (offerB !== offerA) {
-      return offerB - offerA;
-    }
-
-    // Secondary sort: displayOrder if available
+    // Primary sort: displayOrder set in Admin panel
     const orderA = typeof a.displayOrder === 'number' ? a.displayOrder : 999;
     const orderB = typeof b.displayOrder === 'number' ? b.displayOrder : 999;
     if (orderA !== orderB) {
       return orderA - orderB;
+    }
+
+    const offerA = getCourseOfferPercentage(a);
+    const offerB = getCourseOfferPercentage(b);
+
+    // Secondary sort: highest offer percentage
+    if (offerB !== offerA) {
+      return offerB - offerA;
     }
 
     // Tertiary sort: id

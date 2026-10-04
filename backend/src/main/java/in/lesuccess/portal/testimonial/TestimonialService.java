@@ -137,6 +137,25 @@ public class TestimonialService {
     }
 
     @Transactional
+    public TestimonialResponse updateOrder(Long id, int targetOrder) {
+        Testimonial entity = repository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Testimonial", id));
+
+        List<Testimonial> allItems = repository.findAllByOrderByDisplayOrderAscIdAsc();
+        List<Testimonial> modified = OrderRebalanceUtil.reorder(
+                allItems, id, targetOrder,
+                Testimonial::getId, Testimonial::getDisplayOrder, Testimonial::setDisplayOrder);
+
+        if (!modified.isEmpty()) {
+            repository.saveAll(modified);
+        }
+
+        Testimonial refreshed = repository.findByIdAndDeletedAtIsNull(id).orElse(entity);
+        log.info("Testimonial order updated: id={}, order={}", id, refreshed.getDisplayOrder());
+        return TestimonialResponse.from(refreshed);
+    }
+
+    @Transactional
     public void delete(Long id) {
         Testimonial entity = repository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Testimonial", id));

@@ -16,6 +16,8 @@ import {
   Image as ImageIcon,
   Loader2,
   Crop,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { uploadProgramImage } from '../../../services/upcomingProgramApi.js'
@@ -314,6 +316,21 @@ export default function AdminProgramsTab({ showAlert }) {
     }
   }
 
+  const handleMoveProgram = async (prog, direction) => {
+    const currentIdx = programs.findIndex((item) => item.id === prog.id)
+    if (currentIdx === -1) return
+    const targetIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1
+    if (targetIdx < 0 || targetIdx >= programs.length) return
+    const targetOrder = programs[targetIdx].displayOrder || (targetIdx + 1)
+    try {
+      await apiClient.put(`/api/admin/upcoming-programs/${prog.id}/order?displayOrder=${targetOrder}`)
+      showAlert?.('Program order updated successfully')
+      fetchPrograms()
+    } catch {
+      showAlert?.('Failed to update program order', 'error')
+    }
+  }
+
   const filtered = filterType === 'ALL' ? programs : programs.filter((p) => p.type === filterType)
 
   return (
@@ -367,6 +384,7 @@ export default function AdminProgramsTab({ showAlert }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((p) => {
+            const globalIdx = programs.findIndex((item) => item.id === p.id)
             const badgeBg =
               p.type === 'WEBINAR'
                 ? 'bg-blue-100 text-blue-800 border-blue-200'
@@ -489,6 +507,28 @@ export default function AdminProgramsTab({ showAlert }) {
                   )}
 
                   <div className="inline-flex items-center gap-1.5">
+                    {/* Reordering Controls */}
+                    <div className="inline-flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 mr-1">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveProgram(p, 'up')}
+                        disabled={globalIdx <= 0}
+                        className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#07405C] disabled:opacity-25 transition cursor-pointer"
+                        title="Move Up"
+                      >
+                        <ChevronUp size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveProgram(p, 'down')}
+                        disabled={globalIdx >= programs.length - 1}
+                        className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#07405C] disabled:opacity-25 transition cursor-pointer"
+                        title="Move Down"
+                      >
+                        <ChevronDown size={13} />
+                      </button>
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => openEditModal(p)}

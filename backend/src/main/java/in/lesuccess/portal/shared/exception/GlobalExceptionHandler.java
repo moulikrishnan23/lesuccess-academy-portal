@@ -81,7 +81,11 @@ public class GlobalExceptionHandler {
         Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
         // Provider messages can echo the request, so key-shaped values are masked
         // even in the server log: logs are shipped and shared more widely than env vars.
-        String detail = cause.getMessage() == null ? "" : cause.getMessage()
+        String detail = cause.getMessage() == null ? "" : cause.getMessage();
+        if (cause.getCause() != null && cause.getCause().getMessage() != null) {
+            detail += " (" + cause.getCause().getMessage() + ")";
+        }
+        detail = detail
                 .replaceAll("AIza[0-9A-Za-z_\\-]+", "AIza***")
                 .replaceAll("(?i)(key=)[^&\\s\"']+", "$1***");
         log.error("Chatbot unavailable: {}: {}", cause.getClass().getName(), detail);

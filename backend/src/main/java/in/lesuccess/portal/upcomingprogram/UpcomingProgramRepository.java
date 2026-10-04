@@ -13,11 +13,17 @@ import java.util.List;
 @Repository
 public interface UpcomingProgramRepository extends JpaRepository<UpcomingProgram, Long> {
 
-    @Query("SELECT p FROM UpcomingProgram p WHERE p.isActive = true AND p.eventDate >= :today ORDER BY p.eventDate ASC")
+    @Query("SELECT p FROM UpcomingProgram p WHERE p.isActive = true AND p.eventDate >= :today ORDER BY p.displayOrder ASC, p.eventDate ASC, p.id ASC")
     List<UpcomingProgram> findUpcoming(@Param("today") LocalDate today);
 
-    @Query("SELECT p FROM UpcomingProgram p WHERE p.isActive = true AND p.type = :type AND p.eventDate >= :today ORDER BY p.eventDate ASC")
+    @Query("SELECT p FROM UpcomingProgram p WHERE p.isActive = true AND p.type = :type AND p.eventDate >= :today ORDER BY p.displayOrder ASC, p.eventDate ASC, p.id ASC")
     List<UpcomingProgram> findUpcomingByType(@Param("type") UpcomingProgramType type, @Param("today") LocalDate today);
+
+    List<UpcomingProgram> findAllByOrderByDisplayOrderAscIdAsc();
+
+    Page<UpcomingProgram> findAllByOrderByDisplayOrderAscIdAsc(Pageable pageable);
+
+    Page<UpcomingProgram> findByTypeOrderByDisplayOrderAscIdAsc(UpcomingProgramType type, Pageable pageable);
 
     Page<UpcomingProgram> findAll(Pageable pageable);
 

@@ -131,7 +131,7 @@ export default function TechStackSection({ course, techStack, isLoading }) {
       >
         <SectionHeading
           id="stack-title"
-          title={subject ? `What is ${subject}?` : 'What you will learn'}
+          title="Technologies & Tools You Will Master"
         />
       </motion.div>
 

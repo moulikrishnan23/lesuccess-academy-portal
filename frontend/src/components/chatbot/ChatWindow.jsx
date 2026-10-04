@@ -174,12 +174,12 @@ export default function ChatWindow({ open, onClose, onDisabled, onUnreadReply, o
           exit={hiddenState}
           transition={transition}
           style={{ transformOrigin: 'bottom right' }}
-          className="chat-window z-50 flex flex-col overflow-hidden bg-surface font-sans text-ink sm:right-6 sm:border sm:border-line sm:shadow-card lg:right-8"
+          className="chat-window z-55 flex flex-col overflow-hidden bg-surface font-sans text-ink sm:right-6 sm:border sm:border-line sm:shadow-card lg:right-8"
         >
           <header className="flex items-center gap-3 bg-navy-800 px-4 py-3 text-white">
             <div className="min-w-0 flex-1">
               <h2 id="ls-chat-title" className="truncate text-base font-bold leading-tight text-white">
-                LeSuccess Assistant
+                LeBot
               </h2>
               <p className="text-xs text-white/75">Usually replies instantly</p>
             </div>
@@ -299,7 +299,7 @@ function EmptyState({ disabled, onPick }) {
             type="button"
             disabled={disabled}
             onClick={() => onPick(question)}
-            className="rounded-full border border-navy-800/25 bg-surface px-3 py-1.5 text-left text-xs font-semibold text-navy-800 transition-colors hover:border-brand hover:text-brand disabled:opacity-50 cursor-pointer"
+            className="max-w-full break-words rounded-full border border-navy-800/25 bg-surface px-3 py-1.5 text-left text-xs font-semibold text-navy-800 transition-colors hover:border-brand hover:text-brand disabled:opacity-50 cursor-pointer"
           >
             {question}
           </button>
@@ -366,7 +366,7 @@ function TypingIndicator() {
       data-testid="chat-typing"
       className="flex items-center gap-1 self-start rounded-card border border-line bg-surface px-3.5 py-3"
     >
-      <span className="sr-only">The assistant is typing</span>
+      <span className="sr-only">LeBot is typing</span>
       {[0, 150, 300].map((delayMs) => (
         <span
           key={delayMs}

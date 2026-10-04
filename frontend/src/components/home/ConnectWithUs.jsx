@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useId } from "react";
 import { User, Phone, Mail, MessageSquare, Send, CheckCircle, X } from "lucide-react";
 import useConnectWithUsSubmit from "../../hooks/useConnectWithUsSubmit.js";
 
-export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
+export default function ConnectWithUs({ isModal = false, isChatOpen = false, onClose, onSuccess }) {
   const uid = useId();
   const [form, setForm] = useState({ name: "", mobile: "", email: "", message: "" });
   // Honeypot. Never shown to a person, so anything in it came from a bot.
@@ -243,7 +243,11 @@ export default function ConnectWithUs({ isModal = false, onClose, onSuccess }) {
   if (isModal) {
     return (
       <div
-        className="connect-popup w-[calc(100vw-2rem)] sm:w-[310px] max-w-[310px] overflow-y-auto rounded-2xl bg-white p-3.5 sm:p-4 shadow-2xl text-slate-800 border border-slate-200/90 animate-in fade-in slide-in-from-bottom-3 duration-300"
+        className={`connect-popup w-[calc(100vw-2rem)] sm:w-[310px] max-w-[310px] overflow-y-auto rounded-2xl bg-white p-3.5 sm:p-4 shadow-2xl text-slate-800 border border-slate-200/90 animate-in fade-in slide-in-from-bottom-3 duration-300 ${
+          isChatOpen
+            ? "sm:!right-[calc(380px+2.5rem)] lg:!right-[calc(380px+3rem)]"
+            : ""
+        }`}
         role="dialog"
         aria-modal="false"
         aria-labelledby={`${uid}-modal-title`}

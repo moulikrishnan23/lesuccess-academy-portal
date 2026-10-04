@@ -64,7 +64,7 @@ public class CourseController {
         return ResponseEntity.ok(ApiResponse.success("Course updated successfully", service.update(id, request)));
     }
 
-    /** Admin — update display order only. */
+    /** Admin — update display order only (supports PATCH with body and PUT with query param or body). */
     @PatchMapping("/api/admin/courses/{id}/order")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<CourseResponse>> updateOrder(
@@ -72,6 +72,16 @@ public class CourseController {
             @Valid @RequestBody CourseOrderRequest request) {
 
         return ResponseEntity.ok(ApiResponse.success("Course order updated", service.updateOrder(id, request)));
+    }
+
+    @PutMapping("/api/admin/courses/{id}/order")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<CourseResponse>> updateOrderPut(
+            @PathVariable Long id,
+            @RequestParam(required = false) Integer displayOrder,
+            @RequestBody(required = false) CourseOrderRequest request) {
+        int order = (displayOrder != null) ? displayOrder : (request != null && request.getDisplayOrder() != null ? request.getDisplayOrder() : 0);
+        return ResponseEntity.ok(ApiResponse.success("Course order updated", service.updateOrder(id, new CourseOrderRequest(order))));
     }
 
     /** Admin — soft delete. */

@@ -10,6 +10,8 @@ import {
   Search,
   X,
   MessageSquare,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 
@@ -130,6 +132,21 @@ export default function AdminReviewsTab({ showAlert }) {
     }
   }
 
+  const handleMoveReview = async (rev, direction) => {
+    const currentIdx = reviews.findIndex((item) => item.id === rev.id)
+    if (currentIdx === -1) return
+    const targetIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1
+    if (targetIdx < 0 || targetIdx >= reviews.length) return
+    const targetOrder = reviews[targetIdx].displayOrder || (targetIdx + 1)
+    try {
+      await apiClient.put(`/api/admin/testimonials/${rev.id}/order?displayOrder=${targetOrder}`)
+      if (showAlert) showAlert('Review order updated successfully')
+      fetchReviews()
+    } catch (err) {
+      if (showAlert) showAlert('Failed to update review order', 'error')
+    }
+  }
+
   const handleToggleStatus = async (review) => {
     try {
       const updated = {
@@ -235,62 +252,87 @@ export default function AdminReviewsTab({ showAlert }) {
                   </td>
                 </tr>
               ) : (
-                filtered.map((rev) => (
-                  <tr key={rev.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-5 py-3.5 font-bold text-slate-900">{rev.studentName}</td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex text-[#ffb800]">
-                        {[...Array(rev.rating || 5)].map((_, i) => (
-                          <Star key={i} size={13} fill="#ffb800" stroke="#ffb800" />
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                        {rev.source || 'Google'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-500">{rev.reviewDate || 'Recently'}</td>
-                    <td className="px-5 py-3.5 text-slate-600">{rev.reviewerRole || '1 review'}</td>
-                    <td className="px-5 py-3.5 max-w-xs truncate text-slate-600 italic">
-                      &ldquo;{rev.reviewText}&rdquo;
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleStatus(rev)}
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
-                          rev.isActive
-                            ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                        }`}
-                      >
-                        {rev.isActive ? <CheckCircle size={11} /> : <XCircle size={11} />}
-                        <span>{rev.isActive ? 'Active' : 'Inactive'}</span>
-                      </button>
-                    </td>
-                    <td className="px-5 py-3.5 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
+                filtered.map((rev) => {
+                  const globalIdx = reviews.findIndex((item) => item.id === rev.id)
+                  return (
+                    <tr key={rev.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-5 py-3.5 font-bold text-slate-900">{rev.studentName}</td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex text-[#ffb800]">
+                          {[...Array(rev.rating || 5)].map((_, i) => (
+                            <Star key={i} size={13} fill="#ffb800" stroke="#ffb800" />
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                          {rev.source || 'Google'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-500">{rev.reviewDate || 'Recently'}</td>
+                      <td className="px-5 py-3.5 text-slate-600">{rev.reviewerRole || '1 review'}</td>
+                      <td className="px-5 py-3.5 max-w-xs truncate text-slate-600 italic">
+                        &ldquo;{rev.reviewText}&rdquo;
+                      </td>
+                      <td className="px-5 py-3.5">
                         <button
                           type="button"
-                          onClick={() => openEditModal(rev)}
-                          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer"
-                          title="Edit Review"
+                          onClick={() => handleToggleStatus(rev)}
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
+                            rev.isActive
+                              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                          }`}
                         >
-                          <Edit2 size={14} />
+                          {rev.isActive ? <CheckCircle size={11} /> : <XCircle size={11} />}
+                          <span>{rev.isActive ? 'Active' : 'Inactive'}</span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(rev.id)}
-                          className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 transition cursor-pointer"
-                          title="Delete Review"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-5 py-3.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Reordering Controls */}
+                          <div className="inline-flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 mr-1">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveReview(rev, 'up')}
+                              disabled={globalIdx <= 0}
+                              className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#07405C] disabled:opacity-25 transition cursor-pointer"
+                              title="Move Up"
+                            >
+                              <ChevronUp size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveReview(rev, 'down')}
+                              disabled={globalIdx >= reviews.length - 1}
+                              className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#07405C] disabled:opacity-25 transition cursor-pointer"
+                              title="Move Down"
+                            >
+                              <ChevronDown size={13} />
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(rev)}
+                            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer"
+                            title="Edit Review"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(rev.id)}
+                            className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 transition cursor-pointer"
+                            title="Delete Review"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>

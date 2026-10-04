@@ -3,6 +3,7 @@ package in.lesuccess.portal.upcomingprogram;
 import in.lesuccess.portal.shared.dto.PageResponse;
 import in.lesuccess.portal.shared.exception.InvalidRequestException;
 import in.lesuccess.portal.shared.exception.ResourceNotFoundException;
+import in.lesuccess.portal.shared.util.OrderRebalanceUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -48,8 +50,8 @@ public class UpcomingProgramService {
     @Transactional(readOnly = true)
     public PageResponse<UpcomingProgramResponse> listAllForAdmin(UpcomingProgramType type, Pageable pageable) {
         var page = type != null
-                ? repository.findByType(type, pageable)
-                : repository.findAll(pageable);
+                ? repository.findByTypeOrderByDisplayOrderAscIdAsc(type, pageable)
+                : repository.findAllByOrderByDisplayOrderAscIdAsc(pageable);
 
         return PageResponse.from(page.map(p ->
                 UpcomingProgramResponse.from(p, registrationRepository.countByProgramId(p.getId()))));
@@ -60,6 +62,10 @@ public class UpcomingProgramService {
         if (request.getEventDate() != null && request.getEventDate().isBefore(LocalDate.now(ZONE_IST))) {
             throw new InvalidRequestException("Event date must be today or in the future");
         }
+
+        List<UpcomingProgram> allItems = repository.findAllByOrderByDisplayOrderAscIdAsc();
+        int nextOrder = OrderRebalanceUtil.getNextOrder(allItems, UpcomingProgram::getDisplayOrder);
+        int assignedOrder = request.getEffectiveDisplayOrder() > 0 ? request.getEffectiveDisplayOrder() : nextOrder;
 
         UpcomingProgram entity = UpcomingProgram.builder()
                 .type(request.getType())
@@ -79,16 +85,32 @@ public class UpcomingProgramService {
                 .imageUrl(request.getImageUrl() != null && !request.getImageUrl().isBlank() ? request.getImageUrl().trim() : null)
                 .certificateIncluded(request.isCertificateIncluded())
                 .isActive(request.isActive())
+                .displayOrder(assignedOrder)
                 .build();
 
         UpcomingProgram saved = repository.save(entity);
-        log.info("Upcoming program created: id={}, title={}", saved.getId(), saved.getTitle());
+
+        if (assignedOrder <= allItems.size()) {
+            List<UpcomingProgram> toReorder = new ArrayList<>(allItems);
+            toReorder.add(saved);
+            List<UpcomingProgram> modified = OrderRebalanceUtil.reorder(
+                    toReorder, saved.getId(), assignedOrder,
+                    UpcomingProgram::getId, UpcomingProgram::getDisplayOrder, UpcomingProgram::setDisplayOrder);
+            if (!modified.isEmpty()) {
+                repository.saveAll(modified);
+            }
+        }
+
+        log.info("Upcoming program created: id={}, title={}, order={}", saved.getId(), saved.getTitle(), saved.getDisplayOrder());
         return UpcomingProgramResponse.from(saved, 0);
     }
 
     @Transactional
     public UpcomingProgramResponse update(Long id, UpcomingProgramRequest request) {
         UpcomingProgram entity = findOrThrow(id);
+        int oldOrder = entity.getDisplayOrder();
+        int newOrder = request.getEffectiveDisplayOrder() > 0 ? request.getEffectiveDisplayOrder() : oldOrder;
+
         entity.setType(request.getType());
         entity.setLabel(request.getLabel() != null && !request.getLabel().isBlank() ? request.getLabel().trim() : null);
         entity.setTitle(request.getTitle().trim());
@@ -109,9 +131,38 @@ public class UpcomingProgramService {
         entity.setCertificateIncluded(request.isCertificateIncluded());
         entity.setActive(request.isActive());
 
-        UpcomingProgram saved = repository.saveAndFlush(entity);
-        log.info("Upcoming program updated: id={}", id);
-        return UpcomingProgramResponse.from(saved, registrationRepository.countByProgramId(id));
+        if (oldOrder != newOrder) {
+            List<UpcomingProgram> allItems = repository.findAllByOrderByDisplayOrderAscIdAsc();
+            List<UpcomingProgram> modified = OrderRebalanceUtil.reorder(
+                    allItems, id, newOrder,
+                    UpcomingProgram::getId, UpcomingProgram::getDisplayOrder, UpcomingProgram::setDisplayOrder);
+            if (!modified.isEmpty()) {
+                repository.saveAll(modified);
+            }
+        } else {
+            repository.saveAndFlush(entity);
+        }
+
+        UpcomingProgram refreshed = findOrThrow(id);
+        log.info("Upcoming program updated: id={}, order={}", id, refreshed.getDisplayOrder());
+        return UpcomingProgramResponse.from(refreshed, registrationRepository.countByProgramId(id));
+    }
+
+    @Transactional
+    public UpcomingProgramResponse updateOrder(Long id, int targetOrder) {
+        UpcomingProgram program = findOrThrow(id);
+        List<UpcomingProgram> allPrograms = repository.findAllByOrderByDisplayOrderAscIdAsc();
+        List<UpcomingProgram> modified = OrderRebalanceUtil.reorder(
+                allPrograms, id, targetOrder,
+                UpcomingProgram::getId, UpcomingProgram::getDisplayOrder, UpcomingProgram::setDisplayOrder);
+
+        if (!modified.isEmpty()) {
+            repository.saveAll(modified);
+        }
+
+        UpcomingProgram refreshed = findOrThrow(id);
+        log.info("Upcoming program order updated: id={}, order={}", id, refreshed.getDisplayOrder());
+        return UpcomingProgramResponse.from(refreshed, registrationRepository.countByProgramId(id), true);
     }
 
     @Transactional
@@ -120,6 +171,14 @@ public class UpcomingProgramService {
         entity.setDeletedAt(LocalDateTime.now());
         entity.setActive(false);
         repository.save(entity);
+
+        List<UpcomingProgram> remaining = repository.findAllByOrderByDisplayOrderAscIdAsc();
+        List<UpcomingProgram> modified = OrderRebalanceUtil.rebalance(
+                remaining, UpcomingProgram::getDisplayOrder, UpcomingProgram::setDisplayOrder);
+        if (!modified.isEmpty()) {
+            repository.saveAll(modified);
+        }
+
         log.info("Upcoming program soft-deleted: id={}", id);
     }
 

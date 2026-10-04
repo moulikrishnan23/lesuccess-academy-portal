@@ -84,6 +84,15 @@ public class UpcomingProgramController {
         return ResponseEntity.ok(ApiResponse.success("Upcoming program updated successfully", service.update(id, request)));
     }
 
+    /** Admin/Trainer — update display order. */
+    @PutMapping("/api/admin/upcoming-programs/{id}/order")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
+    public ResponseEntity<ApiResponse<UpcomingProgramResponse>> updateOrder(
+            @PathVariable Long id,
+            @RequestParam int displayOrder) {
+        return ResponseEntity.ok(ApiResponse.success("Program order updated", service.updateOrder(id, displayOrder)));
+    }
+
     /** Admin/Trainer — soft delete. */
     @DeleteMapping("/api/admin/upcoming-programs/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")

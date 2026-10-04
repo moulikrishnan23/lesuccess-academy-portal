@@ -52,6 +52,14 @@ public class AdminGalleryController {
         return ResponseEntity.ok(ApiResponse.success("Category updated successfully", response));
     }
 
+    @PutMapping("/categories/{id}/order")
+    public ResponseEntity<ApiResponse<GalleryCategoryResponse>> updateCategoryOrder(
+            @PathVariable Long id,
+            @RequestParam int displayOrder) {
+        GalleryCategoryResponse response = galleryService.updateCategoryOrder(id, displayOrder);
+        return ResponseEntity.ok(ApiResponse.success("Category order updated successfully", response));
+    }
+
     @DeleteMapping("/categories/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable Long id) {
         galleryService.deleteCategory(id);
@@ -82,6 +90,14 @@ public class AdminGalleryController {
             @Valid @RequestBody GalleryImageRequest request) {
         GalleryImageResponse response = galleryService.updateImage(id, request);
         return ResponseEntity.ok(ApiResponse.success("Image updated successfully", response));
+    }
+
+    @PutMapping("/images/{id}/order")
+    public ResponseEntity<ApiResponse<GalleryImageResponse>> updateImageOrder(
+            @PathVariable Long id,
+            @RequestParam int displayOrder) {
+        GalleryImageResponse response = galleryService.updateImageOrder(id, displayOrder);
+        return ResponseEntity.ok(ApiResponse.success("Image order updated successfully", response));
     }
 
     @PostMapping("/images/batch")

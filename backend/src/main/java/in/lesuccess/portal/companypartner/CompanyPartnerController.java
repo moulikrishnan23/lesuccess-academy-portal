@@ -42,6 +42,14 @@ public class CompanyPartnerController {
         return ResponseEntity.ok(ApiResponse.success("Company partner updated", service.update(id, request)));
     }
 
+    @PutMapping("/api/admin/companies/{id}/order")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<CompanyPartnerResponse>> updateOrder(
+            @PathVariable Long id,
+            @RequestParam int displayOrder) {
+        return ResponseEntity.ok(ApiResponse.success("Company order updated", service.updateOrder(id, displayOrder)));
+    }
+
     @DeleteMapping("/api/admin/companies/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

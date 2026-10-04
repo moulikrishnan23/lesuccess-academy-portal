@@ -47,6 +47,7 @@ public class UpcomingProgramResponse {
         return isActive;
     }
 
+    private int displayOrder;
     private long registrationCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -71,6 +72,7 @@ public class UpcomingProgramResponse {
                 .imageUrl(entity.getImageUrl())
                 .certificateIncluded(entity.isCertificateIncluded())
                 .isActive(entity.isActive())
+                .displayOrder(entity.getDisplayOrder())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();

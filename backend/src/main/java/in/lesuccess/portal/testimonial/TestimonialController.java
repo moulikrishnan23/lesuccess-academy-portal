@@ -54,6 +54,15 @@ public class TestimonialController {
         return ResponseEntity.ok(ApiResponse.success("Testimonial updated successfully", service.update(id, request)));
     }
 
+    /** Admin — update testimonial display order. */
+    @PutMapping("/api/admin/testimonials/{id}/order")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<TestimonialResponse>> updateOrder(
+            @PathVariable Long id,
+            @RequestParam int displayOrder) {
+        return ResponseEntity.ok(ApiResponse.success("Review order updated", service.updateOrder(id, displayOrder)));
+    }
+
     /** Admin — soft delete testimonial. */
     @DeleteMapping("/api/admin/testimonials/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

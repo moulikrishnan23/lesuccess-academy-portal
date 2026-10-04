@@ -192,7 +192,7 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
           role="dialog"
           aria-modal="true"
           aria-labelledby="program-modal-title"
-          className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 pt-[calc(var(--offer-header-h,44px)+1rem)] pb-20 sm:pb-6"
+          className="fixed inset-0 z-70 flex items-center justify-center p-3 sm:p-5"
         >
           {/* Backdrop */}
           <motion.div
@@ -210,16 +210,16 @@ export default function ProgramRegistrationModal({ isOpen, onClose, program, act
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="relative w-full max-w-lg max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-3xl bg-white p-5 sm:p-8 shadow-2xl z-10 border border-slate-100"
+            className="relative w-full max-w-lg max-h-[96vh] rounded-3xl bg-white p-4 sm:p-6 shadow-2xl z-10 border border-slate-100"
           >
             {/* Close Button */}
             <button
               type="button"
               onClick={handleResetAndClose}
               aria-label="Close Registration Form"
-              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition-colors hover:border-slate-400 hover:text-slate-700 focus:outline-none cursor-pointer"
+              className="absolute right-4 top-4 sm:right-5 sm:top-5 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition-colors hover:border-slate-400 hover:text-slate-700 focus:outline-none cursor-pointer"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
 
             {/* Header / Program Summary */}

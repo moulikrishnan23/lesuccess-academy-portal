@@ -16,6 +16,7 @@ import {
 } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import { FloatingOrbs, TechGrid, SectionHeading } from "../ui/BackgroundMotion.jsx";
+import ScrollReveal from "../../animations/ScrollReveal.jsx";
 
 const features = [
   {
@@ -60,7 +61,7 @@ const WhyChooseUs = () => {
   const reduced = useReducedMotion();
 
   return (
-    <section className="relative w-full bg-[#F8FAFC] px-6 py-20 sm:px-10 lg:px-20 border-y border-slate-100/80 overflow-hidden transition-colors duration-200">
+    <section className="relative w-full bg-[#F8FAFC] px-6 py-12 sm:py-16 border-y border-slate-100/80 overflow-hidden transition-colors duration-200">
       {/* Purposeful Background Motion: Floating Orbs & Tech Grid */}
       <FloatingOrbs variant="full" />
       <TechGrid opacity="opacity-[0.03]" />
@@ -76,12 +77,9 @@ const WhyChooseUs = () => {
         />
 
         {/* Features Bento Grid */}
-        <motion.div
-          variants={motionSafe(staggerContainer, reduced)}
-          initial="hidden"
-          whileInView="visible"
-          viewport={ONCE_IN_VIEW}
-          className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        <ScrollReveal
+          staggerChildren={true}
+          className="mt-10 sm:mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
         >
           {features.map((feature, idx) => {
             const Icon = feature.icon;
@@ -89,8 +87,8 @@ const WhyChooseUs = () => {
             return (
               <motion.div
                 key={feature.title}
-                variants={motionSafe(fadeUp, reduced)}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-8 text-left shadow-[0_4px_20px_rgba(7,64,92,0.05)] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#07405C]/35 hover:shadow-[0_20px_40px_rgba(7,64,92,0.1)] cursor-default"
+                variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 lg:p-7 text-left shadow-[0_4px_20px_rgba(7,64,92,0.05)] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#07405C]/35 hover:shadow-[0_20px_40px_rgba(7,64,92,0.1)] cursor-default"
               >
                 {/* Subtle top brand accent line with faint resting presence */}
                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#DF1E26] via-[#CA164B] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
@@ -98,8 +96,8 @@ const WhyChooseUs = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     {/* Icon Container with subtle brand accent transitioning to gradient on hover */}
-                    <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-gradient-to-br from-[#07405C]/8 to-[#024D72]/4 border border-[#07405C]/12 text-[#07405C] shadow-2xs transition-all duration-300 group-hover:scale-105 group-hover:bg-gradient-to-r group-hover:from-[#F44246] group-hover:to-[#CA164B] group-hover:text-white group-hover:border-transparent group-hover:shadow-md">
-                      <Icon size={23} className="transition-transform duration-300 group-hover:scale-110" />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#07405C]/8 to-[#024D72]/4 border border-[#07405C]/12 text-[#07405C] shadow-2xs transition-all duration-300 group-hover:scale-105 group-hover:bg-gradient-to-r group-hover:from-[#F44246] group-hover:to-[#CA164B] group-hover:text-white group-hover:border-transparent group-hover:shadow-md">
+                      <Icon size={20} className="transition-transform duration-300 group-hover:scale-110" />
                     </div>
 
                     <span className="text-xs font-bold text-slate-300 group-hover:text-[#07405C]/40 transition-colors">
@@ -107,18 +105,18 @@ const WhyChooseUs = () => {
                     </span>
                   </div>
 
-                  <h3 className="mt-5 text-lg sm:text-xl font-bold text-[#101010] transition-colors duration-200 group-hover:text-[#07405C]">
+                  <h3 className="mt-4 text-base sm:text-lg font-bold text-[#101010] transition-colors duration-200 group-hover:text-[#07405C]">
                     {feature.title}
                   </h3>
 
-                  <p className="mt-2.5 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600">
                     {feature.description}
                   </p>
                 </div>
               </motion.div>
             );
           })}
-        </motion.div>
+        </ScrollReveal>
       </div>
     </section>
   );

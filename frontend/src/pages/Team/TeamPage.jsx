@@ -23,7 +23,7 @@ function TeamSkeletonGrid() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex flex-col items-center">
-              <div className="aspect-[383/400] w-full rounded-3xl bg-slate-200 animate-pulse" />
+              <div className="aspect-[3/4] w-full rounded-3xl bg-slate-200 animate-pulse" />
               <div className="-mt-10 w-[calc(100%-24px)] rounded-2xl bg-[#07405C] p-5 shadow-lg border border-slate-100 flex flex-col items-center gap-2">
                 <div className="h-5 w-32 bg-white/20 rounded-md animate-pulse" />
                 <div className="h-3.5 w-24 bg-white/15 rounded-md animate-pulse" />
@@ -39,15 +39,23 @@ function TeamSkeletonGrid() {
 const isFeaturedMember = (m) => Boolean(m?.featured || m?.isFeatured);
 
 const getMemberCategory = (m) => {
-  if (!m) return 'Our Mentors';
+  if (!m) return 'Tech Visionaries';
   const raw = (m.category || m.department || '').trim();
-  if (!raw) return 'Our Mentors';
+  if (!raw) return 'Tech Visionaries';
   const lower = raw.toLowerCase();
-  if (lower === 'management team' || lower.includes('leadership') || lower.includes('executive')) {
-    return 'Management Team';
+  if (lower === 'management team' || lower === 'management' || lower === 'management visionaries' || lower.includes('executive')) {
+    return 'Management Visionaries';
   }
-  if (lower === 'our mentors' || lower.includes('mentor') || lower.includes('trainer') || lower.includes('instructor')) {
-    return 'Our Mentors';
+  if (
+    lower === 'technical leadership team' ||
+    lower === 'tech visionaries' ||
+    lower === 'our mentors' ||
+    lower.includes('technical leadership') ||
+    lower.includes('mentor') ||
+    lower.includes('trainer') ||
+    lower.includes('instructor')
+  ) {
+    return 'Tech Visionaries';
   }
   return raw;
 };
@@ -73,93 +81,98 @@ const TeamMemberCard = ({ member, onSelect }) => {
   const isFeatured = isFeaturedMember(member);
 
   return (
-    <div
-      onClick={() => onSelect(member)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect(member);
-        }
-      }}
-      className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#07405C]/35 hover:shadow-[0_20px_40px_rgba(7,64,92,0.12)] cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#DF1E26]"
-    >
-      {/* Background Image Container (TeamBg.png) */}
-      <div
-        className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center border border-slate-200/90 shadow-xs"
-        style={{ backgroundImage: `url('/home/TeamBg.png')` }}
-      >
-        <img
-          src={imgSrc}
-          alt={member.name}
-          className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-          onError={(e) => {
-            e.currentTarget.src = "/home/team/dummy.png";
-          }}
-        />
-
-        {/* Top Badge: Featured OR Category badge (Mutually exclusive) */}
+    /* Outer wrapper: relative + pt-3.5 creates space for badge perched on top edge */
+    <div className="relative pt-3.5">
+      {/* Badge — positioned perched on the top edge of the card, visible above the card */}
+      <div className="absolute top-3.5 -translate-y-1/2 right-6 z-20 pointer-events-none">
         {isFeatured ? (
-          <span className="absolute top-3.5 right-3.5 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs z-10 select-none tracking-wide">
+          /* Featured members: show ONLY the Featured amber badge */
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs select-none tracking-wide pointer-events-auto">
             <Star size={11} className="text-amber-950" fill="currentColor" />
             <span>Featured</span>
           </span>
         ) : (
-          <span className="absolute top-3.5 right-3.5 inline-flex items-center rounded-full bg-[#DF1E26] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-white shadow-xs z-10 select-none tracking-wide max-w-[70%] truncate" title={getMemberCategory(member)}>
+          /* Non-featured members: show ONLY the compact red category badge */
+          <span
+            className="inline-flex items-center rounded-full bg-[#DF1E26] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-white shadow-xs select-none tracking-wide max-w-[200px] truncate pointer-events-auto"
+            title={getMemberCategory(member)}
+          >
             {getMemberCategory(member)}
           </span>
         )}
+      </div>
 
-        {/* Hover hint */}
-        <div className="absolute top-3.5 left-3.5 opacity-0 group-hover:opacity-100 transition-opacity bg-[#101010]/70 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1 z-10">
-          <span>View Profile</span>
-          <ArrowRight size={12} />
-        </div>
+      {/* Actual card — dimensions unchanged */}
+      <div
+        onClick={() => onSelect(member)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSelect(member);
+          }
+        }}
+        className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#07405C]/35 hover:shadow-[0_20px_40px_rgba(7,64,92,0.12)] cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#DF1E26]"
+      >
+        {/* Background Image Container (TeamBg.png) with portrait aspect ratio so face is never cropped */}
+        <div
+          className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center border border-slate-200/90 shadow-xs"
+          style={{ backgroundImage: `url('/home/TeamBg.png')` }}
+        >
+          <img
+            src={imgSrc}
+            alt={member.name}
+            className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.src = "/home/team/dummy.png";
+            }}
+          />
 
-        {/* Gradient overlay for readability */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#07405C]/95 via-[#07405C]/60 to-transparent p-6 text-white">
-          <h3 className="text-xl font-bold tracking-tight text-white group-hover:text-[#DF1E26] transition-colors">
-            {member.name}
-          </h3>
-          <p className="mt-1 text-sm font-medium text-gray-200">
-            {member.role || member.designation}
-          </p>
+          {/* Subtle bottom-only gradient overlay: transparent in middle/face area, dark only behind bottom text */}
+          <div className="absolute inset-x-0 bottom-0 pt-16 pb-4 sm:pb-5 px-4 sm:px-5 bg-gradient-to-t from-[#07405C] via-[#07405C]/80 to-transparent text-white">
+            <h3 className="text-base sm:text-lg font-bold tracking-tight text-white group-hover:text-[#DF1E26] transition-colors line-clamp-1">
+              {member.name}
+            </h3>
+            <p className="mt-0.5 text-xs font-medium text-gray-200 line-clamp-1">
+              {member.role || member.designation}
+            </p>
 
-          {member.email && (
-            <div className="mt-3 flex items-center gap-2">
-              <a
-                href={`mailto:${member.email}`}
-                onClick={handleEmailClick}
-                className="inline-flex items-center gap-1.5 text-xs text-gray-300 hover:text-white hover:underline transition-colors cursor-pointer max-w-[85%]"
-                title={`Send email or copy ${member.email}`}
-              >
-                <Mail size={13} className="shrink-0" />
-                <span className="truncate">{member.email}</span>
-              </a>
-              {copied ? (
-                <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-1.5 py-0.5 rounded">
-                  Copied!
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (navigator.clipboard && member.email) {
-                      navigator.clipboard.writeText(member.email).catch(() => {});
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }
-                  }}
-                  title="Copy email address"
-                  className="text-gray-400 hover:text-white transition p-0.5 cursor-pointer"
+            {member.email && (
+              <div className="mt-2.5 flex items-center gap-2">
+                <a
+                  href={`mailto:${member.email}`}
+                  onClick={handleEmailClick}
+                  className="inline-flex items-center gap-1.5 text-xs text-gray-300 hover:text-white hover:underline transition-colors cursor-pointer max-w-[85%]"
+                  title={`Send email or copy ${member.email}`}
                 >
-                  <Copy size={12} />
-                </button>
-              )}
-            </div>
-          )}
+                  <Mail size={12} className="shrink-0" />
+                  <span className="truncate">{member.email}</span>
+                </a>
+                {copied ? (
+                  <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-1.5 py-0.5 rounded">
+                    Copied!
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (navigator.clipboard && member.email) {
+                        navigator.clipboard.writeText(member.email).catch(() => {});
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }
+                    }}
+                    title="Copy email address"
+                    className="text-gray-400 hover:text-white transition p-0.5 cursor-pointer"
+                  >
+                    <Copy size={12} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -209,19 +222,19 @@ export default function TeamPage() {
   );
 
   const managementMembers = sortTeamMembers(
-    teamMembers.filter((m) => getMemberCategory(m) === 'Management Team')
+    teamMembers.filter((m) => getMemberCategory(m) === 'Management Visionaries')
   );
-  const mentorMembers = sortTeamMembers(
-    teamMembers.filter((m) => getMemberCategory(m) === 'Our Mentors')
+  const technicalLeadershipMembers = sortTeamMembers(
+    teamMembers.filter((m) => getMemberCategory(m) === 'Tech Visionaries')
   );
 
-  // Remaining dynamic categories beyond Management Team and Our Mentors
+  // Remaining dynamic categories beyond Management Visionaries and Tech Visionaries
   const otherCategoryNames = Array.from(
     new Set([
-      ...categories.filter((c) => c !== 'All' && c !== 'Management Team' && c !== 'Our Mentors'),
+      ...categories.filter((c) => c !== 'All' && c !== 'Management Visionaries' && c !== 'Management Team' && c !== 'Tech Visionaries' && c !== 'Technical Leadership Team' && c !== 'Our Mentors'),
       ...teamMembers
         .map((m) => getMemberCategory(m))
-        .filter((c) => c && c !== 'Management Team' && c !== 'Our Mentors'),
+        .filter((c) => c && c !== 'Management Visionaries' && c !== 'Management Team' && c !== 'Tech Visionaries' && c !== 'Technical Leadership Team' && c !== 'Our Mentors'),
     ])
   );
 
@@ -240,7 +253,7 @@ export default function TeamPage() {
 
           <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] bg-white px-4 py-1.5 text-xs font-bold text-[#07405C] shadow-xs mb-6">
             <Users size={14} className="text-[#DF1E26]" />
-            LESUCCESS LEADERSHIP & MENTORS
+            LESUCCESS LEADERSHIP & TECHNICAL TEAM
           </span>
 
           <h1 className="text-4xl font-extrabold tracking-tight text-[#101010] sm:text-5xl">
@@ -319,7 +332,7 @@ export default function TeamPage() {
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
               <div className="text-center max-w-2xl mx-auto mb-12">
                 <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
-                  MANAGEMENT TEAM
+                  Management Visionaries
                 </span>
                 <h2 className="text-3xl font-bold text-slate-900 mt-3">
                   Visionary <span className="text-[#DF1E26]">Guidance</span>
@@ -338,23 +351,23 @@ export default function TeamPage() {
             </div>
           </section>
 
-          {/* Our Mentors Section */}
+          {/* Technical Leadership Team Section */}
           <section className="py-20 bg-white">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
               <div className="text-center max-w-2xl mx-auto mb-14">
                 <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
-                  OUR MENTORS
+                  Tech Visionaries
                 </span>
                 <h2 className="text-3xl font-bold text-slate-900 mt-3">
-                  Core Team & <span className="text-[#DF1E26]">Mentors</span>
+                  Tech Visionaries & <span className="text-[#DF1E26]">Core Team</span>
                 </h2>
                 <p className="text-gray-600 mt-3">
-                  Passionate trainers and student advisors dedicated to your everyday technical growth.
+                  Senior engineering leaders, technical managers, and system architects guiding program excellence and industry readiness.
                 </p>
               </div>
 
               <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {mentorMembers.map((member) => (
+                {technicalLeadershipMembers.map((member) => (
                   <TeamMemberCard
                     key={member.id || member.name}
                     member={member}
@@ -541,7 +554,7 @@ export default function TeamPage() {
                   </h4>
                   <p className="text-sm leading-relaxed text-slate-700">
                     {selectedMember.bio ||
-                      "Dedicated educator and mentor at LeSuccess Academy, empowering students with modern industry capabilities."}
+                      "Dedicated technical leader and team member at LeSuccess Academy, empowering students with modern industry capabilities."}
                   </p>
                 </div>
 
