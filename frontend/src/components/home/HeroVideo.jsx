@@ -21,7 +21,7 @@ import {
 } from "../../animations/variants.js";
 
 const DEFAULT_VIDEO_URL =
-  "https://res.cloudinary.com/mknetwyg/video/upload/v1790162815/lesuccess/video/CompanyIntro.mp4";
+  "https://res.cloudinary.com/mknetwyg/video/upload/v1791267704/lesuccess/video/CompanyIntroNew.mp4";
 
 const STATS = [
   { value: "37K+", label: "Students Trained", icon: Users },

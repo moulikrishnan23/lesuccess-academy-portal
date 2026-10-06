@@ -168,6 +168,7 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
         border so the white card still holds an edge against a white page
         without drawing a box around itself.
       */
+      data-competing-form="true"
       className={`scroll-mt-28 rounded-2xl bg-white ring-1 ring-navy-900/[0.06] shadow-[0_1px_2px_rgba(18,58,92,0.05),0_8px_20px_-8px_rgba(18,58,92,0.14),0_28px_56px_-28px_rgba(18,58,92,0.30)] ${className}`}
     >
       {/* Brand cap — the reference card's navy bar, carrying the site gradient. */}

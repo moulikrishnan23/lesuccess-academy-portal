@@ -56,7 +56,14 @@ export default function Footer() {
             <div className="space-y-2.5 text-xs text-slate-300">
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-[#F44246] shrink-0" />
-                <span>4th Floor, Tristar Tower, Avinashi Rd, Coimbatore</span>
+                <a
+                  href="https://maps.app.goo.gl/HjrA7NGiGkt2Fk8NA"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-300 hover:text-white transition-colors"
+                >
+                  4th Floor, Tristar Tower, Avinashi Rd, Coimbatore
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={14} className="text-cyan-400 shrink-0" />
@@ -68,6 +75,17 @@ export default function Footer() {
                 <Mail size={14} className="text-[#F44246] shrink-0" />
                 <a href="mailto:training@lesuccess.in" className="text-slate-200 hover:text-white font-medium transition-colors">
                   training@lesuccess.in
+                </a>
+              </div>
+              <div className="pt-1.5">
+                <a
+                  href="#employee-login"
+                  onClick={(e) => e.preventDefault()}
+                  role="button"
+                  aria-label="Employee Login"
+                  className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg"
+                >
+                  Employee Login →
                 </a>
               </div>
             </div>

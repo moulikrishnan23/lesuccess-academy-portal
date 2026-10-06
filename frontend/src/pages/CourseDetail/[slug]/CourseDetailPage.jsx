@@ -249,6 +249,8 @@ export default function CourseDetailPage() {
               the heights they publish rather than a fixed guess.
               Below lg the card drops into the flow beneath the content.
             */
+            id="course-enroll-section"
+            data-competing-form="true"
             className="lg:sticky lg:self-start transition-[top] duration-300 ease-in-out"
             style={{
               top: 'calc(var(--app-header, 0px) + var(--course-tabs-h, 0px) + 0.75rem)',

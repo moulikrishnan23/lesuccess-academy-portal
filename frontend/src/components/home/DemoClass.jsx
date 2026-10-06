@@ -484,7 +484,7 @@ const DemoClass = ({
   }
 
   return (
-    <section id="demo-class" className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-6 py-18 text-white sm:px-10 lg:px-20 relative overflow-hidden">
+    <section id="demo-class" data-competing-form="true" className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-6 py-18 text-white sm:px-10 lg:px-20 relative overflow-hidden">
       {/* Decorative ambient background */}
       <div
         aria-hidden="true"

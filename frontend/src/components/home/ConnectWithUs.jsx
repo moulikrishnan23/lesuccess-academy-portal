@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useId } from "react";
 import { User, Phone, Mail, MessageSquare, Send, CheckCircle, X } from "lucide-react";
 import useConnectWithUsSubmit from "../../hooks/useConnectWithUsSubmit.js";
 
-export default function ConnectWithUs({ isModal = false, isChatOpen = false, onClose, onSuccess }) {
+export default function ConnectWithUs({ isModal = false, isChatOpen = false, isHidden = false, onClose, onSuccess }) {
   const uid = useId();
   const [form, setForm] = useState({ name: "", mobile: "", email: "", message: "" });
   // Honeypot. Never shown to a person, so anything in it came from a bot.
@@ -244,6 +244,8 @@ export default function ConnectWithUs({ isModal = false, isChatOpen = false, onC
     return (
       <div
         className={`connect-popup w-[calc(100vw-2rem)] sm:w-[310px] max-w-[310px] overflow-y-auto rounded-2xl bg-white p-3.5 sm:p-4 shadow-2xl text-slate-800 border border-slate-200/90 animate-in fade-in slide-in-from-bottom-3 duration-300 ${
+          isHidden ? "!hidden pointer-events-none" : ""
+        } ${
           isChatOpen
             ? "sm:!right-[calc(380px+2.5rem)] lg:!right-[calc(380px+3rem)]"
             : ""
@@ -280,7 +282,7 @@ export default function ConnectWithUs({ isModal = false, isChatOpen = false, onC
   }
 
   return (
-    <section className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#024D72] py-20 px-6 sm:px-10 lg:px-16 text-white relative overflow-hidden">
+    <section id="connect-with-us-section" data-competing-form="true" className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#024D72] py-20 px-6 sm:px-10 lg:px-16 text-white relative overflow-hidden">
       {/* Decorative ambient glow */}
       <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/5 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-white/5 blur-3xl pointer-events-none" />
