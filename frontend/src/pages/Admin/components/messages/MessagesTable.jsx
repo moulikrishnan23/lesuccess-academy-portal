@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Inbox, RefreshCw } from 'lucide-react'
 import { listMessages, updateMessageStatus } from '../../../../services/messagesApi.js'
 import { STATUS_STYLES, humanizeEnum } from './messageSources.js'
+import useGrabScroll from '../../../../hooks/useGrabScroll.js'
 
 const PAGE_SIZE = 20
 const SEARCH_DEBOUNCE_MS = 400
@@ -15,6 +16,7 @@ const SEARCH_DEBOUNCE_MS = 400
  * two read-only forms stay read-only without a special case.
  */
 export default function MessagesTable({ source, courseNames, showAlert }) {
+  const tableContainerRef = useGrabScroll()
   const [page, setPage] = useState(0)
   const [filters, setFilters] = useState({})
   const [searchInput, setSearchInput] = useState('')
@@ -230,8 +232,8 @@ export default function MessagesTable({ source, courseNames, showAlert }) {
         email with no spaces has no natural wrap point and would otherwise push
         the column wide again.
       */}
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
+      <div ref={tableContainerRef} className="rounded-xl border border-slate-200 bg-white overflow-x-auto cursor-grab active:cursor-grabbing">
+        <table className="w-full min-w-[700px] table-fixed divide-y divide-slate-200 text-sm">
           <colgroup>
             {source.columns.map((column) => (
               <col key={column.key} style={column.width ? { width: column.width } : undefined} />

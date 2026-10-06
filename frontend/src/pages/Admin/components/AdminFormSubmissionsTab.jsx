@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { useAuth } from '../../../context/AuthContext.jsx'
+import useGrabScroll from '../../../hooks/useGrabScroll.js'
 
 const FORM_CONFIGS = {
   'demo-bookings': {
@@ -220,6 +221,7 @@ function getStatusBadge(status) {
 
 export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', showAlert }) {
   const { isPrimaryAdmin } = useAuth()
+  const tableContainerRef = useGrabScroll()
   const config = FORM_CONFIGS[formType] || FORM_CONFIGS['demo-bookings']
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -464,7 +466,7 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
 
       {/* Data Table */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <div className="overflow-x-auto">
+        <div ref={tableContainerRef} className="overflow-x-auto cursor-grab active:cursor-grabbing">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
               <tr>

@@ -15,6 +15,7 @@ import {
   Save,
   Loader2,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 import apiClient from '../../../services/apiClient.js';
 
@@ -27,8 +28,9 @@ export default function AdminHeroVideoTab({ showAlert }) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const [videoUrl, setVideoUrl] = useState(DEFAULT_VIDEO_URL);
-  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoEnabled, setVideoEnabled] = useState(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -46,16 +48,34 @@ export default function AdminHeroVideoTab({ showAlert }) {
       const { data } = await apiClient.get('/api/settings');
       const settings = data?.data || {};
 
-      if (settings.hero_video_url) {
-        setVideoUrl(settings.hero_video_url);
-      }
+      setVideoUrl(settings.hero_video_url || '');
       if (settings.hero_video_enabled !== undefined) {
         setVideoEnabled(settings.hero_video_enabled !== 'false');
+      } else {
+        setVideoEnabled(Boolean(settings.hero_video_url));
       }
     } catch (err) {
       showAlert?.('Failed to load current Hero video settings', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteVideo = async () => {
+    if (!window.confirm('Are you sure you want to delete the current Hero video? This will remove the video and the public site will no longer display it.')) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await apiClient.delete('/api/settings/hero-video');
+      setVideoUrl('');
+      setVideoEnabled(false);
+      showAlert?.('Hero video removed successfully!', 'success');
+    } catch (err) {
+      showAlert?.(err?.response?.data?.message || 'Failed to delete Hero video', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -215,50 +235,79 @@ export default function AdminHeroVideoTab({ showAlert }) {
               </span>
             </div>
 
-            {/* Video Container */}
-            <div className="relative overflow-hidden rounded-xl bg-black aspect-video flex items-center justify-center group shadow-inner">
-              <video
-                ref={videoRef}
-                key={videoUrl}
-                src={videoUrl}
-                muted={isMuted}
-                playsInline
-                loop
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                className="h-full w-full object-cover"
-              />
+            {/* Video Container or Empty State */}
+            {videoUrl ? (
+              <>
+                <div className="relative overflow-hidden rounded-xl bg-black aspect-video flex items-center justify-center group shadow-inner">
+                  <video
+                    ref={videoRef}
+                    key={videoUrl}
+                    src={videoUrl}
+                    muted={isMuted}
+                    playsInline
+                    loop
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    className="h-full w-full object-cover"
+                  />
 
-              {/* Player Overlay Controls */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  type="button"
-                  onClick={togglePlay}
-                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#07405C] shadow-lg transition hover:scale-110 active:scale-95 cursor-pointer"
-                  aria-label={isPlaying ? 'Pause video' : 'Play video'}
-                >
-                  {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
-                </button>
+                  {/* Player Overlay Controls */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={togglePlay}
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#07405C] shadow-lg transition hover:scale-110 active:scale-95 cursor-pointer"
+                      aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                    >
+                      {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
+                    </button>
+                  </div>
+
+                  {/* Bottom Quick Controls */}
+                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleMute}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md transition hover:bg-black/80 cursor-pointer"
+                      aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+                    >
+                      {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* URL Display and Delete Action */}
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <div className="flex-1 flex items-center gap-2 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600 overflow-hidden">
+                    <LinkIcon size={14} className="shrink-0 text-slate-400" />
+                    <span className="truncate font-mono">{videoUrl}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={deleting}
+                    onClick={handleDeleteVideo}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 text-xs font-bold transition active:scale-95 cursor-pointer shrink-0 disabled:opacity-50"
+                    title="Delete current Hero video"
+                  >
+                    {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    <span>Delete Video</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 aspect-video bg-slate-50/50 p-8 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-3">
+                  <Video size={28} />
+                </div>
+                <h4 className="font-display text-sm font-bold text-slate-800">
+                  No Hero Video Uploaded
+                </h4>
+                <p className="mt-1 text-xs text-slate-500 max-w-sm">
+                  Upload a video using the form on the right to activate the hero video background on the public website.
+                </p>
               </div>
-
-              {/* Bottom Quick Controls */}
-              <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={toggleMute}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md transition hover:bg-black/80 cursor-pointer"
-                  aria-label={isMuted ? 'Unmute video' : 'Mute video'}
-                >
-                  {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-                </button>
-              </div>
-            </div>
-
-            {/* URL Display */}
-            <div className="mt-3 flex items-center gap-2 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600 overflow-hidden">
-              <LinkIcon size={14} className="shrink-0 text-slate-400" />
-              <span className="truncate font-mono">{videoUrl}</span>
-            </div>
+            )}
           </div>
         </div>
 

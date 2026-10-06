@@ -83,17 +83,27 @@ const HeroVideo = () => {
 
   // Dynamic hero video settings from database
   const { settings } = useSiteSettings();
-  const [videoUrl, setVideoUrl] = useState(DEFAULT_VIDEO_URL);
-  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [videoUrl, setVideoUrl] = useState(() => {
+    if (settings?.hero_video_url !== undefined) {
+      return settings.hero_video_url || "";
+    }
+    return DEFAULT_VIDEO_URL;
+  });
+  const [videoEnabled, setVideoEnabled] = useState(() => {
+    if (settings?.hero_video_enabled !== undefined) {
+      return settings.hero_video_enabled !== "false" && Boolean(settings?.hero_video_url);
+    }
+    return true;
+  });
 
   // Update video settings from site settings
   useEffect(() => {
     if (settings) {
-      if (settings.hero_video_url) {
-        setVideoUrl(settings.hero_video_url);
+      if (settings.hero_video_url !== undefined) {
+        setVideoUrl(settings.hero_video_url || "");
       }
       if (settings.hero_video_enabled !== undefined) {
-        setVideoEnabled(settings.hero_video_enabled !== "false");
+        setVideoEnabled(settings.hero_video_enabled !== "false" && Boolean(settings.hero_video_url));
       }
     }
   }, [settings]);

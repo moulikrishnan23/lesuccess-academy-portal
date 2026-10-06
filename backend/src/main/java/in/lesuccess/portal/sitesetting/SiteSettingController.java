@@ -57,11 +57,41 @@ public class SiteSettingController {
     public ResponseEntity<ApiResponse<Map<String, String>>> uploadHeroVideo(
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
 
+        // If replacing an existing Cloudinary video, delete the old one
+        String existingUrl = service.getAll().get("hero_video_url");
+        if (existingUrl != null && !existingUrl.isBlank() && existingUrl.contains("cloudinary")) {
+            try {
+                cloudinaryService.deleteAsset(existingUrl);
+            } catch (Exception e) {
+                // Ignore failure to delete old asset, proceed with new
+            }
+        }
+
         String videoUrl = cloudinaryService.uploadVideo(file, "lesuccess/video");
         Map<String, String> updated = service.updateAll(Map.of(
                 "hero_video_url", videoUrl,
                 "hero_video_enabled", "true"
         ));
         return ResponseEntity.ok(ApiResponse.success("Hero video uploaded successfully", updated));
+    }
+
+    /**
+     * Admin — delete the currently configured Home Hero video.
+     * Removes the asset from Cloudinary/media storage, sets hero_video_url to empty,
+     * and disables hero_video_enabled.
+     */
+    @DeleteMapping("/hero-video")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<Map<String, String>>> deleteHeroVideo() {
+        String existingUrl = service.getAll().get("hero_video_url");
+        if (existingUrl != null && !existingUrl.isBlank()) {
+            cloudinaryService.deleteAsset(existingUrl);
+        }
+
+        Map<String, String> updated = service.updateAll(Map.of(
+                "hero_video_url", "",
+                "hero_video_enabled", "false"
+        ));
+        return ResponseEntity.ok(ApiResponse.success("Hero video deleted successfully", updated));
     }
 }

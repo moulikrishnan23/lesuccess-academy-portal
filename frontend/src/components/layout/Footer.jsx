@@ -20,7 +20,7 @@ const QUICK_LINKS = [
 
 import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 
-const GOOGLE_MAPS_URL = "https://maps.app.goo.gl/S8gMJzh6Mt1398UaA";
+const GOOGLE_MAPS_URL = "https://www.google.com/maps/place/LeSuccess/@11.0118985,76.9826524,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba837c0178b0805:0x27b8de4c436b2d9d!8m2!3d11.0118932!4d76.9852327!16s%2Fg%2F11krkw3qh_?entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D";
 
 export default function Footer() {
   return (
