@@ -3,26 +3,28 @@ import {
   useEffect,
   useRef,
   useState,
+  lazy,
+  Suspense,
 } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { useAppData } from "./context/AppDataContext.jsx";
 
-import Navbar from "./components/Navbar";
-import OfferHeader from "./components/OfferHeader";
+import Navbar from "./components/layout/Navbar.jsx";
+import OfferHeader from "./components/layout/OfferHeader.jsx";
 import PublicLayout from "./components/layout/PublicLayout.jsx";
 import PageTransition from "./components/layout/PageTransition.jsx";
-import Footer from "./components/Footer.jsx";
-import ScrollToTop from "./components/ScrollToTop.jsx";
+import Footer from "./components/layout/Footer.jsx";
+import ScrollToTop from "./components/layout/ScrollToTop.jsx";
 import BackToTop from "./components/common/BackToTop.jsx";
 import BasicChatbot from "./components/chatbot/BasicChatbot.jsx";
 import ChatWidget from "./components/chatbot/ChatWidget.jsx";
 import useSiteSettings from "./hooks/useSiteSettings.js";
 import { AnimatePresence } from "framer-motion";
 
-import Home from "./pages/Home";
+import Home from "./pages/Home/HomePage.jsx";
 import AboutPage from "./pages/About/AboutPage.jsx";
 import TeamPage from "./pages/Team/TeamPage.jsx";
-import Contact from "./pages/Contact";
+import Contact from "./pages/Contact/ContactPage.jsx";
 import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
 import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
 import ServicePage from "./pages/Services/ServicePage.jsx";
@@ -31,13 +33,14 @@ import ConnectWithUsPopupTrigger from "./components/common/ConnectWithUsPopupTri
 import GalleryPage from "./pages/Gallery/GalleryPage.jsx";
 import SuccessStoriesPage from './pages/SuccessStories/SuccessStoriesPage.jsx';
 import LoginPage from "./pages/Auth/LoginPage.jsx";
-import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
 import InitialReelExperience from "./components/common/InitialReelExperience.jsx";
-import TrainerDashboard from "./pages/Trainer/TrainerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { AppDataProvider } from "./context/AppDataContext.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import useAdminShortcut from "./hooks/useAdminShortcut.js";
+
+const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard.jsx"));
+const TrainerDashboard = lazy(() => import("./pages/Trainer/TrainerDashboard.jsx"));
 
 function HomeRoute() {
   const { successStories } = useAppData();
@@ -527,7 +530,15 @@ const AppContent = () => {
               path="/admin/dashboard"
               element={
                 <ProtectedRoute allowedRole="ADMIN">
-                  <AdminDashboard />
+                  <Suspense
+                    fallback={
+                      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-white">
+                        <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-[#DF1E26]" />
+                      </div>
+                    }
+                  >
+                    <AdminDashboard />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -537,7 +548,15 @@ const AppContent = () => {
               path="/trainer/dashboard"
               element={
                 <ProtectedRoute allowedRole="TRAINER">
-                  <TrainerDashboard />
+                  <Suspense
+                    fallback={
+                      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-white">
+                        <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-[#DF1E26]" />
+                      </div>
+                    }
+                  >
+                    <TrainerDashboard />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />

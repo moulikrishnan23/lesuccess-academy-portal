@@ -15,8 +15,8 @@ import {
   Image as ImageIcon,
   Send,
 } from "lucide-react";
-import useCourses from "../hooks/useCourses.js";
-import { SOCIAL_LINKS } from "../data/socialLinks.js";
+import useCourses from "../../hooks/useCourses.js";
+import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 
 const MENU_SLUGS = [
   "python-full-stack-development",

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import useCourses from "../hooks/useCourses.js";
-import { SOCIAL_LINKS } from "../data/socialLinks.js";
+import useCourses from "../../hooks/useCourses.js";
+import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 import {
   BADGE_THEMES,
   getBadgeTheme,
@@ -10,7 +10,7 @@ import {
   selectBannerCourses,
   resolveTargetSlug,
   formatCourseOfferHeadline,
-} from "../utils/courseOfferUtils.js";
+} from "../../utils/courseOfferUtils.js";
 
 /**
  * Shown only while GET /api/courses is still in flight, or if it fails outright.

@@ -18,7 +18,7 @@ const QUICK_LINKS = [
   { name: "Contact & Support", path: "/contact" },
 ];
 
-import { SOCIAL_LINKS } from "../data/socialLinks.js";
+import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 
 export default function Footer() {
   return (
@@ -83,7 +83,7 @@ export default function Footer() {
                   onClick={(e) => e.preventDefault()}
                   role="button"
                   aria-label="Employee Login"
-                  className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg"
+                  className="inline-flex items-center justify-center w-auto py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg"
                 >
                   Employee Login →
                 </a>

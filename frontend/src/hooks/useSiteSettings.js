@@ -12,32 +12,46 @@ import settingsApi from '../services/settingsApi.js'
  * swallowed into `settings: {}` and the consumer hides that header. It never
  * blocks or errors the page.
  */
+let cachedSettingsPromise = null;
+let cachedSettingsData = null;
+
 export default function useSiteSettings() {
-  const [settings, setSettings] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [settings, setSettings] = useState(() => cachedSettingsData);
+  const [isLoading, setIsLoading] = useState(() => !cachedSettingsData);
 
   useEffect(() => {
-    const controller = new AbortController()
-    let ignore = false
+    if (cachedSettingsData) {
+      setSettings(cachedSettingsData);
+      setIsLoading(false);
+      return;
+    }
 
-    settingsApi
-      .getAll({ signal: controller.signal })
-      .then((result) => {
-        if (ignore) return
-        setSettings(result)
-        setIsLoading(false)
-      })
-      .catch((err) => {
-        if (ignore || err?.isCanceled) return
-        setSettings({})
-        setIsLoading(false)
-      })
+    let ignore = false;
+
+    if (!cachedSettingsPromise) {
+      cachedSettingsPromise = settingsApi
+        .getAll()
+        .then((result) => {
+          cachedSettingsData = result;
+          return result;
+        })
+        .catch((err) => {
+          cachedSettingsData = {};
+          return {};
+        });
+    }
+
+    cachedSettingsPromise.then((result) => {
+      if (!ignore) {
+        setSettings(result);
+        setIsLoading(false);
+      }
+    });
 
     return () => {
-      ignore = true
-      controller.abort()
-    }
-  }, [])
+      ignore = true;
+    };
+  }, []);
 
-  return { settings: settings ?? {}, isLoading }
+  return { settings: settings ?? {}, isLoading };
 }

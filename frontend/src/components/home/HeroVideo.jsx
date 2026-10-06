@@ -13,7 +13,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
-import apiClient from "../../services/apiClient.js";
+import useSiteSettings from "../../hooks/useSiteSettings.js";
 import {
   fadeUp,
   staggerContainer,
@@ -82,37 +82,21 @@ const HeroVideo = () => {
   const videoRef = useRef(null);
 
   // Dynamic hero video settings from database
+  const { settings } = useSiteSettings();
   const [videoUrl, setVideoUrl] = useState(DEFAULT_VIDEO_URL);
   const [videoEnabled, setVideoEnabled] = useState(true);
 
-  // Fetch settings from API
+  // Update video settings from site settings
   useEffect(() => {
-    let isMounted = true;
-    const loadSettings = async () => {
-      try {
-        const res = await apiClient.get("/api/settings");
-        const settings = res?.data?.data || res?.data;
-        if (isMounted && settings) {
-          if (settings.hero_video_url) {
-            setVideoUrl(settings.hero_video_url);
-          }
-          if (settings.hero_video_enabled !== undefined) {
-            setVideoEnabled(settings.hero_video_enabled !== "false");
-          }
-        }
-      } catch {
-        // Fallback to default
-        if (isMounted) {
-          setVideoUrl(DEFAULT_VIDEO_URL);
-          setVideoEnabled(true);
-        }
+    if (settings) {
+      if (settings.hero_video_url) {
+        setVideoUrl(settings.hero_video_url);
       }
-    };
-    loadSettings();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+      if (settings.hero_video_enabled !== undefined) {
+        setVideoEnabled(settings.hero_video_enabled !== "false");
+      }
+    }
+  }, [settings]);
 
   const START_TIME = 22.0;
 

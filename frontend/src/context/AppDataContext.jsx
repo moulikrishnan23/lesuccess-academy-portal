@@ -5,6 +5,7 @@ import {
   useEffect,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
 import courseApi from "../services/courseApi.js";
 import apiClient from "../services/apiClient.js";
@@ -363,7 +364,7 @@ export function AppDataProvider({ children }) {
     fetchSuccessStories();
   }, [fetchCourses, fetchTeam, fetchPrograms, fetchTestimonials, fetchGallery, fetchSuccessStories]);
 
-  const value = {
+  const value = useMemo(() => ({
     courses: {
       ...coursesState,
       refetch: fetchCourses,
@@ -388,7 +389,20 @@ export function AppDataProvider({ children }) {
       ...successStoriesState,
       refetch: fetchSuccessStories,
     },
-  };
+  }), [
+    coursesState,
+    fetchCourses,
+    teamState,
+    fetchTeam,
+    programsState,
+    fetchPrograms,
+    testimonialsState,
+    fetchTestimonials,
+    galleryState,
+    fetchGallery,
+    successStoriesState,
+    fetchSuccessStories,
+  ]);
 
   return (
     <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>

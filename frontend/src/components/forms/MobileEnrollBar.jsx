@@ -24,12 +24,21 @@ export default function MobileEnrollBar({ course, onEnrollClick, formRef }) {
   const [isFormVisible, setIsFormVisible] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setIsScrolledPast(window.scrollY > SHOW_AFTER_PX)
-    onScroll()
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolledPast(window.scrollY > SHOW_AFTER_PX);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    onScroll();
 
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     const node = formRef?.current
