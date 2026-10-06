@@ -68,12 +68,27 @@ export default function AdminHeroVideoTab({ showAlert }) {
 
     setDeleting(true);
     try {
-      await apiClient.delete('/api/settings/hero-video');
+      try {
+        await apiClient.delete('/api/settings/hero-video');
+      } catch (deleteErr) {
+        // Fallback: If deployed backend hasn't restarted with DELETE endpoint yet (404/405),
+        // persist deletion directly via existing PUT /api/settings
+        if (deleteErr?.response?.status === 404 || deleteErr?.response?.status === 405) {
+          await apiClient.put('/api/settings', {
+            hero_video_url: '',
+            hero_video_enabled: 'false',
+          });
+        } else {
+          throw deleteErr;
+        }
+      }
+
       setVideoUrl('');
       setVideoEnabled(false);
       showAlert?.('Hero video removed successfully!', 'success');
     } catch (err) {
-      showAlert?.(err?.response?.data?.message || 'Failed to delete Hero video', 'error');
+      console.error('Hero video delete error:', err);
+      showAlert?.(err?.response?.data?.message || err?.message || 'Failed to delete Hero video', 'error');
     } finally {
       setDeleting(false);
     }
