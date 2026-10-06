@@ -20,6 +20,8 @@ const QUICK_LINKS = [
 
 import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 
+const GOOGLE_MAPS_URL = "https://maps.app.goo.gl/S8gMJzh6Mt1398UaA";
+
 export default function Footer() {
   return (
     <footer className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#012f45] text-white overflow-hidden relative">
@@ -57,7 +59,7 @@ export default function Footer() {
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-[#F44246] shrink-0" />
                 <a
-                  href="https://maps.app.goo.gl/HjrA7NGiGkt2Fk8NA"
+                  href={GOOGLE_MAPS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-slate-300 hover:text-white transition-colors"
