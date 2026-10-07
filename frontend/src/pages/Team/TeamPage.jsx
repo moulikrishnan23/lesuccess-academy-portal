@@ -39,9 +39,9 @@ function TeamSkeletonGrid() {
 const isFeaturedMember = (m) => Boolean(m?.featured || m?.isFeatured);
 
 const getMemberCategory = (m) => {
-  if (!m) return 'Tech Visionaries';
+  if (!m) return '';
   const raw = (m.category || m.department || '').trim();
-  if (!raw) return 'Tech Visionaries';
+  if (!raw || raw.toLowerCase() === 'none') return '';
   const lower = raw.toLowerCase();
   if (lower === 'management team' || lower === 'management' || lower === 'management visionaries' || lower.includes('executive')) {
     return 'Management Visionaries';
@@ -60,7 +60,7 @@ const getMemberCategory = (m) => {
   return raw;
 };
 
-const TeamMemberCard = ({ member, onSelect }) => {
+const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
   const [copied, setCopied] = useState(false);
   const imgSrc = member.imageUrl
     ? getImageUrl(member.imageUrl)
@@ -79,28 +79,32 @@ const TeamMemberCard = ({ member, onSelect }) => {
   };
 
   const isFeatured = isFeaturedMember(member);
+  const category = getMemberCategory(member);
+  const showBadge = isFeatured || (showCategoryBadge && Boolean(category));
 
   return (
     /* Outer wrapper: relative + pt-3.5 creates space for badge perched on top edge */
-    <div className="relative pt-3.5">
+    <div className={`relative ${showBadge ? 'pt-3.5' : 'pt-0'}`}>
       {/* Badge — positioned perched on the top edge of the card, visible above the card */}
-      <div className="absolute top-3.5 -translate-y-1/2 right-6 z-20 pointer-events-none">
-        {isFeatured ? (
-          /* Featured members: show ONLY the Featured amber badge */
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs select-none tracking-wide pointer-events-auto">
-            <Star size={11} className="text-amber-950" fill="currentColor" />
-            <span>Featured</span>
-          </span>
-        ) : (
-          /* Non-featured members: show ONLY the compact red category badge */
-          <span
-            className="inline-flex items-center rounded-full bg-[#DF1E26] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-white shadow-xs select-none tracking-wide max-w-[200px] truncate pointer-events-auto"
-            title={getMemberCategory(member)}
-          >
-            {getMemberCategory(member)}
-          </span>
-        )}
-      </div>
+      {showBadge && (
+        <div className="absolute top-3.5 -translate-y-1/2 right-6 z-20 pointer-events-none">
+          {isFeatured ? (
+            /* Featured members: show ONLY the Featured amber badge */
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs select-none tracking-wide pointer-events-auto">
+              <Star size={11} className="text-amber-950" fill="currentColor" />
+              <span>Featured</span>
+            </span>
+          ) : (
+            /* Non-featured members: show ONLY the compact red category badge */
+            <span
+              className="inline-flex items-center rounded-full bg-[#DF1E26] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-white shadow-xs select-none tracking-wide max-w-[200px] truncate pointer-events-auto"
+              title={category}
+            >
+              {category}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Actual card — dimensions unchanged */}
       <div
@@ -134,9 +138,11 @@ const TeamMemberCard = ({ member, onSelect }) => {
             <h3 className="text-base sm:text-lg font-bold tracking-tight text-white group-hover:text-[#DF1E26] transition-colors line-clamp-1">
               {member.name}
             </h3>
-            <p className="mt-0.5 text-xs font-medium text-gray-200 line-clamp-1">
-              {member.role || member.designation}
-            </p>
+            {Boolean(member.role || member.designation) && (
+              <p className="mt-0.5 text-xs font-medium text-gray-200 line-clamp-1">
+                {member.role || member.designation}
+              </p>
+            )}
 
             {member.email && (
               <div className="mt-2.5 flex items-center gap-2">
@@ -212,8 +218,32 @@ export default function TeamPage() {
     });
   };
 
+  const activeMembers = (teamMembers || []).filter((m) => m.isActive !== false);
+
+  const categoriesWithMembers = Array.from(
+    new Set(
+      activeMembers
+        .map((m) => getMemberCategory(m))
+        .filter(Boolean)
+    )
+  );
+
+  const standardOrder = ['Management Visionaries', 'Tech Visionaries'];
+  const activeCategories = [
+    ...standardOrder.filter((cat) => categoriesWithMembers.includes(cat)),
+    ...categoriesWithMembers.filter((cat) => !standardOrder.includes(cat)),
+  ];
+
+  const hasAnyBatch = activeCategories.length > 0;
+
+  useEffect(() => {
+    if (selectedCategory !== 'All' && !activeCategories.includes(selectedCategory)) {
+      setSelectedCategory('All');
+    }
+  }, [activeCategories, selectedCategory]);
+
   const filteredMembers = sortTeamMembers(
-    teamMembers.filter((m) => {
+    activeMembers.filter((m) => {
       if (selectedCategory === 'All') return true;
       const memberCat = getMemberCategory(m).toLowerCase();
       const selected = selectedCategory.trim().toLowerCase();
@@ -222,20 +252,17 @@ export default function TeamPage() {
   );
 
   const managementMembers = sortTeamMembers(
-    teamMembers.filter((m) => getMemberCategory(m) === 'Management Visionaries')
+    activeMembers.filter((m) => getMemberCategory(m) === 'Management Visionaries')
   );
   const technicalLeadershipMembers = sortTeamMembers(
-    teamMembers.filter((m) => getMemberCategory(m) === 'Tech Visionaries')
+    activeMembers.filter((m) => getMemberCategory(m) === 'Tech Visionaries')
+  );
+  const uncategorizedMembers = sortTeamMembers(
+    activeMembers.filter((m) => !getMemberCategory(m))
   );
 
-  // Remaining dynamic categories beyond Management Visionaries and Tech Visionaries
-  const otherCategoryNames = Array.from(
-    new Set([
-      ...categories.filter((c) => c !== 'All' && c !== 'Management Visionaries' && c !== 'Management Team' && c !== 'Tech Visionaries' && c !== 'Technical Leadership Team' && c !== 'Our Mentors'),
-      ...teamMembers
-        .map((m) => getMemberCategory(m))
-        .filter((c) => c && c !== 'Management Visionaries' && c !== 'Management Team' && c !== 'Tech Visionaries' && c !== 'Technical Leadership Team' && c !== 'Our Mentors'),
-    ])
+  const otherCategoryNames = activeCategories.filter(
+    (c) => c !== 'Management Visionaries' && c !== 'Tech Visionaries'
   );
 
   return (
@@ -253,22 +280,21 @@ export default function TeamPage() {
 
           <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] bg-white px-4 py-1.5 text-xs font-bold text-[#07405C] shadow-xs mb-6">
             <Users size={14} className="text-[#DF1E26]" />
-            LESUCCESS LEADERSHIP & TECHNICAL TEAM
+            Meet The Team
           </span>
 
           <h1 className="text-4xl font-extrabold tracking-tight text-[#101010] sm:text-5xl">
-            Meet the Minds Behind <span className="text-[#DF1E26]">LeSuccess</span>
+            People Make the <span className="text-[#DF1E26]">Difference</span>
           </h1>
 
-          <p className="mx-auto mt-5 max-w-3xl text-lg text-gray-600">
-            Our visionary leaders, seasoned industry architects, and dedicated instructors
-            bring decades of real-world software engineering experience to guide your journey.
+          <p className="mx-auto mt-4 max-w-3xl text-base sm:text-lg text-slate-600 leading-relaxed italic">
+            At LeSuccess, passionate people turn potential into possibilities. Our dedicated team brings together expertise, experience, and a genuine commitment to student success.
           </p>
         </div>
       </section>
 
-      {/* Top Category Filter Bar */}
-      {status === 'success' && teamMembers.length > 0 && (
+      {/* Top Category Filter Bar — rendered ONLY when at least one active member belongs to a category */}
+      {status === 'success' && activeMembers.length > 0 && hasAnyBatch && (
         <section className="border-b border-slate-100 bg-white py-4 shadow-2xs">
           <div className="mx-auto max-w-7xl px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -279,7 +305,7 @@ export default function TeamPage() {
             </div>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-1.5 p-1 bg-slate-100 rounded-2xl">
-              {['All', ...categories].map((cat) => (
+              {['All', ...activeCategories].map((cat) => (
                 <button
                   key={cat}
                   type="button"
@@ -324,124 +350,176 @@ export default function TeamPage() {
       )}
 
       {/* Success State */}
-      {status === 'success' && teamMembers.length > 0 && (
-        selectedCategory === 'All' ? (
-        <>
-          {/* Management Team Section */}
+      {status === 'success' && activeMembers.length > 0 && (
+        !hasAnyBatch ? (
+          /* SCENARIO B: NO BATCH MODE — Single unified team layout, zero batch UI */
           <section className="py-16 bg-[#f8fbfe]">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
-              <div className="text-center max-w-2xl mx-auto mb-12">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
-                  Management Visionaries
-                </span>
-                <h2 className="text-3xl font-bold text-slate-900 mt-3">
-                  Visionary <span className="text-[#DF1E26]">Guidance</span>
-                </h2>
-              </div>
-
-              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-                {managementMembers.map((member) => (
+              <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 max-w-6xl mx-auto">
+                {sortTeamMembers(activeMembers).map((member) => (
                   <TeamMemberCard
                     key={member.id || member.name}
                     member={member}
                     onSelect={setSelectedMember}
+                    showCategoryBadge={false}
                   />
                 ))}
               </div>
             </div>
           </section>
-
-          {/* Technical Leadership Team Section */}
-          <section className="py-20 bg-white">
-            <div className="mx-auto max-w-7xl px-6 lg:px-8">
-              <div className="text-center max-w-2xl mx-auto mb-14">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
-                  Tech Visionaries
-                </span>
-                <h2 className="text-3xl font-bold text-slate-900 mt-3">
-                  Tech Visionaries & <span className="text-[#DF1E26]">Core Team</span>
-                </h2>
-                <p className="text-gray-600 mt-3">
-                  Senior engineering leaders, technical managers, and system architects guiding program excellence and industry readiness.
-                </p>
-              </div>
-
-              <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {technicalLeadershipMembers.map((member) => (
-                  <TeamMemberCard
-                    key={member.id || member.name}
-                    member={member}
-                    onSelect={setSelectedMember}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Other Categories dynamically rendered by their actual category names */}
-          {otherCategoryNames.map((catName, idx) => {
-            const catMembers = sortTeamMembers(
-              teamMembers.filter((m) => getMemberCategory(m).toLowerCase() === catName.toLowerCase())
-            );
-            if (catMembers.length === 0) return null;
-
-            const isAltBg = idx % 2 === 0;
-            return (
-              <section key={catName} className={`py-16 ${isAltBg ? 'bg-[#f8fbfe]' : 'bg-white'}`}>
+        ) : selectedCategory === 'All' ? (
+          /* SCENARIO A: ALL VIEW WITH CATEGORIES */
+          <>
+            {/* Management Visionaries Section — ONLY rendered if it has members */}
+            {managementMembers.length > 0 && (
+              <section className="py-16 bg-[#f8fbfe]">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                   <div className="text-center max-w-2xl mx-auto mb-12">
                     <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
-                      {catName.toUpperCase()}
+                      Management Visionaries
                     </span>
                     <h2 className="text-3xl font-bold text-slate-900 mt-3">
-                      {catName}
+                      Visionary <span className="text-[#DF1E26]">Guidance</span>
                     </h2>
                   </div>
 
-                  <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {catMembers.map((member) => (
+                  <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+                    {managementMembers.map((member) => (
                       <TeamMemberCard
                         key={member.id || member.name}
                         member={member}
                         onSelect={setSelectedMember}
+                        showCategoryBadge={true}
                       />
                     ))}
                   </div>
                 </div>
               </section>
-            );
-          })}
-        </>
-      ) : (
-        /* Filtered Category View */
-        <section className="py-16 bg-white min-h-[400px]">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
-                {selectedCategory.toUpperCase()}
-              </span>
-              <h2 className="text-3xl font-bold text-slate-900 mt-3">
-                {selectedCategory}
-              </h2>
-            </div>
-
-            {filteredMembers.length === 0 ? (
-              <div className="text-center py-16 text-slate-400">
-                <p>No team members listed under "{selectedCategory}" yet.</p>
-              </div>
-            ) : (
-              <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {filteredMembers.map((member) => (
-                  <TeamMemberCard
-                    key={member.id || member.name}
-                    member={member}
-                    onSelect={setSelectedMember}
-                  />
-                ))}
-              </div>
             )}
-          </div>
-        </section>
+
+            {/* Tech Visionaries Section — ONLY rendered if it has members */}
+            {technicalLeadershipMembers.length > 0 && (
+              <section className={`py-20 ${managementMembers.length > 0 ? 'bg-white' : 'bg-[#f8fbfe]'}`}>
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                  <div className="text-center max-w-2xl mx-auto mb-14">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
+                      Tech Visionaries
+                    </span>
+                    <h2 className="text-3xl font-bold text-slate-900 mt-3">
+                      Tech Visionaries & <span className="text-[#DF1E26]">Core Team</span>
+                    </h2>
+                    <p className="text-gray-600 mt-3">
+                      Senior engineering leaders, technical managers, and system architects guiding program excellence and industry readiness.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {technicalLeadershipMembers.map((member) => (
+                      <TeamMemberCard
+                        key={member.id || member.name}
+                        member={member}
+                        onSelect={setSelectedMember}
+                        showCategoryBadge={true}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Other Categories dynamically rendered */}
+            {otherCategoryNames.map((catName, idx) => {
+              const catMembers = sortTeamMembers(
+                activeMembers.filter((m) => getMemberCategory(m).toLowerCase() === catName.toLowerCase())
+              );
+              if (catMembers.length === 0) return null;
+
+              const isAltBg = idx % 2 === 0;
+              return (
+                <section key={catName} className={`py-16 ${isAltBg ? 'bg-[#f8fbfe]' : 'bg-white'}`}>
+                  <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="text-center max-w-2xl mx-auto mb-12">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
+                        {catName.toUpperCase()}
+                      </span>
+                      <h2 className="text-3xl font-bold text-slate-900 mt-3">
+                        {catName}
+                      </h2>
+                    </div>
+
+                    <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {catMembers.map((member) => (
+                        <TeamMemberCard
+                          key={member.id || member.name}
+                          member={member}
+                          onSelect={setSelectedMember}
+                          showCategoryBadge={true}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            })}
+
+            {/* Uncategorized Members in All view — ONLY rendered if any exist */}
+            {uncategorizedMembers.length > 0 && (
+              <section className="py-16 bg-[#f8fbfe]">
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                  <div className="text-center max-w-2xl mx-auto mb-12">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
+                      OUR TEAM
+                    </span>
+                    <h2 className="text-3xl font-bold text-slate-900 mt-3">
+                      Team <span className="text-[#DF1E26]">Members</span>
+                    </h2>
+                  </div>
+
+                  <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {uncategorizedMembers.map((member) => (
+                      <TeamMemberCard
+                        key={member.id || member.name}
+                        member={member}
+                        onSelect={setSelectedMember}
+                        showCategoryBadge={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+          </>
+        ) : (
+          /* Filtered Category View */
+          <section className="py-16 bg-white min-h-[400px]">
+            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+              <div className="text-center max-w-2xl mx-auto mb-12">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1 text-xs font-bold text-[#07405C]">
+                  {selectedCategory.toUpperCase()}
+                </span>
+                <h2 className="text-3xl font-bold text-slate-900 mt-3">
+                  {selectedCategory}
+                </h2>
+              </div>
+
+              {filteredMembers.length === 0 ? (
+                <div className="text-center py-16 text-slate-400">
+                  <p>No team members listed under "{selectedCategory}" yet.</p>
+                </div>
+              ) : (
+                <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {filteredMembers.map((member) => (
+                    <TeamMemberCard
+                      key={member.id || member.name}
+                      member={member}
+                      onSelect={setSelectedMember}
+                      showCategoryBadge={true}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
         )
       )}
 
@@ -535,12 +613,14 @@ export default function TeamPage() {
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-[#101010] tracking-tight break-words">
                   {selectedMember.name}
                 </h3>
-                <p className="text-base font-semibold text-[#DF1E26] mt-1 break-words">
-                  {selectedMember.role || selectedMember.designation}
-                </p>
+                {Boolean(selectedMember.role || selectedMember.designation) && (
+                  <p className="text-base font-semibold text-[#DF1E26] mt-1 break-words">
+                    {selectedMember.role || selectedMember.designation}
+                  </p>
+                )}
 
                 {/* Experience */}
-                {selectedMember.experience && (
+                {Boolean(selectedMember.experience && selectedMember.experience.trim()) && (
                   <div className="mt-3 flex items-center gap-2 text-xs sm:text-sm text-slate-600 font-medium bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
                     <Clock size={16} className="text-[#07405C] shrink-0" />
                     <span>{selectedMember.experience}</span>
@@ -548,18 +628,19 @@ export default function TeamPage() {
                 )}
 
                 {/* Bio */}
-                <div className="mt-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                    About
-                  </h4>
-                  <p className="text-sm leading-relaxed text-slate-700">
-                    {selectedMember.bio ||
-                      "Dedicated technical leader and team member at LeSuccess Academy, empowering students with modern industry capabilities."}
-                  </p>
-                </div>
+                {Boolean(selectedMember.bio && selectedMember.bio.trim()) && (
+                  <div className="mt-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                      About
+                    </h4>
+                    <p className="text-sm leading-relaxed text-slate-700">
+                      {selectedMember.bio}
+                    </p>
+                  </div>
+                )}
 
                 {/* Skills Tags */}
-                {selectedMember.skills && (
+                {Boolean(selectedMember.skills && selectedMember.skills.trim()) && (
                   <div className="mt-5">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                       Areas of Expertise
@@ -582,46 +663,48 @@ export default function TeamPage() {
                 )}
 
                 {/* Contact & Social */}
-                <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center gap-3">
-                  {selectedMember.email && (
-                    <div className="flex flex-wrap items-center gap-2 max-w-full">
+                {Boolean(selectedMember.email || selectedMember.linkedinUrl) && (
+                  <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center gap-3">
+                    {selectedMember.email && (
+                      <div className="flex flex-wrap items-center gap-2 max-w-full">
+                        <a
+                          href={`mailto:${selectedMember.email}`}
+                          title={`Send email to ${selectedMember.email}`}
+                          className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-3.5 sm:px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-[#024D72] max-w-full"
+                        >
+                          <Mail size={14} className="shrink-0" />
+                          <span className="truncate max-w-[190px] xs:max-w-xs">{selectedMember.email}</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(selectedMember.email).catch(() => {});
+                              setModalEmailCopied(true);
+                              setTimeout(() => setModalEmailCopied(false), 2000);
+                            }
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer shrink-0"
+                          title="Copy email address"
+                        >
+                          {modalEmailCopied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                          <span>{modalEmailCopied ? "Copied!" : "Copy Email"}</span>
+                        </button>
+                      </div>
+                    )}
+                    {selectedMember.linkedinUrl && (
                       <a
-                        href={`mailto:${selectedMember.email}`}
-                        title={`Send email to ${selectedMember.email}`}
-                        className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-3.5 sm:px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-[#024D72] max-w-full"
+                        href={selectedMember.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
                       >
-                        <Mail size={14} className="shrink-0" />
-                        <span className="truncate max-w-[190px] xs:max-w-xs">{selectedMember.email}</span>
+                        <FaLinkedinIn size={14} className="text-[#0A66C2]" />
+                        LinkedIn Profile
                       </a>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (navigator.clipboard) {
-                            navigator.clipboard.writeText(selectedMember.email).catch(() => {});
-                            setModalEmailCopied(true);
-                            setTimeout(() => setModalEmailCopied(false), 2000);
-                          }
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer shrink-0"
-                        title="Copy email address"
-                      >
-                        {modalEmailCopied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
-                        <span>{modalEmailCopied ? "Copied!" : "Copy Email"}</span>
-                      </button>
-                    </div>
-                  )}
-                  {selectedMember.linkedinUrl && (
-                    <a
-                      href={selectedMember.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-                    >
-                      <FaLinkedinIn size={14} className="text-[#0A66C2]" />
-                      LinkedIn Profile
-                    </a>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
