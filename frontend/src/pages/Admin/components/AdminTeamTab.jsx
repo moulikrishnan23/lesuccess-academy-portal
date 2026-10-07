@@ -4,8 +4,10 @@ import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
 
 const formatCategoryName = (raw) => {
-  if (!raw) return 'Tech Visionaries'
-  const lower = raw.trim().toLowerCase()
+  if (!raw) return ''
+  const trimmed = raw.trim()
+  const lower = trimmed.toLowerCase()
+  if (lower === 'none') return ''
   if (
     lower === 'management team' ||
     lower === 'management visionaries' ||
@@ -25,7 +27,7 @@ const formatCategoryName = (raw) => {
   ) {
     return 'Tech Visionaries'
   }
-  return raw
+  return trimmed
 }
 
 export default function AdminTeamTab({ showAlert }) {
@@ -77,24 +79,28 @@ export default function AdminTeamTab({ showAlert }) {
       }))
       const uniqueCats = []
       const seen = new Set()
+
+      // Ensure the two canonical categories are always present first
+      const defaultCategories = [
+        { id: 'mv', name: 'Management Visionaries' },
+        { id: 'tv', name: 'Tech Visionaries' },
+      ]
+      defaultCategories.forEach((c) => {
+        seen.add(c.name)
+        uniqueCats.push(c)
+      })
+
       cats.forEach((c) => {
         if (!seen.has(c.name)) {
           seen.add(c.name)
           uniqueCats.push(c)
         }
       })
-      if (uniqueCats.length > 0) {
-        setCategories(uniqueCats)
-      } else {
-        setCategories([
-          { id: 1, name: 'Management Visionaries' },
-          { id: 2, name: 'Tech Visionaries' },
-        ])
-      }
+      setCategories(uniqueCats)
     } catch (_err) {
       setCategories([
-        { id: 1, name: 'Management Visionaries' },
-        { id: 2, name: 'Tech Visionaries' },
+        { id: 'mv', name: 'Management Visionaries' },
+        { id: 'tv', name: 'Tech Visionaries' },
       ])
     }
   }
@@ -168,7 +174,7 @@ export default function AdminTeamTab({ showAlert }) {
     setForm({
       name: '',
       role: '',
-      department: categories[0]?.name || 'Management Visionaries',
+      department: 'None',
       experience: '',
       skills: '',
       email: '',
@@ -185,10 +191,11 @@ export default function AdminTeamTab({ showAlert }) {
     setEditingMember(m)
     const imgVal = m.image || m.imageUrl || ''
     const safeImg = typeof imgVal === 'string' ? imgVal : (imgVal?.url || '')
+    const cat = formatCategoryName(m.department || m.category)
     setForm({
       name: m.name || '',
       role: m.role || '',
-      department: m.department || '',
+      department: cat || 'None',
       experience: m.experience || '',
       skills: m.skills || '',
       email: m.email || '',
@@ -240,20 +247,22 @@ export default function AdminTeamTab({ showAlert }) {
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!form.name.trim() || !form.role.trim() || !form.email.trim()) {
-      showAlert?.('Name, Role, and Email are required', 'error')
+    if (!form.name.trim()) {
+      showAlert?.('Name is required', 'error')
       return
     }
 
     const rawImg = typeof form.imageUrl === 'string' ? form.imageUrl.trim() : (form.imageUrl?.url || '')
+    const selectedDept = (form.department && form.department !== 'None') ? form.department.trim() : ''
     const payload = {
       name: form.name.trim(),
-      role: form.role.trim(),
-      department: form.department ? form.department.trim() : '',
+      role: form.role ? form.role.trim() : '',
+      department: selectedDept,
+      category: selectedDept,
       experience: form.experience ? form.experience.trim() : '',
       skills: form.skills ? form.skills.trim() : '',
-      email: form.email.trim(),
-      imageUrl: rawImg || '/home/team/dummy.png',
+      email: form.email ? form.email.trim() : '',
+      imageUrl: rawImg || '',
       bio: form.bio ? form.bio.trim() : '',
       isFeatured: Boolean(form.isFeatured),
       displayOrder: Number(form.displayOrder) || 0,
@@ -297,6 +306,8 @@ export default function AdminTeamTab({ showAlert }) {
 
   const categoryFilteredMembers = selectedCategory === 'ALL'
     ? members
+    : selectedCategory === 'NONE'
+    ? members.filter((m) => !formatCategoryName(m.department || m.category))
     : members.filter((m) => formatCategoryName(m.department || m.category) === selectedCategory)
 
   return (
@@ -384,7 +395,7 @@ export default function AdminTeamTab({ showAlert }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {featuredMembers.map((m) => {
                   const globalIdx = members.findIndex((item) => item.id === m.id)
-                  const categoryName = formatCategoryName(m.category || m.department || 'Management Visionaries')
+                  const categoryName = formatCategoryName(m.category || m.department)
 
                   return (
                     <div
@@ -418,7 +429,7 @@ export default function AdminTeamTab({ showAlert }) {
                       <div className="p-4 flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 min-h-[2.5rem] flex items-center" title={m.name}>
+                            <h4 className="font-bold text-slate-900 text-base leading-snug line-clamp-2" title={m.name}>
                               {m.name}
                             </h4>
                             <span className="text-[11px] font-bold text-[#07405C] bg-[#07405C]/5 px-2 py-0.5 rounded-md shrink-0 border border-[#07405C]/10">
@@ -426,9 +437,11 @@ export default function AdminTeamTab({ showAlert }) {
                             </span>
                           </div>
 
-                          <p className="text-xs font-semibold text-[#07405C] leading-normal line-clamp-2 min-h-[2rem] mt-1" title={m.role}>
-                            {m.role}
-                          </p>
+                          {m.role && (
+                            <p className="text-xs font-semibold text-[#07405C] leading-normal line-clamp-2 mt-1" title={m.role}>
+                              {m.role}
+                            </p>
+                          )}
 
                           {m.email && (
                             <p className="text-xs text-slate-400 truncate mt-2" title={m.email}>
@@ -540,6 +553,20 @@ export default function AdminTeamTab({ showAlert }) {
                     </button>
                   )
                 })}
+
+                {members.some((m) => !formatCategoryName(m.department || m.category)) && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory('NONE')}
+                    className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer shrink-0 ${
+                      selectedCategory === 'NONE'
+                        ? 'bg-[#07405C] text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+                    }`}
+                  >
+                    None ({members.filter((m) => !formatCategoryName(m.department || m.category)).length})
+                  </button>
+                )}
               </div>
             </div>
 
@@ -555,7 +582,7 @@ export default function AdminTeamTab({ showAlert }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {categoryFilteredMembers.map((m) => {
                   const globalIdx = members.findIndex((item) => item.id === m.id)
-                  const categoryName = formatCategoryName(m.category || m.department || 'Management Visionaries')
+                  const categoryName = formatCategoryName(m.category || m.department)
                   const isFeatured = isMemberFeatured(m)
 
                   return (
@@ -596,7 +623,7 @@ export default function AdminTeamTab({ showAlert }) {
                       <div className="p-4 flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 min-h-[2.5rem] flex items-center" title={m.name}>
+                            <h4 className="font-bold text-slate-900 text-base leading-snug line-clamp-2" title={m.name}>
                               {m.name}
                             </h4>
                             <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0 border border-slate-200">
@@ -604,9 +631,11 @@ export default function AdminTeamTab({ showAlert }) {
                             </span>
                           </div>
 
-                          <p className="text-xs font-semibold text-[#07405C] leading-normal line-clamp-2 min-h-[2rem] mt-1" title={m.role}>
-                            {m.role}
-                          </p>
+                          {m.role && (
+                            <p className="text-xs font-semibold text-[#07405C] leading-normal line-clamp-2 mt-1" title={m.role}>
+                              {m.role}
+                            </p>
+                          )}
 
                           {m.email && (
                             <p className="text-xs text-slate-400 truncate mt-2" title={m.email}>
@@ -714,11 +743,10 @@ export default function AdminTeamTab({ showAlert }) {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Designation / Role *
+                    Designation / Role (Optional)
                   </label>
                   <input
                     type="text"
-                    required
                     value={form.role}
                     onChange={(e) => setForm({ ...form, role: e.target.value })}
                     placeholder="e.g. Director, Senior Mentor"
@@ -728,11 +756,10 @@ export default function AdminTeamTab({ showAlert }) {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Email Address *
+                    Email Address (Optional)
                   </label>
                   <input
                     type="email"
-                    required
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="name@lesuccess.in"
@@ -740,61 +767,149 @@ export default function AdminTeamTab({ showAlert }) {
                   />
                 </div>
 
-                {/* Team Category Selector */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
-                      Team Category
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddCategoryInput(!showAddCategoryInput)}
-                      className="text-xs font-semibold text-[#07405C] hover:underline cursor-pointer"
-                    >
-                      {showAddCategoryInput ? 'Cancel' : '+ Add New Category'}
-                    </button>
-                  </div>
-
-                  {showAddCategoryInput && (
-                    <div className="flex gap-2 mb-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-                      <input
-                        type="text"
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        placeholder="Enter category name (e.g. Academic Team)..."
-                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:border-[#07405C] focus:outline-none"
-                      />
+                {/* Team Category / Batch & Featured Status */}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3.5">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                        Team Category / Batch (Optional)
+                      </label>
                       <button
                         type="button"
-                        onClick={handleCreateCategory}
-                        disabled={savingCategory || !newCategoryName.trim()}
-                        className="rounded-lg bg-[#07405C] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#024D72] transition disabled:opacity-50 cursor-pointer"
+                        onClick={() => setShowAddCategoryInput(!showAddCategoryInput)}
+                        className="text-xs font-semibold text-[#07405C] hover:underline cursor-pointer"
                       >
-                        {savingCategory ? '...' : 'Save'}
+                        {showAddCategoryInput ? 'Cancel' : '+ Custom Category'}
                       </button>
                     </div>
-                  )}
 
-                  <select
-                    value={form.department}
-                    onChange={(e) => setForm({ ...form, department: e.target.value })}
-                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#07405C] focus:outline-none focus:ring-1 focus:ring-[#07405C] bg-white"
-                  >
-                    <option value="">Select Category (Default: None)...</option>
-                    {categories.map((c) => (
-                      <option key={c.id || c.name} value={c.name}>
-                        {c.name}
-                      </option>
-                    ))}
-                    {form.department && !categories.some((c) => c.name === form.department) && (
-                      <option value={form.department}>{form.department}</option>
+                    {showAddCategoryInput && (
+                      <div className="flex gap-2 mb-2.5 p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                        <input
+                          type="text"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          placeholder="Enter category name..."
+                          className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:border-[#07405C] focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCreateCategory}
+                          disabled={savingCategory || !newCategoryName.trim()}
+                          className="rounded-lg bg-[#07405C] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#024D72] transition disabled:opacity-50 cursor-pointer"
+                        >
+                          {savingCategory ? '...' : 'Save'}
+                        </button>
+                      </div>
                     )}
-                  </select>
+
+                    {/* Quick selection pill buttons */}
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      <button
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, department: 'None' }))}
+                        className={`rounded-xl px-2 py-2 text-xs font-bold border transition text-center cursor-pointer ${
+                          !form.department || form.department === 'None'
+                            ? 'bg-[#07405C] text-white border-[#07405C] shadow-xs'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                        }`}
+                      >
+                        None
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, department: 'Management Visionaries' }))}
+                        className={`rounded-xl px-2 py-2 text-xs font-bold border transition text-center cursor-pointer ${
+                          form.department === 'Management Visionaries'
+                            ? 'bg-[#07405C] text-white border-[#07405C] shadow-xs'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                        }`}
+                      >
+                        Management Visionaries
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, department: 'Tech Visionaries' }))}
+                        className={`rounded-xl px-2 py-2 text-xs font-bold border transition text-center cursor-pointer ${
+                          form.department === 'Tech Visionaries'
+                            ? 'bg-[#07405C] text-white border-[#07405C] shadow-xs'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                        }`}
+                      >
+                        Tech Visionaries
+                      </button>
+                    </div>
+
+                    <select
+                      value={form.department || 'None'}
+                      onChange={(e) => setForm({ ...form, department: e.target.value })}
+                      className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#07405C] focus:outline-none focus:ring-1 focus:ring-[#07405C] bg-white text-slate-700"
+                    >
+                      <option value="None">None</option>
+                      <option value="Management Visionaries">Management Visionaries</option>
+                      <option value="Tech Visionaries">Tech Visionaries</option>
+                      {categories
+                        .filter((c) => c.name !== 'Management Visionaries' && c.name !== 'Tech Visionaries')
+                        .map((c) => (
+                          <option key={c.id || c.name} value={c.name}>
+                            {c.name}
+                          </option>
+                        ))}
+                      {form.department &&
+                        form.department !== 'None' &&
+                        form.department !== 'Management Visionaries' &&
+                        form.department !== 'Tech Visionaries' &&
+                        !categories.some((c) => c.name === form.department) && (
+                          <option value={form.department}>{form.department}</option>
+                        )}
+                    </select>
+                  </div>
+
+                  {/* Featured Status Option */}
+                  <div className="pt-2 border-t border-slate-200/80">
+                    <div className="flex items-center justify-between">
+                      <div className="pr-4">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <Star size={13} className={form.isFeatured ? "text-amber-500 fill-amber-500" : "text-slate-400"} />
+                          <span>Featured Status (Optional)</span>
+                        </label>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Spotlights member with a Featured badge in their category and homepage.
+                        </p>
+                      </div>
+
+                      <div className="inline-flex rounded-xl bg-white p-0.5 border border-slate-200 shadow-2xs shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setForm((prev) => ({ ...prev, isFeatured: false }))}
+                          className={`rounded-lg px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
+                            !form.isFeatured
+                              ? 'bg-slate-100 text-slate-800'
+                              : 'text-slate-400 hover:text-slate-600'
+                          }`}
+                        >
+                          No
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setForm((prev) => ({ ...prev, isFeatured: true }))}
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
+                            form.isFeatured
+                              ? 'bg-amber-400 text-amber-950 shadow-xs'
+                              : 'text-slate-400 hover:text-slate-600'
+                          }`}
+                        >
+                          <Star size={10} fill="currentColor" />
+                          <span>Yes (Featured)</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Years of Experience
+                    Years of Experience (Optional)
                   </label>
                   <input
                     type="text"
@@ -807,7 +922,7 @@ export default function AdminTeamTab({ showAlert }) {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Area of Expertise (Comma-separated)
+                    Area of Expertise (Optional, Comma-separated)
                   </label>
                   <input
                     type="text"
@@ -820,7 +935,7 @@ export default function AdminTeamTab({ showAlert }) {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Bio / About
+                    Bio / About (Optional)
                   </label>
                   <textarea
                     rows={3}
@@ -834,7 +949,7 @@ export default function AdminTeamTab({ showAlert }) {
                 {/* Profile Photo Upload */}
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                    Profile Photo
+                    Profile Photo (Optional)
                   </label>
 
                   {form.imageUrl ? (
@@ -910,7 +1025,7 @@ export default function AdminTeamTab({ showAlert }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                      Display Order
+                      Display Order (Optional)
                     </label>
                     <input
                       type="number"
@@ -921,16 +1036,6 @@ export default function AdminTeamTab({ showAlert }) {
                   </div>
 
                   <div className="flex flex-col justify-end space-y-2 pt-2">
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={form.isFeatured}
-                        onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-                        className="h-4 w-4 rounded border-slate-300 text-[#07405C] focus:ring-[#07405C]"
-                      />
-                      <span className="text-xs font-semibold text-slate-700">Featured (Top Row)</span>
-                    </label>
-
                     <label className="inline-flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"

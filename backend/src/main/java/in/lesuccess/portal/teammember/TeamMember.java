@@ -24,10 +24,10 @@ public class TeamMember {
     @Column(nullable = false, length = 120)
     private String name;
 
-    @Column(nullable = false, length = 120)
+    @Column(length = 120)
     private String role;
 
-    @Column(nullable = false, length = 160)
+    @Column(length = 160)
     private String email;
 
     @Column(name = "image_url", length = 255)

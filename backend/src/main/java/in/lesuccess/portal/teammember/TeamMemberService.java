@@ -55,12 +55,12 @@ public class TeamMemberService {
 
         TeamMember member = TeamMember.builder()
                 .name(req.getName().trim())
-                .role(req.getRole().trim())
-                .email(req.getEmail().trim())
-                .imageUrl(req.getImageUrl() != null ? req.getImageUrl().trim() : null)
-                .bio(req.getBio() != null ? req.getBio().trim() : null)
-                .experience(req.getExperience() != null ? req.getExperience().trim() : null)
-                .skills(req.getSkills() != null ? req.getSkills().trim() : null)
+                .role(req.getRole() != null && !req.getRole().trim().isEmpty() ? req.getRole().trim() : null)
+                .email(req.getEmail() != null && !req.getEmail().trim().isEmpty() ? req.getEmail().trim() : null)
+                .imageUrl(req.getImageUrl() != null && !req.getImageUrl().trim().isEmpty() ? req.getImageUrl().trim() : null)
+                .bio(req.getBio() != null && !req.getBio().trim().isEmpty() ? req.getBio().trim() : null)
+                .experience(req.getExperience() != null && !req.getExperience().trim().isEmpty() ? req.getExperience().trim() : null)
+                .skills(req.getSkills() != null && !req.getSkills().trim().isEmpty() ? req.getSkills().trim() : null)
                 .department(req.getEffectiveCategory())
                 .isFeatured(req.isFeatured())
                 .displayOrder(assignedOrder)
@@ -93,12 +93,12 @@ public class TeamMemberService {
         int newOrder = req.getDisplayOrder() > 0 ? req.getDisplayOrder() : oldOrder;
 
         member.setName(req.getName().trim());
-        member.setRole(req.getRole().trim());
-        member.setEmail(req.getEmail().trim());
-        member.setImageUrl(req.getImageUrl() != null ? req.getImageUrl().trim() : null);
-        member.setBio(req.getBio() != null ? req.getBio().trim() : null);
-        member.setExperience(req.getExperience() != null ? req.getExperience().trim() : null);
-        member.setSkills(req.getSkills() != null ? req.getSkills().trim() : null);
+        member.setRole(req.getRole() != null && !req.getRole().trim().isEmpty() ? req.getRole().trim() : null);
+        member.setEmail(req.getEmail() != null && !req.getEmail().trim().isEmpty() ? req.getEmail().trim() : null);
+        member.setImageUrl(req.getImageUrl() != null && !req.getImageUrl().trim().isEmpty() ? req.getImageUrl().trim() : null);
+        member.setBio(req.getBio() != null && !req.getBio().trim().isEmpty() ? req.getBio().trim() : null);
+        member.setExperience(req.getExperience() != null && !req.getExperience().trim().isEmpty() ? req.getExperience().trim() : null);
+        member.setSkills(req.getSkills() != null && !req.getSkills().trim().isEmpty() ? req.getSkills().trim() : null);
         member.setDepartment(req.getEffectiveCategory());
         member.setFeatured(req.isFeatured());
         member.setActive(req.isActive());

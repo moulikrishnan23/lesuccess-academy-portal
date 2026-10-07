@@ -28,6 +28,18 @@ public class TeamMemberResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public boolean getFeatured() {
+        return this.isFeatured || this.featured;
+    }
+
+    public boolean getIsFeatured() {
+        return this.isFeatured || this.featured;
+    }
+
+    public boolean isFeatured() {
+        return this.isFeatured || this.featured;
+    }
+
     public static TeamMemberResponse from(TeamMember member) {
         return TeamMemberResponse.builder()
                 .id(member.getId())

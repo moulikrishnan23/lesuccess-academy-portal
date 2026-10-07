@@ -14,11 +14,9 @@ public class TeamMemberRequest {
     @Size(max = 120)
     private String name;
 
-    @NotBlank(message = "Role is required")
     @Size(max = 120)
     private String role;
 
-    @NotBlank(message = "Email is required")
     @Size(max = 160)
     private String email;
 
@@ -39,19 +37,34 @@ public class TeamMemberRequest {
     @Size(max = 100)
     private String category;
 
-    private boolean isFeatured;
-    private int displayOrder;
+    @Builder.Default
+    private Boolean isFeatured = false;
 
     @Builder.Default
-    private boolean isActive = true;
+    private Integer displayOrder = 0;
+
+    @Builder.Default
+    private Boolean isActive = true;
+
+    public boolean isFeatured() {
+        return Boolean.TRUE.equals(isFeatured);
+    }
+
+    public boolean isActive() {
+        return isActive == null || isActive;
+    }
+
+    public int getDisplayOrder() {
+        return displayOrder != null ? displayOrder : 0;
+    }
 
     public String getEffectiveCategory() {
-        if (category != null && !category.trim().isEmpty()) {
+        if (category != null && !category.trim().isEmpty() && !category.trim().equalsIgnoreCase("none")) {
             return category.trim();
         }
-        if (department != null && !department.trim().isEmpty()) {
+        if (department != null && !department.trim().isEmpty() && !department.trim().equalsIgnoreCase("none")) {
             return department.trim();
         }
-        return "Technical Leadership Team";
+        return null;
     }
 }

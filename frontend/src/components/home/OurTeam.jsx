@@ -42,10 +42,12 @@ const FeaturedTeamCard = ({ member }) => {
         />
 
         {/* Yellow Featured badge with Star icon */}
-        <span className="absolute top-4 right-4 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs z-10 select-none tracking-wide">
-          <Star size={11} className="text-amber-950" fill="currentColor" />
-          <span>Featured</span>
-        </span>
+        {Boolean(member.featured || member.isFeatured) && (
+          <span className="absolute top-4 right-4 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-950 shadow-xs z-10 select-none tracking-wide">
+            <Star size={11} className="text-amber-950" fill="currentColor" />
+            <span>Featured</span>
+          </span>
+        )}
       </div>
 
       {/* Detail Overlay Card */}
@@ -53,9 +55,11 @@ const FeaturedTeamCard = ({ member }) => {
         <h3 className="text-lg font-bold text-white transition-colors group-hover:text-[#DF1E26]">
           {member.name}
         </h3>
-        <p className="mt-1 text-xs font-medium text-gray-200">
-          {member.role || member.designation}
-        </p>
+        {Boolean(member.role || member.designation) && (
+          <p className="mt-1 text-xs font-medium text-gray-200">
+            {member.role || member.designation}
+          </p>
+        )}
         {member.email && (
           <a
             href={`mailto:${member.email}`}
