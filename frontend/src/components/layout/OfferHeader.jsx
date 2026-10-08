@@ -187,7 +187,7 @@ const OfferHeader = () => {
   };
 
   return (
-    <div className="w-full bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white shadow-xs select-none">
+    <div className="w-full bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white shadow-xs select-none border-b border-white/10 relative">
       <div className="mx-auto flex min-h-9 sm:min-h-10 max-w-7xl items-center justify-between gap-1 sm:gap-3 px-2 sm:px-4 lg:px-6 py-1">
         
         {/* Left balance spacer on desktop so center content stays perfectly centered */}
@@ -196,7 +196,7 @@ const OfferHeader = () => {
         {/* Center: Synchronized dynamic rotating offer badge, copy and CTA */}
         <div className="flex flex-1 items-center justify-between sm:justify-center gap-1 sm:gap-2.5 lg:gap-3 min-w-0">
           <span
-            className={`inline-flex items-center rounded-full px-1.5 sm:px-2.5 py-0.5 text-[8.5px] sm:text-[10.5px] font-bold tracking-wide uppercase border select-none shrink-0 transition-colors duration-300 ease-in-out ${badgeTheme.badgeClasses}`}
+            className={`inline-flex items-center rounded-full px-2 sm:px-2.5 py-0.5 text-[8.5px] sm:text-[10px] font-extrabold tracking-wider uppercase border select-none shrink-0 transition-colors duration-300 ease-in-out shadow-2xs backdrop-blur-md ${badgeTheme.badgeClasses}`}
             style={{
               opacity: visible ? 1 : 0,
               transition: `opacity ${FADE_MS}ms ease-in-out, background-color 300ms ease-in-out, border-color 300ms ease-in-out, color 300ms ease-in-out`,
@@ -220,18 +220,19 @@ const OfferHeader = () => {
             type="button"
             onClick={handleEnrollNow}
             className="
-              animate-[pulse_1.2s_ease-in-out_infinite]
-              rounded-md sm:rounded-lg
+              rounded-full
               bg-white
-              px-2 sm:px-3
+              px-2.5 sm:px-3.5
               py-0.5 sm:py-1
               text-[9.5px] sm:text-xs
-              font-bold
+              font-extrabold
               text-[#DF1E26]
-              shadow-xs
-              transition
+              shadow-[0_2px_10px_rgba(0,0,0,0.12)]
+              transition-all
               duration-200
-              hover:bg-slate-100
+              hover:bg-slate-50
+              hover:shadow-[0_4px_14px_rgba(0,0,0,0.2)]
+              hover:scale-105
               active:scale-95
               cursor-pointer
               shrink-0

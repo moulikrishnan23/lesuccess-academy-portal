@@ -122,7 +122,7 @@ export default function ConnectWithUs({ isModal = false, isChatOpen = false, isH
         />
       </div>
 
-      <form onSubmit={handleSubmit} className={isModal ? "" : "mt-10 max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl border border-white/20 text-slate-800 transition-colors duration-200"}>
+      <form onSubmit={handleSubmit} className={isModal ? "" : "mt-10 max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-[0_20px_60px_rgba(7,64,92,0.18)] border border-slate-200/80 text-slate-800 transition-colors duration-200"}>
         <div className={isModal ? "flex flex-col gap-2 mb-2 text-left" : "grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4 text-left"}>
           {/* Name */}
           <div>
@@ -139,7 +139,7 @@ export default function ConnectWithUs({ isModal = false, isChatOpen = false, isH
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Enter Your Name"
-                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
+                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#DF1E26] focus:border-transparent focus:bg-white transition-all ${
                   isModal ? "py-1.5 pl-8 pr-2.5 text-xs rounded-lg" : "py-3 pl-10 pr-4 text-sm rounded-xl"
                 }`}
               />
@@ -161,7 +161,7 @@ export default function ConnectWithUs({ isModal = false, isChatOpen = false, isH
                 value={form.email}
                 onChange={handleChange}
                 placeholder="Enter Email ID"
-                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
+                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#DF1E26] focus:border-transparent focus:bg-white transition-all ${
                   isModal ? "py-1.5 pl-8 pr-2.5 text-xs rounded-lg" : "py-3 pl-10 pr-4 text-sm rounded-xl"
                 }`}
               />
@@ -183,7 +183,7 @@ export default function ConnectWithUs({ isModal = false, isChatOpen = false, isH
                 value={form.mobile}
                 onChange={handleChange}
                 placeholder="Enter Mobile Number"
-                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all ${
+                className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#DF1E26] focus:border-transparent focus:bg-white transition-all ${
                   isModal ? "py-1.5 pl-8 pr-2.5 text-xs rounded-lg" : "py-3 pl-10 pr-4 text-sm rounded-xl"
                 }`}
               />
@@ -205,7 +205,7 @@ export default function ConnectWithUs({ isModal = false, isChatOpen = false, isH
               value={form.message}
               onChange={handleChange}
               placeholder="How can we help you?"
-              className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white transition-all resize-none ${
+              className={`w-full bg-[#F5F8FC] border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#DF1E26] focus:border-transparent focus:bg-white transition-all resize-none ${
                 isModal ? "py-1.5 pl-8 pr-2.5 text-xs rounded-lg" : "py-3 pl-10 pr-4 text-sm rounded-xl"
               }`}
             />
@@ -216,8 +216,8 @@ export default function ConnectWithUs({ isModal = false, isChatOpen = false, isH
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white font-bold hover:brightness-105 active:scale-98 transition shadow-md disabled:opacity-50 cursor-pointer ${
-              isModal ? "py-2 px-5 text-xs rounded-lg" : "sm:w-auto min-w-[240px] py-3.5 px-8 text-sm rounded-xl shadow-lg"
+            className={`w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white font-bold hover:brightness-105 active:scale-98 transition shadow-[0_4px_16px_rgba(244,66,70,0.35)] hover:shadow-[0_6px_22px_rgba(244,66,70,0.5)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 cursor-pointer ${
+              isModal ? "py-2 px-5 text-xs rounded-lg" : "sm:w-auto min-w-[240px] py-3.5 px-8 text-sm rounded-full shadow-lg"
             }`}
           >
             {isSubmitting ? "Submitting..." : "Submit Inquiry"} <Send size={isModal ? 13 : 15} />

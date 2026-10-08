@@ -426,7 +426,7 @@ export default function CourseCatalogPage() {
         {/* Decorative Glow Orbs */}
         <div
           aria-hidden="true"
-          className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"
+          className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#024D72]/40 blur-3xl pointer-events-none"
         />
         <div
           aria-hidden="true"

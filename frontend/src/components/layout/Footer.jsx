@@ -31,7 +31,7 @@ export default function Footer() {
       {/* Decorative ambient subtle glow */}
       <div
         aria-hidden="true"
-        className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
+        className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-[#024D72]/40 blur-3xl pointer-events-none"
       />
       <div
         aria-hidden="true"
@@ -68,7 +68,7 @@ export default function Footer() {
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Phone size={14} className="text-cyan-400 shrink-0" />
+                <Phone size={14} className="text-[#F44246] shrink-0" />
                 <a href="tel:+918012060000" className="text-slate-200 hover:text-white font-medium transition-colors">
                   +91 80120 60000
                 </a>
@@ -124,7 +124,7 @@ export default function Footer() {
           {/* Col 3: Quick Links (2 cols) */}
           <div className="lg:col-span-2">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-5 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              <span className="h-2 w-2 rounded-full bg-[#DF1E26]" />
               Navigation
             </h3>
             <ul className="space-y-3">

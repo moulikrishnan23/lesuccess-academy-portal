@@ -460,7 +460,7 @@ const DemoClass = ({
           {/* Ambient background glows */}
           <div
             aria-hidden="true"
-            className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
+            className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-[#024D72]/40 blur-3xl pointer-events-none"
           />
           <div
             aria-hidden="true"
@@ -488,7 +488,7 @@ const DemoClass = ({
       {/* Decorative ambient background */}
       <div
         aria-hidden="true"
-        className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
+        className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-[#024D72]/40 blur-3xl pointer-events-none"
       />
       <div
         aria-hidden="true"

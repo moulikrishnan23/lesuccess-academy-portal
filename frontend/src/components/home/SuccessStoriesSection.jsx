@@ -149,9 +149,10 @@ export default function SuccessStoriesSection() {
         <div className="mt-12 flex justify-center">
           <Link
             to="/success-stories"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 px-6 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-[#07405C] transition-colors shadow-sm"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-white border border-slate-200/90 px-7 py-3 text-sm font-bold text-slate-700 hover:bg-[#07405C] hover:text-white hover:border-[#07405C] shadow-xs hover:shadow-md transition-all duration-200 active:scale-95"
           >
-            View All Success Stories <ChevronRight size={16} />
+            <span>View All Success Stories</span>
+            <ChevronRight size={16} />
           </Link>
         </div>
       </div>

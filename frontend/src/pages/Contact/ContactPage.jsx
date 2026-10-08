@@ -316,7 +316,7 @@ export default function Contact() {
               {/* Subtle ambient decorative blur */}
               <div
                 aria-hidden="true"
-                className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-cyan-400/10 blur-2xl pointer-events-none"
+                className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[#024D72]/40 blur-2xl pointer-events-none"
               />
 
               <div className="flex items-start gap-3.5 relative z-10">

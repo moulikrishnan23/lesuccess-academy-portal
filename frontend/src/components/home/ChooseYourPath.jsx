@@ -161,18 +161,18 @@ const ChooseYourPath = () => {
                     </p>
                   )}
 
-                  <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5 text-xs font-semibold text-slate-700 min-w-0">
-                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#07405C]/15 min-w-0">
+                  <div className="mt-6 flex flex-wrap gap-2.5 border-t border-slate-100 pt-5 text-xs font-semibold text-slate-700 min-w-0">
+                    <span className="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 border border-slate-200/70 transition-colors group-hover:border-[#07405C]/20 min-w-0">
                       <Clock3 size={14} className="text-[#07405C] shrink-0" />
                       <span className="truncate">{formatDuration(course.durationValue, course.durationUnit)}</span>
                     </span>
 
-                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#07405C]/15 min-w-0">
+                    <span className="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 border border-slate-200/70 transition-colors group-hover:border-[#07405C]/20 min-w-0">
                       <Monitor size={14} className="text-[#07405C] shrink-0" />
                       <span className="truncate">Offline / Online</span>
                     </span>
 
-                    <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 border border-slate-200/60 transition-colors group-hover:border-[#DF1E26]/20 min-w-0">
+                    <span className="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 border border-slate-200/70 transition-colors group-hover:border-[#DF1E26]/25 min-w-0">
                       <BriefcaseBusiness size={14} className="text-[#DF1E26] shrink-0" />
                       <span className="truncate">Placement Cell</span>
                     </span>
@@ -200,7 +200,7 @@ const ChooseYourPath = () => {
 
                   <Link
                     to={`/courses/${course.slug}`}
-                    className="flex items-center justify-center rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-all hover:brightness-105 active:scale-95 cursor-pointer min-w-0"
+                    className="flex items-center justify-center rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] py-2.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_16px_rgba(244,66,70,0.35)] transition-all hover:brightness-110 hover:shadow-[0_6px_22px_rgba(244,66,70,0.5)] active:scale-95 cursor-pointer min-w-0"
                   >
                     <span className="truncate">Enroll Now</span>
                   </Link>

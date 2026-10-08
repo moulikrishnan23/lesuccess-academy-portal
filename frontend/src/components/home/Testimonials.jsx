@@ -87,7 +87,7 @@ export default function Testimonials() {
         </ScrollReveal>
 
         {/* Google Reviews Style Card */}
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/50 p-6 sm:p-10 transition-all">
+        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-[0_20px_50px_rgba(7,64,92,0.08)] p-6 sm:p-10 transition-all">
           {/* Card Top Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-6 border-b border-slate-100">
             <div>
@@ -152,7 +152,7 @@ export default function Testimonials() {
                 href={GOOGLE_REVIEWS_META.writeReviewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-[#07405C] bg-white px-6 py-2.5 text-sm font-bold text-[#07405C] shadow-xs hover:bg-[#07405C] hover:text-white transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-[#07405C] bg-white px-6 py-2.5 text-sm font-bold text-[#07405C] shadow-xs hover:bg-[#07405C] hover:text-white transition-all duration-200 active:scale-95 cursor-pointer"
               >
                 <span>Write a review</span>
                 <ExternalLink size={14} />
@@ -194,7 +194,7 @@ export default function Testimonials() {
                 return (
                   <ScrollReveal key={review.id} delay={idx * 0.1}>
                   <div
-                    className="group h-full flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs hover:shadow-[0_16px_36px_rgba(7,64,92,0.08)] hover:-translate-y-1.5 hover:border-slate-300 transition-all duration-300"
+                    className="group h-full flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-slate-50/50 p-6 sm:p-7 shadow-xs hover:shadow-[0_16px_36px_rgba(7,64,92,0.09)] hover:-translate-y-1.5 hover:border-slate-300 hover:bg-white transition-all duration-300"
                   >
                     <div>
                       {/* Reviewer Header: Avatar, Name, Review Count */}

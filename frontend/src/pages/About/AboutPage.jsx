@@ -399,7 +399,7 @@ export default function AboutPage() {
           <FloatingElement duration={4} yOffset={10}>
             <div
               aria-hidden="true"
-              className="h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
+              className="h-80 w-80 rounded-full bg-[#024D72]/40 blur-3xl pointer-events-none"
             />
           </FloatingElement>
         </ParallaxElement>

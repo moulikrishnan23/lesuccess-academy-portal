@@ -250,7 +250,7 @@ const HeroVideo = () => {
         {/* Ambient decorative glow orbs */}
         <div
           aria-hidden="true"
-          className="absolute -top-32 -left-32 z-[3] h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none"
+          className="absolute -top-32 -left-32 z-[3] h-96 w-96 rounded-full bg-[#024D72]/40 blur-3xl pointer-events-none"
         />
         <div
           aria-hidden="true"
@@ -308,7 +308,7 @@ const HeroVideo = () => {
             >
               <Link
                 to="/courses"
-                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-6 sm:px-7 py-3 text-sm sm:text-base font-bold text-white shadow-[0_4px_25px_rgba(244,66,70,0.45)] transition-all duration-200 hover:brightness-110 hover:shadow-[0_6px_30px_rgba(244,66,70,0.6)] active:scale-98"
+                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-7 py-3.5 text-sm sm:text-base font-extrabold text-white shadow-[0_4px_25px_rgba(244,66,70,0.45)] transition-all duration-200 hover:brightness-110 hover:shadow-[0_8px_32px_rgba(244,66,70,0.65)] hover:-translate-y-0.5 active:translate-y-0 active:scale-98"
               >
                 <span>Explore Courses</span>
                 <ArrowRight
@@ -320,7 +320,7 @@ const HeroVideo = () => {
               <a
                 href="#demo-class"
                 onClick={handleBookDemo}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 backdrop-blur-md px-6 sm:px-7 py-3 text-sm sm:text-base font-semibold text-white transition-all duration-200 hover:bg-white/20 hover:border-white/60 active:scale-98 cursor-pointer shadow-sm"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 backdrop-blur-md px-7 py-3.5 text-sm sm:text-base font-bold text-white transition-all duration-200 hover:bg-white/20 hover:border-white/60 hover:-translate-y-0.5 active:translate-y-0 active:scale-98 cursor-pointer shadow-sm"
               >
                 <span>Book Free Demo</span>
               </a>
@@ -340,7 +340,7 @@ const HeroVideo = () => {
                 <span>Live Project Mentorship</span>
               </div>
               <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md">
-                <Building2 size={14} className="text-cyan-400 shrink-0" />
+                <Building2 size={14} className="text-white shrink-0" />
                 <span>150+ Hiring Partners</span>
               </div>
             </motion.div>
@@ -377,13 +377,13 @@ const HeroVideo = () => {
 
       {/* Crisp Trust & Stats Strip */}
       <div className="border-b border-slate-200/80 bg-white py-6 px-6 sm:px-10 lg:px-20 shadow-xs relative z-20 transition-colors duration-200">
-        <div className="mx-auto max-w-6xl grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+        <div className="mx-auto max-w-6xl grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {STATS.map((stat, i) => {
             const Icon = stat.icon;
             return (
               <div
                 key={i}
-                className="flex items-center gap-3.5 sm:gap-4 p-2 transition-transform duration-200 hover:-translate-y-0.5"
+                className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 bg-white/80 shadow-[0_4px_16px_rgba(7,64,92,0.04)] hover:shadow-[0_10px_28px_rgba(7,64,92,0.08)] hover:border-[#DF1E26]/30 transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-[#07405C]/10 border border-[#07405C]/20 text-[#07405C]">
                   <Icon

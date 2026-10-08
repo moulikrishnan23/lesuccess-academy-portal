@@ -51,7 +51,7 @@ const FeaturedTeamCard = ({ member }) => {
       </div>
 
       {/* Detail Overlay Card */}
-      <div className="relative z-10 -mt-10 w-[calc(100%-24px)] rounded-2xl border border-[#07405C] bg-[#07405C] px-5 py-4 text-center text-white shadow-lg transition-all duration-300 group-hover:bg-[#024D72] group-hover:shadow-xl">
+      <div className="relative z-10 -mt-10 w-[calc(100%-24px)] rounded-2xl border border-white/20 bg-[#07405C]/95 backdrop-blur-md px-5 py-4 text-center text-white shadow-xl transition-all duration-300 group-hover:bg-[#024D72] group-hover:border-white/30 group-hover:shadow-2xl">
         <h3 className="text-lg font-bold text-white transition-colors group-hover:text-[#DF1E26]">
           {member.name}
         </h3>
@@ -94,7 +94,7 @@ export default function OurTeam() {
           whileInView="visible"
           viewport={ONCE_IN_VIEW}
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C] px-4 py-1.5 text-xs font-bold text-[#07405C]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/30 bg-[#07405C]/5 px-4 py-1.5 text-xs font-bold text-[#07405C]">
             <Users size={14} className="text-[#DF1E26]" />
             OUR TEAM
           </span>
@@ -150,9 +150,9 @@ export default function OurTeam() {
             <div className="mt-14 flex justify-center">
               <Link
                 to="/our-team"
-                className="group inline-flex items-center gap-2.5 rounded-xl bg-[#07405C] px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:bg-[#024D72] hover:shadow-xl hover:gap-3.5"
+                className="group inline-flex items-center gap-2.5 rounded-full bg-[#07405C] px-8 py-3.5 text-sm sm:text-base font-bold text-white shadow-[0_4px_16px_rgba(7,64,92,0.3)] transition-all duration-200 hover:bg-[#024D72] hover:shadow-[0_8px_24px_rgba(7,64,92,0.45)] hover:-translate-y-0.5 active:translate-y-0"
               >
-                View All Team Members
+                <span>View All Team Members</span>
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>

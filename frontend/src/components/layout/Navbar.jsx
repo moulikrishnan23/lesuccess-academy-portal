@@ -81,7 +81,7 @@ const Navbar = ({ onOpenEnquiry }) => {
   return (
     <>
       <nav
-        className="w-full bg-white/95 backdrop-blur-md transition-colors border-t lg:border-t-0 lg:border-b border-slate-200/80 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] lg:shadow-xs"
+        className="w-full bg-white/90 backdrop-blur-xl transition-colors border-t lg:border-t-0 lg:border-b border-slate-200/80 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] lg:shadow-[0_4px_24px_rgba(7,64,92,0.04)]"
         style={{
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
@@ -168,7 +168,7 @@ const Navbar = ({ onOpenEnquiry }) => {
               {/* Modern Elevated Dropdown */}
               {courseMenuOpen && menuCourses.length > 0 && (
                 <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3">
-                  <div className="w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="w-80 rounded-2xl border border-slate-200/90 bg-white/98 p-3 shadow-[0_20px_50px_rgba(7,64,92,0.14)] backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-3 py-1.5 mb-1 flex items-center justify-between border-b border-slate-100">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         Popular Programs
@@ -230,7 +230,7 @@ const Navbar = ({ onOpenEnquiry }) => {
             <button
               type="button"
               onClick={onOpenEnquiry}
-              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-105 hover:shadow-md active:scale-98 cursor-pointer"
+              className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#F44246] to-[#CA164B] px-6 py-2.5 text-sm font-bold text-white shadow-[0_4px_16px_rgba(244,66,70,0.35)] transition-all duration-200 hover:brightness-105 hover:shadow-[0_6px_24px_rgba(244,66,70,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-98 cursor-pointer"
             >
               <span>Enquire Now</span>
               <ArrowRight

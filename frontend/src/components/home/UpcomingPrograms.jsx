@@ -230,7 +230,7 @@ export default function UpcomingPrograms() {
       />
       <div
         aria-hidden="true"
-        className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"
+        className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#024D72]/40 blur-3xl pointer-events-none"
       />
       <div
         aria-hidden="true"
@@ -263,7 +263,7 @@ export default function UpcomingPrograms() {
         {/* =================================================
             CATEGORY FILTER TABS
         ================================================= */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
           {[
             { id: 'ALL', label: 'All Events' },
             { id: 'WEBINAR', label: 'Webinars' },
@@ -276,10 +276,10 @@ export default function UpcomingPrograms() {
                 key={cat.id}
                 type="button"
                 onClick={() => handleCategoryChange(cat.id)}
-                className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                className={`rounded-full px-4.5 py-2 text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
                   isActive
                     ? 'bg-white text-[#07405C] shadow-lg shadow-black/10 scale-102'
-                    : 'bg-white/10 text-white/80 hover:bg-white/15 hover:text-white border border-white/10'
+                    : 'bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/15'
                 }`}
               >
                 {cat.label}
@@ -343,7 +343,7 @@ export default function UpcomingPrograms() {
             <button
               type="button"
               onClick={() => setSelectedCategory('ALL')}
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-cyan-300 hover:text-white underline cursor-pointer"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-rose-200 hover:text-white underline cursor-pointer"
             >
               View all upcoming events ({allPrograms.length})
             </button>
@@ -594,7 +594,7 @@ export default function UpcomingPrograms() {
                       <button
                         type="button"
                         onClick={() => handleOpenRegister(currentProgram)}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-7 py-3 text-sm font-bold text-white shadow-lg shadow-[#DF1E26]/20 transition hover:opacity-95 hover:shadow-xl hover:shadow-[#DF1E26]/30 active:scale-98 cursor-pointer"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-3 text-sm font-bold text-white shadow-lg shadow-[#DF1E26]/20 transition-all hover:brightness-105 hover:shadow-xl hover:shadow-[#DF1E26]/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-98 cursor-pointer"
                       >
                         <Sparkles size={16} />
                         <span>{eventType === 'WEBINAR' ? 'Register For Free' : eventType === 'WORKSHOP' ? 'Book Workshop Seat' : 'Apply For Internship'}</span>
