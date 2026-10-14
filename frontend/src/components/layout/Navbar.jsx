@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import useCourses from "../../hooks/useCourses.js";
 import { SOCIAL_LINKS } from "../../data/socialLinks.js";
+import Magnetic from "../ui/Magnetic.jsx";
 
 const MENU_SLUGS = [
   "python-full-stack-development",
@@ -42,15 +43,32 @@ const MOBILE_NAV_ITEMS = [
 const Navbar = ({ onOpenEnquiry }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [courseMenuOpen, setCourseMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const { courses } = useCourses();
 
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled((window.scrollY || 0) > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const menuCourses = MENU_SLUGS.map((slug) =>
-    courses.find((course) => course.slug === slug)
+    courses.find((course) => course.slug === slug),
   ).filter(Boolean);
 
   const navLinkClass = ({ isActive }) =>
-    `relative py-2 text-sm font-semibold tracking-wide transition-all duration-200 ${
+    `relative py-2 text-sm font-semibold tracking-wide transition-all duration-200 hover-underline-expand ${
       isActive
         ? "text-[#DF1E26] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#DF1E26] after:rounded-full"
         : "text-slate-700 hover:text-[#07405C]"
@@ -81,7 +99,11 @@ const Navbar = ({ onOpenEnquiry }) => {
   return (
     <>
       <nav
-        className="w-full bg-white/95 backdrop-blur-md transition-colors border-t lg:border-t-0 lg:border-b border-slate-200/80 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] lg:shadow-xs"
+        className={`w-full transition-all duration-300 border-t lg:border-t-0 lg:border-b ${
+          isScrolled
+            ? "bg-white/95 backdrop-blur-xl border-slate-200/90 shadow-[0_10px_30px_rgba(7,64,92,0.08)]"
+            : "bg-white/90 backdrop-blur-md border-slate-200/70 shadow-xs"
+        }`}
         style={{
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
@@ -95,6 +117,7 @@ const Navbar = ({ onOpenEnquiry }) => {
           {/* Logo */}
           <Link
             to="/"
+            data-cursor-text="Home"
             className="flex items-center transition-transform hover:scale-[1.02] active:scale-95"
             onClick={closeMobileMenu}
           >
@@ -160,7 +183,9 @@ const Navbar = ({ onOpenEnquiry }) => {
                 <ChevronDown
                   size={14}
                   className={`transition-transform duration-200 ${
-                    courseMenuOpen ? "rotate-180 text-[#07405C]" : "text-slate-400"
+                    courseMenuOpen
+                      ? "rotate-180 text-[#07405C]"
+                      : "text-slate-400"
                   }`}
                 />
               </NavLink>
@@ -227,17 +252,20 @@ const Navbar = ({ onOpenEnquiry }) => {
               DESKTOP ENQUIRE CTA
           ===================================================== */}
           <div className="hidden items-center gap-4 lg:flex">
-            <button
-              type="button"
-              onClick={onOpenEnquiry}
-              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-105 hover:shadow-md active:scale-98 cursor-pointer"
-            >
-              <span>Enquire Now</span>
-              <ArrowRight
-                size={15}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
-            </button>
+            <Magnetic strength={0.25}>
+              <button
+                type="button"
+                onClick={onOpenEnquiry}
+                data-cursor-text="Enquire"
+                className="animate-shimmer-sweep btn-glow-brand group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:brightness-110 active:scale-98 cursor-pointer"
+              >
+                <span>Enquire Now</span>
+                <ArrowRight
+                  size={15}
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                />
+              </button>
+            </Magnetic>
           </div>
 
           {/* =====================================================
@@ -368,7 +396,7 @@ const Navbar = ({ onOpenEnquiry }) => {
               </div>
             </div>
           </>,
-          document.body
+          document.body,
         )}
     </>
   );

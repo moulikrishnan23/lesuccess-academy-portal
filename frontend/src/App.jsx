@@ -20,6 +20,9 @@ import BasicChatbot from "./components/chatbot/BasicChatbot.jsx";
 import ChatWidget from "./components/chatbot/ChatWidget.jsx";
 import useSiteSettings from "./hooks/useSiteSettings.js";
 import { AnimatePresence } from "framer-motion";
+import ScrollProgressBar from "./components/ui/ScrollProgressBar.jsx";
+import FloatingActionHub from "./components/ui/FloatingActionHub.jsx";
+import CustomCursor from "./components/ui/CustomCursor.jsx";
 
 import Home from "./pages/Home/HomePage.jsx";
 import AboutPage from "./pages/About/AboutPage.jsx";
@@ -31,7 +34,7 @@ import ServicePage from "./pages/Services/ServicePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
 import ConnectWithUsPopupTrigger from "./components/common/ConnectWithUsPopupTrigger.jsx";
 import GalleryPage from "./pages/Gallery/GalleryPage.jsx";
-import SuccessStoriesPage from './pages/SuccessStories/SuccessStoriesPage.jsx';
+import SuccessStoriesPage from "./pages/SuccessStories/SuccessStoriesPage.jsx";
 import LoginPage from "./pages/Auth/LoginPage.jsx";
 import InitialReelExperience from "./components/common/InitialReelExperience.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
@@ -40,7 +43,9 @@ import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import useAdminShortcut from "./hooks/useAdminShortcut.js";
 
 const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard.jsx"));
-const TrainerDashboard = lazy(() => import("./pages/Trainer/TrainerDashboard.jsx"));
+const TrainerDashboard = lazy(
+  () => import("./pages/Trainer/TrainerDashboard.jsx"),
+);
 
 function HomeRoute() {
   const { successStories } = useAppData();
@@ -54,7 +59,8 @@ function HomeRoute() {
     }
   };
 
-  const isItemActive = (item) => Boolean(item?.isActive ?? item?.active ?? false);
+  const isItemActive = (item) =>
+    Boolean(item?.isActive ?? item?.active ?? false);
   const activeReels = (successStories.data?.reels || [])
     .filter(isItemActive)
     .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
@@ -78,7 +84,9 @@ function HomeRoute() {
     return (
       <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#07405C] text-white">
         <div className="h-10 w-10 rounded-full border-4 border-white/20 border-t-[#DF1E26] animate-spin mb-3" />
-        <p className="text-xs font-semibold tracking-wider uppercase text-slate-300">Loading LeSuccess Academy...</p>
+        <p className="text-xs font-semibold tracking-wider uppercase text-slate-300">
+          Loading LeSuccess Academy...
+        </p>
       </div>
     );
   }
@@ -126,7 +134,7 @@ const AppContent = () => {
 
   // Desktop vs mobile viewport tracking (breakpoint >= 1024px / lg)
   const [isDesktop, setIsDesktop] = useState(
-    typeof window !== "undefined" ? window.innerWidth >= 1024 : true
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true,
   );
 
   useEffect(() => {
@@ -166,10 +174,7 @@ const AppContent = () => {
 
   const updateOfferHeaderHeight = useCallback(() => {
     if (!offerHeaderRef.current) return;
-
-    const height =
-      offerHeaderRef.current.getBoundingClientRect().height;
-
+    const height = offerHeaderRef.current.getBoundingClientRect().height;
     setOfferHeaderHeight(height);
   }, []);
 
@@ -181,10 +186,7 @@ const AppContent = () => {
 
   const updateNavbarHeight = useCallback(() => {
     if (!navbarRef.current) return;
-
-    const height =
-      navbarRef.current.getBoundingClientRect().height;
-
+    const height = navbarRef.current.getBoundingClientRect().height;
     setNavbarHeight(height);
   }, []);
 
@@ -218,33 +220,15 @@ const AppContent = () => {
       resizeObserver.observe(navbarRef.current);
     }
 
-    window.addEventListener(
-      "resize",
-      updateOfferHeaderHeight
-    );
-
-    window.addEventListener(
-      "resize",
-      updateNavbarHeight
-    );
+    window.addEventListener("resize", updateOfferHeaderHeight);
+    window.addEventListener("resize", updateNavbarHeight);
 
     return () => {
       resizeObserver.disconnect();
-
-      window.removeEventListener(
-        "resize",
-        updateOfferHeaderHeight
-      );
-
-      window.removeEventListener(
-        "resize",
-        updateNavbarHeight
-      );
+      window.removeEventListener("resize", updateOfferHeaderHeight);
+      window.removeEventListener("resize", updateNavbarHeight);
     };
-  }, [
-    updateOfferHeaderHeight,
-    updateNavbarHeight,
-  ]);
+  }, [updateOfferHeaderHeight, updateNavbarHeight]);
 
   /*
    * =========================================================
@@ -277,27 +261,9 @@ const AppContent = () => {
 
         if (currentScrollY <= 20) {
           setNavbarVisible(true);
-        }
-
-        /*
-         * Scrolling DOWN
-         */
-
-        else if (
-          currentScrollY >
-          lastScrollY.current + 5
-        ) {
+        } else if (currentScrollY > lastScrollY.current + 5) {
           setNavbarVisible(false);
-        }
-
-        /*
-         * Scrolling UP
-         */
-
-        else if (
-          currentScrollY <
-          lastScrollY.current - 5
-        ) {
+        } else if (currentScrollY < lastScrollY.current - 5) {
           setNavbarVisible(true);
         }
 
@@ -306,19 +272,10 @@ const AppContent = () => {
       });
     };
 
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      {
-        passive: true,
-      }
-    );
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -341,8 +298,7 @@ const AppContent = () => {
    * headers don't cover the page content.
    */
 
-  const totalHeaderHeight =
-    offerHeaderHeight + navbarHeight;
+  const totalHeaderHeight = offerHeaderHeight + navbarHeight;
 
   /*
    * =========================================================
@@ -365,12 +321,18 @@ const AppContent = () => {
     root.style.setProperty("--app-header", `${currentHeader}px`);
     root.style.setProperty(
       "--app-header-max",
-      `${offerHeaderHeight + (isDesktop ? navbarHeight : 0)}px`
+      `${offerHeaderHeight + (isDesktop ? navbarHeight : 0)}px`,
     );
   }, [offerHeaderHeight, navbarHeight, navbarVisible, isDesktop]);
 
   return (
     <div className="min-h-screen bg-surface text-ink transition-colors duration-200">
+      {/* Creative Agency Custom Cursor System */}
+      <CustomCursor />
+
+      {/* Global Top Scroll Progress Bar */}
+      <ScrollProgressBar />
+
       {/* =====================================================
           OFFER HEADER (ALWAYS FIXED & VISIBLE)
       ===================================================== */}
@@ -446,7 +408,6 @@ const AppContent = () => {
         <ScrollToTop />
         <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
-
             {/* Home */}
             <Route
               path="/"
@@ -596,33 +557,36 @@ const AppContent = () => {
                 }
               />
             </Route>
-
           </Routes>
         </AnimatePresence>
       </main>
 
-
       {!isDashboard && (
         <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
-          <Footer/>
+          <Footer />
         </div>
       )}
 
       {/* Global Back to Top Button for Public Pages */}
       {!isDashboard && <BackToTop />}
 
+      {/* Floating Action Hub (Career Counseling, WhatsApp & Free Live Demo) */}
+      {!isDashboard && !isLoginPage && (
+        <FloatingActionHub onOpenDemo={() => setIsEnquiryOpen(true)} />
+      )}
+
       {/* =====================================================
           CHATBOT (Admin Switchable: API Chatbot vs Normal Chatbot)
           Only ONE chatbot is active and rendered at a time.
       ===================================================== */}
-      {!isDashboard && !isLoginPage && settings?.chatbot_enabled !== 'false' && (
-        settings?.chatbot_mode?.toUpperCase() === 'API' ? (
+      {!isDashboard &&
+        !isLoginPage &&
+        settings?.chatbot_enabled !== "false" &&
+        (settings?.chatbot_mode?.toUpperCase() === "API" ? (
           <ChatWidget onOpenEnquiry={() => setIsEnquiryOpen(true)} />
         ) : (
           <BasicChatbot onOpenEnquiry={() => setIsEnquiryOpen(true)} />
-        )
-      )}
-
+        ))}
 
       {/* =====================================================
           CONNECT WITH US POPUP (Triggered after ~3 sections)

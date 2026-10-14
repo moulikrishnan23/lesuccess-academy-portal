@@ -15,6 +15,7 @@ import apiClient from "../../services/apiClient.js";
 import useCourses from "../../hooks/useCourses.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
+import Magnetic from "../ui/Magnetic.jsx";
 
 // Shown in the dropdown while the API response is loading or empty
 const FALLBACK_COURSES = [
@@ -37,19 +38,23 @@ const DemoClass = ({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
-  const [selectedCourseName, setSelectedCourseName] = useState(initialCourseName || "");
+  const [selectedCourseName, setSelectedCourseName] = useState(
+    initialCourseName || "",
+  );
+  const [prevInitialCourseName, setPrevInitialCourseName] =
+    useState(initialCourseName);
   // Honeypot. Never shown to a person, so anything in it came from a bot.
   const [website, setWebsite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null); // "success" | "error"
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Auto-associate the course name if provided and not yet manually chosen
-  useEffect(() => {
-    if (initialCourseName) {
-      setSelectedCourseName((curr) => curr || initialCourseName);
+  if (initialCourseName !== prevInitialCourseName) {
+    setPrevInitialCourseName(initialCourseName);
+    if (!selectedCourseName && initialCourseName) {
+      setSelectedCourseName(initialCourseName);
     }
-  }, [initialCourseName]);
+  }
 
   // Handle ESC key and scroll locking when used as a modal
   useEffect(() => {
@@ -85,7 +90,9 @@ const DemoClass = ({
     const mobileRegex = /^(\+91[6-9]\d{9}|[6-9]\d{9})$/;
     if (!mobileRegex.test(cleanMobile)) {
       setSubmitStatus("error");
-      setErrorMessage("Please enter a valid 10-digit mobile number (+91 or starting with 6-9).");
+      setErrorMessage(
+        "Please enter a valid 10-digit mobile number (+91 or starting with 6-9).",
+      );
       return;
     }
 
@@ -155,7 +162,8 @@ const DemoClass = ({
         Demo Class <span className="text-[#F44246]">Booked!</span>
       </h2>
       <p className="mt-4 text-base sm:text-lg text-slate-200">
-        Thank you! Your demo session reservation has been received. Our academic coordinator will contact you shortly to confirm timings.
+        Thank you! Your demo session reservation has been received. Our academic
+        coordinator will contact you shortly to confirm timings.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <button
@@ -191,15 +199,23 @@ const DemoClass = ({
       </div>
 
       <h2 className="text-3xl font-extrabold sm:text-4xl lg:text-5xl text-white tracking-tight">
-        Book Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-red-400">Free Live Demo</span> Today!
+        Book Your{" "}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-red-400">
+          Free Live Demo
+        </span>{" "}
+        Today!
       </h2>
 
       <p className="mt-4 text-base sm:text-lg text-slate-200 max-w-2xl mx-auto">
-        Experience our live hands-on teaching methodology, interactive coding labs, and mentor guidance firsthand.
+        Experience our live hands-on teaching methodology, interactive coding
+        labs, and mentor guidance firsthand.
       </p>
 
       {/* Honeypot */}
-      <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+      >
         <label htmlFor="demo-website">Leave this field empty</label>
         <input
           id="demo-website"
@@ -297,14 +313,16 @@ const DemoClass = ({
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="w-full sm:w-auto min-w-[260px] rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-3.5 text-sm sm:text-base font-bold text-white shadow-[0_4px_20px_rgba(244,66,70,0.4)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
+          className="animate-shimmer-sweep btn-glow-brand w-full sm:w-auto min-w-[280px] rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-8 py-3.5 text-sm sm:text-base font-bold text-white shadow-[0_6px_25px_rgba(244,66,70,0.45)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
         >
           {isSubmitting ? "Reserving Your Seat..." : "Reserve Free Demo Seat"}
         </button>
       </div>
 
       {submitStatus === "error" && (
-        <p className="mt-4 text-sm font-semibold text-rose-300">{errorMessage}</p>
+        <p className="mt-4 text-sm font-semibold text-rose-300">
+          {errorMessage}
+        </p>
       )}
     </div>
   );
@@ -318,15 +336,23 @@ const DemoClass = ({
       </div>
 
       <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
-        Book Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-red-400">Free Live Demo</span> Today!
+        Book Your{" "}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-red-400">
+          Free Live Demo
+        </span>{" "}
+        Today!
       </h2>
 
       <p className="mt-1 text-xs sm:text-sm text-slate-200 max-w-lg mx-auto">
-        Experience our live hands-on teaching methodology, interactive coding labs, and mentor guidance firsthand.
+        Experience our live hands-on teaching methodology, interactive coding
+        labs, and mentor guidance firsthand.
       </p>
 
       {/* Honeypot */}
-      <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+      >
         <label htmlFor="modal-demo-website">Leave this field empty</label>
         <input
           id="modal-demo-website"
@@ -421,17 +447,21 @@ const DemoClass = ({
 
       {/* Submit Button */}
       <div className="mt-4 sm:mt-5 flex justify-center">
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="w-full sm:w-auto min-w-[220px] rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-2.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_20px_rgba(244,66,70,0.4)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
-        >
-          {isSubmitting ? "Reserving Your Seat..." : "Reserve Free Demo Seat"}
-        </button>
+        <Magnetic strength={0.25}>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="animate-shimmer-sweep btn-glow-brand w-full sm:w-auto min-w-[220px] rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-2.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_20px_rgba(244,66,70,0.4)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
+          >
+            {isSubmitting ? "Reserving Your Seat..." : "Reserve Free Demo Seat"}
+          </button>
+        </Magnetic>
       </div>
 
       {submitStatus === "error" && (
-        <p className="mt-2 text-xs font-semibold text-rose-300">{errorMessage}</p>
+        <p className="mt-2 text-xs font-semibold text-rose-300">
+          {errorMessage}
+        </p>
       )}
     </div>
   );
@@ -470,7 +500,7 @@ const DemoClass = ({
           {submitStatus === "success" ? successContent : modalFormContent}
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
@@ -484,15 +514,20 @@ const DemoClass = ({
   }
 
   return (
-    <section id="demo-class" data-competing-form="true" className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-6 py-18 text-white sm:px-10 lg:px-20 relative overflow-hidden">
-      {/* Decorative ambient background */}
+    <section
+      id="demo-class"
+      data-competing-form="true"
+      className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-6 py-18 text-white sm:px-10 lg:px-20 relative overflow-hidden"
+    >
+      {/* Decorative ambient background with organic pulsing glow */}
       <div
         aria-hidden="true"
-        className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
+        className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none animate-halo-pulse"
       />
       <div
         aria-hidden="true"
-        className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#DF1E26]/10 blur-3xl pointer-events-none"
+        className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-[#DF1E26]/20 blur-3xl pointer-events-none animate-halo-pulse"
+        style={{ animationDelay: "2s" }}
       />
 
       <motion.div

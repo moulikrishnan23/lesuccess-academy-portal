@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ArrowUp } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { ArrowUp } from "lucide-react";
 
 export default function BackToTop() {
   const [isVisible, setIsVisible] = useState(false);
@@ -16,16 +16,16 @@ export default function BackToTop() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   };
 
@@ -35,11 +35,15 @@ export default function BackToTop() {
     <button
       type="button"
       onClick={scrollToTop}
+      data-cursor-text="Top"
       aria-label="Back to top"
       title="Back to top"
-      className="fixed z-40 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] lg:bottom-8 left-4 sm:left-6 lg:left-8 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[#07405C] text-white shadow-xl shadow-[#07405C]/30 border border-white/20 transition-all duration-300 hover:bg-[#DF1E26] hover:scale-110 active:scale-95 cursor-pointer animate-in fade-in zoom-in-90 focus:outline-none focus:ring-2 focus:ring-[#DF1E26] focus:ring-offset-2"
+      className="fixed z-40 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] lg:bottom-8 left-4 sm:left-6 lg:left-8 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[#07405C] text-white shadow-xl shadow-[#07405C]/30 border border-white/20 transition-all duration-300 hover:bg-[#DF1E26] hover:scale-110 hover:-translate-y-1 active:scale-95 cursor-pointer animate-in fade-in zoom-in-90 focus:outline-none focus:ring-2 focus:ring-[#DF1E26] focus:ring-offset-2 hover:shadow-[0_8px_24px_rgba(223,30,38,0.45)] group"
     >
-      <ArrowUp size={20} className="stroke-[2.5]" />
+      <ArrowUp
+        size={20}
+        className="stroke-[2.5] transition-transform duration-300 group-hover:-translate-y-0.5"
+      />
     </button>
   );
 }

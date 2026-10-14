@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Download,
   Search,
@@ -11,34 +11,41 @@ import {
   BookOpen,
   GraduationCap,
   CheckCircle2,
-} from 'lucide-react'
-import { downloadSyllabus, hasSyllabus } from '../../utils/syllabusUtils.js'
-import { getCourseLogo } from '../../utils/imageUtils.js'
-import Skeleton, { SkeletonText } from '../../components/ui/Skeleton.jsx'
-import ErrorState from '../../components/ui/ErrorState.jsx'
-import useCourses from '../../hooks/useCourses.js'
-import useDocumentMeta from '../../hooks/useDocumentMeta.js'
-import useReducedMotion from '../../hooks/useReducedMotion.js'
+} from "lucide-react";
+import { downloadSyllabus, hasSyllabus } from "../../utils/syllabusUtils.js";
+import { getCourseLogo } from "../../utils/imageUtils.js";
+import Skeleton, { SkeletonText } from "../../components/ui/Skeleton.jsx";
+import ErrorState from "../../components/ui/ErrorState.jsx";
+import useCourses from "../../hooks/useCourses.js";
+import useDocumentMeta from "../../hooks/useDocumentMeta.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
 import {
   cardHover,
   cardReveal,
   fadeUp,
   ITEM_IN_VIEW,
   motionSafe,
-} from '../../animations/variants.js'
+} from "../../animations/variants.js";
+import {
+  FloatingTechBadge,
+  GlowHalo,
+} from "../../components/ui/BackgroundMotion.jsx";
+import SpotlightCard from "../../components/ui/SpotlightCard.jsx";
+import BorderBeam from "../../components/ui/BorderBeam.jsx";
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
 function splitDuration(value, unit) {
-  const numeric = Number(value)
-  if (!Number.isFinite(numeric)) return null
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
 
-  const word = unit ? String(unit).toLowerCase() : 'hours'
-  const singular = numeric === 1 && word.endsWith('s') ? word.slice(0, -1) : word
+  const word = unit ? String(unit).toLowerCase() : "hours";
+  const singular =
+    numeric === 1 && word.endsWith("s") ? word.slice(0, -1) : word;
 
-  return { value: numeric, unit: singular }
+  return { value: numeric, unit: singular };
 }
 
 /**
@@ -56,12 +63,12 @@ function splitDuration(value, unit) {
  * @returns {string[]} up to four tool names; empty when none are configured
  */
 function getCourseTechPills(course) {
-  if (!Array.isArray(course?.techStack)) return []
+  if (!Array.isArray(course?.techStack)) return [];
 
   return course.techStack
     .map((tool) => tool.itemName || tool.toolName || tool.name)
     .filter(Boolean)
-    .slice(0, 4)
+    .slice(0, 4);
 }
 
 /* =========================================================
@@ -69,7 +76,7 @@ function getCourseTechPills(course) {
 ========================================================= */
 
 function CourseCard({ course, column, reduced }) {
-  const duration = splitDuration(course.durationValue, course.durationUnit)
+  const duration = splitDuration(course.durationValue, course.durationUnit);
   const batchCode =
     course.batch ||
     course.batchCode ||
@@ -77,9 +84,9 @@ function CourseCard({ course, column, reduced }) {
     course.courseCode ||
     course.badgeLabel ||
     course.badgeText ||
-    (course.badge ? course.badge.replace(/_/g, ' ') : null)
-  const hasBatch = Boolean(batchCode && String(batchCode).trim().length > 0)
-  const techPills = getCourseTechPills(course)
+    (course.badge ? course.badge.replace(/_/g, " ") : null);
+  const hasBatch = Boolean(batchCode && String(batchCode).trim().length > 0);
+  const techPills = getCourseTechPills(course);
 
   return (
     <motion.li
@@ -93,7 +100,18 @@ function CourseCard({ course, column, reduced }) {
     >
       {hasBatch ? (
         /* FULL RED BRANDED CARD FOR COURSES WITH BATCH/CODE */
-        <div className="group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[#CA164B]/40 bg-gradient-to-br from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white shadow-lg shadow-[#DF1E26]/20 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-[#CA164B]/35">
+        <SpotlightCard
+          tilt={true}
+          maxTilt={6}
+          spotlightColor="rgba(255, 255, 255, 0.22)"
+          className="card-lift-3d group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[#CA164B]/40 bg-gradient-to-br from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white shadow-lg shadow-[#DF1E26]/20 transition-all duration-300 hover:shadow-2xl hover:shadow-[#CA164B]/40"
+        >
+          <BorderBeam
+            size={220}
+            duration={6}
+            colorFrom="#ffffff"
+            colorTo="rgba(255,255,255,0.2)"
+          />
           {/* Top Sheen */}
           <span
             aria-hidden="true"
@@ -108,8 +126,8 @@ function CourseCard({ course, column, reduced }) {
             {/* ================= ZONE 1: HEADER ================= */}
             <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
               <div className="flex items-center gap-3 min-w-0">
-                {/* Course Tech Logo (Solid White background for contrast) */}
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white border border-white/30 p-2 shadow-xs transition-transform duration-300 group-hover:scale-105">
+                {/* Course Tech Logo (Solid White background for contrast with 3D tilt on hover) */}
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white border border-white/30 p-2 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                   <img
                     src={getCourseLogo(course)}
                     alt={`${course.title} icon`}
@@ -118,14 +136,16 @@ function CourseCard({ course, column, reduced }) {
                     className="h-full w-full object-contain"
                     loading="lazy"
                     onError={(e) => {
-                      e.currentTarget.src = '/tech/api.svg'
+                      e.currentTarget.src = "/tech/api.svg";
                     }}
                   />
                 </div>
 
                 <div className="min-w-0">
                   <span className="inline-block truncate text-[11px] font-bold uppercase tracking-wider text-white/90 bg-white/15 border border-white/20 px-2 py-0.5 rounded-md max-w-full backdrop-blur-xs">
-                    {course.categoryGroup || course.category || 'Technology Track'}
+                    {course.categoryGroup ||
+                      course.category ||
+                      "Technology Track"}
                   </span>
                   <div className="mt-1">
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/20 border border-white/30 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs max-w-full backdrop-blur-xs">
@@ -140,8 +160,12 @@ function CourseCard({ course, column, reduced }) {
               {duration ? (
                 <div className="flex items-center gap-1 rounded-lg bg-white/15 px-2.5 py-1 text-white border border-white/20 backdrop-blur-xs shrink-0">
                   <Clock size={12} className="text-white shrink-0" />
-                  <span className="text-xs font-bold text-white">{duration.value}</span>
-                  <span className="text-[11px] font-medium text-white/80 capitalize">{duration.unit}</span>
+                  <span className="text-xs font-bold text-white">
+                    {duration.value}
+                  </span>
+                  <span className="text-[11px] font-medium text-white/80 capitalize">
+                    {duration.unit}
+                  </span>
                 </div>
               ) : null}
             </div>
@@ -155,7 +179,7 @@ function CourseCard({ course, column, reduced }) {
               <p className="mt-2 text-xs sm:text-sm text-white/90 line-clamp-2 leading-relaxed break-words">
                 {course.shortDescription ||
                   course.description ||
-                  'Comprehensive hands-on training with real-world industry project modules, 1-on-1 mentor guidance, and placement support.'}
+                  "Comprehensive hands-on training with real-world industry project modules, 1-on-1 mentor guidance, and placement support."}
               </p>
 
               {/* Tech Stack Pills */}
@@ -175,14 +199,17 @@ function CourseCard({ course, column, reduced }) {
           </Link>
 
           {/* ================= ZONE 3: DUAL-ACTION FOOTER ================= */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/20 px-4 sm:px-6 py-3.5" style={{ background: 'linear-gradient(#F44246, #CA164B)' }}>
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 border-t border-white/20 px-4 sm:px-6 py-3.5"
+            style={{ background: "linear-gradient(#F44246, #CA164B)" }}
+          >
             {hasSyllabus(course) ? (
               <button
                 type="button"
                 onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  downloadSyllabus(course)
+                  e.preventDefault();
+                  e.stopPropagation();
+                  downloadSyllabus(course);
                 }}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/60 bg-white/10 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:border-white hover:bg-white hover:text-[#CA164B] cursor-pointer active:scale-95 shrink-0"
                 title={`Download ${course.title} Syllabus (PDF)`}
@@ -196,16 +223,30 @@ function CourseCard({ course, column, reduced }) {
 
             <Link
               to={`/courses/${course.slug}`}
-              className="inline-flex items-center gap-1.5 text-xs font-bold rounded-lg bg-white text-[#DF1E26] hover:bg-white/95 px-3 py-1.5 shadow-sm transition-all cursor-pointer shrink-0 ml-auto"
+              className="inline-flex items-center gap-1.5 text-xs font-bold rounded-lg bg-white text-[#DF1E26] hover:bg-white/95 px-3 py-1.5 shadow-sm transition-all cursor-pointer shrink-0 ml-auto animate-shimmer-sweep active:scale-95"
             >
               <span>View Details</span>
-              <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1 shrink-0" />
+              <ArrowRight
+                size={14}
+                className="transition-transform duration-200 group-hover:translate-x-1 shrink-0"
+              />
             </Link>
           </div>
-        </div>
+        </SpotlightCard>
       ) : (
         /* NORMAL STYLING FOR COURSES WITHOUT BATCH */
-        <div className="group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:border-[#07405C]/50 hover:shadow-xl hover:shadow-slate-200/70">
+        <SpotlightCard
+          tilt={true}
+          maxTilt={6}
+          spotlightColor="rgba(7, 64, 92, 0.12)"
+          className="card-lift-3d group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs transition-all duration-300 hover:border-[#07405C]/50 hover:shadow-2xl hover:shadow-slate-300/60"
+        >
+          <BorderBeam
+            size={240}
+            duration={8}
+            colorFrom="#DF1E26"
+            colorTo="#07405C"
+          />
           {/* Top Accent Bar on Hover */}
           <span
             aria-hidden="true"
@@ -221,7 +262,7 @@ function CourseCard({ course, column, reduced }) {
             <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
               {/* Course Tech Logo + Category Pill */}
               <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-200 p-2 shadow-xs transition-transform duration-300 group-hover:scale-105 group-hover:bg-white">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-200 p-2 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:bg-white">
                   <img
                     src={getCourseLogo(course)}
                     alt={`${course.title} icon`}
@@ -230,14 +271,16 @@ function CourseCard({ course, column, reduced }) {
                     className="h-full w-full object-contain"
                     loading="lazy"
                     onError={(e) => {
-                      e.currentTarget.src = '/tech/api.svg'
+                      e.currentTarget.src = "/tech/api.svg";
                     }}
                   />
                 </div>
 
                 <div className="min-w-0">
                   <span className="inline-block truncate text-[11px] font-bold uppercase tracking-wider text-[#07405C] bg-[#07405C]/10 px-2 py-0.5 rounded-md max-w-full">
-                    {course.categoryGroup || course.category || 'Technology Track'}
+                    {course.categoryGroup ||
+                      course.category ||
+                      "Technology Track"}
                   </span>
                 </div>
               </div>
@@ -246,8 +289,12 @@ function CourseCard({ course, column, reduced }) {
               {duration ? (
                 <div className="flex items-center gap-1 rounded-lg bg-slate-50 px-2.5 py-1 text-slate-700 border border-slate-200/80 shrink-0">
                   <Clock size={12} className="text-[#07405C] shrink-0" />
-                  <span className="text-xs font-bold text-slate-900">{duration.value}</span>
-                  <span className="text-[11px] font-medium text-slate-500 capitalize">{duration.unit}</span>
+                  <span className="text-xs font-bold text-slate-900">
+                    {duration.value}
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-500 capitalize">
+                    {duration.unit}
+                  </span>
                 </div>
               ) : null}
             </div>
@@ -261,7 +308,7 @@ function CourseCard({ course, column, reduced }) {
               <p className="mt-2 text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed break-words">
                 {course.shortDescription ||
                   course.description ||
-                  'Comprehensive hands-on training with real-world industry project modules, 1-on-1 mentor guidance, and placement support.'}
+                  "Comprehensive hands-on training with real-world industry project modules, 1-on-1 mentor guidance, and placement support."}
               </p>
 
               {/* Tech Stack Pills */}
@@ -286,9 +333,9 @@ function CourseCard({ course, column, reduced }) {
               <button
                 type="button"
                 onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  downloadSyllabus(course)
+                  e.preventDefault();
+                  e.stopPropagation();
+                  downloadSyllabus(course);
                 }}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition hover:border-[#07405C] hover:bg-[#07405C] hover:text-white cursor-pointer active:scale-95 shrink-0"
                 title={`Download ${course.title} Syllabus (PDF)`}
@@ -305,13 +352,16 @@ function CourseCard({ course, column, reduced }) {
               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#07405C] group-hover:text-[#DF1E26] transition-colors cursor-pointer shrink-0 ml-auto"
             >
               <span>View Details</span>
-              <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1 shrink-0" />
+              <ArrowRight
+                size={14}
+                className="transition-transform duration-200 group-hover:translate-x-1 shrink-0"
+              />
             </Link>
           </div>
-        </div>
+        </SpotlightCard>
       )}
     </motion.li>
-  )
+  );
 }
 
 /* =========================================================
@@ -340,7 +390,7 @@ function CourseCardSkeleton() {
         <Skeleton className="h-5 w-20 rounded-md" />
       </div>
     </li>
-  )
+  );
 }
 
 /* =========================================================
@@ -348,59 +398,60 @@ function CourseCardSkeleton() {
 ========================================================= */
 
 export default function CourseCatalogPage() {
-  const reduced = useReducedMotion()
-  const { courses, isLoading, error, refetch } = useCourses()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('ALL')
+  const reduced = useReducedMotion();
+  const { courses, isLoading, error, refetch } = useCourses();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
 
   useDocumentMeta({
-    title: 'Courses & Programs — LeSuccess Academy',
+    title: "Courses & Programs — LeSuccess Academy",
     description:
-      'Explore job-focused technology and career programs in Full Stack, Data Science, Cloud, DevOps, and Business with live projects and 100% placement guidance.',
-  })
+      "Explore job-focused technology and career programs in Full Stack, Data Science, Cloud, DevOps, and Business with live projects and 100% placement guidance.",
+  });
 
   // Derive unique categories dynamically
   const categories = useMemo(() => {
-    const set = new Set()
+    const set = new Set();
     courses.forEach((c) => {
-      const cat = c.categoryGroup || c.category
-      if (cat && typeof cat === 'string' && cat.trim()) {
-        set.add(cat.trim())
+      const cat = c.categoryGroup || c.category;
+      if (cat && typeof cat === "string" && cat.trim()) {
+        set.add(cat.trim());
       }
-    })
-    return Array.from(set).sort()
-  }, [courses])
+    });
+    return Array.from(set).sort();
+  }, [courses]);
 
   // Count items per category
   const categoryCounts = useMemo(() => {
-    const counts = { ALL: courses.length }
+    const counts = { ALL: courses.length };
     courses.forEach((c) => {
-      const cat = c.categoryGroup || c.category
+      const cat = c.categoryGroup || c.category;
       if (cat) {
-        counts[cat] = (counts[cat] || 0) + 1
+        counts[cat] = (counts[cat] || 0) + 1;
       }
-    })
-    return counts
-  }, [courses])
+    });
+    return counts;
+  }, [courses]);
 
   // Filtered courses based on search & category
   const filteredCourses = useMemo(() => {
     return courses.filter((c) => {
-      const cat = c.categoryGroup || c.category || ''
-      const matchesCategory = selectedCategory === 'ALL' || cat === selectedCategory
+      const cat = c.categoryGroup || c.category || "";
+      const matchesCategory =
+        selectedCategory === "ALL" || cat === selectedCategory;
 
-      if (!matchesCategory) return false
+      if (!matchesCategory) return false;
 
-      if (!searchQuery.trim()) return true
+      if (!searchQuery.trim()) return true;
 
-      const query = searchQuery.toLowerCase().trim()
-      const title = (c.title || '').toLowerCase()
-      const desc = (c.shortDescription || c.description || '').toLowerCase()
-      const slug = (c.slug || '').toLowerCase()
-      const categoryName = cat.toLowerCase()
+      const query = searchQuery.toLowerCase().trim();
+      const title = (c.title || "").toLowerCase();
+      const desc = (c.shortDescription || c.description || "").toLowerCase();
+      const slug = (c.slug || "").toLowerCase();
+      const categoryName = cat.toLowerCase();
       const techStackStr = Array.isArray(c.techStack)
-        ? c.techStack.map((t) => (t.itemName || '').toLowerCase()).join(' ')
-        : ''
+        ? c.techStack.map((t) => (t.itemName || "").toLowerCase()).join(" ")
+        : "";
 
       return (
         title.includes(query) ||
@@ -408,14 +459,14 @@ export default function CourseCatalogPage() {
         slug.includes(query) ||
         categoryName.includes(query) ||
         techStackStr.includes(query)
-      )
-    })
-  }, [courses, selectedCategory, searchQuery])
+      );
+    });
+  }, [courses, selectedCategory, searchQuery]);
 
   const handleResetFilters = () => {
-    setSearchQuery('')
-    setSelectedCategory('ALL')
-  }
+    setSearchQuery("");
+    setSelectedCategory("ALL");
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -423,14 +474,48 @@ export default function CourseCatalogPage() {
           HERO SECTION (LeSuccess Navy / Blue Brand Gradient)
       ========================================================= */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-5 py-18 sm:px-8 lg:px-16 text-white text-center">
-        {/* Decorative Glow Orbs */}
-        <div
-          aria-hidden="true"
-          className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"
+        {/* Decorative Glow Halos */}
+        <GlowHalo color="#DF1E26" size={360} top="-15%" left="15%" delay={0} />
+        <GlowHalo
+          color="#38bdf8"
+          size={380}
+          bottom="-15%"
+          right="10%"
+          delay={2}
         />
-        <div
-          aria-hidden="true"
-          className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#DF1E26]/15 blur-3xl pointer-events-none"
+
+        {/* Floating Ambient Tech Badges (Xplore IT Corp / Cloudious style) */}
+        <FloatingTechBadge
+          label="Java FullStack"
+          icon="/tech/java.svg"
+          top="18%"
+          left="4%"
+          delay={0.2}
+          className="hidden xl:flex"
+        />
+        <FloatingTechBadge
+          label="Python AI"
+          icon="/tech/python.svg"
+          top="22%"
+          right="4%"
+          delay={1.4}
+          className="hidden xl:flex"
+        />
+        <FloatingTechBadge
+          label="AWS Cloud"
+          icon="/tech/aws.svg"
+          bottom="16%"
+          left="5%"
+          delay={2.1}
+          className="hidden xl:flex"
+        />
+        <FloatingTechBadge
+          label="React 19"
+          icon="/tech/react.svg"
+          bottom="14%"
+          right="5%"
+          delay={0.8}
+          className="hidden xl:flex"
         />
 
         <div className="relative z-10 mx-auto max-w-4xl">
@@ -452,13 +537,18 @@ export default function CourseCatalogPage() {
 
             {/* Value Prop Subtitle */}
             <p className="mt-4 text-base sm:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed">
-              Fast-track your career with industry-aligned curriculums, hands-on production codebases, dedicated 1-on-1 mentorship, and guaranteed placement assistance.
+              Fast-track your career with industry-aligned curriculums, hands-on
+              production codebases, dedicated 1-on-1 mentorship, and guaranteed
+              placement assistance.
             </p>
 
             {/* Interactive Search Bar in Hero */}
             <div className="mt-8 mx-auto max-w-xl relative">
               <div className="relative flex items-center">
-                <Search size={18} className="absolute left-4 text-slate-400 pointer-events-none" />
+                <Search
+                  size={18}
+                  className="absolute left-4 text-slate-400 pointer-events-none"
+                />
                 <input
                   type="text"
                   value={searchQuery}
@@ -469,7 +559,7 @@ export default function CourseCatalogPage() {
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => setSearchQuery("")}
                     className="absolute right-3.5 p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
                     title="Clear search"
                   >
@@ -509,17 +599,19 @@ export default function CourseCatalogPage() {
         <div className="flex flex-wrap items-center justify-center gap-2 pb-6 border-b border-slate-200">
           <button
             type="button"
-            onClick={() => setSelectedCategory('ALL')}
+            onClick={() => setSelectedCategory("ALL")}
             className={`relative rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-              selectedCategory === 'ALL'
-                ? 'bg-[#07405C] text-white shadow-md shadow-[#07405C]/20 scale-102'
-                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+              selectedCategory === "ALL"
+                ? "bg-[#07405C] text-white shadow-md shadow-[#07405C]/20 scale-102"
+                : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
             }`}
           >
             <span>All Programs</span>
             <span
               className={`ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                selectedCategory === 'ALL' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                selectedCategory === "ALL"
+                  ? "bg-white/20 text-white"
+                  : "bg-slate-100 text-slate-500"
               }`}
             >
               {categoryCounts.ALL || courses.length}
@@ -527,7 +619,7 @@ export default function CourseCatalogPage() {
           </button>
 
           {categories.map((cat) => {
-            const isSelected = selectedCategory === cat
+            const isSelected = selectedCategory === cat;
             return (
               <button
                 key={cat}
@@ -535,39 +627,53 @@ export default function CourseCatalogPage() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`relative rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#07405C] text-white shadow-md shadow-[#07405C]/20 scale-102'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                    ? "bg-[#07405C] text-white shadow-md shadow-[#07405C]/20 scale-102"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
                 <span>{cat}</span>
                 {categoryCounts[cat] ? (
                   <span
                     className={`ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                      isSelected
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-100 text-slate-500"
                     }`}
                   >
                     {categoryCounts[cat]}
                   </span>
                 ) : null}
               </button>
-            )
+            );
           })}
         </div>
 
         {/* Results Count Header */}
         <div className="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 id="catalog-title" className="text-xl sm:text-2xl font-bold text-slate-900">
-              {selectedCategory === 'ALL' ? 'All Career Tracks' : selectedCategory}
+            <h2
+              id="catalog-title"
+              className="text-xl sm:text-2xl font-bold text-slate-900"
+            >
+              {selectedCategory === "ALL"
+                ? "All Career Tracks"
+                : selectedCategory}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Showing <span className="font-bold text-slate-800">{filteredCourses.length}</span> of{' '}
-              <span className="font-bold text-slate-800">{courses.length}</span> programs
-              {searchQuery && <span> matching &ldquo;{searchQuery}&rdquo;</span>}
+              Showing{" "}
+              <span className="font-bold text-slate-800">
+                {filteredCourses.length}
+              </span>{" "}
+              of{" "}
+              <span className="font-bold text-slate-800">{courses.length}</span>{" "}
+              programs
+              {searchQuery && (
+                <span> matching &ldquo;{searchQuery}&rdquo;</span>
+              )}
             </p>
           </div>
 
-          {(searchQuery || selectedCategory !== 'ALL') && (
+          {(searchQuery || selectedCategory !== "ALL") && (
             <button
               type="button"
               onClick={handleResetFilters}
@@ -594,7 +700,10 @@ export default function CourseCatalogPage() {
           <ErrorState
             className="mt-10"
             title="The course list didn't load"
-            message={error?.message ?? 'The server did not respond. Try again in a moment.'}
+            message={
+              error?.message ??
+              "The server did not respond. Try again in a moment."
+            }
             onRetry={refetch}
           />
         ) : filteredCourses.length === 0 ? (
@@ -602,9 +711,13 @@ export default function CourseCatalogPage() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-4">
               <BookOpen size={28} />
             </div>
-            <h3 className="text-base font-bold text-slate-800">No programs match your search</h3>
+            <h3 className="text-base font-bold text-slate-800">
+              No programs match your search
+            </h3>
             <p className="mt-1 text-sm text-slate-500">
-              We couldn&apos;t find any courses matching &ldquo;{searchQuery || selectedCategory}&rdquo;. Try adjusting your keywords or browse all tracks.
+              We couldn&apos;t find any courses matching &ldquo;
+              {searchQuery || selectedCategory}&rdquo;. Try adjusting your
+              keywords or browse all tracks.
             </p>
             <div className="mt-6">
               <button
@@ -630,5 +743,5 @@ export default function CourseCatalogPage() {
         )}
       </section>
     </div>
-  )
+  );
 }

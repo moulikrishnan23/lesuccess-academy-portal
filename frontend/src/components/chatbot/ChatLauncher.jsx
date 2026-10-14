@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { X } from "lucide-react";
 
 /**
  * The round button that opens the chatbot. Always in the bundle, so it is kept
@@ -14,12 +14,24 @@ export default function ChatLauncher({ ref, open, hasUnread, onClick }) {
       onClick={onClick}
       aria-label="Open chat with LeBot"
       aria-expanded={open}
-      aria-controls={open ? 'ls-chat-window' : undefined}
+      aria-controls={open ? "ls-chat-window" : undefined}
       title={open ? "Close chat" : "Chat with LeBot"}
-      className="chat-launcher z-45 right-4 sm:right-6 lg:right-8 flex h-14 w-14 items-center justify-center rounded-full bg-[#b82523] text-white shadow-[0_4px_20px_rgba(0,0,0,0.45)] border border-white/20 transition-all duration-200 hover:scale-105 hover:border-white/40 active:scale-95 cursor-pointer overflow-hidden p-0"
+      className="chat-launcher z-45 right-4 sm:right-6 lg:right-8 flex h-14 w-14 items-center justify-center rounded-full bg-[#b82523] text-white shadow-[0_8px_28px_rgba(184,37,35,0.45)] border border-white/30 transition-all duration-300 hover:scale-110 hover:border-white/60 active:scale-95 cursor-pointer overflow-hidden p-0 animate-float-slow group"
     >
+      {/* Ambient Pulsing Aura behind launcher */}
+      {!open && (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 rounded-full bg-[#DF1E26]/40 blur-md -z-10 animate-halo-pulse pointer-events-none"
+        />
+      )}
       {open ? (
-        <X size={24} strokeWidth={2.5} aria-hidden="true" className="text-white" />
+        <X
+          size={24}
+          strokeWidth={2.5}
+          aria-hidden="true"
+          className="text-white"
+        />
       ) : (
         <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#b82523]">
           <img
@@ -37,5 +49,5 @@ export default function ChatLauncher({ ref, open, hasUnread, onClick }) {
         />
       )}
     </button>
-  )
+  );
 }

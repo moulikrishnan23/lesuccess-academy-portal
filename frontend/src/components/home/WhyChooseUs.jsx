@@ -9,14 +9,14 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
-  fadeUp,
-  staggerContainer,
-  motionSafe,
-  ONCE_IN_VIEW,
-} from "../../animations/variants.js";
-import useReducedMotion from "../../hooks/useReducedMotion.js";
-import { FloatingOrbs, TechGrid, SectionHeading } from "../ui/BackgroundMotion.jsx";
+  FloatingOrbs,
+  TechGrid,
+  SectionHeading,
+} from "../ui/BackgroundMotion.jsx";
 import ScrollReveal from "../../animations/ScrollReveal.jsx";
+import SpotlightCard from "../ui/SpotlightCard.jsx";
+import BorderBeam from "../ui/BorderBeam.jsx";
+import WaveDivider from "../ui/WaveDivider.jsx";
 
 const features = [
   {
@@ -58,10 +58,8 @@ const features = [
 ];
 
 const WhyChooseUs = () => {
-  const reduced = useReducedMotion();
-
   return (
-    <section className="relative w-full bg-[#F8FAFC] px-6 py-12 sm:py-16 border-y border-slate-100/80 overflow-hidden transition-colors duration-200">
+    <section className="relative w-full bg-[#F8FAFC] px-6 py-14 sm:py-20 border-y border-slate-100/80 overflow-hidden transition-colors duration-200">
       {/* Purposeful Background Motion: Floating Orbs & Tech Grid */}
       <FloatingOrbs variant="full" />
       <TechGrid opacity="opacity-[0.03]" />
@@ -76,10 +74,12 @@ const WhyChooseUs = () => {
           description="We empower students and professionals with job-ready technical skills, dedicated mentor support, and guaranteed interview opportunities."
         />
 
-        {/* Features Bento Grid */}
+        {/* Features Bento Grid with 3D Perspective Reveal */}
         <ScrollReveal
+          preset="perspective"
           staggerChildren={true}
-          className="mt-10 sm:mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          staggerDelay={0.08}
+          className="mt-10 sm:mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
         >
           {features.map((feature, idx) => {
             const Icon = feature.icon;
@@ -87,37 +87,70 @@ const WhyChooseUs = () => {
             return (
               <motion.div
                 key={feature.title}
-                variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 lg:p-7 text-left shadow-[0_4px_20px_rgba(7,64,92,0.05)] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#07405C]/35 hover:shadow-[0_20px_40px_rgba(7,64,92,0.1)] cursor-default"
+                variants={{
+                  hidden: { opacity: 0, y: 35, scale: 0.94 },
+                  visible: { opacity: 1, y: 0, scale: 1 },
+                }}
+                className="h-full"
               >
-                {/* Subtle top brand accent line with faint resting presence */}
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#DF1E26] via-[#CA164B] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
+                <SpotlightCard
+                  tilt={true}
+                  maxTilt={8}
+                  spotlightColor={
+                    idx % 2 === 0
+                      ? "rgba(223, 30, 38, 0.12)"
+                      : "rgba(7, 64, 92, 0.12)"
+                  }
+                  data-cursor-text="Feature"
+                  className="card-lift-3d group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 lg:p-7 text-left shadow-[0_4px_20px_rgba(7,64,92,0.05)] cursor-default"
+                >
+                  <BorderBeam
+                    size={140}
+                    duration={8}
+                    delay={idx * 1.2}
+                    colorFrom={idx % 2 === 0 ? "#DF1E26" : "#07405C"}
+                    colorTo={idx % 2 === 0 ? "#38bdf8" : "#DF1E26"}
+                  />
+                  {/* Subtle top brand accent line with glowing aura on hover */}
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#DF1E26] via-[#CA164B] to-[#07405C] opacity-25 group-hover:opacity-100 transition-opacity duration-300" />
 
-                <div>
-                  <div className="flex items-center justify-between">
-                    {/* Icon Container with subtle brand accent transitioning to gradient on hover */}
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#07405C]/8 to-[#024D72]/4 border border-[#07405C]/12 text-[#07405C] shadow-2xs transition-all duration-300 group-hover:scale-105 group-hover:bg-gradient-to-r group-hover:from-[#F44246] group-hover:to-[#CA164B] group-hover:text-white group-hover:border-transparent group-hover:shadow-md">
-                      <Icon size={20} className="transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="flex items-center justify-between">
+                      {/* Icon Container with subtle brand accent transitioning to gradient on hover */}
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#07405C]/8 to-[#024D72]/4 border border-[#07405C]/12 text-[#07405C] shadow-2xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:bg-gradient-to-r group-hover:from-[#F44246] group-hover:to-[#CA164B] group-hover:text-white group-hover:border-transparent group-hover:shadow-md">
+                        <Icon
+                          size={22}
+                          className="transition-transform duration-300 group-hover:scale-110"
+                        />
+                      </div>
+
+                      <span className="text-xs font-bold text-slate-300 group-hover:text-[#07405C]/60 group-hover:scale-110 transition-all">
+                        0{idx + 1}
+                      </span>
                     </div>
 
-                    <span className="text-xs font-bold text-slate-300 group-hover:text-[#07405C]/40 transition-colors">
-                      0{idx + 1}
-                    </span>
+                    <h3 className="mt-4 text-base sm:text-lg font-bold text-[#101010] transition-colors duration-200 group-hover:text-[#07405C]">
+                      {feature.title}
+                    </h3>
+
+                    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600">
+                      {feature.description}
+                    </p>
                   </div>
-
-                  <h3 className="mt-4 text-base sm:text-lg font-bold text-[#101010] transition-colors duration-200 group-hover:text-[#07405C]">
-                    {feature.title}
-                  </h3>
-
-                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600">
-                    {feature.description}
-                  </p>
-                </div>
+                </SpotlightCard>
               </motion.div>
             );
           })}
         </ScrollReveal>
       </div>
+
+      {/* Curved SVG Wave Divider to Where Students Work */}
+      <WaveDivider
+        type="wave"
+        fill="#024D72"
+        glow={true}
+        className="-mb-14 sm:-mb-20 mt-12 sm:mt-16 z-20 relative"
+      />
     </section>
   );
 };

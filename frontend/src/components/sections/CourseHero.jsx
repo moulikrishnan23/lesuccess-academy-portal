@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Download } from 'lucide-react'
 import Button from '../ui/Button.jsx'
-import { downloadSyllabus, hasSyllabus } from '../../utils/syllabusUtils.js'
+import { downloadSyllabus } from '../../utils/syllabusUtils.js'
 import {
   BriefcaseIcon,
   CertificateIcon,
@@ -12,6 +12,8 @@ import {
 import { fadeUp, motionSafe, staggerContainer } from '../../animations/variants.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
 import { formatDuration } from '../../utils/formatters.js'
+import { GlowHalo } from '../ui/BackgroundMotion.jsx'
+import Magnetic from '../ui/Magnetic.jsx'
 
 /**
  * ASSUMPTION: only the duration pill is backed by data.
@@ -161,6 +163,10 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
         className="absolute inset-0 bg-[radial-gradient(90%_120%_at_50%_0%,rgba(37,106,158,0.55),transparent_65%)]"
       />
 
+      {/* Decorative ambient Glow Halos */}
+      <GlowHalo color="#DF1E26" size={380} top="-15%" left="15%" delay={0} />
+      <GlowHalo color="#38bdf8" size={360} bottom="-15%" right="10%" delay={2} />
+
       <motion.div
         variants={motionSafe(staggerContainer, reduced)}
         initial="hidden"
@@ -174,7 +180,7 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
             alt={`${course.title} course icon`}
             width="44"
             height="44"
-            className="mx-auto mb-5 h-11 w-11 object-contain"
+            className="mx-auto mb-5 h-12 w-12 object-contain transition-transform duration-300 hover:scale-115 hover:rotate-6 cursor-pointer"
           />
         ) : null}
 
@@ -203,22 +209,46 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
         >
           {/* Both CTAs move the visitor to the enroll form. Neither navigates —
               the page owns that behaviour and passes it down. */}
-          <Button variant="onDark" size="lg" onClick={onFreeDemoClick}>
+          <Button variant="onDark" size="lg" onClick={onFreeDemoClick} className="active:scale-95">
             Free Demo
           </Button>
+          <Magnetic strength={0.25}>
+            <Button variant="onDark" size="lg" onClick={onFreeDemoClick} className="active:scale-95">
+              Free Demo
+            </Button>
+          </Magnetic>
           
           <Button
             variant="onDark"
             size="lg"
             onClick={() => downloadSyllabus(course)}
             title={`Download ${course?.title || 'Course'} Syllabus (PDF)`}
+            className="active:scale-95"
           >
             <Download size={16} className="inline mr-1.5" />
             Download Syllabus
           </Button>
-          <Button variant="primary" size="lg" onClick={onEnrollClick}>
+          <Button variant="primary" size="lg" onClick={onEnrollClick} shimmer={true} className="animate-shimmer-sweep active:scale-95">
             Enroll Now
           </Button>
+          <Magnetic strength={0.25}>
+            <Button
+              variant="onDark"
+              size="lg"
+              onClick={() => downloadSyllabus(course)}
+              title={`Download ${course?.title || 'Course'} Syllabus (PDF)`}
+              className="active:scale-95"
+            >
+              <Download size={16} className="inline mr-1.5" />
+              Download Syllabus
+            </Button>
+          </Magnetic>
+
+          <Magnetic strength={0.25}>
+            <Button variant="primary" size="lg" onClick={onEnrollClick} shimmer={true} className="animate-shimmer-sweep active:scale-95">
+              Enroll Now
+            </Button>
+          </Magnetic>
         </motion.div>
       </motion.div>
     </section>

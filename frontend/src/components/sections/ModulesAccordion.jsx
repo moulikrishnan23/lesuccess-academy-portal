@@ -1,17 +1,17 @@
-import { motion } from 'framer-motion'
-import Accordion from '../ui/Accordion.jsx'
-import SectionHeading from '../ui/SectionHeading.jsx'
-import Skeleton from '../ui/Skeleton.jsx'
-import { EmptyState } from '../ui/ErrorState.jsx'
-import { ChevronIcon } from '../ui/icons.jsx'
+import { motion } from "framer-motion";
+import Accordion from "../ui/Accordion.jsx";
+import SectionHeading from "../ui/SectionHeading.jsx";
+import Skeleton from "../ui/Skeleton.jsx";
+import { EmptyState } from "../ui/ErrorState.jsx";
+import { ChevronIcon } from "../ui/icons.jsx";
 import {
   DURATION,
   EASE_OUT,
   fadeUp,
   motionSafe,
   ONCE_IN_VIEW,
-} from '../../animations/variants.js'
-import useReducedMotion from '../../hooks/useReducedMotion.js'
+} from "../../animations/variants.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
 
 function Chevron({ isOpen, reduced }) {
   return (
@@ -20,12 +20,14 @@ function Chevron({ isOpen, reduced }) {
       className="shrink-0 text-ink-muted"
       animate={{ rotate: isOpen ? 180 : 0 }}
       transition={
-        reduced ? { duration: 0 } : { duration: DURATION.interaction, ease: EASE_OUT }
+        reduced
+          ? { duration: 0 }
+          : { duration: DURATION.interaction, ease: EASE_OUT }
       }
     >
       <ChevronIcon size={16} direction="down" />
     </motion.span>
-  )
+  );
 }
 
 function ModulesSkeleton() {
@@ -45,7 +47,7 @@ function ModulesSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 /**
@@ -56,8 +58,8 @@ function ModulesSkeleton() {
  * Accordion and is not reimplemented here.
  */
 export default function ModulesAccordion({ modules, isLoading }) {
-  const reduced = useReducedMotion()
-  const items = modules ?? []
+  const reduced = useReducedMotion();
+  const items = modules ?? [];
 
   return (
     /*
@@ -102,11 +104,11 @@ export default function ModulesAccordion({ modules, isLoading }) {
           <Accordion
             items={items}
             classNames={{
-              root: 'mt-6 max-w-3xl space-y-2.5',
-              item: 'overflow-hidden rounded-lg border border-line bg-white transition-colors data-[open=true]:border-brand/40',
+              root: "mt-6 max-w-3xl space-y-2.5",
+              item: "overflow-hidden rounded-xl border border-line bg-white transition-all duration-300 hover:border-[#07405C]/40 hover:shadow-md data-[open=true]:border-brand/50 data-[open=true]:shadow-md",
               trigger:
-                'flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left',
-              panel: 'px-4 pb-4',
+                "flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left transition-colors hover:text-brand group cursor-pointer",
+              panel: "px-4 pb-4",
             }}
             renderTrigger={({ item, isOpen }) => (
               <>
@@ -129,7 +131,8 @@ export default function ModulesAccordion({ modules, isLoading }) {
                   </ul>
                 ) : (
                   <p className="leading-[1.85]">
-                    {item.description || 'Details for this module are being finalised.'}
+                    {item.description ||
+                      "Details for this module are being finalised."}
                   </p>
                 )}
               </div>
@@ -138,5 +141,5 @@ export default function ModulesAccordion({ modules, isLoading }) {
         )}
       </motion.div>
     </section>
-  )
+  );
 }

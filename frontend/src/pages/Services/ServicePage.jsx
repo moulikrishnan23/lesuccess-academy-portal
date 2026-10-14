@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { useMemo } from "react";
+import { motion } from "framer-motion";
 import {
   FileSearch,
   HandFist,
@@ -11,22 +11,23 @@ import {
   Rocket,
   UserRoundCog,
   UsersRound,
-} from 'lucide-react'
-import FeatureCard from '../../components/cards/FeatureCard.jsx'
-import ProcessStepCard from '../../components/cards/ProcessStepCard.jsx'
-import LeadCaptureForm from '../../components/forms/LeadCaptureForm.jsx'
-import SectionHeading from '../../components/ui/SectionHeading.jsx'
-import useDocumentMeta from '../../hooks/useDocumentMeta.js'
-import useProcessSteps from '../../hooks/useProcessSteps.js'
-import useReducedMotion from '../../hooks/useReducedMotion.js'
-import useServiceOfferings from '../../hooks/useServiceOfferings.js'
+} from "lucide-react";
+import FeatureCard from "../../components/cards/FeatureCard.jsx";
+import ProcessStepCard from "../../components/cards/ProcessStepCard.jsx";
+import LeadCaptureForm from "../../components/forms/LeadCaptureForm.jsx";
+import SectionHeading from "../../components/ui/SectionHeading.jsx";
+import WaveDivider from "../../components/ui/WaveDivider.jsx";
+import useDocumentMeta from "../../hooks/useDocumentMeta.js";
+import useProcessSteps from "../../hooks/useProcessSteps.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
+import useServiceOfferings from "../../hooks/useServiceOfferings.js";
 import {
   fadeUp,
   motionSafe,
   ONCE_IN_VIEW,
   staggerContainer,
-} from '../../animations/variants.js'
-import { LEAD_SOURCE } from '../../services/leadApi.js'
+} from "../../animations/variants.js";
+import { LEAD_SOURCE } from "../../services/leadApi.js";
 
 /*
  * Page copy, verbatim from Service_Page.pdf. Kept as data at the top of the
@@ -41,76 +42,76 @@ import { LEAD_SOURCE } from '../../services/leadApi.js'
  */
 const INSTITUTION_SERVICES = [
   {
-    title: 'Placement Opportunities',
+    title: "Placement Opportunities",
     icon: MapPinned,
     description:
-      'Company specific helps to meet helps to job matching and exclusive industry partnerships. Every Year we will place 100+ Students with above 10LPA Package.',
+      "Company specific helps to meet helps to job matching and exclusive industry partnerships. Every Year we will place 100+ Students with above 10LPA Package.",
   },
   {
-    title: 'Career Counselling',
+    title: "Career Counselling",
     icon: UsersRound,
     description:
-      'Aim to help students make informed decisions about their career paths. Our counselors provide personalized guidance based on individual interests, strengths and career aspirations.',
+      "Aim to help students make informed decisions about their career paths. Our counselors provide personalized guidance based on individual interests, strengths and career aspirations.",
   },
   {
-    title: 'Skill Development Programs',
+    title: "Skill Development Programs",
     icon: Network,
     description:
-      'Focus on enhancing practical skills and competencies. Our expert trainers guide students through hands-on training to ensure they gain real-world experience and confidence in their abilities.',
+      "Focus on enhancing practical skills and competencies. Our expert trainers guide students through hands-on training to ensure they gain real-world experience and confidence in their abilities.",
   },
   {
-    title: 'Communication Training',
+    title: "Communication Training",
     icon: MessagesSquare,
     description:
-      'Language proficiency is crucial for career advancement and global opportunities. Our language training programs are designed to help individuals master languages, making them more competitive in the job market.',
+      "Language proficiency is crucial for career advancement and global opportunities. Our language training programs are designed to help individuals master languages, making them more competitive in the job market.",
   },
-]
+];
 
 const CORPORATE_SERVICES = [
   {
-    title: 'Recruitment Partner',
+    title: "Recruitment Partner",
     icon: Handshake,
     description:
       "Streamline the hiring process, connecting you with top talent tailored to your specific needs. We leverage extensive industry expertise and a vast network to find candidates who align with your company's values and goals.",
   },
   {
-    title: 'Corporate Training',
+    title: "Corporate Training",
     icon: Presentation,
     description:
-      'For freshers provide comprehensive onboarding programs designed to equip new hires with essential skills, foster seamless integration into the corporate environment, and enhance their professional development from day one.',
+      "For freshers provide comprehensive onboarding programs designed to equip new hires with essential skills, foster seamless integration into the corporate environment, and enhance their professional development from day one.",
   },
-]
+];
 
 const PROCESS_STEPS = [
   {
-    step: '01',
+    step: "01",
     icon: FileSearch,
-    title: 'Evaluate',
+    title: "Evaluate",
     description:
-      'We identify skills, spot gaps, and align learning with career goals to build a strong foundation.',
+      "We identify skills, spot gaps, and align learning with career goals to build a strong foundation.",
   },
   {
-    step: '02',
+    step: "02",
     icon: UserRoundCog,
-    title: 'Customize',
+    title: "Customize",
     description:
-      'We design a focused, industry-aligned curriculum tailored to real-world demands and learner objectives.',
+      "We design a focused, industry-aligned curriculum tailored to real-world demands and learner objectives.",
   },
   {
-    step: '03',
+    step: "03",
     icon: HandFist,
-    title: 'Empower',
+    title: "Empower",
     description:
-      'Hands-on training led by industry professionals using live projects, case studies, and practical tools.',
+      "Hands-on training led by industry professionals using live projects, case studies, and practical tools.",
   },
   {
-    step: '04',
+    step: "04",
     icon: Rocket,
-    title: 'Launch',
+    title: "Launch",
     description:
-      'Final assessments, career guidance, and placement support to transform learners into job-ready professionals.',
+      "Final assessments, career guidance, and placement support to transform learners into job-ready professionals.",
   },
-]
+];
 
 /*
  * iconUrl → lucide component.
@@ -136,26 +137,26 @@ const ICON_COMPONENTS = {
   Rocket,
   UserRoundCog,
   UsersRound,
-}
+};
 
 const ICON_LOOKUP = Object.entries(ICON_COMPONENTS).reduce(
   (acc, [name, component]) => {
-    acc[name.toLowerCase()] = component
-    return acc
+    acc[name.toLowerCase()] = component;
+    return acc;
   },
   {},
-)
+);
 
 function iconFromUrl(iconUrl) {
-  if (typeof iconUrl !== 'string') return undefined
+  if (typeof iconUrl !== "string") return undefined;
 
-  const basename = iconUrl.split(/[\\/]/).pop() ?? ''
+  const basename = iconUrl.split(/[\\/]/).pop() ?? "";
   const key = basename
-    .replace(/\.[a-z0-9]+$/i, '')
-    .replace(/[^a-z0-9]/gi, '')
-    .toLowerCase()
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase();
 
-  return key ? ICON_LOOKUP[key] : undefined
+  return key ? ICON_LOOKUP[key] : undefined;
 }
 
 /**
@@ -164,7 +165,7 @@ function iconFromUrl(iconUrl) {
  * (`[]`) are therefore indistinguishable, and all three keep the static copy.
  */
 function resolveList(live, fallback) {
-  return Array.isArray(live) && live.length > 0 ? live : fallback
+  return Array.isArray(live) && live.length > 0 ? live : fallback;
 }
 
 /**
@@ -177,7 +178,7 @@ function toServiceCard(item, fallbackIcon) {
     title: item.title,
     description: item.description,
     icon: iconFromUrl(item.iconUrl) ?? fallbackIcon,
-  }
+  };
 }
 
 /*
@@ -190,7 +191,7 @@ function toServiceCard(item, fallbackIcon) {
  * on the risers, above on the droppers — costs them all equally and keeps the
  * four boxes identical, which is what the reference shows.
  */
-const STEP_OFFSETS = ['lg:mb-10', 'lg:mt-10', 'lg:mb-10', 'lg:mt-10']
+const STEP_OFFSETS = ["lg:mb-10", "lg:mt-10", "lg:mb-10", "lg:mt-10"];
 
 /*
  * Band photography. Both files are stock placeholders — real photographs, but
@@ -198,9 +199,9 @@ const STEP_OFFSETS = ['lg:mb-10', 'lg:mt-10', 'lg:mb-10', 'lg:mt-10']
  * source and licence, and swap in LeSuccess's own before launch.
  */
 const BAND_IMAGES = {
-  institutions: '/service/institutions.jpg',
-  corporate: '/service/corporate.jpg',
-}
+  institutions: "/service/institutions.jpg",
+  corporate: "/service/corporate.jpg",
+};
 
 /**
  * A service band: a short photograph panel carrying the heading, with the card
@@ -228,7 +229,10 @@ function ServiceBand({ id, labelledBy, image, heading, children }) {
           className="absolute inset-0 bg-cover bg-center saturate-[0.35]"
           style={{ backgroundImage: `url(${image})` }}
         />
-        <div aria-hidden="true" className="band-overlay-navy absolute inset-0 bg-[#07405C]/85" />
+        <div
+          aria-hidden="true"
+          className="band-overlay-navy absolute inset-0 bg-[#07405C]/85"
+        />
 
         <div className="relative mx-auto max-w-6xl px-5 sm:px-8">{heading}</div>
       </div>
@@ -238,7 +242,7 @@ function ServiceBand({ id, labelledBy, image, heading, children }) {
         {children}
       </div>
     </section>
-  )
+  );
 }
 
 /**
@@ -250,7 +254,7 @@ function ServiceBand({ id, labelledBy, image, heading, children }) {
  * them and owns nothing but the copy.
  */
 export default function ServicePage() {
-  const reduced = useReducedMotion()
+  const reduced = useReducedMotion();
 
   /*
    * Live content. Both hooks swallow their own failures into an empty list, so
@@ -260,36 +264,36 @@ export default function ServicePage() {
    * arrive.
    */
   const { institution: liveInstitution, corporate: liveCorporate } =
-    useServiceOfferings()
-  const { steps: liveSteps } = useProcessSteps()
+    useServiceOfferings();
+  const { steps: liveSteps } = useProcessSteps();
 
   const institutionServices = useMemo(() => {
-    const live = resolveList(liveInstitution, null)
-    if (!live) return INSTITUTION_SERVICES
+    const live = resolveList(liveInstitution, null);
+    if (!live) return INSTITUTION_SERVICES;
     return live.map((item, index) =>
       toServiceCard(item, INSTITUTION_SERVICES[index]?.icon),
-    )
-  }, [liveInstitution])
+    );
+  }, [liveInstitution]);
 
   const corporateServices = useMemo(() => {
-    const live = resolveList(liveCorporate, null)
-    if (!live) return CORPORATE_SERVICES
+    const live = resolveList(liveCorporate, null);
+    if (!live) return CORPORATE_SERVICES;
     return live.map((item, index) =>
       toServiceCard(item, CORPORATE_SERVICES[index]?.icon),
-    )
-  }, [liveCorporate])
+    );
+  }, [liveCorporate]);
 
   const processSteps = useMemo(() => {
-    const live = resolveList(liveSteps, null)
-    if (!live) return PROCESS_STEPS
+    const live = resolveList(liveSteps, null);
+    if (!live) return PROCESS_STEPS;
     return live.map((item, index) => ({
       // The cards show "01".."04"; the backend sends an int stepNumber.
-      step: String(item.stepNumber ?? index + 1).padStart(2, '0'),
+      step: String(item.stepNumber ?? index + 1).padStart(2, "0"),
       title: item.title,
       description: item.description,
       icon: iconFromUrl(item.iconUrl) ?? PROCESS_STEPS[index]?.icon,
-    }))
-  }, [liveSteps])
+    }));
+  }, [liveSteps]);
 
   /*
    * "You looking for?" options — the page's own service names rather than
@@ -304,13 +308,13 @@ export default function ServicePage() {
         label: title,
       })),
     [institutionServices, corporateServices],
-  )
+  );
 
   useDocumentMeta({
-    title: 'Services — LeSuccess Academy',
+    title: "Services — LeSuccess Academy",
     description:
-      'We partner with corporates and educational institutions to deliver industry-relevant skills, workforce training and career development solutions.',
-  })
+      "We partner with corporates and educational institutions to deliver industry-relevant skills, workforce training and career development solutions.",
+  });
 
   return (
     <>
@@ -335,8 +339,10 @@ export default function ServicePage() {
             align="center"
             title={
               <>
-                We Don&apos;t Just Train.{' '}
-                <span className="text-[#DF1E26]">We Transform.</span>
+                We Don&apos;t Just Train.{" "}
+                <span className="animate-gradient-text bg-gradient-to-r from-[#DF1E26] via-[#F44246] to-[#CA164B] bg-clip-text text-transparent">
+                  We Transform.
+                </span>
               </>
             }
             lede="We partner with corporates and educational institutions to deliver industry-relevant skills, workforce training and career development solutions."
@@ -394,7 +400,7 @@ export default function ServicePage() {
                 `y`, and framer-motion's inline transform would wipe out a CSS
                 translate mid-hover.
               */
-              className={index % 2 === 1 ? 'sm:mt-10' : 'sm:mb-10'}
+              className={index % 2 === 1 ? "sm:mt-10" : "sm:mb-10"}
             />
           ))}
         </motion.ul>
@@ -437,7 +443,7 @@ export default function ServicePage() {
               icon={service.icon}
               title={service.title}
               description={service.description}
-              className={index % 2 === 1 ? 'md:mt-10' : 'md:mb-10'}
+              className={index % 2 === 1 ? "md:mt-10" : "md:mb-10"}
             />
           ))}
         </motion.ul>
@@ -461,7 +467,10 @@ export default function ServicePage() {
             weight="bold"
             title={
               <>
-                How LeSuccess <span className="text-[#DF1E26]">Drives Success</span>
+                How LeSuccess{" "}
+                <span className="animate-gradient-text bg-gradient-to-r from-[#DF1E26] via-[#F44246] to-[#CA164B] bg-clip-text text-transparent">
+                  Drives Success
+                </span>
               </>
             }
             lede="At LeSuccess, our structured learning framework ensures every learner gains practical skills, confidence, and career-ready expertise."
@@ -492,6 +501,14 @@ export default function ServicePage() {
           ))}
         </motion.ol>
       </section>
+
+      <WaveDivider
+        type="curve"
+        fill="#024D72"
+        direction="down"
+        glow={true}
+        className="-mb-px"
+      />
 
       {/* 5 — Ready to Transform Your Future? */}
       <section
@@ -546,5 +563,5 @@ export default function ServicePage() {
         </div>
       </section>
     </>
-  )
+  );
 }
