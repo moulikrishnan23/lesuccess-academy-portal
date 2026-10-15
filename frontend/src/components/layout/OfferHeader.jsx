@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useCourses from "../../hooks/useCourses.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
 import { SOCIAL_LINKS } from "../../data/socialLinks.js";
+import { ArrowRight, Sparkles } from "lucide-react";
 import {
   BADGE_THEMES,
   getBadgeTheme,
@@ -13,76 +15,35 @@ import {
 } from "../../utils/courseOfferUtils.js";
 
 /**
- * Shown only while GET /api/courses is still in flight, or if it fails outright.
- * Each entry carries its own slug for the same reason the live items do: Enroll
- * Now resolves its target from the item on screen and nothing else.
+ * Fallback offer items if /api/courses is still loading or unavailable.
  */
 const FALLBACK_ITEMS = [
   {
-    badgeType: "Special Offer",
-    badgeTheme: BADGE_THEMES["Special Offer"],
-    text: "Data Analytics Course - 30% Offer 10 Days Only - Limited Seats!",
-    linkLabel: "Enroll Now",
-    linkUrl: "/courses/data-analytics",
-    slug: "data-analytics",
-  },
-  {
-    badgeType: "Trending Course",
-    badgeTheme: BADGE_THEMES["Trending Course"],
-    text: "Python Full Stack Development - Industry-Ready Curriculum with 100% Placement Support!",
-    linkLabel: "Enroll Now",
-    linkUrl: "/courses/python-full-stack-development",
-    slug: "python-full-stack-development",
-  },
-  {
     badgeType: "Most Enrolled",
     badgeTheme: BADGE_THEMES["Most Enrolled"],
-    text: "Java Full Stack Development - Enterprise Spring Boot & Microservices Masterclass!",
+    title: "Full Stack Java",
+    text: "MOST ENROLLED • FULL STACK JAVA",
     linkLabel: "Enroll Now",
     linkUrl: "/courses/full-stack-java",
     slug: "full-stack-java",
   },
-  {
-    badgeType: "High Demand",
-    badgeTheme: BADGE_THEMES["High Demand"],
-    text: "AWS with DevOps Certification - Hands-on Cloud, Docker & Kubernetes Training!",
-    linkLabel: "Enroll Now",
-    linkUrl: "/courses/aws-and-devops",
-    slug: "aws-and-devops",
-  },
 ];
 
 const INTERVAL_MS = 5000;
-const FADE_MS = 400;
 
-const OfferHeader = () => {
+const OfferHeader = ({ offerHeaderRef }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const reduced = useReducedMotion();
   const { courses } = useCourses();
 
   const [index, setIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
   const timerRef = useRef(null);
 
-  /*
-   * The banner rotates through Group 1 - Batch Courses, straight off
-   * GET /api/courses via useCourses. selectBannerCourses applies the same test
-   * the admin Courses tab uses to fill its Group 1 table, so what rotates up here
-   * is exactly what an admin sees listed there.
-   *
-   * It used to prefer GET /api/announcements/active-all whenever that returned
-   * anything, falling back to courses only when it was empty. That path is gone.
-   * An announcement row is free text plus a link — it carries no course identity,
-   * so when it was in use Enroll Now had nothing to navigate to and fell through
-   * to guessing a course by substring-matching the headline. There is also no
-   * admin screen anywhere in the app that can create an announcement, so the
-   * override could only ever be populated by hand-written SQL.
-   */
   const bannerItems = useMemo(() => {
     const bannerCourses = selectBannerCourses(courses);
 
     if (bannerCourses.length === 0) {
-      // Still loading, or no course carries a badge yet.
       return FALLBACK_ITEMS;
     }
 
@@ -90,14 +51,6 @@ const OfferHeader = () => {
       const offerPercentage = getCourseOfferPercentage(course);
       const badgeType = getCourseBadgeType(course, idx);
       const badgeTheme = getBadgeTheme(badgeType, idx);
-
-      /*
-       * Falling back to a hardcoded "data-analytics" here is what made a course
-       * with no slug silently advertise a different course's page. The server
-       * derives slug from the course name on every response, so an empty one
-       * means something is wrong with the record — better to render the item
-       * without a target and let Enroll Now fall back to the catalog.
-       */
       const slug = course.slug || null;
 
       return {
@@ -114,38 +67,22 @@ const OfferHeader = () => {
     });
   }, [courses]);
 
-  // 5-second rotation effect in lockstep
+  // 5-second rotation effect through available courses
   useEffect(() => {
-    if (bannerItems.length <= 1) return undefined;
+    if (bannerItems.length <= 1 || reduced) return undefined;
 
-    let fadeTimeout = null;
     timerRef.current = setInterval(() => {
-      // fade out
-      setVisible(false);
-      fadeTimeout = setTimeout(() => {
-        setIndex((prev) => (prev + 1) % bannerItems.length);
-        // fade in
-        setVisible(true);
-      }, FADE_MS);
+      setIndex((prev) => (prev + 1) % bannerItems.length);
     }, INTERVAL_MS);
 
     return () => {
       clearInterval(timerRef.current);
-      if (fadeTimeout) clearTimeout(fadeTimeout);
     };
-  }, [bannerItems.length]);
+  }, [bannerItems.length, reduced]);
 
-  /*
-   * Modulo, not a reset effect. The list swaps out from under the index when the
-   * catalog arrives (4 fallback items -> however many batch courses there are),
-   * and wrapping keeps the lookup in range without a setState-in-effect that
-   * React now flags as a cascading render. The banner resumes a few positions
-   * into the real list rather than at its start, which nobody can perceive on a
-   * five-second rotation.
-   */
   const current = bannerItems[index % bannerItems.length] ?? FALLBACK_ITEMS[0];
-  const text = current.text ?? FALLBACK_ITEMS[0].text;
-  const badgeTheme = current.badgeTheme ?? BADGE_THEMES["Special Offer"];
+  const badgeType = current.badgeType || "Special Offer";
+  const badgeTheme = current.badgeTheme ?? BADGE_THEMES[badgeType] ?? BADGE_THEMES["Special Offer"];
 
   /** The slug of the course detail page currently open, or null anywhere else. */
   const slugInUrl = useMemo(() => {
@@ -153,24 +90,15 @@ const OfferHeader = () => {
     return match ? match[1] : null;
   }, [location.pathname]);
 
-  /*
-   * Enroll Now goes to the course the banner is showing right now — nothing else.
-   * If already on that course's detail page, smoothly scrolls to #enroll.
-   * If on a different course or any other page, navigates to /courses/${targetSlug}#enroll.
-   */
   const handleEnrollNow = (e) => {
     e?.preventDefault?.();
     const targetSlug = resolveTargetSlug(current);
 
-    // Nothing identifiable to enroll in — send them to the catalog rather than
-    // to some arbitrary course's form.
     if (!targetSlug) {
       navigate("/courses");
       return;
     }
 
-    // Already reading this exact course: scroll to the form in place, which keeps
-    // the page from remounting under the visitor.
     if (slugInUrl === targetSlug) {
       const enrollEl = document.getElementById("enroll");
       if (enrollEl) {
@@ -187,64 +115,42 @@ const OfferHeader = () => {
   };
 
   return (
-    <div className="w-full bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white shadow-xs select-none border-b border-white/10 relative">
-      <div className="mx-auto flex min-h-9 sm:min-h-10 max-w-7xl items-center justify-between gap-1 sm:gap-3 px-2 sm:px-4 lg:px-6 py-1">
-        
-        {/* Left balance spacer on desktop so center content stays perfectly centered */}
-        <div className="hidden lg:flex items-center shrink-0 w-36 xl:w-44" aria-hidden="true" />
-
-        {/* Center: Synchronized dynamic rotating offer badge, copy and CTA */}
-        <div className="flex flex-1 items-center justify-between sm:justify-center gap-1 sm:gap-2.5 lg:gap-3 min-w-0">
-          <span
-            className={`inline-flex items-center rounded-full px-2 sm:px-2.5 py-0.5 text-[8.5px] sm:text-[10px] font-extrabold tracking-wider uppercase border select-none shrink-0 transition-colors duration-300 ease-in-out shadow-2xs backdrop-blur-md ${badgeTheme.badgeClasses}`}
-            style={{
-              opacity: visible ? 1 : 0,
-              transition: `opacity ${FADE_MS}ms ease-in-out, background-color 300ms ease-in-out, border-color 300ms ease-in-out, color 300ms ease-in-out`,
-            }}
-          >
-            {badgeTheme.type}
+    <div className="pointer-events-none fixed inset-x-0 top-2 z-[60] px-4 sm:top-2.5 sm:px-6 lg:px-8">
+      <div
+        ref={offerHeaderRef}
+        className="mx-auto flex w-full max-w-[76rem] flex-col items-start gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4"
+      >
+        <div
+          role="region"
+          aria-label="Featured course offer"
+          className="lesuccess-offer pointer-events-auto flex h-auto min-h-10 w-fit max-w-full min-w-0 items-center gap-2 rounded-2xl border border-white/25 bg-[#DF1E26] px-2.5 py-1 text-white shadow-[0_8px_28px_rgba(2,31,48,0.18)] sm:min-h-10 sm:py-1 sm:rounded-full sm:px-3.5 lg:max-w-[calc(100%-14rem)]"
+        >
+          <Sparkles aria-hidden="true" size={15} className="shrink-0 text-white" />
+          <span className={`hidden shrink-0 items-center rounded-full border px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] transition-colors duration-300 md:inline-flex ${badgeTheme.badgeClasses}`}>
+            {badgeType}
           </span>
-
           <p
-            className="text-[10px] sm:text-xs md:text-sm font-semibold tracking-tight sm:tracking-normal leading-[1.15] sm:leading-tight line-clamp-2 lg:line-clamp-1 min-w-0 flex-1 sm:flex-initial sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl text-center px-1"
-            style={{
-              opacity: visible ? 1 : 0,
-              transition: `opacity ${FADE_MS}ms ease-in-out`,
-            }}
-            title={text}
+            className="min-w-0 max-w-[calc(100vw-8rem)] flex-1 text-[10px] font-semibold leading-tight tracking-wide sm:text-xs lg:max-w-[min(48vw,620px)]"
+            title={current.text || current.title}
           >
-            {text}
+            {current.text || current.title}
           </p>
-
           <button
             type="button"
             onClick={handleEnrollNow}
-            className="
-              rounded-full
-              bg-white
-              px-2.5 sm:px-3.5
-              py-0.5 sm:py-1
-              text-[9.5px] sm:text-xs
-              font-extrabold
-              text-[#DF1E26]
-              shadow-[0_2px_10px_rgba(0,0,0,0.12)]
-              transition-all
-              duration-200
-              hover:bg-slate-50
-              hover:shadow-[0_4px_14px_rgba(0,0,0,0.2)]
-              hover:scale-105
-              active:scale-95
-              cursor-pointer
-              shrink-0
-              whitespace-nowrap
-            "
+            aria-label={`Enroll Now in ${current.title || current.badgeType}`}
+            className="inline-flex shrink-0 motion-safe:animate-[pulse_1.2s_ease-in-out_infinite] items-center gap-1 rounded-md bg-white px-2 py-0.5 text-[9.5px] font-bold text-[#DF1E26] shadow-xs transition duration-200 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#DF1E26] active:scale-95 sm:rounded-lg sm:px-3 sm:py-1 sm:text-xs"
           >
-            Enroll Now
+            <span>Enroll Now</span>
+            <ArrowRight aria-hidden="true" size={13} className="transition-transform group-hover:translate-x-0.5" />
           </button>
         </div>
 
-        {/* Right: Official LeSuccess Social Media Links */}
-        <div className="hidden lg:flex items-center gap-1 sm:gap-1.5 shrink-0 w-36 xl:w-44 justify-end">
+        <div
+          role="group"
+          aria-label="LeSuccess social media"
+          className="pointer-events-auto flex shrink-0 items-center justify-end gap-1 self-end sm:gap-1.5 lg:self-auto"
+        >
           {SOCIAL_LINKS.map((item) => {
             const Icon = item.icon;
             return (
@@ -255,14 +161,13 @@ const OfferHeader = () => {
                 rel="noopener noreferrer"
                 aria-label={`LeSuccess on ${item.name}`}
                 title={`Follow LeSuccess on ${item.name}`}
-                className={`inline-flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-xs transition hover:bg-white/25 hover:scale-110 active:scale-95 ${item.hoverClass}`}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/80 bg-white text-[#07405C] shadow-[0_4px_18px_rgba(7,64,92,0.16)] transition-all hover:-translate-y-0.5 hover:text-[#DF1E26] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DF1E26] focus-visible:ring-offset-2 sm:h-8 sm:w-8 lg:h-9 lg:w-9"
               >
-                <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <Icon aria-hidden="true" className="h-4 w-4" />
               </a>
             );
           })}
         </div>
-
       </div>
     </div>
   );

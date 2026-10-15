@@ -124,14 +124,13 @@ const AppContent = () => {
   // Navbar visibility while scrolling
   const [navbarVisible, setNavbarVisible] = useState(true);
 
-  // Desktop vs mobile viewport tracking (breakpoint >= 1024px / lg)
-  const [isDesktop, setIsDesktop] = useState(
-    typeof window !== "undefined" ? window.innerWidth >= 1024 : true
+  const [isCompactHeader, setIsCompactHeader] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
   );
 
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
+      setIsCompactHeader(window.innerWidth < 1024);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -322,27 +321,6 @@ const AppContent = () => {
     };
   }, []);
 
-  /*
-   * =========================================================
-   * NAVBAR POSITION
-   * =========================================================
-   *
-   * Navbar always stays below OfferHeader on desktop.
-   */
-
-  const navbarTop = offerHeaderHeight;
-
-  /*
-   * =========================================================
-   * TOTAL HEADER HEIGHT (DESKTOP)
-   * =========================================================
-   *
-   * Reserves space in the page so the fixed desktop
-   * headers don't cover the page content.
-   */
-
-  const totalHeaderHeight =
-    offerHeaderHeight + navbarHeight;
 
   /*
    * =========================================================
@@ -354,88 +332,66 @@ const AppContent = () => {
     root.style.setProperty("--offer-header-h", `${offerHeaderHeight}px`);
     root.style.setProperty("--navbar-h", `${navbarHeight}px`);
 
-    // On mobile (< 1024px), navbar is fixed at the BOTTOM of the viewport.
-    // The only fixed element at the top of the mobile viewport is OfferHeader.
-    // On desktop (>= 1024px), navbar is fixed at the TOP below OfferHeader.
-    // When desktop navbar hides on scroll down (navbarVisible === false),
-    // the only visible top element is OfferHeader.
+    // On compact layouts, socials wrap beneath the offer. At lg and wider they
+    // share the offer row. Include the floating nav's gap and top inset.
+    const topInset = offerHeaderRef.current?.getBoundingClientRect().top ?? (isCompactHeader ? 8 : 10);
+    const navbarGap = isCompactHeader ? 8 : 10;
+    if (offerHeaderHeight > 0) {
+      root.style.setProperty(
+        "--navbar-top",
+        `${topInset + offerHeaderHeight + navbarGap}px`
+      );
+    }
     const currentHeader =
-      offerHeaderHeight + (isDesktop && navbarVisible ? navbarHeight : 0);
+      topInset + offerHeaderHeight + (navbarVisible ? navbarGap + navbarHeight : 0);
 
     root.style.setProperty("--app-header", `${currentHeader}px`);
     root.style.setProperty(
       "--app-header-max",
-      `${offerHeaderHeight + (isDesktop ? navbarHeight : 0)}px`
+      `${topInset + offerHeaderHeight + navbarGap + navbarHeight}px`
     );
-  }, [offerHeaderHeight, navbarHeight, navbarVisible, isDesktop]);
+  }, [offerHeaderHeight, navbarHeight, navbarVisible, isCompactHeader]);
 
   return (
     <div className="min-h-screen bg-surface text-ink transition-colors duration-200">
       {/* =====================================================
-          OFFER HEADER (ALWAYS FIXED & VISIBLE)
+          OFFER STRIP AND SOCIAL LINKS
+          - The offer strip stays visible while scrolling.
+          - Social links stay visible independently of the scroll-responsive navbar.
       ===================================================== */}
-
       {!isDashboard && (
-        <div
-          ref={offerHeaderRef}
-          className="fixed left-0 top-0 z-60 w-full shadow-xs"
-        >
-          <OfferHeader />
-        </div>
+        <OfferHeader
+          offerHeaderRef={offerHeaderRef}
+        />
       )}
 
       {/* =====================================================
-          NAVBAR:
-          - On mobile (< 1024px): Fixed at BOTTOM of viewport,
-            always visible.
-          - On desktop (>= 1024px): Fixed at TOP below OfferHeader,
-            scroll-responsive (hides on scroll down, shows on scroll up).
+          FLOATING PILL NAVBAR:
+          - Centered floating pill navbar inspired by Reference Image 2
+          - Hides on scroll down, reappears on scroll up / top.
       ===================================================== */}
-
       {!isDashboard && (
         <div
           ref={navbarRef}
-          className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-            isDesktop
-              ? navbarVisible
-                ? "translate-y-0 opacity-100 shadow-xs"
-                : "-translate-y-full opacity-0 pointer-events-none"
-              : "translate-y-0 opacity-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+          className={`fixed top-[var(--navbar-top,6.5rem)] lg:top-[var(--navbar-top,3.75rem)] inset-x-4 sm:inset-x-6 lg:inset-x-8 z-40 flex justify-center transition-[transform,opacity] duration-300 ease-in-out ${
+            navbarVisible
+              ? "translate-y-0 opacity-100 pointer-events-auto"
+              : "-translate-y-28 opacity-0 pointer-events-none"
           }`}
-          style={{
-            top: isDesktop ? `${navbarTop}px` : "auto",
-            bottom: isDesktop ? "auto" : "0px",
-          }}
         >
-          <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
+          <div className="w-full max-w-[76rem]">
+            <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
+          </div>
         </div>
       )}
 
       {/* =====================================================
           TOP HEADER SPACE:
-          - On mobile (< 1024px): Spacer height is ONLY offerHeaderHeight,
-            so Hero / page content starts IMMEDIATELY below OfferHeader!
-          - On desktop (>= 1024px): Spacer height is totalHeaderHeight
-            (offerHeaderHeight + navbarHeight), so content starts below Navbar.
+          - On Home page (/), Hero starts edge-to-edge at top: 0 with internal padding.
+          - On other public pages, add spacer so floating navbar doesn't cover content.
       ===================================================== */}
-
-      {!isDashboard && (
-        <>
-          <div
-            aria-hidden="true"
-            className="block lg:hidden"
-            style={{
-              height: `${offerHeaderHeight}px`,
-            }}
-          />
-          <div
-            aria-hidden="true"
-            className="hidden lg:block"
-            style={{
-              height: `${totalHeaderHeight}px`,
-            }}
-          />
-        </>
+      {!isDashboard && location.pathname !== "/" && (
+        <div aria-hidden="true" className="w-full" style={{ height: "calc(var(--app-header-max, 148px) + 1rem)" }} />
       )}
 
       {/* =====================================================
