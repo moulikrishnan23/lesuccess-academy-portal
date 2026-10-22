@@ -11,7 +11,6 @@ import {
   ChevronDown,
   CheckCircle2,
   GraduationCap,
-  Code2,
 } from "lucide-react";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import useSiteSettings from "../../hooks/useSiteSettings.js";
@@ -20,14 +19,12 @@ import {
   staggerContainer,
   motionSafe,
 } from "../../animations/variants.js";
-import { FloatingTechBadge } from "../ui/BackgroundMotion.jsx";
 import AnimatedCounter from "../ui/AnimatedCounter.jsx";
 import Magnetic from "../ui/Magnetic.jsx";
 import SpotlightCard from "../ui/SpotlightCard.jsx";
 import ParticleConstellation from "../ui/ParticleConstellation.jsx";
 import TypewriterText from "../ui/TypewriterText.jsx";
 import WaveDivider from "../ui/WaveDivider.jsx";
-import ParallaxLayer from "../ui/ParallaxLayer.jsx";
 
 const DEFAULT_VIDEO_URL =
   "https://res.cloudinary.com/mknetwyg/video/upload/v1791267704/lesuccess/video/CompanyIntroNew.mp4";
@@ -235,78 +232,6 @@ const HeroVideo = () => {
             className="z-[4]"
           />
         </motion.div>
-
-        {/* Floating Ambient Tech Badges with Independent Multi-Plane Parallax Depth */}
-        <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden hidden md:block">
-          <div className="relative mx-auto max-w-7xl h-full">
-            <ParallaxLayer
-              speed={-0.35}
-              range={75}
-              className="pointer-events-auto absolute top-12 left-4 xl:left-8"
-            >
-              <FloatingTechBadge
-                icon={Code2}
-                title="Full Stack & AI"
-                subtitle="MERN • Python • Cloud"
-                accentColor="navy"
-                className="shadow-xl"
-                duration={4.2}
-                yOffset={12}
-              />
-            </ParallaxLayer>
-
-            <ParallaxLayer
-              speed={0.4}
-              range={80}
-              className="pointer-events-auto absolute top-14 right-4 xl:right-8"
-            >
-              <FloatingTechBadge
-                icon={Award}
-                title="100% Placement Assurance"
-                subtitle="Direct Campus Drives"
-                accentColor="brand"
-                className="shadow-xl"
-                duration={5}
-                delay={0.5}
-                yOffset={14}
-              />
-            </ParallaxLayer>
-
-            <ParallaxLayer
-              speed={-0.25}
-              range={65}
-              className="pointer-events-auto absolute bottom-24 left-6 xl:left-12 hidden lg:inline-flex"
-            >
-              <FloatingTechBadge
-                icon={Sparkles}
-                title="4.9/5 Student Rating"
-                subtitle="Over 37K+ Certified Alumni"
-                accentColor="amber"
-                className="shadow-xl"
-                duration={4.6}
-                delay={1}
-                yOffset={10}
-              />
-            </ParallaxLayer>
-
-            <ParallaxLayer
-              speed={0.35}
-              range={75}
-              className="pointer-events-auto absolute bottom-28 right-6 xl:right-12 hidden lg:inline-flex"
-            >
-              <FloatingTechBadge
-                icon={Building2}
-                title="150+ Hiring Partners"
-                subtitle="Direct Tech Recruitment"
-                accentColor="emerald"
-                className="shadow-xl"
-                duration={5.2}
-                delay={1.5}
-                yOffset={12}
-              />
-            </ParallaxLayer>
-          </div>
-        </div>
 
         {/* 3. HERO CONTENT - Positioned on Top of Background Video & Overlay */}
         <div className="relative z-10 mx-auto max-w-6xl px-6 sm:px-10 lg:px-8 my-auto w-full">

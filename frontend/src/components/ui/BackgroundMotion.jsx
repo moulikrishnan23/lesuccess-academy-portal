@@ -156,6 +156,29 @@ export function SectionHeading({
   );
 }
 
+const BADGE_COLORS = {
+  brand: {
+    bg: "bg-white/95 border-[#DF1E26]/25 shadow-[0_10px_25px_rgba(223,30,38,0.18)]",
+    iconBg: "bg-[#DF1E26]/10 text-[#DF1E26]",
+    dot: "bg-[#DF1E26]",
+  },
+  navy: {
+    bg: "bg-white/95 border-[#07405C]/25 shadow-[0_10px_25px_rgba(7,64,92,0.18)]",
+    iconBg: "bg-[#07405C]/10 text-[#07405C]",
+    dot: "bg-[#07405C]",
+  },
+  emerald: {
+    bg: "bg-white/95 border-emerald-500/25 shadow-[0_10px_25px_rgba(16,185,129,0.18)]",
+    iconBg: "bg-emerald-50 text-emerald-600",
+    dot: "bg-emerald-500",
+  },
+  amber: {
+    bg: "bg-white/95 border-amber-500/25 shadow-[0_10px_25px_rgba(245,158,11,0.18)]",
+    iconBg: "bg-amber-50 text-amber-600",
+    dot: "bg-amber-500",
+  },
+};
+
 /**
  * Floating decorative tech badge inspired by Xplore IT Corp's floating cloudBob/SVGs.
  * Adds tactile depth and energetic micro-motion around heroes and key cards.
@@ -163,6 +186,7 @@ export function SectionHeading({
 export function FloatingTechBadge({
   icon: Icon,
   title,
+  label,
   subtitle,
   className = "",
   delay = 0,
@@ -171,30 +195,26 @@ export function FloatingTechBadge({
   accentColor = "brand", // 'brand' | 'navy' | 'emerald' | 'amber'
 }) {
   const reduced = useReducedMotion();
+  const colors = BADGE_COLORS[accentColor] || BADGE_COLORS.brand;
+  const displayTitle = title || label || "";
 
-  const colors =
-    {
-      brand: {
-        bg: "bg-white/95 border-[#DF1E26]/25 shadow-[0_10px_25px_rgba(223,30,38,0.18)]",
-        iconBg: "bg-[#DF1E26]/10 text-[#DF1E26]",
-        dot: "bg-[#DF1E26]",
-      },
-      navy: {
-        bg: "bg-white/95 border-[#07405C]/25 shadow-[0_10px_25px_rgba(7,64,92,0.18)]",
-        iconBg: "bg-[#07405C]/10 text-[#07405C]",
-        dot: "bg-[#07405C]",
-      },
-      emerald: {
-        bg: "bg-white/95 border-emerald-500/25 shadow-[0_10px_25px_rgba(16,185,129,0.18)]",
-        iconBg: "bg-emerald-50 text-emerald-600",
-        dot: "bg-emerald-500",
-      },
-      amber: {
-        bg: "bg-white/95 border-amber-500/25 shadow-[0_10px_25px_rgba(245,158,11,0.18)]",
-        iconBg: "bg-amber-50 text-amber-600",
-        dot: "bg-amber-500",
-      },
-    }[accentColor] || colors.brand;
+  const renderIcon = () => {
+    if (!Icon) return null;
+    if (typeof Icon === "string") {
+      return (
+        <img
+          src={Icon}
+          alt=""
+          width="20"
+          height="20"
+          className="h-5 w-5 object-contain"
+          loading="lazy"
+        />
+      );
+    }
+    const IconComponent = Icon;
+    return <IconComponent size={18} />;
+  };
 
   return (
     <motion.div
@@ -218,7 +238,7 @@ export function FloatingTechBadge({
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold shadow-2xs ${colors.iconBg}`}
         >
-          <Icon size={18} />
+          {renderIcon()}
         </div>
       )}
       <div className="text-left">
@@ -227,7 +247,7 @@ export function FloatingTechBadge({
             className={`h-1.5 w-1.5 rounded-full ${colors.dot} animate-pulse`}
           />
           <h4 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight leading-none">
-            {title}
+            {displayTitle}
           </h4>
         </div>
         {subtitle && (

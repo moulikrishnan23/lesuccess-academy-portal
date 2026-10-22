@@ -26,10 +26,7 @@ import {
   ITEM_IN_VIEW,
   motionSafe,
 } from "../../animations/variants.js";
-import {
-  FloatingTechBadge,
-  GlowHalo,
-} from "../../components/ui/BackgroundMotion.jsx";
+import { GlowHalo } from "../../components/ui/BackgroundMotion.jsx";
 import SpotlightCard from "../../components/ui/SpotlightCard.jsx";
 import BorderBeam from "../../components/ui/BorderBeam.jsx";
 
@@ -76,15 +73,17 @@ function getCourseTechPills(course) {
 ========================================================= */
 
 function CourseCard({ course, column, reduced }) {
-  const duration = splitDuration(course.durationValue, course.durationUnit);
+  const duration = splitDuration(course?.durationValue, course?.durationUnit);
   const batchCode =
-    course.batch ||
-    course.batchCode ||
-    course.code ||
-    course.courseCode ||
-    course.badgeLabel ||
-    course.badgeText ||
-    (course.badge ? course.badge.replace(/_/g, " ") : null);
+    course?.batch ||
+    course?.batchCode ||
+    course?.code ||
+    course?.courseCode ||
+    course?.badgeLabel ||
+    course?.badgeText ||
+    (typeof course?.badge === "string"
+      ? course.badge.replace(/_/g, " ")
+      : null);
   const hasBatch = Boolean(batchCode && String(batchCode).trim().length > 0);
   const techPills = getCourseTechPills(course);
 
@@ -409,33 +408,39 @@ export default function CourseCatalogPage() {
       "Explore job-focused technology and career programs in Full Stack, Data Science, Cloud, DevOps, and Business with live projects and 100% placement guidance.",
   });
 
+  const safeCourses = useMemo(() => {
+    if (Array.isArray(courses)) return courses;
+    if (Array.isArray(courses?.content)) return courses.content;
+    return [];
+  }, [courses]);
+
   // Derive unique categories dynamically
   const categories = useMemo(() => {
     const set = new Set();
-    courses.forEach((c) => {
+    safeCourses.forEach((c) => {
       const cat = c.categoryGroup || c.category;
       if (cat && typeof cat === "string" && cat.trim()) {
         set.add(cat.trim());
       }
     });
     return Array.from(set).sort();
-  }, [courses]);
+  }, [safeCourses]);
 
   // Count items per category
   const categoryCounts = useMemo(() => {
-    const counts = { ALL: courses.length };
-    courses.forEach((c) => {
+    const counts = { ALL: safeCourses.length };
+    safeCourses.forEach((c) => {
       const cat = c.categoryGroup || c.category;
       if (cat) {
         counts[cat] = (counts[cat] || 0) + 1;
       }
     });
     return counts;
-  }, [courses]);
+  }, [safeCourses]);
 
   // Filtered courses based on search & category
   const filteredCourses = useMemo(() => {
-    return courses.filter((c) => {
+    return safeCourses.filter((c) => {
       const cat = c.categoryGroup || c.category || "";
       const matchesCategory =
         selectedCategory === "ALL" || cat === selectedCategory;
@@ -461,7 +466,7 @@ export default function CourseCatalogPage() {
         techStackStr.includes(query)
       );
     });
-  }, [courses, selectedCategory, searchQuery]);
+  }, [safeCourses, selectedCategory, searchQuery]);
 
   const handleResetFilters = () => {
     setSearchQuery("");
@@ -475,47 +480,11 @@ export default function CourseCatalogPage() {
       ========================================================= */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-5 py-18 sm:px-8 lg:px-16 text-white text-center">
         {/* Decorative Glow Halos */}
-        <GlowHalo color="#DF1E26" size={360} top="-15%" left="15%" delay={0} />
+        <GlowHalo color="#DF1E26" size="360px" className="-top-24 left-1/4" />
         <GlowHalo
           color="#38bdf8"
-          size={380}
-          bottom="-15%"
-          right="10%"
-          delay={2}
-        />
-
-        {/* Floating Ambient Tech Badges (Xplore IT Corp / Cloudious style) */}
-        <FloatingTechBadge
-          label="Java FullStack"
-          icon="/tech/java.svg"
-          top="18%"
-          left="4%"
-          delay={0.2}
-          className="hidden xl:flex"
-        />
-        <FloatingTechBadge
-          label="Python AI"
-          icon="/tech/python.svg"
-          top="22%"
-          right="4%"
-          delay={1.4}
-          className="hidden xl:flex"
-        />
-        <FloatingTechBadge
-          label="AWS Cloud"
-          icon="/tech/aws.svg"
-          bottom="16%"
-          left="5%"
-          delay={2.1}
-          className="hidden xl:flex"
-        />
-        <FloatingTechBadge
-          label="React 19"
-          icon="/tech/react.svg"
-          bottom="14%"
-          right="5%"
-          delay={0.8}
-          className="hidden xl:flex"
+          size="380px"
+          className="-bottom-24 right-1/4"
         />
 
         <div className="relative z-10 mx-auto max-w-4xl">
@@ -614,7 +583,7 @@ export default function CourseCatalogPage() {
                   : "bg-slate-100 text-slate-500"
               }`}
             >
-              {categoryCounts.ALL || courses.length}
+              {categoryCounts.ALL || safeCourses.length}
             </span>
           </button>
 
@@ -665,7 +634,9 @@ export default function CourseCatalogPage() {
                 {filteredCourses.length}
               </span>{" "}
               of{" "}
-              <span className="font-bold text-slate-800">{courses.length}</span>{" "}
+              <span className="font-bold text-slate-800">
+                {safeCourses.length}
+              </span>{" "}
               programs
               {searchQuery && (
                 <span> matching &ldquo;{searchQuery}&rdquo;</span>
