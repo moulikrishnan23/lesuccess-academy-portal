@@ -380,17 +380,12 @@ export default function Contact() {
                   </div>
                 </div>
 
-                {/* Submit button: Pill shaped, prominent with laser shimmer sheen */}
-                <div className="pt-3">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white font-bold py-3.5 px-10 rounded-full hover:brightness-105 active:scale-95 transition-all shadow-md hover:shadow-xl disabled:opacity-60 cursor-pointer animate-shimmer-sweep btn-glow-brand"
+                {/* Submit button: Pill shaped, centered in middle with laser shimmer sheen */}
+                <div className="pt-3 flex justify-center">
+                  <Magnetic
+                    strength={0.25}
+                    className="w-full sm:w-auto flex justify-center"
                   >
-                    {isSubmitting ? "Sending..." : "Send Message"}{" "}
-                    <Send size={16} />
-                  </button>
-                  <Magnetic strength={0.25}>
                     <button
                       type="submit"
                       disabled={isSubmitting}

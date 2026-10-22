@@ -6,9 +6,9 @@ import {
   Copy,
   Check,
   Sparkles,
-  Terminal,
   Eye,
   Layers,
+  User,
 } from "lucide-react";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import BorderBeam from "../ui/BorderBeam.jsx";
@@ -102,167 +102,148 @@ function highlightCode(code) {
 
 const PRESETS = [
   {
-    id: "card",
-    name: "Glow Card",
+    id: "hello",
+    name: "Hello World",
     icon: Sparkles,
-    code: `<div class="tech-card">
-  <div class="tag">🔥 FullStack & AI</div>
-  <h3>Build Scalable Web Apps</h3>
-  <p>Live project training with 1-on-1 mentor guidance.</p>
-  <button class="cta-btn" onclick="alert('Welcome to LeSuccess Academy!')">
-    Enroll Today →
+    code: `<div class="card">
+  <h1>Hello LeSuccess! 👋</h1>
+  <p>Start learning HTML & CSS today.</p>
+  <button onclick="alert('Welcome to LeSuccess Academy! 🚀')">
+    Click Me!
   </button>
 </div>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  .tech-card {
-    background: linear-gradient(135deg, #07405C 0%, #022030 100%);
-    border: 1px solid rgba(56, 189, 248, 0.45);
-    border-radius: 16px;
-    padding: 16px 18px;
-    color: #ffffff;
-    font-family: system-ui, -apple-system, sans-serif;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  body {
+    background-color: #021a24;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 16px;
   }
-  .tag {
-    display: inline-block;
-    background: rgba(223, 30, 38, 0.25);
-    border: 1px solid #DF1E26;
-    color: #ff6b6b;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 99px;
+  .card {
+    background-color: #07405c;
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #38bdf8;
+  }
+  h1 {
+    font-size: 20px;
+    color: #38bdf8;
     margin-bottom: 8px;
   }
-  h3 {
-    margin: 4px 0 6px;
-    font-size: 16px;
-    font-weight: 800;
-    color: #ffffff;
-  }
   p {
-    margin: 0 0 12px;
-    font-size: 12px;
-    line-height: 1.4;
-    color: #cbd5e1;
+    font-size: 13px;
+    color: #e2e8f0;
+    margin-bottom: 14px;
   }
-  .cta-btn {
-    background: linear-gradient(90deg, #DF1E26, #CA164B);
-    color: #ffffff;
+  button {
+    background-color: #df1e26;
+    color: white;
     border: none;
-    padding: 7px 14px;
+    padding: 8px 18px;
     border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 13px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(223, 30, 38, 0.45);
-    transition: transform 0.2s;
   }
-  .cta-btn:hover {
-    transform: scale(1.05);
+  button:hover {
+    background-color: #ca164b;
   }
 </style>`,
   },
   {
-    id: "neon-button",
-    name: "Neon Button",
+    id: "button",
+    name: "Button Alert",
     icon: Play,
     code: `<div class="box">
-  <button class="neon-btn">
-    <span class="pulse-dot"></span>
-    <span>⚡ ACCELERATE CAREER</span>
+  <h2>Interactive Button</h2>
+  <p>Click below to test JavaScript:</p>
+  <button onclick="alert('You clicked the button! 🎉')">
+    ⚡ Click Me
   </button>
 </div>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #0b1120;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
   .box {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 26px 10px;
-    background: #02121d;
+    background-color: #1e293b;
+    padding: 20px;
     border-radius: 12px;
   }
-  .neon-btn {
-    position: relative;
-    background: #07405c;
-    color: #38bdf8;
-    border: 2px solid #38bdf8;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.25s ease;
+  h2 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 6px;
   }
-  .neon-btn:hover {
-    background: #38bdf8;
+  p {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  button {
+    background-color: #38bdf8;
     color: #07405c;
-    box-shadow: 0 0 35px rgba(56, 189, 248, 0.85);
-    transform: translateY(-2px);
+    font-weight: bold;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
   }
-  .pulse-dot {
-    width: 8px;
-    height: 8px;
-    background: #22c55e;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #22c55e;
+  button:hover {
+    background-color: #df1e26;
+    color: white;
   }
 </style>`,
   },
   {
-    id: "terminal",
-    name: "Bash Terminal",
-    icon: Terminal,
-    code: `<div class="terminal">
-  <div class="bar">
-    <span class="dot r"></span>
-    <span class="dot y"></span>
-    <span class="dot g"></span>
-    <span class="title">lesuccess-cli — bash</span>
-  </div>
-  <div class="body">
-    <p><span class="cmd">$</span> npx create-lesuccess-app</p>
-    <p class="status">✓ 150+ Hiring Partners Linked</p>
-    <p class="ready">Ready to deploy your dream job! 🚀</p>
-  </div>
+    id: "badge",
+    name: "Student Card",
+    icon: User,
+    code: `<div class="profile">
+  <div class="avatar">👨‍💻</div>
+  <h3>Alex Kumar</h3>
+  <span class="role">Frontend Developer</span>
+  <p>Learning HTML, CSS & JavaScript</p>
 </div>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  .terminal {
-    background: #090d16;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+  body {
+    background-color: #06101e;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 16px;
+  }
+  .profile {
+    background-color: #0d1e36;
+    color: white;
+    padding: 18px;
     border-radius: 12px;
-    font-family: ui-monospace, SFMono-Regular, monospace;
-    overflow: hidden;
+    border: 1px solid #1e293b;
   }
-  .bar {
-    background: #111827;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    border-bottom: 1px solid #1f2937;
+  .avatar {
+    font-size: 28px;
+    margin-bottom: 4px;
   }
-  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  .r { background: #ef4444; }
-  .y { background: #eab308; }
-  .g { background: #22c55e; }
-  .title { margin-left: 6px; font-size: 10px; color: #9ca3af; }
-  .body { padding: 12px; font-size: 11px; }
-  .cmd { color: #f43f5e; font-weight: bold; margin-right: 4px; }
-  p { margin: 4px 0; color: #e2e8f0; }
-  .status { color: #38bdf8; font-weight: 600; }
-  .ready { color: #4ade80; font-weight: 600; }
+  h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .role {
+    color: #38bdf8;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  p {
+    color: #cbd5e1;
+    font-size: 12px;
+    margin-top: 8px;
+  }
 </style>`,
   },
 ];

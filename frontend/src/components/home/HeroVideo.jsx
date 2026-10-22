@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
@@ -27,8 +27,7 @@ import TypewriterText from "../ui/TypewriterText.jsx";
 import WaveDivider from "../ui/WaveDivider.jsx";
 import LiveHtmlEditor from "./LiveHtmlEditor.jsx";
 
-const DEFAULT_VIDEO_URL =
-  "https://res.cloudinary.com/mknetwyg/video/upload/v1791267704/lesuccess/video/CompanyIntroNew.mp4";
+const DEFAULT_VIDEO_URL = "/video/CompanyIntro.mp4";
 
 const STATS = [
   { value: "37K+", label: "Students Trained", icon: Users },
@@ -53,22 +52,39 @@ const HeroVideo = () => {
 
   // Dynamic hero video settings from database
   const { settings } = useSiteSettings();
-  const videoUrl =
+  const rawVideoUrl =
     settings?.hero_video_url !== undefined
       ? settings.hero_video_url || ""
       : DEFAULT_VIDEO_URL;
   const videoEnabled =
     settings?.hero_video_enabled !== undefined
-      ? settings.hero_video_enabled !== "false" &&
-        Boolean(settings?.hero_video_url)
+      ? settings.hero_video_enabled !== "false"
       : true;
+
+  const [hasError, setHasError] = useState(false);
+  const activeVideoSrc = hasError
+    ? DEFAULT_VIDEO_URL
+    : rawVideoUrl || DEFAULT_VIDEO_URL;
+
+  const handleVideoError = () => {
+    if (!hasError) {
+      console.warn(
+        "Hero video primary source failed, falling back to local /video/CompanyIntro.mp4",
+      );
+      setHasError(true);
+    }
+  };
 
   const START_TIME = 22.0;
 
   // Handle video starting at 22s and looping from 22s
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !videoEnabled || !videoUrl) return undefined;
+    if (!video || !videoEnabled || !activeVideoSrc) return undefined;
+
+    // Ensure audio is muted so browser autoplay policy is always satisfied
+    video.muted = true;
+    video.defaultMuted = true;
 
     let isCancelled = false;
     let initialSeekDone = false;
@@ -85,9 +101,6 @@ const HeroVideo = () => {
             // Seek error ignored
           }
         } else {
-          console.warn(
-            `Hero video duration (${video.duration}s) is shorter than ${START_TIME}s, falling back to 0s.`,
-          );
           try {
             video.currentTime = 0;
           } catch {
@@ -146,7 +159,7 @@ const HeroVideo = () => {
       video.removeEventListener("loadeddata", handleLoadedMetadata);
       video.removeEventListener("ended", handleEnded);
     };
-  }, [videoUrl, videoEnabled]);
+  }, [activeVideoSrc, videoEnabled]);
 
   const scrollToNext = () => {
     const nextSection = document.getElementById("about-section");
@@ -181,7 +194,7 @@ const HeroVideo = () => {
           className="absolute inset-0 z-0 pointer-events-none will-change-transform"
         >
           {/* 1. BACKGROUND VIDEO LAYER */}
-          {videoEnabled && videoUrl && (
+          {videoEnabled && activeVideoSrc && (
             <div className="absolute inset-0 overflow-hidden">
               <video
                 ref={videoRef}
@@ -189,7 +202,8 @@ const HeroVideo = () => {
                 autoPlay
                 muted
                 playsInline
-                src={videoUrl}
+                src={activeVideoSrc}
+                onError={handleVideoError}
                 preload="auto"
                 aria-hidden="true"
               />

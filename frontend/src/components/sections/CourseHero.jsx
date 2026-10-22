@@ -1,19 +1,23 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Download } from 'lucide-react'
-import Button from '../ui/Button.jsx'
-import { downloadSyllabus } from '../../utils/syllabusUtils.js'
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Download } from "lucide-react";
+import Button from "../ui/Button.jsx";
+import { downloadSyllabus } from "../../utils/syllabusUtils.js";
 import {
   BriefcaseIcon,
   CertificateIcon,
   ClockIcon,
   TagIcon,
-} from '../ui/icons.jsx'
-import { fadeUp, motionSafe, staggerContainer } from '../../animations/variants.js'
-import useReducedMotion from '../../hooks/useReducedMotion.js'
-import { formatDuration } from '../../utils/formatters.js'
-import { GlowHalo } from '../ui/BackgroundMotion.jsx'
-import Magnetic from '../ui/Magnetic.jsx'
+} from "../ui/icons.jsx";
+import {
+  fadeUp,
+  motionSafe,
+  staggerContainer,
+} from "../../animations/variants.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
+import { formatDuration } from "../../utils/formatters.js";
+import { GlowHalo } from "../ui/BackgroundMotion.jsx";
+import Magnetic from "../ui/Magnetic.jsx";
 
 /**
  * ASSUMPTION: only the duration pill is backed by data.
@@ -33,20 +37,20 @@ import Magnetic from '../ui/Magnetic.jsx'
  * on courses that do not carry it.
  */
 const STATIC_PROMISES = [
-  { label: 'Certificate Included', Icon: CertificateIcon },
-  { label: 'Affordable Fees', Icon: TagIcon },
-]
+  { label: "Certificate Included", Icon: CertificateIcon },
+  { label: "Affordable Fees", Icon: TagIcon },
+];
 
 /** The pills for one course: the site-wide ones plus whatever the row says. */
 function promisesFor(course) {
-  const promises = [STATIC_PROMISES[0]]
+  const promises = [STATIC_PROMISES[0]];
 
   if (course?.placementAssistance) {
-    promises.push({ label: 'Placement Assistance', Icon: BriefcaseIcon })
+    promises.push({ label: "Placement Assistance", Icon: BriefcaseIcon });
   }
 
-  promises.push(STATIC_PROMISES[1])
-  return promises
+  promises.push(STATIC_PROMISES[1]);
+  return promises;
 }
 
 function StatPill({ label, Icon }) {
@@ -58,7 +62,7 @@ function StatPill({ label, Icon }) {
       <Icon className="shrink-0 text-white/80" width={17} height={17} />
       {label}
     </motion.li>
-  )
+  );
 }
 
 /**
@@ -73,8 +77,8 @@ function StatPill({ label, Icon }) {
  * no wasted request.
  */
 function heroImageFor(course) {
-  if (course.heroImageUrl) return course.heroImageUrl
-  return course.slug ? `/course/hero/${course.slug}.svg` : null
+  if (course.heroImageUrl) return course.heroImageUrl;
+  return course.slug ? `/course/hero/${course.slug}.svg` : null;
 }
 
 /**
@@ -83,8 +87,8 @@ function heroImageFor(course) {
  * Above the fold, so the entrance runs on mount rather than on scroll.
  */
 export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
-  const reduced = useReducedMotion()
-  const duration = formatDuration(course.durationValue, course.durationUnit)
+  const reduced = useReducedMotion();
+  const duration = formatDuration(course.durationValue, course.durationUnit);
 
   /*
     The backdrop is looked up by convention, so whether it exists can only be
@@ -93,9 +97,9 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
     effect — a course whose artwork is missing falls back to the patterned
     navy, and must never show a broken image.
   */
-  const [failedSlug, setFailedSlug] = useState(null)
-  const heroImage = heroImageFor(course)
-  const showImage = Boolean(heroImage) && failedSlug !== course.slug
+  const [failedSlug, setFailedSlug] = useState(null);
+  const heroImage = heroImageFor(course);
+  const showImage = Boolean(heroImage) && failedSlug !== course.slug;
 
   return (
     <section
@@ -165,7 +169,13 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
 
       {/* Decorative ambient Glow Halos */}
       <GlowHalo color="#DF1E26" size={380} top="-15%" left="15%" delay={0} />
-      <GlowHalo color="#38bdf8" size={360} bottom="-15%" right="10%" delay={2} />
+      <GlowHalo
+        color="#38bdf8"
+        size={360}
+        bottom="-15%"
+        right="10%"
+        delay={2}
+      />
 
       <motion.div
         variants={motionSafe(staggerContainer, reduced)}
@@ -197,7 +207,9 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
           className="mt-7 flex list-none flex-wrap items-center justify-center gap-x-7 gap-y-3 p-0"
         >
           {/* Reference renders this as "Duration - 3Months". */}
-          {duration ? <StatPill label={`Duration - ${duration}`} Icon={ClockIcon} /> : null}
+          {duration ? (
+            <StatPill label={`Duration - ${duration}`} Icon={ClockIcon} />
+          ) : null}
           {promisesFor(course).map(({ label, Icon }) => (
             <StatPill key={label} label={label} Icon={Icon} />
           ))}
@@ -207,36 +219,24 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
           variants={fadeUp}
           className="mt-9 flex flex-wrap items-center justify-center gap-4"
         >
-          {/* Both CTAs move the visitor to the enroll form. Neither navigates —
-              the page owns that behaviour and passes it down. */}
-          <Button variant="onDark" size="lg" onClick={onFreeDemoClick} className="active:scale-95">
-            Free Demo
-          </Button>
+          {/* CTAs move the visitor to demo, syllabus download, or enroll */}
           <Magnetic strength={0.25}>
-            <Button variant="onDark" size="lg" onClick={onFreeDemoClick} className="active:scale-95">
+            <Button
+              variant="onDark"
+              size="lg"
+              onClick={onFreeDemoClick}
+              className="active:scale-95"
+            >
               Free Demo
             </Button>
           </Magnetic>
-          
-          <Button
-            variant="onDark"
-            size="lg"
-            onClick={() => downloadSyllabus(course)}
-            title={`Download ${course?.title || 'Course'} Syllabus (PDF)`}
-            className="active:scale-95"
-          >
-            <Download size={16} className="inline mr-1.5" />
-            Download Syllabus
-          </Button>
-          <Button variant="primary" size="lg" onClick={onEnrollClick} shimmer={true} className="animate-shimmer-sweep active:scale-95">
-            Enroll Now
-          </Button>
+
           <Magnetic strength={0.25}>
             <Button
               variant="onDark"
               size="lg"
               onClick={() => downloadSyllabus(course)}
-              title={`Download ${course?.title || 'Course'} Syllabus (PDF)`}
+              title={`Download ${course?.title || "Course"} Syllabus (PDF)`}
               className="active:scale-95"
             >
               <Download size={16} className="inline mr-1.5" />
@@ -245,12 +245,18 @@ export default function CourseHero({ course, onEnrollClick, onFreeDemoClick }) {
           </Magnetic>
 
           <Magnetic strength={0.25}>
-            <Button variant="primary" size="lg" onClick={onEnrollClick} shimmer={true} className="animate-shimmer-sweep active:scale-95">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={onEnrollClick}
+              shimmer={true}
+              className="animate-shimmer-sweep active:scale-95"
+            >
               Enroll Now
             </Button>
           </Magnetic>
         </motion.div>
       </motion.div>
     </section>
-  )
+  );
 }
