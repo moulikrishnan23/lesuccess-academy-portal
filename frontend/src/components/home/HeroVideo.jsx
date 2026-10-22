@@ -25,6 +25,7 @@ import SpotlightCard from "../ui/SpotlightCard.jsx";
 import ParticleConstellation from "../ui/ParticleConstellation.jsx";
 import TypewriterText from "../ui/TypewriterText.jsx";
 import WaveDivider from "../ui/WaveDivider.jsx";
+import LiveHtmlEditor from "./LiveHtmlEditor.jsx";
 
 const DEFAULT_VIDEO_URL =
   "https://res.cloudinary.com/mknetwyg/video/upload/v1791267704/lesuccess/video/CompanyIntroNew.mp4";
@@ -172,7 +173,7 @@ const HeroVideo = () => {
       {/* Integrated Full-Width Hero Section with Background Video */}
       <section
         ref={sectionRef}
-        className="relative w-full min-h-[540px] lg:min-h-[calc(100dvh-var(--app-header-max,116px))] lg:h-[calc(100dvh-var(--app-header-max,116px))] lg:max-h-[840px] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] text-white pt-6 pb-4 sm:pt-8 sm:pb-5 lg:pt-8 lg:pb-4"
+        className="relative w-full min-h-[580px] lg:min-h-[calc(100dvh-var(--app-header-max,116px))] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] text-white pt-6 pb-4 sm:pt-8 sm:pb-5 lg:pt-8 lg:pb-4"
       >
         {/* PARALLAX SCROLL CONTAINER FOR BACKGROUND VIDEO & OVERLAYS */}
         <motion.div
@@ -234,110 +235,130 @@ const HeroVideo = () => {
         </motion.div>
 
         {/* 3. HERO CONTENT - Positioned on Top of Background Video & Overlay */}
-        <div className="relative z-10 mx-auto max-w-6xl px-6 sm:px-10 lg:px-8 my-auto w-full">
-          <motion.div
-            variants={motionSafe(staggerContainer, reduced)}
-            initial="hidden"
-            animate="visible"
-            style={{ y: reduced ? 0 : contentY }}
-            className="text-center max-w-3xl mx-auto will-change-transform"
-          >
-            {/* Top Pill Badge */}
+        <div className="relative z-10 mx-auto max-w-[1440px] 2xl:max-w-[1560px] px-5 sm:px-8 lg:px-10 xl:px-12 2xl:px-16 my-auto w-full py-4 lg:py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-center">
+            {/* Left Column: Headline, Typewriter, Subtitle, CTAs & Trust Highlights */}
             <motion.div
-              variants={motionSafe(fadeUp, reduced)}
-              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-xs mb-3.5 sm:mb-4 lg:mb-3 transition-transform hover:scale-105"
+              variants={motionSafe(staggerContainer, reduced)}
+              initial="hidden"
+              animate="visible"
+              style={{ y: reduced ? 0 : contentY }}
+              className="lg:col-span-6 xl:col-span-6 text-center lg:text-left will-change-transform max-w-2xl mx-auto lg:mx-0"
             >
-              <Sparkles
-                size={13}
-                className="text-[#F44246] animate-spin"
-                style={{ animationDuration: "6s" }}
-              />
-              <span>Accelerate Your Tech Career</span>
-            </motion.div>
-
-            {/* Headline with Dynamic Typewriter Effect */}
-            <motion.h1
-              variants={motionSafe(fadeUp, reduced)}
-              className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[2.65rem] xl:text-[3.15rem] font-extrabold tracking-tight leading-[1.16] text-white"
-            >
-              Master Enterprise Tech Skills In{" "}
-              <span className="block sm:inline-block min-h-[1.25em]">
-                <TypewriterText
-                  phrases={[
-                    "Full Stack & AI Development 🚀",
-                    "Enterprise Cloud & DevOps ☁️",
-                    "Data Science & Analytics 📊",
-                    "100% Placement Assurance 💼",
-                    "Live Production Projects 💻",
-                  ]}
-                  typingSpeed={65}
-                  deletingSpeed={35}
-                  pauseDuration={2400}
-                  className="text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-amber-200 drop-shadow-md"
+              {/* Top Pill Badge */}
+              <motion.div
+                variants={motionSafe(fadeUp, reduced)}
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-xs mb-3.5 sm:mb-4 lg:mb-3 transition-transform hover:scale-105"
+              >
+                <Sparkles
+                  size={13}
+                  className="text-[#F44246] animate-spin"
+                  style={{ animationDuration: "6s" }}
                 />
-              </span>
-            </motion.h1>
+                <span>Accelerate Your Tech Career</span>
+              </motion.div>
 
-            {/* Subheading */}
-            <motion.p
-              variants={motionSafe(fadeUp, reduced)}
-              className="mt-3 sm:mt-4 lg:mt-3 text-sm sm:text-base lg:text-base xl:text-lg text-slate-200 leading-relaxed max-w-2xl mx-auto font-normal drop-shadow-xs"
-            >
-              Coimbatore’s premier tech accelerator for industry-ready
-              developers. Master full-stack skills with expert mentorship and
-              150+ hiring partners.
-            </motion.p>
-
-            {/* Action Buttons with Dynamic Sheen Sweep & Magnetic Physics */}
-            <motion.div
-              variants={motionSafe(fadeUp, reduced)}
-              className="mt-5 sm:mt-6 lg:mt-5 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
-            >
-              <Magnetic strength={0.25} className="w-full sm:w-auto">
-                <Link
-                  to="/courses"
-                  data-cursor-text="Courses"
-                  className="animate-shimmer-sweep btn-glow-brand group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-7 py-3 text-sm sm:text-base font-bold text-white shadow-[0_6px_25px_rgba(244,66,70,0.5)] transition-all duration-300 hover:brightness-110 active:scale-98"
-                >
-                  <span>Explore Courses</span>
-                  <ArrowRight
-                    size={16}
-                    className="transition-transform duration-200 group-hover:translate-x-1"
+              {/* Headline with Dynamic Typewriter Effect */}
+              <motion.h1
+                variants={motionSafe(fadeUp, reduced)}
+                className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[2.5rem] xl:text-[2.95rem] font-extrabold tracking-tight leading-[1.18] text-white"
+              >
+                Master Enterprise Tech Skills
+                <span className="block mt-1 sm:mt-1.5 text-white">
+                  In{" "}
+                  <TypewriterText
+                    phrases={[
+                      { text: "Full Stack & AI Development", icon: "🚀" },
+                      { text: "Enterprise Cloud & DevOps", icon: "☁️" },
+                      { text: "Data Science & Analytics", icon: "📊" },
+                      { text: "100% Placement Assurance", icon: "💼" },
+                      { text: "Live Production Projects", icon: "💻" },
+                    ]}
+                    typingSpeed={65}
+                    deletingSpeed={35}
+                    pauseDuration={2400}
+                    className="animate-gradient-text text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-amber-200 drop-shadow-md"
                   />
-                </Link>
-              </Magnetic>
+                </span>
+              </motion.h1>
 
-              <Magnetic strength={0.25} className="w-full sm:w-auto">
-                <a
-                  href="#demo-class"
-                  onClick={handleBookDemo}
-                  data-cursor-text="Demo"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 bg-white/10 backdrop-blur-md px-7 py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-white/20 hover:border-white/80 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] active:scale-98 cursor-pointer shadow-sm"
-                >
-                  <span>Book Free Demo</span>
-                </a>
-              </Magnetic>
+              {/* Subheading */}
+              <motion.p
+                variants={motionSafe(fadeUp, reduced)}
+                className="mt-3 sm:mt-4 lg:mt-3 text-sm sm:text-base lg:text-base xl:text-lg text-slate-200 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-normal drop-shadow-xs"
+              >
+                Coimbatore’s premier tech accelerator for industry-ready
+                developers. Master full-stack skills with expert mentorship and
+                150+ hiring partners.
+              </motion.p>
+
+              {/* Action Buttons with Dynamic Sheen Sweep & Magnetic Physics */}
+              <motion.div
+                variants={motionSafe(fadeUp, reduced)}
+                className="mt-5 sm:mt-6 lg:mt-5 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4"
+              >
+                <Magnetic strength={0.25} className="w-full sm:w-auto">
+                  <Link
+                    to="/courses"
+                    data-cursor-text="Courses"
+                    className="animate-shimmer-sweep btn-glow-brand group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-7 py-3 text-sm sm:text-base font-bold text-white shadow-[0_6px_25px_rgba(244,66,70,0.5)] transition-all duration-300 hover:brightness-110 active:scale-98"
+                  >
+                    <span>Explore Courses</span>
+                    <ArrowRight
+                      size={16}
+                      className="transition-transform duration-200 group-hover:translate-x-1"
+                    />
+                  </Link>
+                </Magnetic>
+
+                <Magnetic strength={0.25} className="w-full sm:w-auto">
+                  <a
+                    href="#demo-class"
+                    onClick={handleBookDemo}
+                    data-cursor-text="Demo"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 bg-white/10 backdrop-blur-md px-7 py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-white/20 hover:border-white/80 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] active:scale-98 cursor-pointer shadow-sm"
+                  >
+                    <span>Book Free Demo</span>
+                  </a>
+                </Magnetic>
+              </motion.div>
+
+              {/* Trust Highlights Strip with Spring Micro-Interactions */}
+              <motion.div
+                variants={motionSafe(fadeUp, reduced)}
+                className="mt-6 sm:mt-7 lg:mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-2.5 sm:gap-3 lg:gap-3.5 text-xs sm:text-sm font-semibold text-slate-200"
+              >
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md hover:bg-white/20 transition-all hover:scale-105 cursor-default">
+                  <CheckCircle2
+                    size={14}
+                    className="text-emerald-400 shrink-0"
+                  />
+                  <span>100% Placement Assurance</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md hover:bg-white/20 transition-all hover:scale-105 cursor-default">
+                  <GraduationCap
+                    size={14}
+                    className="text-[#F44246] shrink-0"
+                  />
+                  <span>Live Project Mentorship</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md hover:bg-white/20 transition-all hover:scale-105 cursor-default">
+                  <Building2 size={14} className="text-cyan-400 shrink-0" />
+                  <span>150+ Hiring Partners</span>
+                </div>
+              </motion.div>
             </motion.div>
 
-            {/* Trust Highlights Strip with Spring Micro-Interactions */}
+            {/* Right Column: Floating Interactive Live HTML Coding Section */}
             <motion.div
               variants={motionSafe(fadeUp, reduced)}
-              className="mt-6 sm:mt-7 lg:mt-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 lg:gap-5 text-xs sm:text-sm font-semibold text-slate-200"
+              initial="hidden"
+              animate="visible"
+              className="lg:col-span-6 xl:col-span-6 w-full flex justify-center lg:justify-end mt-4 lg:mt-0 xl:translate-x-4 2xl:translate-x-8"
             >
-              <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md hover:bg-white/20 transition-all hover:scale-105 cursor-default">
-                <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
-                <span>100% Placement Assurance</span>
-              </div>
-              <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md hover:bg-white/20 transition-all hover:scale-105 cursor-default">
-                <GraduationCap size={14} className="text-[#F44246] shrink-0" />
-                <span>Live Project Mentorship</span>
-              </div>
-              <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md hover:bg-white/20 transition-all hover:scale-105 cursor-default">
-                <Building2 size={14} className="text-cyan-400 shrink-0" />
-                <span>150+ Hiring Partners</span>
-              </div>
+              <LiveHtmlEditor className="lg:ml-auto" />
             </motion.div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Scroll Down Indicator */}
