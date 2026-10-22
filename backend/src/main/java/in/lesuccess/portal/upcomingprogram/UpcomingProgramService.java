@@ -150,7 +150,7 @@ public class UpcomingProgramService {
 
     @Transactional
     public UpcomingProgramResponse updateOrder(Long id, int targetOrder) {
-        UpcomingProgram program = findOrThrow(id);
+        findOrThrow(id); // validate existence
         List<UpcomingProgram> allPrograms = repository.findAllByOrderByDisplayOrderAscIdAsc();
         List<UpcomingProgram> modified = OrderRebalanceUtil.reorder(
                 allPrograms, id, targetOrder,

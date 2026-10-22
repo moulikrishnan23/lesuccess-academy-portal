@@ -43,7 +43,7 @@ public class GoogleSheetsService {
      * or insert a blank row. Locking per tab rather than on the service keeps the
      * Leads and Contact Messages tabs from serialising against each other.</p>
      */
-    private final Map<String, Object> tabLocks = new ConcurrentHashMap<>();
+    private Map<String, Object> tabLocks = new ConcurrentHashMap<>();
 
     @Value("${lesuccess.sheets.spreadsheet-id}")
     private String spreadsheetId;

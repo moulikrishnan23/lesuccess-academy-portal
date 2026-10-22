@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import './components/motion/motion.css';
+@import './components/home/home-motion.css';
 
 /*
   LeSuccess Academy — design tokens taken from the reference PDFs
@@ -42,6 +44,24 @@
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
   --radius-card: 0.75rem;
+
+  /*
+    Lower-home redesign (docs/mockup/lower-home.html). The mockup carries its
+    own early palette; it is NOT the source of truth. Its effects are re-derived
+    here from the tokens above, so nothing below introduces a new colour.
+  */
+  /* EASE_OUT in src/animations/variants.js, for CSS-driven motion. */
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The mockup's 28px card radius (bento, carousels, feature panels). */
+  --radius-bento: 1.75rem;
+  /* Navy-tinted elevation steps, resting → lifted. */
+  --shadow-lift-sm: 0 1px 2px color-mix(in srgb, var(--color-navy-900) 6%, transparent),
+    0 4px 12px color-mix(in srgb, var(--color-navy-900) 6%, transparent);
+  --shadow-lift-md: 0 2px 4px color-mix(in srgb, var(--color-navy-900) 5%, transparent),
+    0 12px 32px color-mix(in srgb, var(--color-navy-900) 10%, transparent);
+  --shadow-lift-lg: 0 4px 8px color-mix(in srgb, var(--color-navy-900) 6%, transparent),
+    0 24px 56px color-mix(in srgb, var(--color-navy-900) 16%, transparent);
+  --shadow-glow-brand: 0 10px 40px color-mix(in srgb, var(--color-brand) 28%, transparent);
 }
 
 :root {
@@ -56,6 +76,14 @@
   --color-line-strong: #cfd9e3;
   --color-nav-bg: rgba(255, 255, 255, 0.95);
   --color-nav-border: rgba(226, 232, 240, 0.8);
+
+  /*
+    Not Tailwind utilities (gradients have no @theme namespace), so they live on
+    :root. Both are built from the approved stops: brand #DF1E26 → #CA164B and
+    navy #0b2a45 → #07405C.
+  */
+  --gradient-brand: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-deep) 100%);
+  --gradient-navy: linear-gradient(135deg, var(--color-navy-900) 0%, var(--color-navy-800) 60%, var(--color-navy-600) 130%);
 }
 
 @layer base {

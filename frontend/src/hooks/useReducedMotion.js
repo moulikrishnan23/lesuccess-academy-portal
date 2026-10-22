@@ -12,6 +12,17 @@ function getSnapshot() {
   return window.matchMedia(QUERY).matches
 }
 
+/**
+ * The same answer as the hook, for code that runs outside React's render cycle
+ * (rAF loops, canvas bursts, event handlers). Reads the one QUERY above so the
+ * hook and its imperative callers can never disagree.
+ */
+export function prefersReducedMotion() {
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? getSnapshot()
+    : false
+}
+
 // SSR / prerender has no matchMedia; assume motion is fine and let the client
 // correct it on hydration.
 function getServerSnapshot() {
