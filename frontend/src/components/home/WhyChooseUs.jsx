@@ -59,12 +59,12 @@ const features = [
 
 const WhyChooseUs = () => {
   return (
-    <section className="relative w-full bg-[#F8FAFC] px-6 py-14 sm:py-20 border-y border-slate-100/80 overflow-hidden transition-colors duration-200">
+    <section className="relative w-full bg-[#F8FAFC] pt-14 sm:pt-20 pb-0 border-t border-slate-100/80 overflow-hidden transition-colors duration-200">
       {/* Purposeful Background Motion: Floating Orbs & Tech Grid */}
       <FloatingOrbs variant="full" />
       <TechGrid opacity="opacity-[0.03]" />
 
-      <div className="relative z-10 mx-auto max-w-6xl text-center">
+      <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-6 text-center">
         {/* Section Header with Eyebrow, Animated Line and Typography Hierarchy */}
         <SectionHeading
           badge="WHY CHOOSE LESUCCESS"
@@ -144,12 +144,12 @@ const WhyChooseUs = () => {
         </ScrollReveal>
       </div>
 
-      {/* Curved SVG Wave Divider to Where Students Work */}
+      {/* Curved SVG Wave Divider to Demo Class (seamless zero-gap transition) */}
       <WaveDivider
         type="wave"
         fill="#024D72"
         glow={true}
-        className="-mb-14 sm:-mb-20 mt-12 sm:mt-16 z-20 relative"
+        className="z-20 relative w-full block mt-12 sm:mt-16 -mb-[2px]"
       />
     </section>
   );

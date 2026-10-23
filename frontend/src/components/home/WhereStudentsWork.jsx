@@ -120,7 +120,7 @@ const WhereStudentsWork = () => {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#024D72] via-[#07405C] to-[#022a3d] py-18 sm:py-24 transition-colors duration-200">
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#024D72] via-[#07405C] to-[#022a3d] pt-18 sm:pt-24 pb-0 transition-colors duration-200">
       {/* Dynamic ambient pulsing halo light sources */}
       <GlowHalo
         color="#DF1E26"
@@ -208,12 +208,12 @@ const WhereStudentsWork = () => {
       {/* Row 2 - scrolls right continuously */}
       <MarqueeRow companies={row2} direction="right" duration={28} />
 
-      {/* Fluid Wave Divider Transition to Course Catalog */}
+      {/* Fluid Wave Divider Transition to Course Catalog (seamless zero-gap transition) */}
       <WaveDivider
         type="wave"
         fill="#F5F8FC"
         glow={true}
-        className="-mb-18 sm:-mb-24 mt-12 sm:mt-16 z-20 relative"
+        className="z-20 relative w-full block mt-12 sm:mt-16 -mb-[2px]"
       />
 
       {/* Keyframes for the seamless loop */}

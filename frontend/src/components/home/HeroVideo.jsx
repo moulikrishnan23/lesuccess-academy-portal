@@ -1,6 +1,11 @@
 import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  AnimatePresence,
+} from "framer-motion";
 import {
   Users,
   Building2,
@@ -11,6 +16,7 @@ import {
   ChevronDown,
   CheckCircle2,
   GraduationCap,
+  Code2,
 } from "lucide-react";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import useSiteSettings from "../../hooks/useSiteSettings.js";
@@ -40,6 +46,7 @@ const HeroVideo = () => {
   const reduced = useReducedMotion();
   const videoRef = useRef(null);
   const sectionRef = useRef(null);
+  const [isEditorMinimized, setIsEditorMinimized] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -182,11 +189,11 @@ const HeroVideo = () => {
   };
 
   return (
-    <div className="w-full bg-[#07405C]">
+    <div className="w-full bg-white">
       {/* Integrated Full-Width Hero Section with Background Video */}
       <section
         ref={sectionRef}
-        className="relative w-full min-h-[580px] lg:min-h-[calc(100dvh-var(--app-header-max,116px))] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] text-white pt-6 pb-4 sm:pt-8 sm:pb-5 lg:pt-8 lg:pb-4"
+        className="relative w-full min-h-[580px] lg:min-h-[calc(100dvh-var(--app-header-max,116px))] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] text-white pt-6 sm:pt-8 lg:pt-8 pb-0"
       >
         {/* PARALLAX SCROLL CONTAINER FOR BACKGROUND VIDEO & OVERLAYS */}
         <motion.div
@@ -250,19 +257,33 @@ const HeroVideo = () => {
 
         {/* 3. HERO CONTENT - Positioned on Top of Background Video & Overlay */}
         <div className="relative z-10 mx-auto max-w-[1440px] 2xl:max-w-[1560px] px-5 sm:px-8 lg:px-10 xl:px-12 2xl:px-16 my-auto w-full py-4 lg:py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-center">
-            {/* Left Column: Headline, Typewriter, Subtitle, CTAs & Trust Highlights */}
+          <div
+            className={`transition-all duration-500 items-center ${
+              isEditorMinimized
+                ? "flex flex-col items-center justify-center text-center max-w-4xl mx-auto"
+                : "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12"
+            }`}
+          >
+            {/* Left Column / Centered Column: Headline, Typewriter, Subtitle, CTAs & Trust Highlights */}
             <motion.div
+              layout
+              transition={{ type: "spring", stiffness: 260, damping: 26 }}
               variants={motionSafe(staggerContainer, reduced)}
               initial="hidden"
               animate="visible"
               style={{ y: reduced ? 0 : contentY }}
-              className="lg:col-span-6 xl:col-span-6 text-center lg:text-left will-change-transform max-w-2xl mx-auto lg:mx-0"
+              className={`will-change-transform transition-all duration-500 ${
+                isEditorMinimized
+                  ? "w-full text-center max-w-3xl mx-auto flex flex-col items-center"
+                  : "lg:col-span-6 xl:col-span-6 text-center lg:text-left max-w-2xl mx-auto lg:mx-0"
+              }`}
             >
               {/* Top Pill Badge */}
               <motion.div
                 variants={motionSafe(fadeUp, reduced)}
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-xs mb-3.5 sm:mb-4 lg:mb-3 transition-transform hover:scale-105"
+                className={`inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-xs mb-3.5 sm:mb-4 lg:mb-3 transition-transform hover:scale-105 ${
+                  isEditorMinimized ? "mx-auto" : ""
+                }`}
               >
                 <Sparkles
                   size={13}
@@ -275,7 +296,9 @@ const HeroVideo = () => {
               {/* Headline with Dynamic Typewriter Effect */}
               <motion.h1
                 variants={motionSafe(fadeUp, reduced)}
-                className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[2.5rem] xl:text-[2.95rem] font-extrabold tracking-tight leading-[1.18] text-white"
+                className={`font-display text-3xl sm:text-4xl md:text-5xl lg:text-[2.5rem] xl:text-[2.95rem] font-extrabold tracking-tight leading-[1.18] text-white ${
+                  isEditorMinimized ? "text-center" : ""
+                }`}
               >
                 Master Enterprise Tech Skills
                 <span className="block mt-1 sm:mt-1.5 text-white">
@@ -299,7 +322,11 @@ const HeroVideo = () => {
               {/* Subheading */}
               <motion.p
                 variants={motionSafe(fadeUp, reduced)}
-                className="mt-3 sm:mt-4 lg:mt-3 text-sm sm:text-base lg:text-base xl:text-lg text-slate-200 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-normal drop-shadow-xs"
+                className={`mt-3 sm:mt-4 lg:mt-3 text-sm sm:text-base lg:text-base xl:text-lg text-slate-200 leading-relaxed font-normal drop-shadow-xs ${
+                  isEditorMinimized
+                    ? "max-w-2xl mx-auto text-center"
+                    : "max-w-2xl mx-auto lg:mx-0"
+                }`}
               >
                 Coimbatore’s premier tech accelerator for industry-ready
                 developers. Master full-stack skills with expert mentorship and
@@ -309,7 +336,11 @@ const HeroVideo = () => {
               {/* Action Buttons with Dynamic Sheen Sweep & Magnetic Physics */}
               <motion.div
                 variants={motionSafe(fadeUp, reduced)}
-                className="mt-5 sm:mt-6 lg:mt-5 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4"
+                className={`mt-5 sm:mt-6 lg:mt-5 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 ${
+                  isEditorMinimized
+                    ? "justify-center"
+                    : "justify-center lg:justify-start"
+                }`}
               >
                 <Magnetic strength={0.25} className="w-full sm:w-auto">
                   <Link
@@ -340,7 +371,11 @@ const HeroVideo = () => {
               {/* Trust Highlights Strip with Spring Micro-Interactions */}
               <motion.div
                 variants={motionSafe(fadeUp, reduced)}
-                className="mt-6 sm:mt-7 lg:mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-2.5 sm:gap-3 lg:gap-3.5 text-xs sm:text-sm font-semibold text-slate-200"
+                className={`mt-6 sm:mt-7 lg:mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3 lg:gap-3.5 text-xs sm:text-sm font-semibold text-slate-200 ${
+                  isEditorMinimized
+                    ? "justify-center"
+                    : "justify-center lg:justify-start"
+                }`}
               >
                 <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md hover:bg-white/20 transition-all hover:scale-105 cursor-default">
                   <CheckCircle2
@@ -364,16 +399,64 @@ const HeroVideo = () => {
             </motion.div>
 
             {/* Right Column: Floating Interactive Live HTML Coding Section */}
-            <motion.div
-              variants={motionSafe(fadeUp, reduced)}
-              initial="hidden"
-              animate="visible"
-              className="lg:col-span-6 xl:col-span-6 w-full flex justify-center lg:justify-end mt-4 lg:mt-0 xl:translate-x-4 2xl:translate-x-8"
-            >
-              <LiveHtmlEditor className="lg:ml-auto" />
-            </motion.div>
+            <AnimatePresence>
+              {!isEditorMinimized && (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.95, x: 20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, x: 40 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="lg:col-span-6 xl:col-span-6 w-full flex justify-center lg:justify-end mt-4 lg:mt-0 xl:translate-x-4 2xl:translate-x-8"
+                >
+                  <LiveHtmlEditor
+                    onMinimize={() => setIsEditorMinimized(true)}
+                    className="lg:ml-auto"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
+
+        {/* Sticky Minimized Code Editor Launcher on Right Side Middle of Page */}
+        <AnimatePresence>
+          {isEditorMinimized && (
+            <motion.button
+              type="button"
+              initial={{ x: 80, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 80, opacity: 0 }}
+              whileHover={{ x: -4, scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsEditorMinimized(false)}
+              title="Open Live HTML Code Editor"
+              aria-label="Open Live HTML Code Editor"
+              className="fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center gap-2.5 rounded-l-2xl border-l-2 border-y-2 border-[#38bdf8]/60 bg-slate-950/95 py-3 pl-3.5 pr-4 text-white shadow-[0_10px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(56,189,248,0.35)] backdrop-blur-xl transition cursor-pointer group hover:border-[#38bdf8] hover:bg-slate-900"
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="absolute -inset-1 rounded-full bg-[#38bdf8]/30 blur-xs group-hover:bg-[#38bdf8]/50 animate-pulse" />
+                <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#07405c] to-[#022030] border border-[#38bdf8]/60 text-[#38bdf8] shadow-inner">
+                  <Code2
+                    size={16}
+                    className="group-hover:rotate-12 transition-transform duration-300"
+                  />
+                </span>
+              </div>
+              <div className="flex flex-col text-left">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#38bdf8]">
+                    Live Code
+                  </span>
+                </div>
+                <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">
+                  Open Editor →
+                </span>
+              </div>
+            </motion.button>
+          )}
+        </AnimatePresence>
 
         {/* Scroll Down Indicator */}
         <div className="relative z-10 mt-4 sm:mt-5 lg:mt-4 mb-1 flex justify-center">
@@ -403,12 +486,12 @@ const HeroVideo = () => {
           </button>
         </div>
 
-        {/* Dynamic Curved Wave Transition to Stats Strip */}
+        {/* Dynamic Curved Wave Transition to Stats Strip (seamless zero-gap transition) */}
         <WaveDivider
           type="wave"
           fill="#ffffff"
           glow={true}
-          className="z-20 relative -mb-1"
+          className="z-20 relative w-full block mt-auto -mb-[2px]"
         />
       </section>
 

@@ -9,6 +9,7 @@ import {
   Eye,
   Layers,
   User,
+  X,
 } from "lucide-react";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import BorderBeam from "../ui/BorderBeam.jsx";
@@ -253,7 +254,7 @@ const PRESETS = [
  * Features live code editing, instant sandboxed preview, preset components,
  * tab toggles, and VS Code-inspired macOS dark terminal styling.
  */
-export default function LiveHtmlEditor({ className = "" }) {
+export default function LiveHtmlEditor({ className = "", onMinimize }) {
   const reduced = useReducedMotion();
   const [activePreset, setActivePreset] = useState(PRESETS[0].id);
   const [code, setCode] = useState(PRESETS[0].code);
@@ -368,9 +369,21 @@ export default function LiveHtmlEditor({ className = "" }) {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-slate-900/90 px-3.5 py-2.5 sm:px-4">
           {/* Traffic Lights + File Tab */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5" aria-hidden="true">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56] inline-block shadow-xs" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e] inline-block shadow-xs" />
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={onMinimize}
+                title="Close Code Editor"
+                aria-label="Close Code Editor"
+                className="h-2.5 w-2.5 rounded-full bg-[#ff5f56] inline-block shadow-xs hover:opacity-80 active:scale-90 cursor-pointer transition"
+              />
+              <button
+                type="button"
+                onClick={onMinimize}
+                title="Minimize Code Editor"
+                aria-label="Minimize Code Editor"
+                className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e] inline-block shadow-xs hover:opacity-80 active:scale-90 cursor-pointer transition"
+              />
               <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f] inline-block shadow-xs" />
             </div>
 
@@ -381,7 +394,7 @@ export default function LiveHtmlEditor({ className = "" }) {
             </div>
           </div>
 
-          {/* Live Runner Status & View Mode Toggles */}
+          {/* Live Runner Status & View Mode Toggles & Red Close Button */}
           <div className="flex items-center gap-2">
             <div className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full">
               <span
@@ -434,6 +447,19 @@ export default function LiveHtmlEditor({ className = "" }) {
                 <span className="hidden sm:inline">Preview</span>
               </button>
             </div>
+
+            {/* Red Color Close / Minimize Button in Top Right Corner */}
+            {onMinimize && (
+              <button
+                type="button"
+                onClick={onMinimize}
+                title="Minimize Live Code Editor"
+                aria-label="Minimize Live Code Editor"
+                className="ml-0.5 sm:ml-1 inline-flex items-center justify-center h-6 w-6 rounded-md bg-[#DF1E26]/20 hover:bg-[#DF1E26] text-[#ff6b6b] hover:text-white border border-[#DF1E26]/40 transition-all cursor-pointer shadow-xs active:scale-95"
+              >
+                <X size={13} strokeWidth={2.5} />
+              </button>
+            )}
           </div>
         </div>
 
