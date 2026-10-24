@@ -75,9 +75,9 @@ const WhereStudentsWork = () => {
           lead="Leading tech enterprises and top hiring partners trust LeSuccess Academy alumni for critical industry roles."
         />
       </div>
-      <Marquee label="Hiring partners" speed={38} items={logoCards(row1, "a")} />
+      <Marquee alwaysMove label="Hiring partners" speed={38} items={logoCards(row1, "a")} />
       <div style={{ marginTop: "1rem" }}>
-        <Marquee reverse label="More hiring partners" speed={44} items={logoCards(row2, "b")} />
+        <Marquee alwaysMove reverse label="More hiring partners" speed={44} items={logoCards(row2, "b")} />
       </div>
     </section>
   );

@@ -2,13 +2,13 @@ import { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import {
   ArrowRight,
   Briefcase,
-  CalendarDays,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   MapPin,
   User,
   Video,
+  Wrench,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
@@ -21,11 +21,114 @@ import { Reveal } from "../motion/index.js";
 const INTERVAL_MS = 7000;
 
 const CATEGORIES = [
-  { id: "ALL", label: "All Events" },
   { id: "WEBINAR", label: "Webinars" },
   { id: "WORKSHOP", label: "Workshops" },
   { id: "INTERNSHIP", label: "Internships" },
 ];
+
+/*
+ * What each section shows while nothing of that type is scheduled: what the
+ * program is, without inventing dates. Real programs from the admin panel
+ * replace it as soon as one of that type is published.
+ */
+const TYPE_PREVIEW = {
+  WEBINAR: {
+    icon: Video,
+    chips: ["Live Q&A", "Expert mentors", "Free entry"],
+    tag: "Free Webinars",
+    title: "Live webinars with industry mentors",
+    description:
+      "Interview skills, career talks and tech deep-dives, streamed live with time for your questions. New sessions are announced here first.",
+    details: [
+      ["Schedule", "Announced soon"],
+      ["Mode", "Online · Google Meet"],
+      ["Fee", "Free"],
+    ],
+  },
+  WORKSHOP: {
+    icon: Wrench,
+    chips: ["Hands-on", "Small groups", "Take-home project"],
+    tag: "Hands-on Workshops",
+    title: "Build-along workshops on campus",
+    description:
+      "Small-group sessions where you code alongside a trainer and leave with a working project of your own.",
+    details: [
+      ["Schedule", "Announced soon"],
+      ["Mode", "Offline · LeSuccess campus"],
+      ["Seats", "Limited"],
+    ],
+  },
+  INTERNSHIP: {
+    icon: Briefcase,
+    chips: ["Real projects", "Mentor reviews", "Experience letter"],
+    tag: "Internship Program",
+    title: "Industry internship program",
+    description:
+      "Guided real-world projects with mentors, ending with an experience certificate. The next batch is announced on enrollment.",
+    details: [
+      ["Duration", "Announced on enrollment"],
+      ["Mode", "Offline / Online"],
+      ["Seats", "Limited"],
+    ],
+  },
+};
+
+/** A section with nothing scheduled yet: the program, and a way to hear first. */
+function TypePreview({ type, onRetry }) {
+  const preview = TYPE_PREVIEW[type];
+  const Icon = preview.icon;
+  return (
+    <article className="lh-feat">
+      <div className="lh-feat-media lh-feat-art" aria-hidden="true">
+        <span className="lh-art-ring lh-art-ring--1" />
+        <span className="lh-art-ring lh-art-ring--2" />
+        <span className="lh-art-icon">
+          <Icon size={44} strokeWidth={1.75} />
+        </span>
+        <span className="lh-art-label">{preview.tag}</span>
+        <div className="lh-art-chips">
+          {preview.chips.map((chip, i) => (
+            <span key={chip} style={{ "--i": i }}>{chip}</span>
+          ))}
+        </div>
+      </div>
+      <div className="lh-feat-body">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="lh-badge">{preview.tag}</span>
+          <span className="text-xs font-bold text-slate-500">Next batch coming soon</span>
+        </div>
+        <h3>{preview.title}</h3>
+        <p>{preview.description}</p>
+        <div className="lh-details">
+          {preview.details.map(([label, value]) => (
+            <div key={label}>
+              {label}
+              <b>{value}</b>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <a href="#connect-with-us-section" className="lh-btn lh-btn-a">
+            Get notified
+            <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
+          </a>
+          <span className="lh-cert-tag">
+            <CheckCircle2 size={18} aria-hidden="true" />
+            Certificate Included
+          </span>
+        </div>
+        {onRetry && (
+          <p className="text-xs text-slate-500">
+            The live schedule could not be loaded.{" "}
+            <button type="button" onClick={onRetry} className="font-bold text-[#07405C] underline underline-offset-2">
+              Try again
+            </button>
+          </p>
+        )}
+      </div>
+    </article>
+  );
+}
 
 const TYPE_TAG = {
   WEBINAR: "Free Webinar",
@@ -160,7 +263,8 @@ export default function UpcomingPrograms() {
   const { programs } = useAppData();
   const { status, data: allPrograms, refetch } = programs;
   const loading = status === "loading";
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  // Until the visitor picks a tab, open the first type that has events.
+  const [pickedCategory, setPickedCategory] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [direction, setDirection] = useState(1);
@@ -195,16 +299,26 @@ export default function UpcomingPrograms() {
     });
   };
 
-  const filteredPrograms = useMemo(() => {
-    if (selectedCategory === "ALL") return allPrograms;
-    return allPrograms.filter(
-      (p) => (p.type || "").toUpperCase() === selectedCategory,
-    );
-  }, [allPrograms, selectedCategory]);
+  const countByType = useMemo(() => {
+    const counts = {};
+    for (const p of allPrograms) {
+      const type = (p.type || "").toUpperCase();
+      counts[type] = (counts[type] || 0) + 1;
+    }
+    return counts;
+  }, [allPrograms]);
+
+  const selectedCategory =
+    pickedCategory ?? CATEGORIES.find((c) => countByType[c.id])?.id ?? "WEBINAR";
+
+  const filteredPrograms = useMemo(
+    () => allPrograms.filter((p) => (p.type || "").toUpperCase() === selectedCategory),
+    [allPrograms, selectedCategory],
+  );
 
   const handleCategoryChange = (cat) => {
     if (cat === selectedCategory) return;
-    setSelectedCategory(cat);
+    setPickedCategory(cat);
     setCurrentIndex(0);
   };
 
@@ -299,48 +413,13 @@ export default function UpcomingPrograms() {
         </div>
       </div>
     );
-  } else if (status === "error") {
-    body = (
-      <div className="lh-ev-empty" role="status">
-        <div className="lh-ev-empty-icon">
-          <CalendarDays size={40} aria-hidden="true" />
-        </div>
-        <h3>Unable to load upcoming programs</h3>
-        <p>We could not connect to the server to load scheduled events. Please check your network and retry.</p>
-        <button type="button" onClick={refetch} className="lh-btn lh-btn-n">
-          Retry
-        </button>
-      </div>
-    );
-  } else if (allPrograms.length === 0) {
-    body = (
-      <div className="lh-ev-empty" role="status">
-        <div className="lh-ev-empty-icon">
-          <CalendarDays size={40} aria-hidden="true" />
-        </div>
-        <h3>No upcoming programs right now</h3>
-        <p>
-          New webinars, workshops and internships are listed here as soon as
-          they are scheduled. Meanwhile, book a free 1-on-1 live demo.
-        </p>
-        <a href="#demo-class" className="lh-btn lh-btn-a">
-          Book Free Demo
-          <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
-        </a>
-      </div>
-    );
   } else if (filteredPrograms.length === 0) {
     body = (
-      <div className="lh-ev-empty" role="status">
-        <p>No upcoming {selectedCategory.toLowerCase()}s scheduled at the moment.</p>
-        <button
-          type="button"
-          onClick={() => handleCategoryChange("ALL")}
-          className="lh-btn lh-btn-o lh-btn-sm"
-        >
-          View all upcoming events ({allPrograms.length})
-        </button>
-      </div>
+      <TypePreview
+        key={selectedCategory}
+        type={selectedCategory}
+        onRetry={status === "error" ? refetch : null}
+      />
     );
   } else {
     body = (
@@ -502,24 +581,23 @@ export default function UpcomingPrograms() {
           lead="Gain industry exposure, build hands-on projects, and learn live from experienced tech mentors."
         />
 
-        {!loading && status !== "error" && allPrograms.length > 0 && (
-          <Reveal>
-            <div ref={tabsRef} className="lh-tabs" role="tablist" aria-label="Event type">
-              <span ref={indicatorRef} className="lh-tab-ind" aria-hidden="true" />
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={selectedCategory === cat.id}
-                  onClick={() => handleCategoryChange(cat.id)}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </Reveal>
-        )}
+        <Reveal>
+          <div ref={tabsRef} className="lh-tabs" role="tablist" aria-label="Event type">
+            <span ref={indicatorRef} className="lh-tab-ind" aria-hidden="true" />
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedCategory === cat.id}
+                onClick={() => handleCategoryChange(cat.id)}
+              >
+                {cat.label}
+                {countByType[cat.id] > 0 && <span className="lh-tab-count">{countByType[cat.id]}</span>}
+              </button>
+            ))}
+          </div>
+        </Reveal>
 
         <Reveal>{body}</Reveal>
       </div>

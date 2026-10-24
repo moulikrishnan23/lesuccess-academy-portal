@@ -1,24 +1,23 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Images } from "lucide-react";
+import { ArrowRight, Images, Maximize2 } from "lucide-react";
 import ImageLightboxModal from "../common/ImageLightboxModal.jsx";
 import SectionHead from "./SectionHead.jsx";
-import { Marquee, Reveal } from "../motion/index.js";
+import { Reveal } from "../motion/index.js";
 
-// Masonry heights vary per photo so the columns stagger like the mockup.
 const PHOTOS = [
-  { imageUrl: "/images/gallery/gallery-3.png", caption: "Signing ceremony", height: 220 },
-  { imageUrl: "/images/gallery/gallery-6.png", caption: "LeSuccess team leadership", height: 160 },
-  { imageUrl: "/images/gallery/gallery-4.png", caption: "Campus celebration and activities", height: 200 },
-  { imageUrl: "/images/gallery/gallery-5.png", caption: "Campus academic building", height: 170 },
-  { imageUrl: "/images/gallery/gallery-1.png", caption: "LeSuccess faculty", height: 230 },
-  { imageUrl: "/images/gallery/gallery-2.png", caption: "Certification ceremony", height: 150 },
+  { imageUrl: "/images/gallery/gallery-3.png", caption: "Signing ceremony" },
+  { imageUrl: "/images/gallery/gallery-6.png", caption: "LeSuccess team leadership" },
+  { imageUrl: "/images/gallery/gallery-4.png", caption: "Campus celebration and activities" },
+  { imageUrl: "/images/gallery/gallery-5.png", caption: "Campus academic building" },
+  { imageUrl: "/images/gallery/gallery-1.png", caption: "LeSuccess faculty" },
+  { imageUrl: "/images/gallery/gallery-2.png", caption: "Certification ceremony" },
 ];
 
 /**
- * "Life at LeSuccess" (spec: docs/mockup/lower-home.html, #gallery): a photo
- * strip drifting the other way, then a masonry grid whose tiles open the shared
- * lightbox.
+ * "Life at LeSuccess": an even grid of campus photos inside the page column
+ * (3 across on desktop, 2 on tablets and phones), each opening the shared
+ * lightbox. One set of photos, all tiles the same shape, so every edge lines up.
  */
 export default function LifeAtLeSuccess() {
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -38,36 +37,27 @@ export default function LifeAtLeSuccess() {
             {PHOTOS.length} photos
           </span>
         </SectionHead>
-      </div>
 
-      <Marquee
-        reverse
-        speed={50}
-        gap="1rem"
-        items={PHOTOS.map((photo) => (
-          <div key={photo.imageUrl} className="lh-photo">
-            <img src={photo.imageUrl} alt="" loading="lazy" />
-          </div>
-        ))}
-      />
-
-      <div className="lh-wrap">
-        <div className="lh-mason">
+        <div className="lh-gal">
           {PHOTOS.map((photo, i) => (
             <Reveal key={photo.imageUrl} index={i % 3}>
               <button
                 type="button"
+                className="lh-gal-tile"
                 aria-label={`Open photo: ${photo.caption}`}
-                style={{ height: photo.height }}
                 onClick={() => setLightboxIndex(i)}
               >
                 <img src={photo.imageUrl} alt={photo.caption} loading="lazy" />
+                <span className="lh-gal-cap" aria-hidden="true">
+                  {photo.caption}
+                  <Maximize2 size={14} />
+                </span>
               </button>
             </Reveal>
           ))}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-10 text-center">
           <Link to="/gallery" className="lh-btn lh-btn-a">
             Explore Full Gallery
             <ArrowRight size={18} className="lh-arr" aria-hidden="true" />

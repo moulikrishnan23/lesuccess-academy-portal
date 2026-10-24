@@ -44,6 +44,7 @@ export default function SuccessStoriesSection() {
 
       {activeImages.length > 0 && (
         <Marquee
+          alwaysMove
           reverse
           speed={44}
           gap="1.25rem"

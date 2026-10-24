@@ -97,6 +97,11 @@
     gap: var(--marquee-gap);
   }
 
+  /* A repeated copy of the items that lays out as part of the group's flex row. */
+  .motion-marquee-set {
+    display: contents;
+  }
+
   .motion-marquee--reverse .motion-marquee-track {
     animation-direction: reverse;
   }
@@ -104,6 +109,12 @@
   .motion-marquee--pause:hover .motion-marquee-track,
   .motion-marquee:focus-within .motion-marquee-track {
     animation-play-state: paused;
+  }
+
+  /* Moved by Marquee.jsx's rAF loop instead of the CSS animation. */
+  .motion-marquee--driven .motion-marquee-track {
+    animation: none;
+    will-change: transform;
   }
 
   .motion-marquee--static {

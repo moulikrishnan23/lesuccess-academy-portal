@@ -14,7 +14,8 @@ const PHRASES = [
 // two identical groups and wraps by exactly one group width, so the loop is seamless.
 const GROUP = [...PHRASES, ...PHRASES];
 
-const BASE_SPEED = 40; // px per second while the page is still
+const BASE_SPEED = 70; // px per second while the page is still
+const CALM_SPEED = 35; // px per second under reduced motion
 const SCROLL_GAIN = 0.6; // extra px/s of ticker per px/s of page scroll
 const MAX_SPEED = 900;
 
@@ -22,10 +23,12 @@ const MAX_SPEED = 900;
  * A slanted navy band of course highlights between the demo band and the
  * course carousel (spec: docs/mockup/lower-home.html, .tick).
  *
- * The motion follows the page scroll: it drifts slowly on its own, speeds up
- * while the visitor scrolls, and runs backwards when they scroll back up. The
- * loop writes the offset straight to the track (no React state) and only runs
- * while the band is on screen. Reduced motion: a still band.
+ * Always scrolling (a deliberate exception to the site's reduced-motion rule,
+ * requested for this band): it runs on its own, speeds up while the visitor
+ * scrolls and runs backwards when they scroll back up. Under reduced motion it
+ * keeps a slow, steady pace with no scroll boost. It never stops. The loop
+ * writes the offset straight to the track (no React state) and only runs while
+ * the band is on screen.
  *
  * Decorative: every phrase is said elsewhere on the page, so it is hidden from
  * screen readers.
@@ -38,13 +41,14 @@ export default function HomeTicker() {
   useEffect(() => {
     const band = bandRef.current;
     const track = trackRef.current;
-    if (!band || !track || reduced || typeof IntersectionObserver === "undefined") return undefined;
+    if (!band || !track || typeof IntersectionObserver === "undefined") return undefined;
 
+    const base = reduced ? CALM_SPEED : BASE_SPEED;
     let frame = 0;
     let running = false;
     let offset = 0;
     let direction = 1;
-    let speed = BASE_SPEED;
+    let speed = base;
     let lastTime = 0;
     let lastScroll = window.scrollY;
 
@@ -55,11 +59,12 @@ export default function HomeTicker() {
       const scrollY = window.scrollY;
       const scrolled = scrollY - lastScroll;
       lastScroll = scrollY;
-      if (scrolled !== 0) direction = scrolled > 0 ? 1 : -1;
+      if (!reduced && scrolled !== 0) direction = scrolled > 0 ? 1 : -1;
 
-      // Ease toward the drift speed plus a share of the scroll velocity.
-      const scrollVelocity = Math.abs(scrolled) / Math.max(dt, 0.001);
-      const target = Math.min(MAX_SPEED, BASE_SPEED + scrollVelocity * SCROLL_GAIN);
+      // Ease toward the base speed plus a share of the scroll velocity. It
+      // never drops below the base speed, so the band is always moving.
+      const scrollVelocity = reduced ? 0 : Math.abs(scrolled) / Math.max(dt, 0.001);
+      const target = Math.min(MAX_SPEED, base + scrollVelocity * SCROLL_GAIN);
       speed += (target - speed) * 0.12;
 
       const group = track.scrollWidth / 2;
