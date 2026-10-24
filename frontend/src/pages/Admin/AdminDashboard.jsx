@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Folder,
@@ -10,9 +10,7 @@ import {
   ArrowLeft,
   ExternalLink,
   LogOut,
-  Layers,
   X,
-  CheckCircle,
   BookOpen,
   Calendar,
   Users as UsersIcon,
@@ -26,7 +24,6 @@ import {
   UserCheck,
   MessageSquare,
   Briefcase,
-  Menu,
   Video,
   Award,
   Bot,
@@ -52,7 +49,6 @@ import AdminChatbotTab from './components/AdminChatbotTab.jsx'
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'gallery' | 'courses' | 'programs' | 'team' | 'reviews' | 'companies' | 'users' | form submissions
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   // Folders state
   const [categories, setCategories] = useState([])
@@ -88,33 +84,46 @@ export default function AdminDashboard() {
   // Alerts
   const [alert, setAlert] = useState(null)
 
-  useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  const showAlert = (message, type = 'success') => {
+  // Stable across renders: the tabs list it as a dependency of their loaders,
+  // so a new function every render would refetch on every render.
+  const showAlert = useCallback((message, type = 'success') => {
     setAlert({ message, type })
     setTimeout(() => setAlert(null), 4000)
-  }
+  }, [])
 
-  const fetchCategories = async () => {
-    setLoading(true)
+  // The request itself. `loading` starts true, so the first load needs no
+  // setLoading(true) of its own; refreshes go through fetchCategories.
+  // Errors are reported from the promise (.catch) rather than a catch block in
+  // here, so no state update can run synchronously inside the mount effect.
+  const loadCategories = useCallback(async () => {
     try {
       const { data } = await apiClient.get('/api/admin/gallery/categories')
       setCategories(data?.data || [])
-    } catch (err) {
-      showAlert('Failed to load gallery categories', 'error')
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  const reportCategoriesError = useCallback(
+    () => showAlert('Failed to load gallery categories', 'error'),
+    [showAlert],
+  )
+
+  const fetchCategories = () => {
+    setLoading(true)
+    return loadCategories().catch(reportCategoriesError)
   }
+
+  useEffect(() => {
+    loadCategories().catch(reportCategoriesError)
+  }, [loadCategories, reportCategoriesError])
 
   const fetchCategoryImages = async (categoryId) => {
     setImagesLoading(true)
     try {
       const { data } = await apiClient.get(`/api/admin/gallery/categories/${categoryId}/images`)
       setImages(data?.data || [])
-    } catch (err) {
+    } catch {
       showAlert('Failed to load category images', 'error')
     } finally {
       setImagesLoading(false)
@@ -188,7 +197,7 @@ export default function AdminDashboard() {
         setSelectedCategory(null)
       }
       fetchCategories()
-    } catch (err) {
+    } catch {
       showAlert('Failed to delete folder', 'error')
     }
   }
@@ -203,7 +212,7 @@ export default function AdminDashboard() {
       await apiClient.put(`/api/admin/gallery/categories/${cat.id}/order?displayOrder=${targetOrder}`)
       showAlert('Folder order updated successfully')
       fetchCategories()
-    } catch (err) {
+    } catch {
       showAlert('Failed to update folder order', 'error')
     }
   }
@@ -427,7 +436,7 @@ export default function AdminDashboard() {
       showAlert('Photo deleted successfully')
       fetchCategoryImages(selectedCategory.id)
       fetchCategories()
-    } catch (err) {
+    } catch {
       showAlert('Failed to delete photo', 'error')
     }
   }
@@ -444,7 +453,7 @@ export default function AdminDashboard() {
       if (selectedCategory) {
         fetchCategoryImages(selectedCategory.id)
       }
-    } catch (err) {
+    } catch {
       showAlert('Failed to update photo order', 'error')
     }
   }
@@ -626,7 +635,7 @@ export default function AdminDashboard() {
               'services',
               'contact-messages',
             ].includes(activeTab) && (
-              <AdminFormSubmissionsTab formType={activeTab} showAlert={showAlert} />
+              <AdminFormSubmissionsTab key={activeTab} formType={activeTab} showAlert={showAlert} />
             )}
 
         {activeTab === 'gallery' && (

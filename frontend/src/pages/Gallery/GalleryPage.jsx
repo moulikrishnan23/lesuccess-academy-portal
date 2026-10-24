@@ -280,7 +280,7 @@ export default function GalleryPage() {
                     <div className="relative aspect-4/3 w-full overflow-hidden bg-slate-100">
                       {cat.coverImageUrl ? (
                         <img
-                          src={getImageUrl(cat.coverImageUrl)}
+                          src={getImageUrl(cat.coverImageUrl, '', { width: 800 })}
                           alt={cat.name}
                           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           onError={(e) => {
@@ -355,7 +355,7 @@ export default function GalleryPage() {
                       <div className="relative aspect-4/3 w-full overflow-hidden bg-slate-100">
                         {sub.coverImageUrl ? (
                           <img
-                            src={getImageUrl(sub.coverImageUrl)}
+                            src={getImageUrl(sub.coverImageUrl, '', { width: 800 })}
                             alt={sub.name}
                             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           />
@@ -409,7 +409,7 @@ export default function GalleryPage() {
                       className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs hover:border-[#07405C]/50 hover:shadow-xl transition aspect-4/3"
                     >
                       <img
-                        src={getImageUrl(img.imageUrl)}
+                        src={getImageUrl(img.imageUrl, '', { width: 800 })}
                         alt="Gallery item"
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                         loading="lazy"

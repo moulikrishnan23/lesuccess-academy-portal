@@ -38,6 +38,11 @@ public class CourseService {
      * course added through the admin panel matched none of those keywords and got
      * a generic list, which is the opposite of the dashboard being the source of
      * truth. Modules stay out - a card needs the stack, not the syllabus.</p>
+     *
+     * <p>Only {@code techStack} is sent here, not its {@code tools} alias: the two
+     * are the same list, and the copy was about a third of this response. The
+     * frontend reads techStack first; the admin tab reads tools from the detail
+     * endpoint, which still carries both.</p>
      */
     public List<CourseResponse> listActive() {
         List<Course> courses = repository.findByIsActiveTrueOrderByDisplayOrderAsc();
@@ -49,8 +54,12 @@ public class CourseService {
                 courses.stream().map(Course::getId).toList());
 
         return courses.stream()
-                .map(course -> CourseResponse.from(
-                        course, null, toolsByCourseId.getOrDefault(course.getId(), List.of())))
+                .map(course -> {
+                    CourseResponse response = CourseResponse.from(
+                            course, null, toolsByCourseId.getOrDefault(course.getId(), List.of()));
+                    response.setTools(null); // omitted by non_null inclusion
+                    return response;
+                })
                 .toList();
     }
 

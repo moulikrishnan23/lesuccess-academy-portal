@@ -424,7 +424,7 @@ export default function BasicChatbot({ onOpenEnquiry }) {
         ) : (
           <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#b82523]">
             <img
-              src="/logo/LeSuccess_Logo_Chatbot2.gif"
+              src="/logo/LeSuccess_Logo_Chatbot2.webp"
               alt="Chat with LeBot"
               className="h-full w-full object-cover scale-[0.82] pointer-events-none select-none rounded-full"
             />

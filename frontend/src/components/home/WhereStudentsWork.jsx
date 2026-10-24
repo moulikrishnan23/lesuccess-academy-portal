@@ -23,7 +23,7 @@ const DEFAULT_COMPANIES_ROW2 = [
 const CompanyCard = ({ company }) => (
   <div className="inline-flex h-[88px] w-[200px] mx-3 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white px-5 shadow-lg hover:shadow-xl hover:border-[#DF1E26]/50 hover:scale-[1.02] transition-all duration-300">
     <img
-      src={getImageUrl(company.logo || company.logoUrl, '/assets/companies/lavendel.png')}
+      src={getImageUrl(company.logo || company.logoUrl, '/assets/companies/lavendel.png', { width: 400 })}
       alt={company.name}
       className="max-h-[50px] max-w-[155px] object-contain transition-transform duration-300 hover:scale-105"
     />

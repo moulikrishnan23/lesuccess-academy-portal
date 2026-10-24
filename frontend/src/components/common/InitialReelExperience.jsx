@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { FaInstagram } from 'react-icons/fa6'
 import InstagramReelEmbed from './InstagramReelEmbed.jsx'
 import { getCleanReelUrl } from '../../utils/instagramEmbed.js'

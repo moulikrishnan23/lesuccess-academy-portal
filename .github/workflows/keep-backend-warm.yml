@@ -1,0 +1,24 @@
+# Render's free tier puts the backend to sleep after 15 minutes without traffic,
+# and the first visitor afterwards waits 1-2 minutes for it to boot. Pinging the
+# health endpoint every 10 minutes keeps it awake.
+#
+# GitHub only runs scheduled workflows from the default branch (main), and may
+# start a run a few minutes late under load. An external uptime monitor
+# (UptimeRobot, cron-job.org) hitting the same URL is a more punctual backup.
+name: Keep backend warm
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping health endpoint
+        run: |
+          curl --silent --show-error --fail --max-time 180 \
+            --retry 2 --retry-delay 10 \
+            https://lesuccess-academy-portal.onrender.com/api/health

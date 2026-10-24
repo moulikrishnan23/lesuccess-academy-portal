@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Star,
   Plus,
@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Search,
   X,
-  MessageSquare,
   ChevronUp,
   ChevronDown,
 } from 'lucide-react'
@@ -34,8 +33,11 @@ export default function AdminReviewsTab({ showAlert }) {
     isActive: true,
   })
 
-  const fetchReviews = async () => {
-    setLoading(true)
+  // `loading` starts true, so the first load needs no setLoading(true) of its
+  // own. Errors are reported from the promise (.catch) rather than a catch
+  // block in here, so no state update can run synchronously inside the effect.
+  // Refreshes after a save go through fetchReviews.
+  const loadReviews = useCallback(async () => {
     try {
       const res = await apiClient.get('/api/admin/testimonials')
       const data = res?.data?.data || res?.data
@@ -44,16 +46,23 @@ export default function AdminReviewsTab({ showAlert }) {
       } else {
         setReviews([])
       }
-    } catch (err) {
-      if (showAlert) showAlert('Failed to load testimonials', 'error')
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  const reportReviewsError = useCallback(() => {
+    if (showAlert) showAlert('Failed to load testimonials', 'error')
+  }, [showAlert])
+
+  const fetchReviews = () => {
+    setLoading(true)
+    return loadReviews().catch(reportReviewsError)
   }
 
   useEffect(() => {
-    fetchReviews()
-  }, [])
+    loadReviews().catch(reportReviewsError)
+  }, [loadReviews, reportReviewsError])
 
   const openCreateModal = () => {
     setEditingReview(null)
@@ -127,7 +136,7 @@ export default function AdminReviewsTab({ showAlert }) {
       await apiClient.delete(`/api/admin/testimonials/${id}`)
       if (showAlert) showAlert('Review deleted successfully')
       fetchReviews()
-    } catch (err) {
+    } catch {
       if (showAlert) showAlert('Failed to delete review', 'error')
     }
   }
@@ -142,7 +151,7 @@ export default function AdminReviewsTab({ showAlert }) {
       await apiClient.put(`/api/admin/testimonials/${rev.id}/order?displayOrder=${targetOrder}`)
       if (showAlert) showAlert('Review order updated successfully')
       fetchReviews()
-    } catch (err) {
+    } catch {
       if (showAlert) showAlert('Failed to update review order', 'error')
     }
   }
@@ -162,7 +171,7 @@ export default function AdminReviewsTab({ showAlert }) {
       await apiClient.put(`/api/admin/testimonials/${review.id}`, updated)
       if (showAlert) showAlert(`Review marked as ${!review.isActive ? 'Active' : 'Inactive'}`)
       fetchReviews()
-    } catch (err) {
+    } catch {
       if (showAlert) showAlert('Failed to toggle review status', 'error')
     }
   }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Plus, Edit2, Trash2, Users, Upload, X, Star, ChevronUp, ChevronDown } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
@@ -54,11 +54,6 @@ export default function AdminTeamTab({ showAlert }) {
     isActive: true,
   })
 
-  useEffect(() => {
-    fetchMembers()
-    fetchCategories()
-  }, [])
-
   // Body scroll lock
   useEffect(() => {
     if (isModalOpen) {
@@ -69,10 +64,15 @@ export default function AdminTeamTab({ showAlert }) {
     }
   }, [isModalOpen])
 
-  const fetchCategories = async () => {
-    try {
-      const { data } = await apiClient.get('/api/team-categories')
-      const rawCats = Array.isArray(data?.data) ? data.data : []
+  // A promise chain rather than try/catch, so every state update runs in a
+  // callback and never synchronously inside the mount effect. A failed request
+  // yields [] and therefore just the two canonical categories, as before.
+  const fetchCategories = useCallback(() =>
+    apiClient
+      .get('/api/team-categories')
+      .then(({ data }) => (Array.isArray(data?.data) ? data.data : []))
+      .catch(() => [])
+      .then((rawCats) => {
       const cats = rawCats.map((c) => ({
         ...c,
         name: formatCategoryName(c.name),
@@ -97,13 +97,7 @@ export default function AdminTeamTab({ showAlert }) {
         }
       })
       setCategories(uniqueCats)
-    } catch (_err) {
-      setCategories([
-        { id: 'mv', name: 'Management Visionaries' },
-        { id: 'tv', name: 'Tech Visionaries' },
-      ])
-    }
-  }
+      }), [])
 
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return
@@ -126,23 +120,39 @@ export default function AdminTeamTab({ showAlert }) {
     }
   }
 
-  const fetchMembers = async () => {
-    setLoading(true)
+  // The request itself. `loading` starts true, so the first load needs no
+  // setLoading(true) of its own; refreshes go through fetchMembers.
+  // Errors are reported from the promise (.catch) rather than a catch block in
+  // here, so no state update can run synchronously inside the mount effect.
+  const loadMembers = useCallback(async () => {
     try {
-      const { data } = await apiClient.get('/api/admin/team-members')
-      setMembers(data?.data || [])
-    } catch (err) {
-      console.warn('Fallback to public /api/team-members:', err)
+      let res
       try {
-        const { data } = await apiClient.get('/api/team-members')
-        setMembers(data?.data || [])
-      } catch (pubErr) {
-        showAlert?.('Failed to load team members', 'error')
+        res = await apiClient.get('/api/admin/team-members')
+      } catch (err) {
+        console.warn('Fallback to public /api/team-members:', err)
+        res = await apiClient.get('/api/team-members')
       }
+      setMembers(res.data?.data || [])
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  const reportMembersError = useCallback(
+    () => showAlert?.('Failed to load team members', 'error'),
+    [showAlert],
+  )
+
+  const fetchMembers = () => {
+    setLoading(true)
+    return loadMembers().catch(reportMembersError)
   }
+
+  useEffect(() => {
+    loadMembers().catch(reportMembersError)
+    fetchCategories()
+  }, [loadMembers, reportMembersError, fetchCategories])
 
   const handleMove = async (m, direction) => {
     const currentIdx = members.findIndex((item) => item.id === m.id)
@@ -154,7 +164,7 @@ export default function AdminTeamTab({ showAlert }) {
       await apiClient.put(`/api/admin/team-members/${m.id}/order?displayOrder=${targetOrder}`)
       showAlert?.('Order updated successfully')
       fetchMembers()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to update order', 'error')
     }
   }
@@ -167,7 +177,7 @@ export default function AdminTeamTab({ showAlert }) {
       if (res?.data?.data) {
         nextOrder = res.data.data
       }
-    } catch (_e) {
+    } catch {
       const maxOrd = members.reduce((max, item) => Math.max(max, item.displayOrder || 0), 0)
       nextOrder = maxOrd + 1
     }
@@ -237,7 +247,7 @@ export default function AdminTeamTab({ showAlert }) {
         setForm((prev) => ({ ...prev, imageUrl: uploadedUrl }))
         showAlert?.('Photo uploaded successfully')
       }
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to upload image', 'error')
     } finally {
       setUploadingImage(false)
@@ -291,7 +301,7 @@ export default function AdminTeamTab({ showAlert }) {
       await apiClient.delete(`/api/admin/team-members/${m.id}`)
       showAlert?.('Team member removed')
       fetchMembers()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to delete member', 'error')
     }
   }
@@ -302,7 +312,6 @@ export default function AdminTeamTab({ showAlert }) {
   const isMemberFeatured = (m) => Boolean(m.featured || m.isFeatured)
 
   const featuredMembers = members.filter(isMemberFeatured)
-  const nonFeaturedMembers = members.filter((m) => !isMemberFeatured(m))
 
   const categoryFilteredMembers = selectedCategory === 'ALL'
     ? members
@@ -395,7 +404,6 @@ export default function AdminTeamTab({ showAlert }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {featuredMembers.map((m) => {
                   const globalIdx = members.findIndex((item) => item.id === m.id)
-                  const categoryName = formatCategoryName(m.category || m.department)
 
                   return (
                     <div
@@ -405,7 +413,7 @@ export default function AdminTeamTab({ showAlert }) {
                       {/* Photo Container with Top Badges in a Non-Colliding Flex Row */}
                       <div
                         className="relative aspect-383/400 w-full overflow-hidden bg-cover bg-center bg-no-repeat flex items-center justify-center"
-                        style={{ backgroundImage: "url('/home/TeamBg.png')" }}
+                        style={{ backgroundImage: "url('/home/TeamBg.webp')" }}
                       >
                         <img
                           src={getImageUrl(m.image || m.imageUrl, '/home/team/dummy.png')}
@@ -593,7 +601,7 @@ export default function AdminTeamTab({ showAlert }) {
                       {/* Photo Area with TeamBg Treatment */}
                       <div
                         className="relative aspect-383/400 w-full overflow-hidden bg-cover bg-center bg-no-repeat flex items-center justify-center"
-                        style={{ backgroundImage: "url('/home/TeamBg.png')" }}
+                        style={{ backgroundImage: "url('/home/TeamBg.webp')" }}
                       >
                         <img
                           src={getImageUrl(m.image || m.imageUrl, '/home/team/dummy.png')}
@@ -956,7 +964,7 @@ export default function AdminTeamTab({ showAlert }) {
                     <div className="flex items-center gap-3.5 bg-slate-50 p-3 rounded-2xl border border-slate-200">
                       <div
                         className="h-16 w-16 overflow-hidden rounded-xl bg-cover bg-center border border-slate-200 shrink-0 shadow-xs"
-                        style={{ backgroundImage: "url('/home/TeamBg.png')" }}
+                        style={{ backgroundImage: "url('/home/TeamBg.webp')" }}
                       >
                         <img
                           src={getImageUrl(form.imageUrl, '/home/team/dummy.png')}

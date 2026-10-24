@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Plus, Edit2, Trash2, Building2, Upload, X, ChevronUp, ChevronDown } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
@@ -18,10 +18,6 @@ export default function AdminCompaniesTab({ showAlert }) {
     isActive: true,
   })
 
-  useEffect(() => {
-    fetchCompanies()
-  }, [])
-
   // Body scroll lock
   useEffect(() => {
     if (isModalOpen) {
@@ -32,23 +28,38 @@ export default function AdminCompaniesTab({ showAlert }) {
     }
   }, [isModalOpen])
 
-  const fetchCompanies = async () => {
-    setLoading(true)
+  // The request itself. `loading` starts true, so the first load needs no
+  // setLoading(true) of its own; refreshes go through fetchCompanies.
+  // Errors are reported from the promise (.catch) rather than a catch block in
+  // here, so no state update can run synchronously inside the mount effect.
+  const loadCompanies = useCallback(async () => {
     try {
-      const { data } = await apiClient.get('/api/admin/companies')
-      setCompanies(data?.data || [])
-    } catch (err) {
-      console.warn('Fallback to public /api/companies:', err)
+      let res
       try {
-        const { data } = await apiClient.get('/api/companies')
-        setCompanies(data?.data || [])
-      } catch (pubErr) {
-        showAlert?.('Failed to load companies', 'error')
+        res = await apiClient.get('/api/admin/companies')
+      } catch (err) {
+        console.warn('Fallback to public /api/companies:', err)
+        res = await apiClient.get('/api/companies')
       }
+      setCompanies(res.data?.data || [])
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  const reportCompaniesError = useCallback(
+    () => showAlert?.('Failed to load companies', 'error'),
+    [showAlert],
+  )
+
+  const fetchCompanies = () => {
+    setLoading(true)
+    return loadCompanies().catch(reportCompaniesError)
   }
+
+  useEffect(() => {
+    loadCompanies().catch(reportCompaniesError)
+  }, [loadCompanies, reportCompaniesError])
 
   const openCreateModal = (row = 1) => {
     setEditingCompany(null)
@@ -103,7 +114,7 @@ export default function AdminCompaniesTab({ showAlert }) {
         setForm((prev) => ({ ...prev, logoUrl: uploadedUrl }))
         showAlert?.('Logo uploaded successfully')
       }
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to upload logo', 'error')
     } finally {
       setUploadingLogo(false)
@@ -149,7 +160,7 @@ export default function AdminCompaniesTab({ showAlert }) {
       await apiClient.delete(`/api/admin/companies/${c.id}`)
       showAlert?.('Company removed')
       fetchCompanies()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to delete company', 'error')
     }
   }
@@ -164,7 +175,7 @@ export default function AdminCompaniesTab({ showAlert }) {
       await apiClient.put(`/api/admin/companies/${c.id}/order?displayOrder=${targetOrder}`)
       showAlert?.('Company order updated successfully')
       fetchCompanies()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to update company order', 'error')
     }
   }

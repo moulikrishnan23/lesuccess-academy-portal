@@ -124,8 +124,9 @@ export default function ConnectWithUsPopupTrigger() {
 
   // Evaluate competing form visibility on scroll, resize, route changes & DOM mutations
   useEffect(() => {
+    // Nothing to watch: the popup renders nothing on the contact page or once
+    // submitted (see the early return below), so suppression is moot there.
     if (isContactPage || isSubmittedThisSession) {
-      setIsSuppressedByForm(true);
       return undefined;
     }
 

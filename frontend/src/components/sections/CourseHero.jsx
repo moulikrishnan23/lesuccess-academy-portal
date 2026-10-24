@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Download } from 'lucide-react'
 import Button from '../ui/Button.jsx'
-import { downloadSyllabus, hasSyllabus } from '../../utils/syllabusUtils.js'
+import { downloadSyllabus } from '../../utils/syllabusUtils.js'
 import {
   BriefcaseIcon,
   CertificateIcon,

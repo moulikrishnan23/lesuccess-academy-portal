@@ -101,18 +101,9 @@ function TechCardSkeleton() {
   )
 }
 
-export default function TechStackSection({ course, techStack, isLoading }) {
+export default function TechStackSection({ techStack, isLoading }) {
   const reduced = useReducedMotion()
   const groups = useMemo(() => groupByName(techStack ?? []), [techStack])
-
-  /*
-   * The reference heading reads "What is Python Full Stack Development?" while
-   * this renders "What is Python Full Stack?" — `category` is the only short
-   * course name in the data model, and appending "Development" would be wrong
-   * for non-development courses ("Data Analytics Development"). Closing the gap
-   * needs a dedicated field rather than a string trick.
-   */
-  const subject = course?.category || course?.title
 
   // An odd number of groups leaves the last card alone on its row; the
   // reference centres it rather than leaving a gap on the right.

@@ -17,11 +17,33 @@ spring:
       idle-timeout: 60000
       connection-timeout: 30000
       max-lifetime: 1800000
+      # Cut the per-transaction round trips to MySQL. By default every
+      # @Transactional(readOnly = true) read costs ~6 trips: SET autocommit=0,
+      # SET SESSION TRANSACTION READ ONLY, the query, COMMIT, then both settings
+      # undone again. With the database ~70ms away that was ~0.5s per request.
+      #  - auto-commit false + provider_disables_autocommit (below): connections
+      #    are handed out with autocommit already off, so Hibernate never toggles
+      #    it. Safe here because all DB access goes through Spring transactions
+      #    (no JdbcTemplate / raw connections); Hikari rolls back anything left
+      #    open when a connection returns to the pool.
+      #  - readOnlyPropagatesToServer=false: readOnly stays a client-side hint
+      #    instead of a SET statement. Writes are still guarded by the code paths
+      #    being read-only, which they were before.
+      #  - useLocalSessionState: the driver skips SETs that would not change the
+      #    session's current state.
+      auto-commit: false
+      data-source-properties:
+        readOnlyPropagatesToServer: false
+        useLocalSessionState: true
 
   jpa:
     show-sql: false
     hibernate:
       ddl-auto: none
+    properties:
+      hibernate:
+        connection:
+          provider_disables_autocommit: true
 
 lesuccess:
   jwt:

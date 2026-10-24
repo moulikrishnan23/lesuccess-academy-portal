@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   CalendarCheck,
   GraduationCap,
   MessageSquare,
   Users,
   BookOpen,
-  Folder,
   Star,
   Building2,
   ArrowRight,
@@ -33,8 +32,10 @@ export default function AdminOverviewTab({ onNavigateTab, showAlert }) {
   })
   const [loading, setLoading] = useState(true)
 
-  const fetchSummary = async () => {
-    setLoading(true)
+  // `loading` starts true, so the first load needs no setLoading(true) of its
+  // own. Errors are reported from the promise (.catch) rather than a catch
+  // block in here, so no state update can run synchronously inside the effect.
+  const loadSummary = useCallback(async () => {
     try {
       const res = await apiClient.get('/api/admin/dashboard/summary')
       if (res?.data?.data) {
@@ -42,16 +43,24 @@ export default function AdminOverviewTab({ onNavigateTab, showAlert }) {
       } else if (res?.data) {
         setStats(res.data)
       }
-    } catch (err) {
-      if (showAlert) showAlert('Failed to load dashboard summary metrics', 'error')
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  const reportSummaryError = useCallback(() => {
+    if (showAlert) showAlert('Failed to load dashboard summary metrics', 'error')
+  }, [showAlert])
+
+  // The Refresh button: shows the spinner again, then reloads.
+  const fetchSummary = () => {
+    setLoading(true)
+    return loadSummary().catch(reportSummaryError)
   }
 
   useEffect(() => {
-    fetchSummary()
-  }, [])
+    loadSummary().catch(reportSummaryError)
+  }, [loadSummary, reportSummaryError])
 
   const statCards = [
     {

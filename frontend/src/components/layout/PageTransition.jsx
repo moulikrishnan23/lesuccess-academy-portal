@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 
@@ -51,7 +51,11 @@ export default function PageTransition({ children }) {
       exit="exit"
       className="w-full"
     >
-      {children}
+      {/* Public pages are lazy-loaded (see App.jsx). The fallback holds the page's
+          height so the footer doesn't jump up while the chunk downloads. */}
+      <Suspense fallback={<div aria-busy="true" className="min-h-[70vh] w-full" />}>
+        {children}
+      </Suspense>
     </motion.div>
   );
 }

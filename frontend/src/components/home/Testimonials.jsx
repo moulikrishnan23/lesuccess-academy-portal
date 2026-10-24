@@ -6,11 +6,8 @@ import {
   Info,
   ExternalLink,
 } from "lucide-react";
-import { motion } from "framer-motion";
-import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
-import useReducedMotion from "../../hooks/useReducedMotion.js";
 import ScrollReveal from "../../animations/ScrollReveal.jsx";
-import { useAppData } from "../../context/AppDataContext.jsx";
+import { useAppData } from "../../context/appData.js";
 import { GOOGLE_REVIEWS, GOOGLE_REVIEWS_META } from "../../data/googleReviews.js";
 
 const AVATAR_COLORS = [
@@ -30,7 +27,6 @@ function getAvatarColor(name = "") {
 }
 
 export default function Testimonials() {
-  const reduced = useReducedMotion();
   const { testimonials } = useAppData();
 
   const [expandedIds, setExpandedIds] = useState(new Set());

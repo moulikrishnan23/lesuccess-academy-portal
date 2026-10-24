@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   Search,
   Download,
@@ -224,7 +224,6 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
   const tableContainerRef = useGrabScroll()
   const config = FORM_CONFIGS[formType] || FORM_CONFIGS['demo-bookings']
   const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [page, setPage] = useState(0)
@@ -236,8 +235,22 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
   const [deleteModalItem, setDeleteModalItem] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const fetchData = async () => {
-    setLoading(true)
+  // The search the server last ran. Typing only filters the loaded rows
+  // (filteredItems below); submitting the form applies it here. `nonce` makes
+  // re-submitting the same text fetch again.
+  const [appliedSearch, setAppliedSearch] = useState({ term: '', nonce: 0 })
+
+  // `loading` is derived rather than set from the effect: a page/filter/search
+  // change produces a new requestKey, and the tab shows its spinner until the
+  // request for that key settles. `reloading` covers refreshes after an edit.
+  const requestKey = `${page}|${pageSize}|${statusFilter}|${appliedSearch.nonce}`
+  const [settledKey, setSettledKey] = useState(null)
+  const [reloading, setReloading] = useState(false)
+  const loading = settledKey !== requestKey || reloading
+
+  // Errors are reported from the promise (.catch) rather than a catch block in
+  // here, so no state update can run synchronously inside the fetch effect.
+  const loadData = useCallback(async () => {
     try {
       const params = {
         page,
@@ -246,7 +259,7 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
         sortDir: 'desc',
         ...(config.endpointParams || {}),
       }
-      if (search.trim()) params.search = search.trim()
+      if (appliedSearch.term) params.search = appliedSearch.term
       if (statusFilter !== 'ALL') params.status = statusFilter
 
       const res = await apiClient.get(config.endpoint, { params })
@@ -264,24 +277,30 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
         setItems([])
         setTotalElements(0)
       }
-    } catch {
-      setItems([])
-      setTotalElements(0)
-      if (showAlert) showAlert(`Failed to load ${config.title}`, 'error')
     } finally {
-      setLoading(false)
+      setSettledKey(requestKey)
     }
+  }, [config, page, pageSize, statusFilter, appliedSearch, requestKey])
+
+  const reportLoadError = useCallback(() => {
+    setItems([])
+    setTotalElements(0)
+    if (showAlert) showAlert(`Failed to load ${config.title}`, 'error')
+  }, [config.title, showAlert])
+
+  // Refresh after a status change or delete, with the spinner shown again.
+  const fetchData = () => {
+    setReloading(true)
+    return loadData()
+      .catch(reportLoadError)
+      .finally(() => setReloading(false))
   }
 
+  // Switching form type remounts this tab (key={formType} in AdminDashboard),
+  // which resets page, search and filter without an effect.
   useEffect(() => {
-    setPage(0)
-    setSearch('')
-    setStatusFilter('ALL')
-  }, [formType])
-
-  useEffect(() => {
-    fetchData()
-  }, [formType, page, pageSize, statusFilter])
+    loadData().catch(reportLoadError)
+  }, [loadData, reportLoadError])
 
   // Body scroll lock when detail modal is open
   useEffect(() => {
@@ -296,7 +315,7 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
   const handleSearchSubmit = (e) => {
     e.preventDefault()
     setPage(0)
-    fetchData()
+    setAppliedSearch((prev) => ({ term: search.trim(), nonce: prev.nonce + 1 }))
   }
 
   // Client-side filtering when backend doesn't filter search

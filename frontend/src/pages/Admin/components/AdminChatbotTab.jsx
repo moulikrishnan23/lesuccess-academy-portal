@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Bot,
   Sparkles,
@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Save,
   Loader2,
-  ShieldAlert,
   Server,
   Cpu,
   HelpCircle,
@@ -23,12 +22,10 @@ export default function AdminChatbotTab({ showAlert }) {
   const [chatbotMode, setChatbotMode] = useState('NORMAL');
   const [chatbotEnabled, setChatbotEnabled] = useState(true);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    setLoading(true);
+  // `loading` starts true, so this mount-only load sets it false and nothing else.
+  // Errors are reported from the promise (.catch) rather than a catch block in
+  // here, so no state update can run synchronously inside the mount effect.
+  const fetchSettings = useCallback(async () => {
     try {
       const { data } = await apiClient.get('/api/settings');
       const settings = data?.data || {};
@@ -39,12 +36,14 @@ export default function AdminChatbotTab({ showAlert }) {
       if (settings.chatbot_enabled !== undefined) {
         setChatbotEnabled(settings.chatbot_enabled !== 'false');
       }
-    } catch (_err) {
-      showAlert?.('Failed to load current Chatbot settings', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSettings().catch(() => showAlert?.('Failed to load current Chatbot settings', 'error'));
+  }, [fetchSettings, showAlert]);
 
   const handleSaveSettings = async () => {
     setSaving(true);

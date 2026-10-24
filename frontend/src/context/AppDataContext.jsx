@@ -1,17 +1,83 @@
 import {
-  createContext,
-  useContext,
   useState,
   useEffect,
   useCallback,
   useRef,
   useMemo,
 } from "react";
-import courseApi from "../services/courseApi.js";
+import courseApi, { normalizeCourseList } from "../services/courseApi.js";
 import apiClient from "../services/apiClient.js";
-import { listUpcoming } from "../services/upcomingProgramApi.js";
+import { listUpcoming, normalizeProgramList } from "../services/upcomingProgramApi.js";
+import { AppDataContext } from "./appData.js";
 
-const AppDataContext = createContext(null);
+/* =========================================================
+   RESPONSE PARSERS
+   Shared by the live fetches and the build-time snapshot, so
+   both always produce the same shape.
+========================================================= */
+
+const DEFAULT_TEAM_CATEGORIES = ["Management Visionaries", "Tech Visionaries"];
+
+/** Maps legacy category names onto the two fixed headings. */
+function toTeamCategories(catBody) {
+  if (!Array.isArray(catBody?.data)) return DEFAULT_TEAM_CATEGORIES;
+  const names = catBody.data.map((c) => {
+    const raw = (c.name || '').trim();
+    const lower = raw.toLowerCase();
+    if (lower === 'management team' || lower === 'management visionaries' || lower === 'management') {
+      return 'Management Visionaries';
+    }
+    if (
+      lower === 'technical leadership team' ||
+      lower === 'tech visionaries' ||
+      lower === 'our mentors' ||
+      lower.includes('technical leadership')
+    ) {
+      return 'Tech Visionaries';
+    }
+    return raw;
+  });
+  return Array.from(new Set([...DEFAULT_TEAM_CATEGORIES, ...names]));
+}
+
+function toTeamMembers(teamBody) {
+  return Array.isArray(teamBody?.data) ? teamBody.data : [];
+}
+
+function toGalleryCategories(body) {
+  return Array.isArray(body?.data) ? body.data : [];
+}
+
+function toSuccessStories(body) {
+  const apiData = body?.data || { images: [], reels: [] };
+  return {
+    images: Array.isArray(apiData.images) ? apiData.images : [],
+    reels: Array.isArray(apiData.reels) ? apiData.reels : [],
+  };
+}
+
+/* =========================================================
+   BUILD-TIME SNAPSHOT
+   src/data/apiSnapshot.json is refreshed by scripts/snapshot-api.mjs
+   on every build. It fills sections that have neither a localStorage
+   cache nor a live answer yet — i.e. a first-time visitor waiting on
+   a backend that is waking from sleep. Loaded as its own chunk so it
+   stays out of the main bundle.
+========================================================= */
+
+/**
+ * Seeds a section from the snapshot only while it is still waiting or has
+ * failed with nothing to show. A live answer (even an empty one) or a
+ * localStorage cache always wins.
+ */
+function seedIfEmpty(setState, data, hasData) {
+  if (!hasData) return;
+  setState((prev) =>
+    prev.status === "loading" || prev.status === "error"
+      ? { ...prev, status: "success", data, isCached: true, error: null }
+      : prev
+  );
+}
 
 /* =========================================================
    CACHE PERSISTENCE HELPERS
@@ -94,7 +160,7 @@ export function AppDataProvider({ children }) {
     return {
       status: cached && cached.data.length > 0 ? "success" : "loading",
       data: cached ? cached.data : [],
-      categories: cached?.categories || ["Management Visionaries", "Tech Visionaries"],
+      categories: cached?.categories || DEFAULT_TEAM_CATEGORIES,
       isCached: Boolean(cached && cached.data.length > 0),
       error: null,
     };
@@ -117,35 +183,10 @@ export function AppDataProvider({ children }) {
       if (currentAttempt !== teamAttempt.current) return;
 
       if (teamRes.status === "fulfilled" && teamRes.value?.data?.data) {
-        const members = Array.isArray(teamRes.value.data.data)
-          ? teamRes.value.data.data
-          : [];
-        let categories = ["Management Visionaries", "Tech Visionaries"];
-        if (
-          catRes.status === "fulfilled" &&
-          catRes.value?.data?.data &&
-          Array.isArray(catRes.value.data.data)
-        ) {
-          const names = catRes.value.data.data.map((c) => {
-            const raw = (c.name || '').trim();
-            const lower = raw.toLowerCase();
-            if (lower === 'management team' || lower === 'management visionaries' || lower === 'management') {
-              return 'Management Visionaries';
-            }
-            if (
-              lower === 'technical leadership team' ||
-              lower === 'tech visionaries' ||
-              lower === 'our mentors' ||
-              lower.includes('technical leadership')
-            ) {
-              return 'Tech Visionaries';
-            }
-            return raw;
-          });
-          categories = Array.from(
-            new Set(["Management Visionaries", "Tech Visionaries", ...names])
-          );
-        }
+        const members = toTeamMembers(teamRes.value.data);
+        const categories = toTeamCategories(
+          catRes.status === "fulfilled" ? catRes.value?.data : null
+        );
         if (members.length > 0) {
           saveCache("lesuccess_cache_team_v1", members, { categories });
         }
@@ -282,7 +323,7 @@ export function AppDataProvider({ children }) {
     try {
       const { data: resData } = await apiClient.get("/api/gallery/categories");
       if (currentAttempt !== galleryAttempt.current) return;
-      const data = Array.isArray(resData?.data) ? resData.data : [];
+      const data = toGalleryCategories(resData);
       if (data.length > 0) {
         saveCache("lesuccess_cache_gallery_v1", data);
       }
@@ -327,12 +368,8 @@ export function AppDataProvider({ children }) {
       const res = await apiClient.get("/api/success-stories");
       if (currentAttempt !== successStoriesAttempt.current) return;
       
-      const apiData = res?.data?.data || { images: [], reels: [] };
-      const images = Array.isArray(apiData.images) ? apiData.images : [];
-      const reels = Array.isArray(apiData.reels) ? apiData.reels : [];
-      
-      const data = { images, reels };
-      const hasData = images.length > 0 || reels.length > 0;
+      const data = toSuccessStories(res?.data);
+      const hasData = data.images.length > 0 || data.reels.length > 0;
       
       if (hasData) {
         saveCache("lesuccess_cache_successstories_v1", data);
@@ -352,6 +389,44 @@ export function AppDataProvider({ children }) {
         error: err,
       }));
     }
+  }, []);
+
+  // SNAPSHOT FALLBACK (see BUILD-TIME SNAPSHOT above)
+  useEffect(() => {
+    let cancelled = false;
+    import("../data/apiSnapshot.json")
+      .then(({ default: snapshot }) => {
+        if (cancelled) return;
+        const b = snapshot?.bodies || {};
+
+        const courses = normalizeCourseList(b["/api/courses"]?.data);
+        seedIfEmpty(setCoursesState, courses, courses.length > 0);
+
+        const members = toTeamMembers(b["/api/team-members"]);
+        if (members.length > 0) {
+          const categories = toTeamCategories(b["/api/team-categories"]);
+          setTeamState((prev) =>
+            prev.status === "loading" || prev.status === "error"
+              ? { ...prev, status: "success", data: members, categories, isCached: true, error: null }
+              : prev
+          );
+        }
+
+        const programs = normalizeProgramList(b["/api/upcoming-programs"]);
+        seedIfEmpty(setProgramsState, programs, programs.length > 0);
+
+        const gallery = toGalleryCategories(b["/api/gallery/categories"]);
+        seedIfEmpty(setGalleryState, gallery, gallery.length > 0);
+
+        const stories = toSuccessStories(b["/api/success-stories"]);
+        seedIfEmpty(setSuccessStoriesState, stories, stories.images.length > 0 || stories.reels.length > 0);
+      })
+      .catch(() => {
+        // No snapshot is not an error: the live fetches still run.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // INITIAL LOAD
@@ -409,12 +484,3 @@ export function AppDataProvider({ children }) {
   );
 }
 
-export function useAppData() {
-  const context = useContext(AppDataContext);
-  if (!context) {
-    throw new Error("useAppData must be used within an AppDataProvider");
-  }
-  return context;
-}
-
-export default AppDataContext;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Video,
   Upload,
@@ -7,14 +7,11 @@ import {
   Pause,
   Volume2,
   VolumeX,
-  CheckCircle2,
-  AlertCircle,
   RotateCcw,
   Eye,
   EyeOff,
   Save,
   Loader2,
-  Sparkles,
   Trash2,
 } from 'lucide-react';
 import apiClient from '../../../services/apiClient.js';
@@ -38,12 +35,10 @@ export default function AdminHeroVideoTab({ showAlert }) {
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    setLoading(true);
+  // `loading` starts true, so this mount-only load sets it false and nothing else.
+  // Errors are reported from the promise (.catch) rather than a catch block in
+  // here, so no state update can run synchronously inside the mount effect.
+  const fetchSettings = useCallback(async () => {
     try {
       const { data } = await apiClient.get('/api/settings');
       const settings = data?.data || {};
@@ -54,12 +49,14 @@ export default function AdminHeroVideoTab({ showAlert }) {
       } else {
         setVideoEnabled(Boolean(settings.hero_video_url));
       }
-    } catch (err) {
-      showAlert?.('Failed to load current Hero video settings', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSettings().catch(() => showAlert?.('Failed to load current Hero video settings', 'error'));
+  }, [fetchSettings, showAlert]);
 
   const handleDeleteVideo = async () => {
     if (!window.confirm('Are you sure you want to delete the current Hero video? This will remove the video and the public site will no longer display it.')) {

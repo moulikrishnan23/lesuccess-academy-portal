@@ -4,7 +4,7 @@ import { Users, Mail, ArrowRight, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
-import { useAppData } from "../../context/AppDataContext.jsx";
+import { useAppData } from "../../context/appData.js";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import ErrorState from "../ui/ErrorState.jsx";
 
@@ -22,7 +22,7 @@ function TeamCardSkeleton() {
 
 const FeaturedTeamCard = ({ member }) => {
   const imgSrc = member.imageUrl
-    ? getImageUrl(member.imageUrl)
+    ? getImageUrl(member.imageUrl, "", { width: 800 })
     : member.image || "/home/team/dummy.png";
 
   return (
@@ -30,7 +30,7 @@ const FeaturedTeamCard = ({ member }) => {
       {/* Background Image Container with TeamBg.png */}
       <div
         className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center bg-no-repeat shadow-[0_4px_20px_rgba(7,64,92,0.06)] border border-slate-200/90 transition-all duration-300 group-hover:shadow-[0_20px_40px_rgba(7,64,92,0.12)] group-hover:border-[#07405C]/35"
-        style={{ backgroundImage: "url('/home/TeamBg.png')" }}
+        style={{ backgroundImage: "url('/home/TeamBg.webp')" }}
       >
         <img
           src={imgSrc}

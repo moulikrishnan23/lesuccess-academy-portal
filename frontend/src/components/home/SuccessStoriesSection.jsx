@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Trophy, ChevronRight, Maximize2 } from 'lucide-react'
 import { FaInstagram } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
-import { useAppData } from '../../context/AppDataContext.jsx'
+import { useAppData } from '../../context/appData.js'
 import { getImageUrl } from '../../utils/imageUtils.js'
 import InstagramReelEmbed from '../common/InstagramReelEmbed.jsx'
 import ImageLightboxModal from '../common/ImageLightboxModal.jsx'
@@ -32,7 +32,7 @@ const StoryImageCard = ({ image, onClick }) => (
     className="inline-flex h-[220px] w-[300px] mx-3 shrink-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs hover:shadow-md transition-all duration-300 relative group cursor-pointer"
   >
     <img
-      src={getImageUrl(image.imageUrl)}
+      src={getImageUrl(image.imageUrl, '', { width: 800 })}
       alt={image.caption || 'Success story'}
       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
       loading="lazy"

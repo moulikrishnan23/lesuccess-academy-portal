@@ -16,10 +16,8 @@ import {
 import aboutImage from "../../assets/home/about.png";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import {
-  fadeUp,
   fadeLeft,
   fadeRight,
-  staggerContainer,
   motionSafe,
   ONCE_IN_VIEW,
 } from "../../animations/variants.js";

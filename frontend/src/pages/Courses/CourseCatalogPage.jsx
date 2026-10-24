@@ -590,7 +590,7 @@ export default function CourseCatalogPage() {
               <CourseCardSkeleton key={index} />
             ))}
           </ul>
-        ) : error ? (
+        ) : error && courses.length === 0 ? (
           <ErrorState
             className="mt-10"
             title="The course list didn't load"

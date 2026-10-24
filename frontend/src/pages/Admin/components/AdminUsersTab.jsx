@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Plus, Trash2, ShieldCheck, UserCheck, X, UserPlus, Key } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { Trash2, ShieldCheck, UserCheck, X, UserPlus, Key } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { useAuth } from '../../../context/AuthContext.jsx'
 
@@ -17,10 +17,6 @@ export default function AdminUsersTab({ showAlert }) {
     role: 'TRAINER', // 'ADMIN' | 'TRAINER'
   })
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
   // Body scroll lock
   useEffect(() => {
     if (isModalOpen) {
@@ -31,17 +27,32 @@ export default function AdminUsersTab({ showAlert }) {
     }
   }, [isModalOpen])
 
-  const fetchUsers = async () => {
-    setLoading(true)
+  // The request itself. `loading` starts true, so the first load needs no
+  // setLoading(true) of its own; refreshes go through fetchUsers.
+  // Errors are reported from the promise (.catch) rather than a catch block in
+  // here, so no state update can run synchronously inside the mount effect.
+  const loadUsers = useCallback(async () => {
     try {
       const { data } = await apiClient.get('/api/admin/users')
       setUsers(data?.data || [])
-    } catch (err) {
-      showAlert?.('Failed to load user accounts', 'error')
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  const reportUsersError = useCallback(
+    () => showAlert?.('Failed to load user accounts', 'error'),
+    [showAlert],
+  )
+
+  const fetchUsers = () => {
+    setLoading(true)
+    return loadUsers().catch(reportUsersError)
   }
+
+  useEffect(() => {
+    loadUsers().catch(reportUsersError)
+  }, [loadUsers, reportUsersError])
 
   const openCreateModal = (defaultRole = 'TRAINER') => {
     setForm({

@@ -33,7 +33,12 @@ function normalizeProgram(raw) {
 export async function listUpcoming(type = null, { signal } = {}) {
   const params = type ? { type } : {}
   const { data } = await apiClient.get('/api/upcoming-programs', { params, signal })
-  const list = Array.isArray(data?.data) ? data.data : []
+  return normalizeProgramList(data)
+}
+
+/** Parses a raw GET /api/upcoming-programs body (live or from the build snapshot). */
+export function normalizeProgramList(body) {
+  const list = Array.isArray(body?.data) ? body.data : []
   return list.map(normalizeProgram)
 }
 
@@ -49,4 +54,4 @@ export async function uploadProgramImage(file) {
   return data?.data // { url, filename }
 }
 
-export default { listUpcoming, uploadProgramImage }
+export default { listUpcoming, normalizeProgramList, uploadProgramImage }

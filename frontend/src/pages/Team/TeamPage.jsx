@@ -12,7 +12,7 @@ import {
   Star,
 } from "lucide-react";
 import { FaLinkedinIn } from "react-icons/fa";
-import { useAppData } from "../../context/AppDataContext.jsx";
+import { useAppData } from "../../context/appData.js";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import ErrorState, { EmptyState } from "../../components/ui/ErrorState.jsx";
 
@@ -63,7 +63,7 @@ const getMemberCategory = (m) => {
 const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
   const [copied, setCopied] = useState(false);
   const imgSrc = member.imageUrl
-    ? getImageUrl(member.imageUrl)
+    ? getImageUrl(member.imageUrl, "", { width: 800 })
     : member.image || "/home/team/dummy.png";
 
   const handleEmailClick = (e) => {
@@ -122,7 +122,7 @@ const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
         {/* Background Image Container (TeamBg.png) with portrait aspect ratio so face is never cropped */}
         <div
           className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center border border-slate-200/90 shadow-xs"
-          style={{ backgroundImage: `url('/home/TeamBg.png')` }}
+          style={{ backgroundImage: `url('/home/TeamBg.webp')` }}
         >
           <img
             src={imgSrc}
@@ -187,8 +187,8 @@ const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
 
 export default function TeamPage() {
   const { team } = useAppData();
-  const { status, data: teamMembers, categories, refetch } = team;
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const { status, data: teamMembers, refetch } = team;
+  const [pickedCategory, setSelectedCategory] = useState('All');
   const [selectedMember, setSelectedMember] = useState(null);
   const [modalEmailCopied, setModalEmailCopied] = useState(false);
 
@@ -236,11 +236,10 @@ export default function TeamPage() {
 
   const hasAnyBatch = activeCategories.length > 0;
 
-  useEffect(() => {
-    if (selectedCategory !== 'All' && !activeCategories.includes(selectedCategory)) {
-      setSelectedCategory('All');
-    }
-  }, [activeCategories, selectedCategory]);
+  // A picked category that no longer has members (e.g. after a refetch) falls
+  // back to 'All' at render, rather than being reset by an effect.
+  const selectedCategory =
+    pickedCategory !== 'All' && !activeCategories.includes(pickedCategory) ? 'All' : pickedCategory;
 
   const filteredMembers = sortTeamMembers(
     activeMembers.filter((m) => {
@@ -578,12 +577,12 @@ export default function TeamPage() {
               <div className="w-full md:w-56 shrink-0">
                 <div
                   className="aspect-[3/4] w-full rounded-2xl overflow-hidden bg-cover bg-center border border-slate-200 shadow-md"
-                  style={{ backgroundImage: `url('/home/TeamBg.png')` }}
+                  style={{ backgroundImage: `url('/home/TeamBg.webp')` }}
                 >
                   <img
                     src={
                       selectedMember.imageUrl
-                        ? getImageUrl(selectedMember.imageUrl)
+                        ? getImageUrl(selectedMember.imageUrl, "", { width: 1000 })
                         : selectedMember.image || "/home/team/dummy.png"
                     }
                     alt={selectedMember.name}

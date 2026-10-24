@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mail, Phone, MapPin, MessageCircle, Send, ChevronDown } from "lucide-react";
+import { Mail, Phone, MapPin, Send, ChevronDown } from "lucide-react";
 import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 import useContactSubmit from "../../hooks/useContactSubmit.js";
 import { validateContactForm } from "../../utils/validation.js";

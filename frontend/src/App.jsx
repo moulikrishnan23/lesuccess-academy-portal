@@ -7,7 +7,7 @@ import {
   Suspense,
 } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
-import { useAppData } from "./context/AppDataContext.jsx";
+import { useAppData } from "./context/appData.js";
 
 import Navbar from "./components/layout/Navbar.jsx";
 import OfferHeader from "./components/layout/OfferHeader.jsx";
@@ -22,22 +22,26 @@ import useSiteSettings from "./hooks/useSiteSettings.js";
 import { AnimatePresence } from "framer-motion";
 
 import Home from "./pages/Home/HomePage.jsx";
-import AboutPage from "./pages/About/AboutPage.jsx";
-import TeamPage from "./pages/Team/TeamPage.jsx";
-import Contact from "./pages/Contact/ContactPage.jsx";
-import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
-import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
-import ServicePage from "./pages/Services/ServicePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
 import ConnectWithUsPopupTrigger from "./components/common/ConnectWithUsPopupTrigger.jsx";
-import GalleryPage from "./pages/Gallery/GalleryPage.jsx";
-import SuccessStoriesPage from './pages/SuccessStories/SuccessStoriesPage.jsx';
-import LoginPage from "./pages/Auth/LoginPage.jsx";
 import InitialReelExperience from "./components/common/InitialReelExperience.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { AppDataProvider } from "./context/AppDataContext.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import useAdminShortcut from "./hooks/useAdminShortcut.js";
+
+// Home is the landing page and stays in the main bundle; every other public page
+// is split into its own chunk and fetched on first visit. The Suspense boundary
+// for these lives in PageTransition, which wraps every public route.
+const AboutPage = lazy(() => import("./pages/About/AboutPage.jsx"));
+const TeamPage = lazy(() => import("./pages/Team/TeamPage.jsx"));
+const Contact = lazy(() => import("./pages/Contact/ContactPage.jsx"));
+const CourseCatalogPage = lazy(() => import("./pages/Courses/CourseCatalogPage.jsx"));
+const CourseDetailPage = lazy(() => import("./pages/CourseDetail/[slug]/CourseDetailPage.jsx"));
+const ServicePage = lazy(() => import("./pages/Services/ServicePage.jsx"));
+const GalleryPage = lazy(() => import("./pages/Gallery/GalleryPage.jsx"));
+const SuccessStoriesPage = lazy(() => import("./pages/SuccessStories/SuccessStoriesPage.jsx"));
+const LoginPage = lazy(() => import("./pages/Auth/LoginPage.jsx"));
 
 const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard.jsx"));
 const TrainerDashboard = lazy(() => import("./pages/Trainer/TrainerDashboard.jsx"));

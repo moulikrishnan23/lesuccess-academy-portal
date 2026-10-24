@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from '../../animations/variants.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
 import { getImageUrl } from '../../utils/imageUtils.js'
-import { useAppData } from '../../context/AppDataContext.jsx'
+import { useAppData } from '../../context/appData.js'
 import ProgramRegistrationModal from './ProgramRegistrationModal.jsx'
 
 const INTERVAL_MS = 7000
@@ -433,7 +433,7 @@ export default function UpcomingPrograms() {
                     ) : currentProgram?.imageUrl ? (
                       <div className="relative z-10 my-auto w-full max-w-xs sm:max-w-sm mx-auto aspect-[4/3] rounded-2xl overflow-hidden border border-white/25 bg-slate-900/60 shadow-lg group/img">
                         <img
-                          src={getImageUrl(currentProgram.imageUrl)}
+                          src={getImageUrl(currentProgram.imageUrl, '', { width: 800 })}
                           alt={currentProgram.speakerName || currentProgram.title}
                           className="h-full w-full object-cover object-center transition-transform duration-700 group-hover/eventcard:scale-105 group-hover/img:scale-105"
                           onError={(e) => {

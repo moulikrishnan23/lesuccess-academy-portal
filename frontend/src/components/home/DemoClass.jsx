@@ -44,12 +44,9 @@ const DemoClass = ({
   const [submitStatus, setSubmitStatus] = useState(null); // "success" | "error"
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Auto-associate the course name if provided and not yet manually chosen
-  useEffect(() => {
-    if (initialCourseName) {
-      setSelectedCourseName((curr) => curr || initialCourseName);
-    }
-  }, [initialCourseName]);
+  // The course passed in (e.g. from a course page) applies until the visitor
+  // picks one; derived at render rather than copied into state by an effect.
+  const courseName = selectedCourseName || initialCourseName || "";
 
   // Handle ESC key and scroll locking when used as a modal
   useEffect(() => {
@@ -102,7 +99,7 @@ const DemoClass = ({
       return;
     }
 
-    if (!selectedCourseName) {
+    if (!courseName) {
       setSubmitStatus("error");
       setErrorMessage("Please select a course for the demo class.");
       return;
@@ -117,7 +114,7 @@ const DemoClass = ({
         name: name.trim(),
         email: email.trim(),
         mobileNumber: cleanMobile,
-        courseName: selectedCourseName,
+        courseName,
         website,
       });
 
@@ -266,7 +263,7 @@ const DemoClass = ({
           />
 
           <select
-            value={selectedCourseName}
+            value={courseName}
             onChange={(e) => setSelectedCourseName(e.target.value)}
             className="w-full appearance-none rounded-xl border border-white/25 bg-white/10 py-3.5 pl-11 pr-10 text-white text-sm outline-none focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all cursor-pointer"
           >
@@ -393,7 +390,7 @@ const DemoClass = ({
           />
 
           <select
-            value={selectedCourseName}
+            value={courseName}
             onChange={(e) => setSelectedCourseName(e.target.value)}
             className="w-full appearance-none rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-8 text-white text-xs sm:text-sm outline-none focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all cursor-pointer"
           >
