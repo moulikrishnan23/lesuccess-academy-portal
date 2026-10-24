@@ -10,19 +10,19 @@
  */
 
 // Gentle deceleration curve; shared so entrances feel like one system.
-export const EASE_OUT = [0.22, 1, 0.36, 1]
+export const EASE_OUT = [0.22, 1, 0.36, 1];
 
 export const DURATION = {
   tap: 0.12,
   interaction: 0.2,
   entrance: 0.5,
-}
+};
 
 /** No transform, no delay, no duration — the reduced-motion substitute. */
 export const instant = {
   hidden: { opacity: 1 },
   visible: { opacity: 1, transition: { duration: 0 } },
-}
+};
 
 export const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -31,7 +31,7 @@ export const fadeUp = {
     y: 0,
     transition: { duration: DURATION.entrance, ease: EASE_OUT },
   },
-}
+};
 
 export const fadeLeft = {
   hidden: { opacity: 0, x: -24 },
@@ -40,7 +40,7 @@ export const fadeLeft = {
     x: 0,
     transition: { duration: DURATION.entrance, ease: EASE_OUT },
   },
-}
+};
 
 export const fadeRight = {
   hidden: { opacity: 0, x: 24 },
@@ -49,7 +49,7 @@ export const fadeRight = {
     x: 0,
     transition: { duration: DURATION.entrance, ease: EASE_OUT },
   },
-}
+};
 
 export const scaleIn = {
   hidden: { opacity: 0, scale: 0.94 },
@@ -58,7 +58,52 @@ export const scaleIn = {
     scale: 1,
     transition: { duration: DURATION.entrance, ease: EASE_OUT },
   },
-}
+};
+
+/** Springy bounce entrance (inspired by Fund AACPS neue-hop) */
+export const hopIn = {
+  hidden: { opacity: 0, y: 28, scale: 0.92 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      damping: 15,
+      stiffness: 220,
+      mass: 0.8,
+    },
+  },
+};
+
+/** Dynamic zoom & unfold entrance (inspired by Cloudious motion-expandIn) */
+export const expandIn = {
+  hidden: { opacity: 0, scale: 0.88 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.55, ease: EASE_OUT },
+  },
+};
+
+/** Smooth gliding entrance with momentum (inspired by Cloudious motion-glideIn) */
+export const glideInLeft = {
+  hidden: { opacity: 0, x: -36 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: EASE_OUT },
+  },
+};
+
+export const glideInRight = {
+  hidden: { opacity: 0, x: 36 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: EASE_OUT },
+  },
+};
 
 export const slideDown = {
   hidden: { opacity: 0, y: -16 },
@@ -67,7 +112,7 @@ export const slideDown = {
     y: 0,
     transition: { duration: DURATION.entrance, ease: EASE_OUT },
   },
-}
+};
 
 export const imageReveal = {
   hidden: { opacity: 0, scale: 0.96 },
@@ -76,31 +121,31 @@ export const imageReveal = {
     scale: 1,
     transition: { duration: 0.7, ease: EASE_OUT },
   },
-}
+};
 
 export const staggerContainer = {
   hidden: {},
   visible: {
     transition: { staggerChildren: 0.07, delayChildren: 0.04 },
   },
-}
+};
 
 export const heroStagger = {
   hidden: {},
   visible: {
     transition: { staggerChildren: 0.1, delayChildren: 0.06 },
   },
-}
+};
 
 /** Elevation on hover/focus for card surfaces. */
 export const cardHover = {
-  rest: { y: 0, boxShadow: '0 1px 2px rgba(15, 27, 26, 0.05)' },
+  rest: { y: 0, boxShadow: "0 1px 2px rgba(15, 27, 26, 0.05)" },
   hover: {
     y: -4,
-    boxShadow: '0 12px 24px -12px rgba(15, 27, 26, 0.22)',
+    boxShadow: "0 12px 24px -12px rgba(15, 27, 26, 0.22)",
     transition: { duration: DURATION.interaction, ease: EASE_OUT },
   },
-}
+};
 
 /**
  * Card entrance for a grid: rise, fade and settle.
@@ -114,9 +159,13 @@ export const cardReveal = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: DURATION.entrance, ease: EASE_OUT, delay: column * 0.08 },
+    transition: {
+      duration: DURATION.entrance,
+      ease: EASE_OUT,
+      delay: column * 0.08,
+    },
   }),
-}
+};
 
 /**
  * Continuous idle drift for a row of cards.
@@ -131,18 +180,18 @@ export const cardReveal = {
  */
 export const floatLoop = (delay = 0) => ({
   y: [0, -10, 0],
-  transition: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay },
-})
+  transition: { duration: 4, repeat: Infinity, ease: "easeInOut", delay },
+});
 
 /** Mobile sticky enroll bar rising into place the first time it is shown. */
 export const slideUpBar = {
-  hidden: { opacity: 0, y: '100%' },
+  hidden: { opacity: 0, y: "100%" },
   visible: {
     opacity: 1,
-    y: '0%',
+    y: "0%",
     transition: { duration: 0.32, ease: EASE_OUT },
   },
-}
+};
 
 /** Validation messages: a short shake reads as "rejected", not "appeared". */
 export const errorShake = {
@@ -154,13 +203,13 @@ export const errorShake = {
     transition: { duration: 0.28, ease: EASE_OUT },
   },
   exit: { opacity: 0, transition: { duration: 0.12 } },
-}
+};
 
 /** Accordion body. Height is animated here by necessity, not by preference. */
 export const accordionPanel = {
   hidden: { height: 0, opacity: 0 },
   visible: {
-    height: 'auto',
+    height: "auto",
     opacity: 1,
     transition: {
       height: { duration: 0.26, ease: EASE_OUT },
@@ -175,32 +224,36 @@ export const accordionPanel = {
       opacity: { duration: 0.12, ease: EASE_OUT },
     },
   },
-}
+};
 
 /** Cross-fade used when a form is replaced by its success state. */
 export const crossFade = {
   hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE_OUT } },
   exit: { opacity: 0, y: -8, transition: { duration: 0.16, ease: EASE_OUT } },
-}
+};
 
 /** Carousel track easing, shared so every carousel on the site matches. */
 export const CAROUSEL_TRANSITION = {
-  type: 'tween',
+  type: "tween",
   duration: 0.42,
   ease: EASE_OUT,
-}
+};
 
 /**
  * Swap any variant set for an instant one when the visitor prefers reduced
  * motion. Call it at the point of use: `variants={motionSafe(fadeUp, reduced)}`.
  */
 export function motionSafe(variants, reduced) {
-  return reduced ? instant : variants
+  return reduced ? instant : variants;
 }
 
 /** Viewport config for scroll entrances — play once, slightly before centre. */
-export const ONCE_IN_VIEW = { once: true, amount: 0.15, margin: '0px 0px -80px 0px' }
+export const ONCE_IN_VIEW = {
+  once: true,
+  amount: 0.15,
+  margin: "0px 0px -80px 0px",
+};
 
 /**
  * Viewport for revealing the individual items of a long list.
@@ -215,4 +268,4 @@ export const ONCE_IN_VIEW = { once: true, amount: 0.15, margin: '0px 0px -80px 0
  * No bottom margin here for the same reason: it delays the first row, which is
  * the row that has to be visible the moment the page opens.
  */
-export const ITEM_IN_VIEW = { once: true, amount: 0.2 }
+export const ITEM_IN_VIEW = { once: true, amount: 0.2 };

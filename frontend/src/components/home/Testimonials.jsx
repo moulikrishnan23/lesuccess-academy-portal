@@ -8,7 +8,13 @@ import {
 } from "lucide-react";
 import ScrollReveal from "../../animations/ScrollReveal.jsx";
 import { useAppData } from "../../context/appData.js";
-import { GOOGLE_REVIEWS, GOOGLE_REVIEWS_META } from "../../data/googleReviews.js";
+import { getImageUrl } from "../../utils/imageUtils.js";
+import {
+  GOOGLE_REVIEWS,
+  GOOGLE_REVIEWS_META,
+} from "../../data/googleReviews.js";
+import SpotlightCard from "../ui/SpotlightCard.jsx";
+import Magnetic from "../ui/Magnetic.jsx";
 
 const AVATAR_COLORS = [
   "bg-[#07405C]",
@@ -34,7 +40,11 @@ export default function Testimonials() {
 
   // Use dynamic testimonials from Admin / DB, fallback to verified Google Reviews
   const reviews = useMemo(() => {
-    if (testimonials?.data && Array.isArray(testimonials.data) && testimonials.data.length > 0) {
+    if (
+      testimonials?.data &&
+      Array.isArray(testimonials.data) &&
+      testimonials.data.length > 0
+    ) {
       return testimonials.data;
     }
     return GOOGLE_REVIEWS;
@@ -58,13 +68,20 @@ export default function Testimonials() {
   // Preserve admin displayOrder without overriding by rating
   const sortedReviews = useMemo(() => {
     return [...reviews].sort((a, b) => {
-      if (typeof a.displayOrder === 'number' && typeof b.displayOrder === 'number' && a.displayOrder !== b.displayOrder) {
+      if (
+        typeof a.displayOrder === "number" &&
+        typeof b.displayOrder === "number" &&
+        a.displayOrder !== b.displayOrder
+      ) {
         return a.displayOrder - b.displayOrder;
       }
       return 0;
     });
   }, [reviews]);
-  const visibleReviews = sortedReviews.slice(startIndex, startIndex + cardsPerPage);
+  const visibleReviews = sortedReviews.slice(
+    startIndex,
+    startIndex + cardsPerPage,
+  );
 
   return (
     <section className="relative w-full bg-slate-50/70 py-20 px-4 sm:px-8 lg:px-16 overflow-hidden transition-colors duration-200">
@@ -75,10 +92,12 @@ export default function Testimonials() {
             Student Testimonials
           </span>
           <h2 className="mt-3 text-3xl font-extrabold text-[#101010] sm:text-4xl tracking-tight">
-            Verified Reviews from Our <span className="text-[#DF1E26]">Learners</span>
+            Verified Reviews from Our{" "}
+            <span className="text-[#DF1E26]">Learners</span>
           </h2>
           <p className="mt-2 text-base text-slate-600">
-            Real feedback from graduates who transformed their careers with LeSuccess Academy.
+            Real feedback from graduates who transformed their careers with
+            LeSuccess Academy.
           </p>
         </ScrollReveal>
 
@@ -92,7 +111,11 @@ export default function Testimonials() {
                   {GOOGLE_REVIEWS_META.placeName}
                 </h3>
                 {/* Google Multi-Color Icon */}
-                <svg viewBox="0 0 24 24" className="w-6 h-6 shrink-0" aria-label="Google">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-6 h-6 shrink-0"
+                  aria-label="Google"
+                >
                   <path
                     fill="#4285F4"
                     d="M23.52 12.27c0-.85-.08-1.66-.22-2.44H12v4.62h6.47a5.54 5.54 0 0 1-2.4 3.64v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z"
@@ -129,8 +152,8 @@ export default function Testimonials() {
                         i < Math.floor(GOOGLE_REVIEWS_META.rating)
                           ? "fill-[#ffb800] text-[#ffb800]"
                           : i < GOOGLE_REVIEWS_META.rating
-                          ? "fill-[#ffb800]/50 text-[#ffb800]"
-                          : "text-slate-300"
+                            ? "fill-[#ffb800]/50 text-[#ffb800]"
+                            : "text-slate-300"
                       }
                     />
                   ))}
@@ -144,15 +167,17 @@ export default function Testimonials() {
 
             {/* Write a review button */}
             <div className="shrink-0 pt-2 sm:pt-0">
-              <a
-                href={GOOGLE_REVIEWS_META.writeReviewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-[#07405C] bg-white px-6 py-2.5 text-sm font-bold text-[#07405C] shadow-xs hover:bg-[#07405C] hover:text-white transition-all cursor-pointer"
-              >
-                <span>Write a review</span>
-                <ExternalLink size={14} />
-              </a>
+              <Magnetic strength={0.25}>
+                <a
+                  href={GOOGLE_REVIEWS_META.writeReviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-glow-navy inline-flex items-center gap-2 rounded-xl border border-[#07405C] bg-white px-6 py-2.5 text-sm font-bold text-[#07405C] shadow-xs hover:bg-[#07405C] hover:text-white transition-all cursor-pointer"
+                >
+                  <span>Write a review</span>
+                  <ExternalLink size={14} />
+                </a>
+              </Magnetic>
             </div>
           </div>
 
@@ -184,85 +209,113 @@ export default function Testimonials() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {visibleReviews.map((review, idx) => {
-                const initial = review.name ? review.name.trim().charAt(0).toUpperCase() : "S";
+                const initial = review.name
+                  ? review.name.trim().charAt(0).toUpperCase()
+                  : "S";
                 const isExpanded = expandedIds.has(review.id);
 
                 return (
-                  <ScrollReveal key={review.id} delay={idx * 0.1}>
-                  <div
-                    className="group h-full flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs hover:shadow-[0_16px_36px_rgba(7,64,92,0.08)] hover:-translate-y-1.5 hover:border-slate-300 transition-all duration-300"
+                  <ScrollReveal
+                    preset="hop"
+                    key={review.id}
+                    delay={idx * 0.08}
+                    className="h-full"
                   >
-                    <div>
-                      {/* Reviewer Header: Avatar, Name, Review Count */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          {review.photoUrl ? (
-                            <img
-                              src={review.photoUrl}
-                              alt={review.name}
-                              className="w-11 h-11 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div
-                              className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-inner ${getAvatarColor(
-                                review.name
-                              )}`}
-                            >
-                              {initial}
+                    <SpotlightCard
+                      tilt={true}
+                      maxTilt={6}
+                      spotlightColor="rgba(255, 184, 0, 0.12)"
+                      className="card-lift-3d group h-full flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs cursor-default"
+                    >
+                      <div>
+                        {/* Reviewer Header: Avatar, Name, Review Count */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            {review.photoUrl ? (
+                              <img
+                                src={getImageUrl(review.photoUrl, "", { width: 160 })}
+                                alt={review.name}
+                                className="w-11 h-11 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div
+                                className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-inner ${getAvatarColor(
+                                  review.name,
+                                )}`}
+                              >
+                                {initial}
+                              </div>
+                            )}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-bold text-slate-900 text-sm sm:text-base leading-tight">
+                                  {review.name}
+                                </h4>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  Verified
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-0.5">
+                                {review.reviewCount || "1 review"}
+                              </p>
                             </div>
-                          )}
-                          <div>
-                            <h4 className="font-bold text-slate-900 text-sm sm:text-base leading-tight">
-                              {review.name}
-                            </h4>
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              {review.reviewCount || "1 review"}
-                            </p>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Stars and Date */}
-                      <div className="mt-3 flex items-center gap-2">
-                        <div className="flex text-[#ffb800]">
-                          {[...Array(review.rating || 5)].map((_, i) => (
-                            <Star key={i} size={15} fill="#ffb800" stroke="#ffb800" />
-                          ))}
+                        {/* Stars and Date with Sequential Twinkle Animation */}
+                        <div className="mt-3 flex items-center gap-2">
+                          <div className="flex text-[#ffb800] gap-0.5">
+                            {[...Array(review.rating || 5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={15}
+                                fill="#ffb800"
+                                stroke="#ffb800"
+                                className="transition-transform duration-300 group-hover:scale-120"
+                                style={{
+                                  transitionDelay: `${i * 50}ms`,
+                                  animation:
+                                    "starTwinkle 3.5s ease-in-out infinite",
+                                  animationDelay: `${i * 0.25}s`,
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-slate-500 font-medium">
+                            {review.date}
+                          </span>
                         </div>
-                        <span className="text-xs text-slate-500 font-medium">
-                          {review.date}
-                        </span>
+
+                        {/* Review Text with ... More toggle */}
+                        <p className="mt-3 text-sm text-slate-700 leading-relaxed font-normal">
+                          {isExpanded || review.text.length <= 160 ? (
+                            review.text
+                          ) : (
+                            <>
+                              {review.text.slice(0, 160)}
+                              <span>... </span>
+                              <button
+                                type="button"
+                                onClick={() => toggleExpand(review.id)}
+                                className="text-slate-500 hover:text-slate-900 font-medium text-xs inline underline cursor-pointer"
+                              >
+                                More
+                              </button>
+                            </>
+                          )}
+                        </p>
                       </div>
 
-                      {/* Review Text with ... More toggle */}
-                      <p className="mt-3 text-sm text-slate-700 leading-relaxed font-normal">
-                        {isExpanded || review.text.length <= 160 ? (
-                          review.text
-                        ) : (
-                          <>
-                            {review.text.slice(0, 160)}
-                            <span>... </span>
-                            <button
-                              type="button"
-                              onClick={() => toggleExpand(review.id)}
-                              className="text-slate-500 hover:text-slate-900 font-medium text-xs inline underline cursor-pointer"
-                            >
-                              More
-                            </button>
-                          </>
-                        )}
-                      </p>
-                    </div>
-
-                    {/* Footer: Course Tag */}
-                    {review.course && (
-                      <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-end">
-                        <span className="text-[11px] font-bold text-[#DF1E26] bg-[#DF1E26]/10 px-2.5 py-0.5 rounded-full border border-[#DF1E26]/20">
-                          {review.course}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                      {/* Footer: Course Tag */}
+                      {review.course && (
+                        <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-end">
+                          <span className="text-[11px] font-bold text-[#DF1E26] bg-[#DF1E26]/10 px-2.5 py-0.5 rounded-full border border-[#DF1E26]/20">
+                            {review.course}
+                          </span>
+                        </div>
+                      )}
+                    </SpotlightCard>
                   </ScrollReveal>
                 );
               })}

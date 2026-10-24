@@ -1,5 +1,6 @@
 import StarRating from '../ui/StarRating.jsx'
 import { SlashQuoteIcon } from '../ui/icons.jsx'
+import { getImageUrl } from '../../utils/imageUtils.js'
 
 /**
  * One student review, matching the card in Course_Page.pdf / homa page.pdf:
@@ -43,7 +44,7 @@ export default function TestimonialCard({ testimonial }) {
         */}
         {photoUrl ? (
           <img
-            src={photoUrl}
+            src={getImageUrl(photoUrl, '', { width: 160 })}
             alt={`${studentName}, course graduate`}
             loading="lazy"
             width="60"

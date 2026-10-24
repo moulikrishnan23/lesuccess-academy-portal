@@ -1,24 +1,24 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
-import CourseHero from '../../../components/sections/CourseHero.jsx'
-import CourseTabs from '../../../components/sections/CourseTabs.jsx'
-import { DEFAULT_TABS } from '../../../components/sections/courseTabs.constants.js'
-import WhyLearnSection from '../../../components/sections/WhyLearnSection.jsx'
-import WhatYoullLearnToDoSection from '../../../components/sections/WhatYoullLearnToDoSection.jsx'
-import EnrollCourseForm from '../../../components/forms/EnrollCourseForm.jsx'
-import TechStackSection from '../../../components/sections/TechStackSection.jsx'
-import ModulesAccordion from '../../../components/sections/ModulesAccordion.jsx'
-import CertificateSection from '../../../components/sections/CertificateSection.jsx'
-import TestimonialCarousel from '../../../components/carousel/TestimonialCarousel.jsx'
-import DemoClass from '../../../components/home/DemoClass.jsx'
-import ErrorState from '../../../components/ui/ErrorState.jsx'
-import Skeleton, { SkeletonText } from '../../../components/ui/Skeleton.jsx'
-import useCourseDetail from '../../../hooks/useCourseDetail.js'
-import useCourseTestimonials from '../../../hooks/useCourseTestimonials.js'
-import useSiteSettings from '../../../hooks/useSiteSettings.js'
-import useDocumentMeta from '../../../hooks/useDocumentMeta.js'
-import useReducedMotion from '../../../hooks/useReducedMotion.js'
-import { toPlainText } from '../../../utils/sanitize.js'
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
+import CourseHero from "../../../components/sections/CourseHero.jsx";
+import CourseTabs from "../../../components/sections/CourseTabs.jsx";
+import { DEFAULT_TABS } from "../../../components/sections/courseTabs.constants.js";
+import WhyLearnSection from "../../../components/sections/WhyLearnSection.jsx";
+import WhatYoullLearnToDoSection from "../../../components/sections/WhatYoullLearnToDoSection.jsx";
+import EnrollCourseForm from "../../../components/forms/EnrollCourseForm.jsx";
+import TechStackSection from "../../../components/sections/TechStackSection.jsx";
+import ModulesAccordion from "../../../components/sections/ModulesAccordion.jsx";
+import CertificateSection from "../../../components/sections/CertificateSection.jsx";
+import TestimonialCarousel from "../../../components/carousel/TestimonialCarousel.jsx";
+import DemoClass from "../../../components/home/DemoClass.jsx";
+import ErrorState from "../../../components/ui/ErrorState.jsx";
+import Skeleton, { SkeletonText } from "../../../components/ui/Skeleton.jsx";
+import useCourseDetail from "../../../hooks/useCourseDetail.js";
+import useCourseTestimonials from "../../../hooks/useCourseTestimonials.js";
+import useSiteSettings from "../../../hooks/useSiteSettings.js";
+import useDocumentMeta from "../../../hooks/useDocumentMeta.js";
+import useReducedMotion from "../../../hooks/useReducedMotion.js";
+import { toPlainText } from "../../../utils/sanitize.js";
 
 /** Full-page loading state, shaped like the real page so nothing jumps. */
 function CourseDetailSkeleton() {
@@ -49,7 +49,7 @@ function CourseDetailSkeleton() {
         <Skeleton className="h-96 w-full" rounded="rounded-card" />
       </div>
     </div>
-  )
+  );
 }
 
 function CenteredPanel({ children }) {
@@ -57,7 +57,7 @@ function CenteredPanel({ children }) {
     <div className="mx-auto flex min-h-[60vh] max-w-xl items-center px-5 py-20 sm:px-8">
       <div className="w-full">{children}</div>
     </div>
-  )
+  );
 }
 
 /**
@@ -68,12 +68,12 @@ function CenteredPanel({ children }) {
  * created in the admin dashboard tomorrow renders here with no code change.
  */
 export default function CourseDetailPage() {
-  const { slug } = useParams()
-  const location = useLocation()
-  const reduced = useReducedMotion()
+  const { slug } = useParams();
+  const location = useLocation();
+  const reduced = useReducedMotion();
 
   const { course, modules, techStack, isLoading, error, notFound, refetch } =
-    useCourseDetail(slug)
+    useCourseDetail(slug);
 
   // Testimonials are fetched here, not in the carousel, so the carousel stays
   // presentational and reusable. They wait for the course id.
@@ -82,18 +82,18 @@ export default function CourseDetailPage() {
     isLoading: isLoadingTestimonials,
     error: testimonialsError,
     refetch: refetchTestimonials,
-  } = useCourseTestimonials(course?.id ?? null)
+  } = useCourseTestimonials(course?.id ?? null);
 
-  const { settings } = useSiteSettings()
+  const { settings } = useSiteSettings();
 
   useDocumentMeta({
     title: course?.title,
     description:
       toPlainText(course?.shortDescription) || toPlainText(course?.description),
-  })
+  });
 
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false)
-  const enrollFormRef = useRef(null)
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const enrollFormRef = useRef(null);
 
   /**
    * Every CTA on the page routes through here. It scrolls to the enroll card
@@ -101,44 +101,49 @@ export default function CourseDetailPage() {
    * rather than somewhere near it.
    */
   const scrollToEnroll = useCallback(() => {
-    const node = enrollFormRef.current
-    if (!node) return
+    const node = enrollFormRef.current;
+    if (!node) return;
 
     node.scrollIntoView({
-      behavior: reduced ? 'auto' : 'smooth',
-      block: 'center',
-    })
+      behavior: reduced ? "auto" : "smooth",
+      block: "center",
+    });
 
     // Focus after the scroll starts; focusing first would make the browser jump.
-    window.setTimeout(() => {
-      node.querySelector('input')?.focus({ preventScroll: true })
-    }, reduced ? 0 : 400)
-  }, [reduced])
+    window.setTimeout(
+      () => {
+        node.querySelector("input")?.focus({ preventScroll: true });
+      },
+      reduced ? 0 : 400,
+    );
+  }, [reduced]);
 
   // Automatically scroll to the Enroll Form if the URL contains #enroll
   useEffect(() => {
-    if (location.hash === '#enroll' && !isLoading && course) {
+    if (location.hash === "#enroll" && !isLoading && course) {
       const timer = window.setTimeout(() => {
-        scrollToEnroll()
-      }, 150)
-      return () => window.clearTimeout(timer)
+        scrollToEnroll();
+      }, 150);
+      return () => window.clearTimeout(timer);
     }
-  }, [location.hash, isLoading, course, scrollToEnroll])
+  }, [location.hash, isLoading, course, scrollToEnroll]);
 
   // Drop the testimonials tab when that section hides itself, so no tab points
   // at a section that isn't in the document.
   const hasTestimonials =
-    isLoadingTestimonials || Boolean(testimonialsError) || testimonials.length > 0
+    isLoadingTestimonials ||
+    Boolean(testimonialsError) ||
+    testimonials.length > 0;
 
   const tabs = useMemo(
     () =>
       hasTestimonials
         ? DEFAULT_TABS
-        : DEFAULT_TABS.filter((tab) => tab.id !== 'testimonials'),
+        : DEFAULT_TABS.filter((tab) => tab.id !== "testimonials"),
     [hasTestimonials],
-  )
+  );
 
-  if (isLoading) return <CourseDetailSkeleton />
+  if (isLoading) return <CourseDetailSkeleton />;
 
   if (notFound) {
     return (
@@ -150,8 +155,8 @@ export default function CourseDetailPage() {
           We don't have a course at this address
         </h1>
         <p className="mt-4 text-[1.0625rem] leading-relaxed text-ink-soft">
-          The link may be out of date, or the course may have been renamed. Browse
-          the full list to find what you're after.
+          The link may be out of date, or the course may have been renamed.
+          Browse the full list to find what you're after.
         </p>
         {/* The catalog route is owned by other work — link to it rather than
             leaving the visitor at a dead end. */}
@@ -162,7 +167,7 @@ export default function CourseDetailPage() {
           See all courses
         </Link>
       </CenteredPanel>
-    )
+    );
   }
 
   if (error || !course) {
@@ -170,11 +175,14 @@ export default function CourseDetailPage() {
       <CenteredPanel>
         <ErrorState
           title="This course didn't load"
-          message={error?.message ?? 'The server did not respond. Try again in a moment.'}
+          message={
+            error?.message ??
+            "The server did not respond. Try again in a moment."
+          }
           onRetry={refetch}
         />
       </CenteredPanel>
-    )
+    );
   }
 
   return (
@@ -251,7 +259,7 @@ export default function CourseDetailPage() {
             data-competing-form="true"
             className="lg:sticky lg:self-start transition-[top] duration-300 ease-in-out"
             style={{
-              top: 'calc(var(--app-header, 0px) + var(--course-tabs-h, 0px) + 0.75rem)',
+              top: "calc(var(--app-header, 0px) + var(--course-tabs-h, 0px) + 0.75rem)",
             }}
           >
             <EnrollCourseForm
@@ -269,8 +277,8 @@ export default function CourseDetailPage() {
         isModal={true}
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}
-        initialCourseName={course?.title || course?.name || ''}
+        initialCourseName={course?.title || course?.name || ""}
       />
     </>
-  )
+  );
 }

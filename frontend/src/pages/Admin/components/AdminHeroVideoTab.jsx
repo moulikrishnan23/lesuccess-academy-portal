@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Video,
   Upload,
@@ -13,11 +13,10 @@ import {
   Save,
   Loader2,
   Trash2,
-} from 'lucide-react';
-import apiClient from '../../../services/apiClient.js';
+} from "lucide-react";
+import apiClient from "../../../services/apiClient.js";
 
-const DEFAULT_VIDEO_URL =
-  'https://res.cloudinary.com/mknetwyg/video/upload/v1791267704/lesuccess/video/CompanyIntroNew.mp4';
+const DEFAULT_VIDEO_URL = "/video/CompanyIntro.mp4";
 
 export default function AdminHeroVideoTab({ showAlert }) {
   const [loading, setLoading] = useState(true);
@@ -26,7 +25,7 @@ export default function AdminHeroVideoTab({ showAlert }) {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [deleting, setDeleting] = useState(false);
-  const [videoUrl, setVideoUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState("");
   const [videoEnabled, setVideoEnabled] = useState(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -40,12 +39,12 @@ export default function AdminHeroVideoTab({ showAlert }) {
   // here, so no state update can run synchronously inside the mount effect.
   const fetchSettings = useCallback(async () => {
     try {
-      const { data } = await apiClient.get('/api/settings');
+      const { data } = await apiClient.get("/api/settings");
       const settings = data?.data || {};
 
-      setVideoUrl(settings.hero_video_url || '');
+      setVideoUrl(settings.hero_video_url || "");
       if (settings.hero_video_enabled !== undefined) {
-        setVideoEnabled(settings.hero_video_enabled !== 'false');
+        setVideoEnabled(settings.hero_video_enabled !== "false");
       } else {
         setVideoEnabled(Boolean(settings.hero_video_url));
       }
@@ -55,37 +54,49 @@ export default function AdminHeroVideoTab({ showAlert }) {
   }, []);
 
   useEffect(() => {
-    fetchSettings().catch(() => showAlert?.('Failed to load current Hero video settings', 'error'));
+    fetchSettings().catch(() => showAlert?.("Failed to load current Hero video settings", "error"));
   }, [fetchSettings, showAlert]);
 
   const handleDeleteVideo = async () => {
-    if (!window.confirm('Are you sure you want to delete the current Hero video? This will remove the video and the public site will no longer display it.')) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete the current Hero video? This will remove the video and the public site will no longer display it.",
+      )
+    ) {
       return;
     }
 
     setDeleting(true);
     try {
       try {
-        await apiClient.delete('/api/settings/hero-video');
+        await apiClient.delete("/api/settings/hero-video");
       } catch (deleteErr) {
         // Fallback: If deployed backend hasn't restarted with DELETE endpoint yet (404/405),
         // persist deletion directly via existing PUT /api/settings
-        if (deleteErr?.response?.status === 404 || deleteErr?.response?.status === 405) {
-          await apiClient.put('/api/settings', {
-            hero_video_url: '',
-            hero_video_enabled: 'false',
+        if (
+          deleteErr?.response?.status === 404 ||
+          deleteErr?.response?.status === 405
+        ) {
+          await apiClient.put("/api/settings", {
+            hero_video_url: "",
+            hero_video_enabled: "false",
           });
         } else {
           throw deleteErr;
         }
       }
 
-      setVideoUrl('');
+      setVideoUrl("");
       setVideoEnabled(false);
-      showAlert?.('Hero video removed successfully!', 'success');
+      showAlert?.("Hero video removed successfully!", "success");
     } catch (err) {
-      console.error('Hero video delete error:', err);
-      showAlert?.(err?.response?.data?.message || err?.message || 'Failed to delete Hero video', 'error');
+      console.error("Hero video delete error:", err);
+      showAlert?.(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to delete Hero video",
+        "error",
+      );
     } finally {
       setDeleting(false);
     }
@@ -94,13 +105,16 @@ export default function AdminHeroVideoTab({ showAlert }) {
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
-      await apiClient.put('/api/settings', {
+      await apiClient.put("/api/settings", {
         hero_video_url: videoUrl.trim() || DEFAULT_VIDEO_URL,
-        hero_video_enabled: videoEnabled ? 'true' : 'false',
+        hero_video_enabled: videoEnabled ? "true" : "false",
       });
-      showAlert?.('Hero video settings saved successfully!', 'success');
+      showAlert?.("Hero video settings saved successfully!", "success");
     } catch (err) {
-      showAlert?.(err?.response?.data?.message || 'Failed to save settings', 'error');
+      showAlert?.(
+        err?.response?.data?.message || "Failed to save settings",
+        "error",
+      );
     } finally {
       setSaving(false);
     }
@@ -110,50 +124,63 @@ export default function AdminHeroVideoTab({ showAlert }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('video/')) {
-      showAlert?.('Please select a valid video file (MP4, WebM, etc.)', 'error');
+    if (!file.type.startsWith("video/")) {
+      showAlert?.(
+        "Please select a valid video file (MP4, WebM, etc.)",
+        "error",
+      );
       return;
     }
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
     setUploading(true);
     setUploadProgress(10);
 
     try {
-      const { data } = await apiClient.post('/api/settings/hero-video', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(percent);
-          }
+      const { data } = await apiClient.post(
+        "/api/settings/hero-video",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total,
+              );
+              setUploadProgress(percent);
+            }
+          },
         },
-      });
+      );
 
       const updated = data?.data || {};
       if (updated.hero_video_url) {
         setVideoUrl(updated.hero_video_url);
       }
       setVideoEnabled(true);
-      showAlert?.('Hero video uploaded to Cloudinary successfully!', 'success');
+      showAlert?.("Hero video uploaded to Cloudinary successfully!", "success");
     } catch (err) {
       showAlert?.(
-        err?.response?.data?.message || 'Failed to upload video to Cloudinary. Check file size.',
-        'error'
+        err?.response?.data?.message ||
+          "Failed to upload video to Cloudinary. Check file size.",
+        "error",
       );
     } finally {
       setUploading(false);
       setUploadProgress(0);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const handleResetToDefault = () => {
     setVideoUrl(DEFAULT_VIDEO_URL);
     setVideoEnabled(true);
-    showAlert?.('Reset to LeSuccess default company intro video. Click Save to persist.', 'success');
+    showAlert?.(
+      "Reset to LeSuccess default company intro video. Click Save to persist.",
+      "success",
+    );
   };
 
   const togglePlay = () => {
@@ -162,7 +189,10 @@ export default function AdminHeroVideoTab({ showAlert }) {
       videoRef.current.pause();
       setIsPlaying(false);
     } else {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      videoRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {});
     }
   };
 
@@ -194,7 +224,8 @@ export default function AdminHeroVideoTab({ showAlert }) {
             </h2>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Control the video showcased on the public home hero section. Videos upload directly to Cloudinary CDN.
+            Control the video showcased on the public home hero section. Videos
+            upload directly to Cloudinary CDN.
           </p>
         </div>
 
@@ -214,7 +245,11 @@ export default function AdminHeroVideoTab({ showAlert }) {
             onClick={handleSaveSettings}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-5 py-2 text-xs font-bold text-white shadow-xs transition hover:brightness-105 active:scale-95 disabled:opacity-50 cursor-pointer"
           >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saving ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Save size={14} />
+            )}
             <span>Save Settings</span>
           </button>
         </div>
@@ -231,8 +266,8 @@ export default function AdminHeroVideoTab({ showAlert }) {
               <span
                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
                   videoEnabled
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    : 'bg-slate-100 text-slate-600 border border-slate-200'
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : "bg-slate-100 text-slate-600 border border-slate-200"
                 }`}
               >
                 {videoEnabled ? (
@@ -269,9 +304,13 @@ export default function AdminHeroVideoTab({ showAlert }) {
                       type="button"
                       onClick={togglePlay}
                       className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#07405C] shadow-lg transition hover:scale-110 active:scale-95 cursor-pointer"
-                      aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                      aria-label={isPlaying ? "Pause video" : "Play video"}
                     >
-                      {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
+                      {isPlaying ? (
+                        <Pause size={20} />
+                      ) : (
+                        <Play size={20} className="ml-1" />
+                      )}
                     </button>
                   </div>
 
@@ -281,7 +320,7 @@ export default function AdminHeroVideoTab({ showAlert }) {
                       type="button"
                       onClick={toggleMute}
                       className="flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md transition hover:bg-black/80 cursor-pointer"
-                      aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+                      aria-label={isMuted ? "Unmute video" : "Mute video"}
                     >
                       {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
                     </button>
@@ -302,7 +341,11 @@ export default function AdminHeroVideoTab({ showAlert }) {
                     className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 text-xs font-bold transition active:scale-95 cursor-pointer shrink-0 disabled:opacity-50"
                     title="Delete current Hero video"
                   >
-                    {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    {deleting ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Trash2 size={14} />
+                    )}
                     <span>Delete Video</span>
                   </button>
                 </div>
@@ -316,7 +359,8 @@ export default function AdminHeroVideoTab({ showAlert }) {
                   No Hero Video Uploaded
                 </h4>
                 <p className="mt-1 text-xs text-slate-500 max-w-sm">
-                  Upload a video using the form on the right to activate the hero video background on the public website.
+                  Upload a video using the form on the right to activate the
+                  hero video background on the public website.
                 </p>
               </div>
             )}
@@ -336,7 +380,8 @@ export default function AdminHeroVideoTab({ showAlert }) {
                   Display Video in Hero Section
                 </p>
                 <p className="text-xs text-slate-500">
-                  When turned off, the home hero displays clean gradient branding without video.
+                  When turned off, the home hero displays clean gradient
+                  branding without video.
                 </p>
               </div>
               <input
@@ -354,7 +399,8 @@ export default function AdminHeroVideoTab({ showAlert }) {
               Upload Video to Cloudinary
             </h3>
             <p className="text-xs text-slate-500 mb-4">
-              Select an MP4 or WebM video. It will be uploaded straight to your Cloudinary storage and deployed instantly.
+              Select an MP4 or WebM video. It will be uploaded straight to your
+              Cloudinary storage and deployed instantly.
             </p>
 
             <input
@@ -372,13 +418,21 @@ export default function AdminHeroVideoTab({ showAlert }) {
               className="w-full flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 hover:border-[#DF1E26] p-6 text-center transition cursor-pointer hover:bg-slate-50/50"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#DF1E26]/10 text-[#DF1E26]">
-                {uploading ? <Loader2 size={24} className="animate-spin" /> : <Upload size={24} />}
+                {uploading ? (
+                  <Loader2 size={24} className="animate-spin" />
+                ) : (
+                  <Upload size={24} />
+                )}
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-800">
-                  {uploading ? `Uploading... ${uploadProgress}%` : 'Click to Upload Video'}
+                  {uploading
+                    ? `Uploading... ${uploadProgress}%`
+                    : "Click to Upload Video"}
                 </p>
-                <p className="text-[11px] text-slate-400 mt-0.5">MP4, WebM (Recommended max 30MB)</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  MP4, WebM (Recommended max 30MB)
+                </p>
               </div>
             </button>
 
@@ -398,7 +452,8 @@ export default function AdminHeroVideoTab({ showAlert }) {
               External / CDN Video URL
             </h3>
             <p className="text-xs text-slate-500 mb-3">
-              Alternatively, paste an existing Cloudinary URL or direct video link below:
+              Alternatively, paste an existing Cloudinary URL or direct video
+              link below:
             </p>
 
             <div className="space-y-3">

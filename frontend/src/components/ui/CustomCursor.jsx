@@ -1,0 +1,255 @@
+import { useEffect, useState } from "react";
+import {
+  motion,
+  useSpring,
+  useMotionValue,
+  AnimatePresence,
+} from "framer-motion";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
+
+/**
+ * Creative Agency Custom Mouse Cursor & Follower System.
+ * Inspired by Cloudious & award-winning interactive experiences.
+ * Features:
+ * - Precision tracking center dot
+ * - Physics-spring outer magnetic aura ring
+ * - Interactive scale expansion on links, cards, and buttons
+ * - Morphing micro-label support via `data-cursor-text="..."`
+ * - Tactile click shrink & expanding ripple wave
+ * - Purely non-interfering (pointer-events: none, z-index: 999999)
+ * - Safely auto-disabled on touch devices & under prefers-reduced-motion
+ */
+export default function CustomCursor() {
+  const reduced = useReducedMotion();
+  const [isPointer, setIsPointer] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(pointer: fine)").matches;
+  });
+
+  const [isVisible, setIsVisible] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
+  const [cursorText, setCursorText] = useState("");
+  const [isTextInput, setIsTextInput] = useState(false);
+  const [ripples, setRipples] = useState([]);
+
+  // Raw mouse coordinates
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
+
+  // Precision center dot: very fast, tight spring
+  const dotX = useSpring(mouseX, { stiffness: 1200, damping: 50, mass: 0.08 });
+  const dotY = useSpring(mouseY, { stiffness: 1200, damping: 50, mass: 0.08 });
+
+  // Outer aura ring: fluid physics lag
+  const ringX = useSpring(mouseX, { stiffness: 280, damping: 24, mass: 0.28 });
+  const ringY = useSpring(mouseY, { stiffness: 280, damping: 24, mass: 0.28 });
+
+  // Track pointer media query
+  useEffect(() => {
+    const media = window.matchMedia("(pointer: fine)");
+    const handler = (e) => setIsPointer(e.matches);
+    media.addEventListener("change", handler);
+    return () => media.removeEventListener("change", handler);
+  }, []);
+
+  // Manage body cursor: none class
+  useEffect(() => {
+    if (!isPointer || reduced) {
+      document.body.classList.remove("has-custom-cursor");
+      return undefined;
+    }
+
+    document.body.classList.add("has-custom-cursor");
+    return () => {
+      document.body.classList.remove("has-custom-cursor");
+    };
+  }, [isPointer, reduced]);
+
+  // Mouse event listeners
+  useEffect(() => {
+    if (!isPointer || reduced) return undefined;
+
+    const handleMouseMove = (e) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+      if (!isVisible) setIsVisible(true);
+    };
+
+    const handleMouseDown = () => setIsClicking(true);
+    const handleMouseUp = () => setIsClicking(false);
+
+    const handleMouseLeave = () => {
+      setIsVisible(false);
+      setIsHovered(false);
+      setCursorText("");
+      setIsTextInput(false);
+    };
+
+    const handleMouseEnter = () => {
+      setIsVisible(true);
+    };
+
+    const handleMouseOver = (e) => {
+      const target = e.target;
+      if (!target || !(target instanceof Element)) return;
+
+      // Check for custom cursor text
+      const textElem = target.closest("[data-cursor-text]");
+      if (textElem) {
+        setCursorText(textElem.getAttribute("data-cursor-text") || "");
+        setIsHovered(true);
+        setIsTextInput(false);
+        return;
+      }
+      setCursorText("");
+
+      // Check for text inputs
+      const isInput = target.closest(
+        "input:not([type='button']):not([type='submit']), textarea",
+      );
+      if (isInput) {
+        setIsTextInput(true);
+        setIsHovered(false);
+        return;
+      }
+      setIsTextInput(false);
+
+      // Check for clickable/interactive items
+      const interactive = target.closest(
+        'a, button, [role="button"], select, .card-lift-3d, .cursor-pointer, [data-cursor-hover], input[type="button"], input[type="submit"]',
+      );
+
+      if (interactive) {
+        setIsHovered(true);
+      } else {
+        setIsHovered(false);
+      }
+    };
+
+    const handleClick = (e) => {
+      const id = Date.now() + Math.random();
+      const ripple = { id, x: e.clientX, y: e.clientY };
+      setRipples((prev) => [...prev.slice(-4), ripple]);
+
+      setTimeout(() => {
+        setRipples((prev) => prev.filter((r) => r.id !== id));
+      }, 650);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("click", handleClick, { passive: true });
+    document.addEventListener("mouseover", handleMouseOver, { passive: true });
+    document.addEventListener("mouseleave", handleMouseLeave);
+    document.addEventListener("mouseenter", handleMouseEnter);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("click", handleClick);
+      document.removeEventListener("mouseover", handleMouseOver);
+      document.removeEventListener("mouseleave", handleMouseLeave);
+      document.removeEventListener("mouseenter", handleMouseEnter);
+    };
+  }, [isPointer, reduced, isVisible, mouseX, mouseY]);
+
+  if (!isPointer || reduced) return null;
+
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-[999999] overflow-hidden select-none"
+    >
+      {/* 1. Outer Fluid Aura Ring */}
+      {isVisible && (
+        <motion.div
+          style={{
+            x: ringX,
+            y: ringY,
+            translateX: "-50%",
+            translateY: "-50%",
+          }}
+          animate={{
+            scale: isClicking
+              ? 0.75
+              : cursorText
+                ? 1.25
+                : isHovered
+                  ? 1.65
+                  : isTextInput
+                    ? 0.6
+                    : 1,
+            opacity: isTextInput ? 0.25 : 1,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 25,
+            mass: 0.2,
+          }}
+          className={`absolute flex items-center justify-center rounded-full transition-colors duration-200 ${
+            cursorText
+              ? "h-14 w-14 border-2 border-white/90 bg-[#DF1E26] shadow-[0_0_24px_rgba(223,30,38,0.7)] text-white"
+              : isHovered
+                ? "h-11 w-11 border-2 border-[#DF1E26] bg-[#DF1E26]/15 shadow-[0_0_20px_rgba(223,30,38,0.45)] backdrop-blur-[1px]"
+                : isTextInput
+                  ? "h-6 w-1 rounded-full bg-[#07405C] border-none"
+                  : "h-9 w-9 border border-[#DF1E26]/60 bg-[#DF1E26]/10 shadow-[0_0_12px_rgba(223,30,38,0.25)]"
+          }`}
+        >
+          {cursorText && (
+            <motion.span
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.6 }}
+              className="text-[9px] font-black uppercase tracking-widest text-white leading-none text-center px-1"
+            >
+              {cursorText}
+            </motion.span>
+          )}
+        </motion.div>
+      )}
+
+      {/* 2. Precision Center Dot */}
+      {isVisible && !cursorText && !isTextInput && (
+        <motion.div
+          style={{
+            x: dotX,
+            y: dotY,
+            translateX: "-50%",
+            translateY: "-50%",
+          }}
+          animate={{
+            scale: isClicking ? 1.4 : isHovered ? 0.5 : 1,
+            opacity: isHovered ? 0.7 : 1,
+          }}
+          transition={{ type: "spring", stiffness: 600, damping: 30 }}
+          className="absolute h-2 w-2 rounded-full bg-[#DF1E26] shadow-[0_0_8px_#DF1E26] ring-1 ring-white/90"
+        />
+      )}
+
+      {/* 3. Tactile Expanding Click Ripples */}
+      <AnimatePresence>
+        {ripples.map((r) => (
+          <motion.span
+            key={r.id}
+            initial={{ scale: 0.2, opacity: 0.85 }}
+            animate={{ scale: 3.2, opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              left: r.x,
+              top: r.y,
+              translateX: "-50%",
+              translateY: "-50%",
+            }}
+            className="absolute h-10 w-10 rounded-full border border-[#DF1E26] bg-[#DF1E26]/20 shadow-[0_0_16px_rgba(223,30,38,0.6)]"
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}

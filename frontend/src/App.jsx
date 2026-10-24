@@ -20,6 +20,9 @@ import BasicChatbot from "./components/chatbot/BasicChatbot.jsx";
 import ChatWidget from "./components/chatbot/ChatWidget.jsx";
 import useSiteSettings from "./hooks/useSiteSettings.js";
 import { AnimatePresence } from "framer-motion";
+import ScrollProgressBar from "./components/ui/ScrollProgressBar.jsx";
+import FloatingActionHub from "./components/ui/FloatingActionHub.jsx";
+import CustomCursor from "./components/ui/CustomCursor.jsx";
 
 import Home from "./pages/Home/HomePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
@@ -44,7 +47,9 @@ const SuccessStoriesPage = lazy(() => import("./pages/SuccessStories/SuccessStor
 const LoginPage = lazy(() => import("./pages/Auth/LoginPage.jsx"));
 
 const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard.jsx"));
-const TrainerDashboard = lazy(() => import("./pages/Trainer/TrainerDashboard.jsx"));
+const TrainerDashboard = lazy(
+  () => import("./pages/Trainer/TrainerDashboard.jsx"),
+);
 
 function HomeRoute() {
   const { successStories } = useAppData();
@@ -58,7 +63,8 @@ function HomeRoute() {
     }
   };
 
-  const isItemActive = (item) => Boolean(item?.isActive ?? item?.active ?? false);
+  const isItemActive = (item) =>
+    Boolean(item?.isActive ?? item?.active ?? false);
   const activeReels = (successStories.data?.reels || [])
     .filter(isItemActive)
     .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
@@ -82,7 +88,9 @@ function HomeRoute() {
     return (
       <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#07405C] text-white">
         <div className="h-10 w-10 rounded-full border-4 border-white/20 border-t-[#DF1E26] animate-spin mb-3" />
-        <p className="text-xs font-semibold tracking-wider uppercase text-slate-300">Loading LeSuccess Academy...</p>
+        <p className="text-xs font-semibold tracking-wider uppercase text-slate-300">
+          Loading LeSuccess Academy...
+        </p>
       </div>
     );
   }
@@ -128,13 +136,14 @@ const AppContent = () => {
   // Navbar visibility while scrolling
   const [navbarVisible, setNavbarVisible] = useState(true);
 
-  const [isCompactHeader, setIsCompactHeader] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  // Desktop vs mobile viewport tracking (breakpoint >= 1024px / lg)
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true,
   );
 
   useEffect(() => {
     const handleResize = () => {
-      setIsCompactHeader(window.innerWidth < 1024);
+      setIsDesktop(window.innerWidth >= 1024);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -169,10 +178,7 @@ const AppContent = () => {
 
   const updateOfferHeaderHeight = useCallback(() => {
     if (!offerHeaderRef.current) return;
-
-    const height =
-      offerHeaderRef.current.getBoundingClientRect().height;
-
+    const height = offerHeaderRef.current.getBoundingClientRect().height;
     setOfferHeaderHeight(height);
   }, []);
 
@@ -184,10 +190,7 @@ const AppContent = () => {
 
   const updateNavbarHeight = useCallback(() => {
     if (!navbarRef.current) return;
-
-    const height =
-      navbarRef.current.getBoundingClientRect().height;
-
+    const height = navbarRef.current.getBoundingClientRect().height;
     setNavbarHeight(height);
   }, []);
 
@@ -221,33 +224,15 @@ const AppContent = () => {
       resizeObserver.observe(navbarRef.current);
     }
 
-    window.addEventListener(
-      "resize",
-      updateOfferHeaderHeight
-    );
-
-    window.addEventListener(
-      "resize",
-      updateNavbarHeight
-    );
+    window.addEventListener("resize", updateOfferHeaderHeight);
+    window.addEventListener("resize", updateNavbarHeight);
 
     return () => {
       resizeObserver.disconnect();
-
-      window.removeEventListener(
-        "resize",
-        updateOfferHeaderHeight
-      );
-
-      window.removeEventListener(
-        "resize",
-        updateNavbarHeight
-      );
+      window.removeEventListener("resize", updateOfferHeaderHeight);
+      window.removeEventListener("resize", updateNavbarHeight);
     };
-  }, [
-    updateOfferHeaderHeight,
-    updateNavbarHeight,
-  ]);
+  }, [updateOfferHeaderHeight, updateNavbarHeight]);
 
   /*
    * =========================================================
@@ -280,27 +265,9 @@ const AppContent = () => {
 
         if (currentScrollY <= 20) {
           setNavbarVisible(true);
-        }
-
-        /*
-         * Scrolling DOWN
-         */
-
-        else if (
-          currentScrollY >
-          lastScrollY.current + 5
-        ) {
+        } else if (currentScrollY > lastScrollY.current + 5) {
           setNavbarVisible(false);
-        }
-
-        /*
-         * Scrolling UP
-         */
-
-        else if (
-          currentScrollY <
-          lastScrollY.current - 5
-        ) {
+        } else if (currentScrollY < lastScrollY.current - 5) {
           setNavbarVisible(true);
         }
 
@@ -309,22 +276,33 @@ const AppContent = () => {
       });
     };
 
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      {
-        passive: true,
-      }
-    );
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
+  /*
+   * =========================================================
+   * NAVBAR POSITION
+   * =========================================================
+   *
+   * Navbar always stays below OfferHeader on desktop.
+   */
+
+  const navbarTop = offerHeaderHeight;
+
+  /*
+   * =========================================================
+   * TOTAL HEADER HEIGHT (DESKTOP)
+   * =========================================================
+   *
+   * Reserves space in the page so the fixed desktop
+   * headers don't cover the page content.
+   */
+
+  const totalHeaderHeight = offerHeaderHeight + navbarHeight;
 
   /*
    * =========================================================
@@ -336,66 +314,94 @@ const AppContent = () => {
     root.style.setProperty("--offer-header-h", `${offerHeaderHeight}px`);
     root.style.setProperty("--navbar-h", `${navbarHeight}px`);
 
-    // On compact layouts, socials wrap beneath the offer. At lg and wider they
-    // share the offer row. Include the floating nav's gap and top inset.
-    const topInset = offerHeaderRef.current?.getBoundingClientRect().top ?? (isCompactHeader ? 8 : 10);
-    const navbarGap = isCompactHeader ? 8 : 10;
-    if (offerHeaderHeight > 0) {
-      root.style.setProperty(
-        "--navbar-top",
-        `${topInset + offerHeaderHeight + navbarGap}px`
-      );
-    }
+    // On mobile (< 1024px), navbar is fixed at the BOTTOM of the viewport.
+    // The only fixed element at the top of the mobile viewport is OfferHeader.
+    // On desktop (>= 1024px), navbar is fixed at the TOP below OfferHeader.
+    // When desktop navbar hides on scroll down (navbarVisible === false),
+    // the only visible top element is OfferHeader.
     const currentHeader =
-      topInset + offerHeaderHeight + (navbarVisible ? navbarGap + navbarHeight : 0);
+      offerHeaderHeight + (isDesktop && navbarVisible ? navbarHeight : 0);
 
     root.style.setProperty("--app-header", `${currentHeader}px`);
     root.style.setProperty(
       "--app-header-max",
-      `${topInset + offerHeaderHeight + navbarGap + navbarHeight}px`
+      `${offerHeaderHeight + (isDesktop ? navbarHeight : 0)}px`,
     );
-  }, [offerHeaderHeight, navbarHeight, navbarVisible, isCompactHeader]);
+  }, [offerHeaderHeight, navbarHeight, navbarVisible, isDesktop]);
 
   return (
     <div className="min-h-screen bg-surface text-ink transition-colors duration-200">
+      {/* Creative Agency Custom Cursor System */}
+      <CustomCursor />
+
+      {/* Global Top Scroll Progress Bar */}
+      <ScrollProgressBar />
+
       {/* =====================================================
-          OFFER STRIP AND SOCIAL LINKS
-          - The offer strip stays visible while scrolling.
-          - Social links stay visible independently of the scroll-responsive navbar.
+          OFFER HEADER (ALWAYS FIXED & VISIBLE)
       ===================================================== */}
+
       {!isDashboard && (
-        <OfferHeader
-          offerHeaderRef={offerHeaderRef}
-        />
+        <div
+          ref={offerHeaderRef}
+          className="fixed left-0 top-0 z-60 w-full shadow-xs"
+        >
+          <OfferHeader />
+        </div>
       )}
 
       {/* =====================================================
-          FLOATING PILL NAVBAR:
-          - Centered floating pill navbar inspired by Reference Image 2
-          - Hides on scroll down, reappears on scroll up / top.
+          NAVBAR:
+          - On mobile (< 1024px): Fixed at BOTTOM of viewport,
+            always visible.
+          - On desktop (>= 1024px): Fixed at TOP below OfferHeader,
+            scroll-responsive (hides on scroll down, shows on scroll up).
       ===================================================== */}
+
       {!isDashboard && (
         <div
           ref={navbarRef}
-          className={`fixed top-[var(--navbar-top,6.5rem)] lg:top-[var(--navbar-top,3.75rem)] inset-x-4 sm:inset-x-6 lg:inset-x-8 z-40 flex justify-center transition-[transform,opacity] duration-300 ease-in-out ${
-            navbarVisible
-              ? "translate-y-0 opacity-100 pointer-events-auto"
-              : "-translate-y-28 opacity-0 pointer-events-none"
+          className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+            isDesktop
+              ? navbarVisible
+                ? "translate-y-0 opacity-100 shadow-xs"
+                : "-translate-y-full opacity-0 pointer-events-none"
+              : "translate-y-0 opacity-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
           }`}
+          style={{
+            top: isDesktop ? `${navbarTop}px` : "auto",
+            bottom: isDesktop ? "auto" : "0px",
+          }}
         >
-          <div className="w-full max-w-[76rem]">
-            <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
-          </div>
+          <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
         </div>
       )}
 
       {/* =====================================================
           TOP HEADER SPACE:
-          - On Home page (/), Hero starts edge-to-edge at top: 0 with internal padding.
-          - On other public pages, add spacer so floating navbar doesn't cover content.
+          - On mobile (< 1024px): Spacer height is ONLY offerHeaderHeight,
+            so Hero / page content starts IMMEDIATELY below OfferHeader!
+          - On desktop (>= 1024px): Spacer height is totalHeaderHeight
+            (offerHeaderHeight + navbarHeight), so content starts below Navbar.
       ===================================================== */}
-      {!isDashboard && location.pathname !== "/" && (
-        <div aria-hidden="true" className="w-full" style={{ height: "calc(var(--app-header-max, 148px) + 1rem)" }} />
+
+      {!isDashboard && (
+        <>
+          <div
+            aria-hidden="true"
+            className="block lg:hidden"
+            style={{
+              height: `${offerHeaderHeight}px`,
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="hidden lg:block"
+            style={{
+              height: `${totalHeaderHeight}px`,
+            }}
+          />
+        </>
       )}
 
       {/* =====================================================
@@ -406,7 +412,6 @@ const AppContent = () => {
         <ScrollToTop />
         <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
-
             {/* Home */}
             <Route
               path="/"
@@ -556,33 +561,36 @@ const AppContent = () => {
                 }
               />
             </Route>
-
           </Routes>
         </AnimatePresence>
       </main>
 
-
       {!isDashboard && (
         <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
-          <Footer/>
+          <Footer />
         </div>
       )}
 
       {/* Global Back to Top Button for Public Pages */}
       {!isDashboard && <BackToTop />}
 
+      {/* Floating Action Hub (Career Counseling, WhatsApp & Free Live Demo) */}
+      {!isDashboard && !isLoginPage && (
+        <FloatingActionHub onOpenDemo={() => setIsEnquiryOpen(true)} />
+      )}
+
       {/* =====================================================
           CHATBOT (Admin Switchable: API Chatbot vs Normal Chatbot)
           Only ONE chatbot is active and rendered at a time.
       ===================================================== */}
-      {!isDashboard && !isLoginPage && settings?.chatbot_enabled !== 'false' && (
-        settings?.chatbot_mode?.toUpperCase() === 'API' ? (
+      {!isDashboard &&
+        !isLoginPage &&
+        settings?.chatbot_enabled !== "false" &&
+        (settings?.chatbot_mode?.toUpperCase() === "API" ? (
           <ChatWidget onOpenEnquiry={() => setIsEnquiryOpen(true)} />
         ) : (
           <BasicChatbot onOpenEnquiry={() => setIsEnquiryOpen(true)} />
-        )
-      )}
-
+        ))}
 
       {/* =====================================================
           CONNECT WITH US POPUP (Triggered after ~3 sections)

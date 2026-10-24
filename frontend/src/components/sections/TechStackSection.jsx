@@ -1,16 +1,17 @@
-import { useMemo } from 'react'
-import { motion } from 'framer-motion'
-import SectionHeading from '../ui/SectionHeading.jsx'
-import Skeleton from '../ui/Skeleton.jsx'
-import { EmptyState } from '../ui/ErrorState.jsx'
+import { useMemo } from "react";
+import { motion } from "framer-motion";
+import SectionHeading from "../ui/SectionHeading.jsx";
+import Skeleton from "../ui/Skeleton.jsx";
+import { getImageUrl } from "../../utils/imageUtils.js";
+import { EmptyState } from "../ui/ErrorState.jsx";
 import {
   cardHover,
   fadeUp,
   motionSafe,
   ONCE_IN_VIEW,
   staggerContainer,
-} from '../../animations/variants.js'
-import useReducedMotion from '../../hooks/useReducedMotion.js'
+} from "../../animations/variants.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
 
 /**
  * Group the flat tech stack into cards.
@@ -22,18 +23,18 @@ import useReducedMotion from '../../hooks/useReducedMotion.js'
  * Within a group, items sort by displayOrder (which restarts per group).
  */
 function groupByName(techStack) {
-  const groups = new Map()
+  const groups = new Map();
 
   techStack.forEach((item) => {
-    const name = item.groupName || 'Other'
-    if (!groups.has(name)) groups.set(name, [])
-    groups.get(name).push(item)
-  })
+    const name = item.groupName || "Other";
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(item);
+  });
 
   return Array.from(groups, ([name, items]) => ({
     name,
     items: [...items].sort((a, b) => a.displayOrder - b.displayOrder),
-  }))
+  }));
 }
 
 /**
@@ -43,7 +44,7 @@ function groupByName(techStack) {
  * logos (Soft Skill) as small bulleted words. `iconUrl` decides which, so the
  * admin dashboard controls the treatment by whether it uploads a logo.
  */
-function TechCard({ group, reduced, className = '' }) {
+function TechCard({ group, reduced, className = "" }) {
   return (
     <motion.li
       // `variants` carries the staggered entrance from the parent list. Hover is
@@ -62,7 +63,7 @@ function TechCard({ group, reduced, className = '' }) {
           item.iconUrl ? (
             <li key={item.id} className="flex items-center">
               <img
-                src={item.iconUrl}
+                src={getImageUrl(item.iconUrl, "", { width: 160 })}
                 alt={item.itemName}
                 title={item.itemName}
                 width="26"
@@ -85,7 +86,7 @@ function TechCard({ group, reduced, className = '' }) {
         )}
       </ul>
     </motion.li>
-  )
+  );
 }
 
 function TechCardSkeleton() {
@@ -94,26 +95,27 @@ function TechCardSkeleton() {
       <Skeleton className="mx-auto h-3 w-20" />
       <div className="mt-3 flex justify-center gap-5">
         {Array.from({ length: 4 }, (_, index) => (
-          <Skeleton key={index} className="h-[26px] w-[26px]" rounded="rounded-md" />
+          <Skeleton
+            key={index}
+            className="h-[26px] w-[26px]"
+            rounded="rounded-md"
+          />
         ))}
       </div>
     </li>
-  )
+  );
 }
 
 export default function TechStackSection({ techStack, isLoading }) {
-  const reduced = useReducedMotion()
-  const groups = useMemo(() => groupByName(techStack ?? []), [techStack])
+  const reduced = useReducedMotion();
+  const groups = useMemo(() => groupByName(techStack ?? []), [techStack]);
 
   // An odd number of groups leaves the last card alone on its row; the
   // reference centres it rather than leaving a gap on the right.
-  const hasOrphanCard = groups.length % 2 === 1
+  const hasOrphanCard = groups.length % 2 === 1;
 
   return (
-    <section
-      aria-labelledby="stack-title"
-      className="pb-14 lg:pb-16"
-    >
+    <section aria-labelledby="stack-title" className="pb-14 lg:pb-16">
       <motion.div
         variants={motionSafe(fadeUp, reduced)}
         initial="hidden"
@@ -151,19 +153,19 @@ export default function TechStackSection({ techStack, isLoading }) {
           className="mt-6 grid max-w-2xl list-none gap-4 p-0 sm:grid-cols-2"
         >
           {groups.map((group, index) => {
-            const isOrphan = hasOrphanCard && index === groups.length - 1
+            const isOrphan = hasOrphanCard && index === groups.length - 1;
 
             return (
               <TechCard
                 key={group.name}
                 group={group}
                 reduced={reduced}
-                className={isOrphan ? 'sm:col-span-2 sm:mx-auto sm:w-1/2' : ''}
+                className={isOrphan ? "sm:col-span-2 sm:mx-auto sm:w-1/2" : ""}
               />
-            )
+            );
           })}
         </motion.ul>
       )}
     </section>
-  )
+  );
 }

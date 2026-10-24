@@ -2,7 +2,10 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
 
 const COURSES = [
-  { name: "Python: Full Stack Development", slug: "python-full-stack-development" },
+  {
+    name: "Python: Full Stack Development",
+    slug: "python-full-stack-development",
+  },
   { name: "Java: Full Stack Development", slug: "full-stack-java" },
   { name: "Data Analytics & AI", slug: "data-analytics" },
   { name: "DevOps with AWS Cloud", slug: "aws-and-devops" },
@@ -20,13 +23,19 @@ const QUICK_LINKS = [
 
 import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 
-const GOOGLE_MAPS_URL = "https://www.google.com/maps/place/LeSuccess/@11.0118985,76.9826524,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba837c0178b0805:0x27b8de4c436b2d9d!8m2!3d11.0118932!4d76.9852327!16s%2Fg%2F11krkw3qh_?entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D";
+const GOOGLE_MAPS_URL =
+  "https://www.google.com/maps/place/LeSuccess/@11.0118985,76.9826524,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba837c0178b0805:0x27b8de4c436b2d9d!8m2!3d11.0118932!4d76.9852327!16s%2Fg%2F11krkw3qh_?entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D";
 
 export default function Footer() {
   return (
     <footer className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#012f45] text-white overflow-hidden relative">
-      {/* Top brand gradient accent bar */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-[#DF1E26] via-[#F44246] to-[#CA164B]" />
+      {/* Top brand gradient accent bar with animated laser sweep sheen */}
+      <div className="relative h-1.5 w-full bg-gradient-to-r from-[#DF1E26] via-[#F44246] to-[#CA164B] overflow-hidden">
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent animate-shimmer-sweep"
+        />
+      </div>
 
       {/* Decorative ambient subtle glow */}
       <div
@@ -40,11 +49,10 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
-          
           {/* Col 1: Brand Info (4 cols) */}
           <div className="lg:col-span-4 space-y-5">
             <Link to="/" className="inline-flex items-center gap-3">
-              <div className="bg-white p-2.5 rounded-xl shadow-md inline-block">
+              <div className="bg-white p-2.5 rounded-xl shadow-md inline-block transition-transform duration-300 hover:scale-105">
                 <img
                   src="/logo/logo.png"
                   alt="LeSuccess Academy"
@@ -53,10 +61,16 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-slate-200 text-sm leading-relaxed max-w-sm">
-              Premier technology learning accelerator in Coimbatore. Empowering students and professionals with hands-on coding, enterprise frameworks, and verified career placements.
+              Premier technology learning accelerator in Coimbatore. Empowering
+              students and professionals with hands-on coding, enterprise
+              frameworks, and verified career placements.
             </p>
             <div className="space-y-2.5 text-xs text-slate-300">
               <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
                 <MapPin size={14} className="text-[#F44246] shrink-0" />
                 <a
                   href={GOOGLE_MAPS_URL}
@@ -69,13 +83,19 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={14} className="text-cyan-400 shrink-0" />
-                <a href="tel:+918012060000" className="text-slate-200 hover:text-white font-medium transition-colors">
+                <a
+                  href="tel:+918012060000"
+                  className="text-slate-200 hover:text-white font-medium transition-colors"
+                >
                   +91 80120 60000
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={14} className="text-[#F44246] shrink-0" />
-                <a href="mailto:training@lesuccess.in" className="text-slate-200 hover:text-white font-medium transition-colors">
+                <a
+                  href="mailto:training@lesuccess.in"
+                  className="text-slate-200 hover:text-white font-medium transition-colors"
+                >
                   training@lesuccess.in
                 </a>
               </div>
@@ -85,7 +105,7 @@ export default function Footer() {
                   onClick={(e) => e.preventDefault()}
                   role="button"
                   aria-label="Employee Login"
-                  className="inline-flex items-center justify-center w-auto py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg"
+                  className="inline-flex items-center justify-center w-auto py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg animate-shimmer-sweep"
                 >
                   Employee Login →
                 </a>
@@ -148,7 +168,8 @@ export default function Footer() {
               Connect With Us
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Follow our social channels for regular batch announcements, free webinars, and student placement spotlights.
+              Follow our social channels for regular batch announcements, free
+              webinars, and student placement spotlights.
             </p>
             <div className="flex flex-wrap gap-2.5 pt-2">
               {SOCIAL_LINKS.map(({ icon: Icon, href, name }) => (
@@ -158,7 +179,8 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={name}
-                  className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 text-white flex items-center justify-center hover:bg-[#DF1E26] hover:border-[#DF1E26] hover:scale-110 active:scale-95 transition-all shadow-sm"
+                  data-cursor-text={name}
+                  className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 text-white flex items-center justify-center hover:bg-[#DF1E26] hover:border-[#DF1E26] hover:scale-115 hover:-translate-y-1 active:scale-95 transition-all duration-300 shadow-sm hover:shadow-[0_8px_20px_rgba(223,30,38,0.45)] cursor-pointer"
                 >
                   <Icon size={16} />
                 </a>
@@ -168,19 +190,19 @@ export default function Footer() {
             <div className="pt-3">
               <Link
                 to="/contact"
-                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg"
+                data-cursor-text="Contact"
+                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg animate-shimmer-sweep btn-glow-brand active:scale-98 cursor-pointer"
               >
                 Request a Callback
               </Link>
             </div>
           </div>
-
         </div>
       </div>
 
-      {/* Interactive watermark with smooth #DF1E26 brand hover transition */}
+      {/* Interactive watermark with smooth #DF1E26 brand hover transition and scale */}
       <div className="w-full select-none overflow-hidden group py-2 sm:py-3">
-        <p className="whitespace-nowrap text-center font-black text-white/10 text-[9vw] sm:text-[7vw] md:text-[5.5vw] tracking-wider transition-all duration-500 ease-out cursor-default hover:text-[#DF1E26] hover:opacity-60 leading-none">
+        <p className="whitespace-nowrap text-center font-black text-white/10 text-[9vw] sm:text-[7vw] md:text-[5.5vw] tracking-wider transition-all duration-700 ease-out cursor-default hover:text-[#DF1E26] hover:opacity-75 hover:scale-[1.01] leading-none">
           LEARN • EDUCATE • SUCCEED
         </p>
       </div>
@@ -192,9 +214,15 @@ export default function Footer() {
             © {new Date().getFullYear()} LeSuccess Academy. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link to="/courses" className="hover:text-white transition-colors">Courses</Link>
-            <Link to="/services" className="hover:text-white transition-colors">Services</Link>
-            <Link to="/contact" className="hover:text-white transition-colors">Contact</Link>
+            <Link to="/courses" className="hover:text-white transition-colors">
+              Courses
+            </Link>
+            <Link to="/services" className="hover:text-white transition-colors">
+              Services
+            </Link>
+            <Link to="/contact" className="hover:text-white transition-colors">
+              Contact
+            </Link>
           </div>
         </div>
       </div>

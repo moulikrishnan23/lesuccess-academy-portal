@@ -3,6 +3,7 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
+import Magnetic from "../ui/Magnetic.jsx";
 
 // Individual image configs matching the reference image layout and preserving subject faces
 const row1Items = [
@@ -98,7 +99,8 @@ export default function LifeAtLeSuccess() {
           {marqueeRow1.map((item, idx) => (
             <div
               key={`row1-${idx}`}
-              className={`mx-1 sm:mx-1.5 h-full ${item.widthClass} shrink-0 overflow-hidden rounded-xl border border-white/15 shadow-md`}
+              data-cursor-text="Life"
+              className={`mx-1 sm:mx-1.5 h-full ${item.widthClass} shrink-0 overflow-hidden rounded-xl border border-white/15 shadow-md cursor-pointer`}
             >
               <img
                 src={item.src}
@@ -115,7 +117,8 @@ export default function LifeAtLeSuccess() {
           {marqueeRow2.map((item, idx) => (
             <div
               key={`row2-${idx}`}
-              className={`mx-1 sm:mx-1.5 h-full ${item.widthClass} shrink-0 overflow-hidden rounded-xl border border-white/15 shadow-md`}
+              data-cursor-text="Life"
+              className={`mx-1 sm:mx-1.5 h-full ${item.widthClass} shrink-0 overflow-hidden rounded-xl border border-white/15 shadow-md cursor-pointer`}
             >
               <img
                 src={item.src}
@@ -141,27 +144,38 @@ export default function LifeAtLeSuccess() {
           className="max-w-2xl text-white"
         >
           <div className="mb-4 sm:mb-5 inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-4 py-1.5 text-xs font-semibold backdrop-blur-md">
-            <Sparkles size={14} className="text-[#DF1E26]" />
-            OUR GALLERY
+            <span className="h-2 w-2 rounded-full bg-[#DF1E26] animate-pulse-beacon" />
+            <Sparkles size={14} className="text-amber-300" />
+            <span>OUR GALLERY</span>
           </div>
 
           <h2 className="text-3xl font-extrabold sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight">
-            Life at <span className="text-[#DF1E26]">LeSuccess</span>
+            Life at{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-300 via-[#DF1E26] to-red-400">
+              LeSuccess
+            </span>
           </h2>
 
           <p className="mt-3 sm:mt-5 text-sm sm:text-xl text-gray-200 leading-relaxed max-w-xl">
-            Build a strong foundation that empowers you to face real-world challenges
-            and step into your tech career with clarity, practical confidence, and pride.
+            Build a strong foundation that empowers you to face real-world
+            challenges and step into your tech career with clarity, practical
+            confidence, and pride.
           </p>
 
           <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              to="/gallery"
-              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-bold text-white shadow-lg transition hover:brightness-110 active:scale-98"
-            >
-              <span>Explore Full Gallery</span>
-              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
-            </Link>
+            <Magnetic strength={0.25}>
+              <Link
+                to="/gallery"
+                data-cursor-text="Gallery"
+                className="animate-shimmer-sweep btn-glow-brand group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-7 py-3.5 text-sm sm:text-base font-bold text-white shadow-xl transition hover:brightness-110 active:scale-98"
+              >
+                <span>Explore Full Gallery</span>
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                />
+              </Link>
+            </Magnetic>
           </div>
         </motion.div>
       </div>
