@@ -31,7 +31,7 @@ import SpotlightCard from "../ui/SpotlightCard.jsx";
 import ParticleConstellation from "../ui/ParticleConstellation.jsx";
 import TypewriterText from "../ui/TypewriterText.jsx";
 import WaveDivider from "../ui/WaveDivider.jsx";
-import LiveHtmlEditor from "./LiveHtmlEditor.jsx";
+import ChallengeBuilder from "./challengeBuilder/ChallengeBuilder.jsx";
 
 const DEFAULT_VIDEO_URL = "/video/CompanyIntro.mp4";
 
@@ -398,7 +398,7 @@ const HeroVideo = () => {
               </motion.div>
             </motion.div>
 
-            {/* Right Column: Floating Interactive Live HTML Coding Section */}
+            {/* Right Column: Challenge Builder (live HTML / CSS / JS missions) */}
             <AnimatePresence>
               {!isEditorMinimized && (
                 <motion.div
@@ -409,7 +409,7 @@ const HeroVideo = () => {
                   transition={{ duration: 0.35, ease: "easeOut" }}
                   className="lg:col-span-6 xl:col-span-6 w-full flex justify-center lg:justify-end mt-4 lg:mt-0 xl:translate-x-4 2xl:translate-x-8"
                 >
-                  <LiveHtmlEditor
+                  <ChallengeBuilder
                     onMinimize={() => setIsEditorMinimized(true)}
                     className="lg:ml-auto"
                   />
@@ -419,7 +419,7 @@ const HeroVideo = () => {
           </div>
         </div>
 
-        {/* Sticky Minimized Code Editor Launcher on Right Side Middle of Page */}
+        {/* Sticky minimised Challenge Builder launcher on Right Side Middle of Page */}
         <AnimatePresence>
           {isEditorMinimized && (
             <motion.button
@@ -430,13 +430,13 @@ const HeroVideo = () => {
               whileHover={{ x: -4, scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsEditorMinimized(false)}
-              title="Open Live HTML Code Editor"
-              aria-label="Open Live HTML Code Editor"
-              className="fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center gap-2.5 rounded-l-2xl border-l-2 border-y-2 border-[#38bdf8]/60 bg-slate-950/95 py-3 pl-3.5 pr-4 text-white shadow-[0_10px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(56,189,248,0.35)] backdrop-blur-xl transition cursor-pointer group hover:border-[#38bdf8] hover:bg-slate-900"
+              title="Open the Challenge Builder"
+              aria-label="Open the Challenge Builder"
+              className="fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center gap-2.5 rounded-l-2xl border-l-2 border-y-2 border-[#DF1E26]/60 bg-[#0a1d2e]/95 py-3 pl-3.5 pr-4 text-white shadow-[0_10px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(223,30,38,0.35)] backdrop-blur-xl transition cursor-pointer group hover:border-[#DF1E26] hover:bg-[#0b2a45]"
             >
               <div className="relative flex items-center justify-center">
-                <span className="absolute -inset-1 rounded-full bg-[#38bdf8]/30 blur-xs group-hover:bg-[#38bdf8]/50 animate-pulse" />
-                <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#07405c] to-[#022030] border border-[#38bdf8]/60 text-[#38bdf8] shadow-inner">
+                <span className="absolute -inset-1 rounded-full bg-[#DF1E26]/30 blur-xs group-hover:bg-[#DF1E26]/50 animate-pulse" />
+                <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#07405c] to-[#022030] border border-[#DF1E26]/60 text-[#ff9e94] shadow-inner">
                   <Code2
                     size={16}
                     className="group-hover:rotate-12 transition-transform duration-300"
@@ -445,13 +445,13 @@ const HeroVideo = () => {
               </div>
               <div className="flex flex-col text-left">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#38bdf8]">
-                    Live Code
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#4fd18b] animate-ping" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#ff9e94]">
+                    3 Challenges
                   </span>
                 </div>
                 <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">
-                  Open Editor →
+                  Start building →
                 </span>
               </div>
             </motion.button>

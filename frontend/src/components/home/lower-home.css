@@ -66,9 +66,6 @@
 @keyframes lh-soc-in {
   from { opacity: 0; transform: translateY(20px) scale(0.6); }
 }
-@keyframes lh-ticker {
-  to { transform: translateX(-50%); }
-}
 
 @layer components {
   /* ── Section shell ────────────────────────────────────────────────── */
@@ -591,22 +588,41 @@
   }
 
   /* ── Ticker ───────────────────────────────────────────────────────── */
+  /* Navy band, the site's dark-section colour, edged in the brand gradient.
+     Movement is scroll-driven (HomeTicker.jsx). */
   .lh-tick {
+    position: relative;
     overflow: hidden;
     margin: 3.5rem 0;
-    padding: 1rem 0;
-    background: var(--gradient-brand);
+    padding: 1.125rem 0;
+    background: var(--gradient-navy);
     color: #fff;
     transform: skewY(-1.6deg);
     box-shadow: var(--shadow-lift-md);
   }
+  .lh-tick::before,
+  .lh-tick::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-brand);
+  }
+  .lh-tick::before {
+    top: 0;
+  }
+  .lh-tick::after {
+    bottom: 0;
+  }
   .lh-tick-track {
     display: flex;
     width: max-content;
-    animation: lh-ticker 26s linear infinite;
+    will-change: transform;
   }
-  .lh-tick:hover .lh-tick-track {
-    animation-play-state: paused;
+  .lh-tick-group {
+    display: flex;
+    flex: none;
   }
   .lh-tick span {
     display: inline-flex;
@@ -621,11 +637,11 @@
   }
   .lh-tick span::after {
     content: '';
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #fff;
-    opacity: 0.7;
+    width: 9px;
+    height: 9px;
+    background: var(--gradient-brand);
+    transform: rotate(45deg);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-brand) 60%, transparent);
   }
 
   /* ── Carousel controls (dots + arrows) ────────────────────────────── */
@@ -1618,7 +1634,6 @@
 @media (prefers-reduced-motion: reduce) {
   .lh-mesh i,
   .lh-glyph,
-  .lh-tick-track,
   .lh-wave > div,
   .lh-ev-empty-icon,
   .lh-fu b,

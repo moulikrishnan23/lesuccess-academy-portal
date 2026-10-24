@@ -1,3 +1,6 @@
+import { useEffect, useRef } from "react";
+import { useReducedMotion } from "../motion/index.js";
+
 const PHRASES = [
   "Live hands-on projects",
   "Mentor-led classes",
@@ -7,20 +10,95 @@ const PHRASES = [
   "Interview opportunities",
 ];
 
-// Two copies make the -50% loop seamless; four fill wide screens.
-const TRACK = [...PHRASES, ...PHRASES, ...PHRASES, ...PHRASES];
+// One group is repeated so it is always wider than the screen; the track holds
+// two identical groups and wraps by exactly one group width, so the loop is seamless.
+const GROUP = [...PHRASES, ...PHRASES];
+
+const BASE_SPEED = 40; // px per second while the page is still
+const SCROLL_GAIN = 0.6; // extra px/s of ticker per px/s of page scroll
+const MAX_SPEED = 900;
 
 /**
- * A skewed brand-gradient ticker between the demo band and the course carousel
- * (spec: docs/mockup/lower-home.html, .tick). Decorative: every phrase is said
- * elsewhere on the page, so it is hidden from screen readers.
+ * A slanted navy band of course highlights between the demo band and the
+ * course carousel (spec: docs/mockup/lower-home.html, .tick).
+ *
+ * The motion follows the page scroll: it drifts slowly on its own, speeds up
+ * while the visitor scrolls, and runs backwards when they scroll back up. The
+ * loop writes the offset straight to the track (no React state) and only runs
+ * while the band is on screen. Reduced motion: a still band.
+ *
+ * Decorative: every phrase is said elsewhere on the page, so it is hidden from
+ * screen readers.
  */
 export default function HomeTicker() {
+  const bandRef = useRef(null);
+  const trackRef = useRef(null);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    const band = bandRef.current;
+    const track = trackRef.current;
+    if (!band || !track || reduced || typeof IntersectionObserver === "undefined") return undefined;
+
+    let frame = 0;
+    let running = false;
+    let offset = 0;
+    let direction = 1;
+    let speed = BASE_SPEED;
+    let lastTime = 0;
+    let lastScroll = window.scrollY;
+
+    const tick = (now) => {
+      const dt = Math.min(0.05, (now - (lastTime || now)) / 1000);
+      lastTime = now;
+
+      const scrollY = window.scrollY;
+      const scrolled = scrollY - lastScroll;
+      lastScroll = scrollY;
+      if (scrolled !== 0) direction = scrolled > 0 ? 1 : -1;
+
+      // Ease toward the drift speed plus a share of the scroll velocity.
+      const scrollVelocity = Math.abs(scrolled) / Math.max(dt, 0.001);
+      const target = Math.min(MAX_SPEED, BASE_SPEED + scrollVelocity * SCROLL_GAIN);
+      speed += (target - speed) * 0.12;
+
+      const group = track.scrollWidth / 2;
+      if (group > 0) {
+        offset = (offset + direction * speed * dt) % group;
+        if (offset < 0) offset += group;
+        track.style.transform = `translate3d(${-offset}px, 0, 0)`;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !running) {
+        running = true;
+        lastTime = 0;
+        lastScroll = window.scrollY;
+        frame = requestAnimationFrame(tick);
+      } else if (!entry.isIntersecting && running) {
+        running = false;
+        cancelAnimationFrame(frame);
+      }
+    });
+    io.observe(band);
+
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [reduced]);
+
   return (
-    <div className="lh-tick" aria-hidden="true">
-      <div className="lh-tick-track">
-        {TRACK.map((phrase, i) => (
-          <span key={i}>{phrase}</span>
+    <div ref={bandRef} className="lh-tick" aria-hidden="true">
+      <div ref={trackRef} className="lh-tick-track">
+        {[0, 1].map((copy) => (
+          <div key={copy} className="lh-tick-group">
+            {GROUP.map((phrase, i) => (
+              <span key={i}>{phrase}</span>
+            ))}
+          </div>
         ))}
       </div>
     </div>
