@@ -1,11 +1,11 @@
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { SOCIAL_LINKS } from "../../data/socialLinks.js";
+import { useInView, useReducedMotion } from "../motion/index.js";
 
 const COURSES = [
-  {
-    name: "Python: Full Stack Development",
-    slug: "python-full-stack-development",
-  },
+  { name: "Python: Full Stack Development", slug: "python-full-stack-development" },
   { name: "Java: Full Stack Development", slug: "full-stack-java" },
   { name: "Data Analytics & AI", slug: "data-analytics" },
   { name: "DevOps with AWS Cloud", slug: "aws-and-devops" },
@@ -21,211 +21,199 @@ const QUICK_LINKS = [
   { name: "Contact & Support", path: "/contact" },
 ];
 
-import { SOCIAL_LINKS } from "../../data/socialLinks.js";
-
 const GOOGLE_MAPS_URL =
   "https://www.google.com/maps/place/LeSuccess/@11.0118985,76.9826524,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba837c0178b0805:0x27b8de4c436b2d9d!8m2!3d11.0118932!4d76.9852327!16s%2Fg%2F11krkw3qh_?entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D";
 
+const WAVE = (
+  <svg viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 35C180 0 360 70 540 35S900 0 1080 35 1260 70 1440 35V70H0Z" />
+  </svg>
+);
+
+/**
+ * Fills the outlined watermark with the brand gradient as it rises into view:
+ * writes --fill straight to the element from a passive, rAF-throttled scroll
+ * listener that only runs while the watermark is on screen.
+ */
+function useWatermarkFill(ref) {
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    if (reduced || typeof IntersectionObserver === "undefined") {
+      el.style.setProperty("--fill", "100%");
+      return undefined;
+    }
+
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const h = window.innerHeight;
+      const k = Math.min(1, Math.max(0, (h - el.getBoundingClientRect().top) / (h * 0.55)));
+      el.style.setProperty("--fill", `${(k * 100).toFixed(1)}%`);
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+
+    const io = new IntersectionObserver(([entry]) => {
+      const method = entry.isIntersecting ? "addEventListener" : "removeEventListener";
+      window[method]("scroll", schedule, { passive: true });
+      schedule();
+    });
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", schedule);
+      cancelAnimationFrame(frame);
+    };
+  }, [ref, reduced]);
+}
+
+/**
+ * Site footer (spec: docs/mockup/lower-home.html, footer): a wave edge, the
+ * "Build your future." band, four link columns, a watermark that fills as it
+ * scrolls in, and the copyright bar.
+ */
 export default function Footer() {
+  const footRef = useRef(null);
+  const wmRef = useRef(null);
+  const inView = useInView(footRef, { threshold: 0.1 });
+  useWatermarkFill(wmRef);
+
   return (
-    <footer className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#012f45] text-white overflow-hidden relative">
-      {/* Top brand gradient accent bar with animated laser sweep sheen */}
-      <div className="relative h-1.5 w-full bg-gradient-to-r from-[#DF1E26] via-[#F44246] to-[#CA164B] overflow-hidden">
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent animate-shimmer-sweep"
-        />
+    <>
+      <div className="lh-wave" aria-hidden="true">
+        <div>
+          {WAVE}
+          {WAVE}
+        </div>
       </div>
-
-      {/* Decorative ambient subtle glow */}
-      <div
-        aria-hidden="true"
-        className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-[#DF1E26]/10 blur-3xl pointer-events-none"
-      />
-
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
-          {/* Col 1: Brand Info (4 cols) */}
-          <div className="lg:col-span-4 space-y-5">
-            <Link to="/" className="inline-flex items-center gap-3">
-              <div className="bg-white p-2.5 rounded-xl shadow-md inline-block transition-transform duration-300 hover:scale-105">
-                <img
-                  src="/logo/logo.png"
-                  alt="LeSuccess Academy"
-                  className="h-8 w-auto object-contain"
-                />
-              </div>
-            </Link>
-            <p className="text-slate-200 text-sm leading-relaxed max-w-sm">
-              Premier technology learning accelerator in Coimbatore. Empowering
-              students and professionals with hands-on coding, enterprise
-              frameworks, and verified career placements.
-            </p>
-            <div className="space-y-2.5 text-xs text-slate-300">
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2 shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <MapPin size={14} className="text-[#F44246] shrink-0" />
-                <a
-                  href={GOOGLE_MAPS_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-300 hover:text-white transition-colors"
-                >
-                  4th Floor, Tristar Tower, Avinashi Rd, Coimbatore
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone size={14} className="text-cyan-400 shrink-0" />
-                <a
-                  href="tel:+918012060000"
-                  className="text-slate-200 hover:text-white font-medium transition-colors"
-                >
-                  +91 80120 60000
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail size={14} className="text-[#F44246] shrink-0" />
-                <a
-                  href="mailto:training@lesuccess.in"
-                  className="text-slate-200 hover:text-white font-medium transition-colors"
-                >
-                  training@lesuccess.in
-                </a>
-              </div>
-              <div className="pt-1.5">
-                <a
-                  href="#employee-login"
-                  onClick={(e) => e.preventDefault()}
-                  role="button"
-                  aria-label="Employee Login"
-                  className="inline-flex items-center justify-center w-auto py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg animate-shimmer-sweep"
-                >
-                  Employee Login →
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Col 2: Popular Programs (3 cols) */}
-          <div className="lg:col-span-3">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-5 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#DF1E26]" />
-              Popular Programs
-            </h3>
-            <ul className="space-y-3">
-              {COURSES.map((course) => (
-                <li key={course.name}>
-                  <Link
-                    to={`/courses/${course.slug}`}
-                    className="text-slate-300 hover:text-white hover:translate-x-1.5 inline-block transition-all text-sm font-medium"
-                  >
-                    {course.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-5 pt-3 border-t border-white/10">
-              <Link
-                to="/courses"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F44246] hover:text-white transition-colors"
-              >
-                View All 20+ Courses <ArrowRight size={13} />
+      <footer ref={footRef} className={`lh-foot${inView ? " is-in" : ""}`}>
+        <div className="lh-wrap">
+          <div className="lh-build">
+            <h2>Build your future.</h2>
+            <div className="relative z-[1] flex flex-wrap gap-3">
+              <Link to="/courses" className="lh-btn lh-btn-w">
+                Enroll Now
+                <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
               </Link>
-            </div>
-          </div>
-
-          {/* Col 3: Quick Links (2 cols) */}
-          <div className="lg:col-span-2">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-5 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              Navigation
-            </h3>
-            <ul className="space-y-3">
-              {QUICK_LINKS.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.path}
-                    className="text-slate-300 hover:text-white hover:translate-x-1.5 inline-block transition-all text-sm font-medium"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Col 4: Connect & Socials (3 cols) */}
-          <div className="lg:col-span-3 space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-5 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#DF1E26]" />
-              Connect With Us
-            </h3>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Follow our social channels for regular batch announcements, free
-              webinars, and student placement spotlights.
-            </p>
-            <div className="flex flex-wrap gap-2.5 pt-2">
-              {SOCIAL_LINKS.map(({ icon: Icon, href, name }) => (
-                <a
-                  key={name}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={name}
-                  data-cursor-text={name}
-                  className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 text-white flex items-center justify-center hover:bg-[#DF1E26] hover:border-[#DF1E26] hover:scale-115 hover:-translate-y-1 active:scale-95 transition-all duration-300 shadow-sm hover:shadow-[0_8px_20px_rgba(223,30,38,0.45)] cursor-pointer"
-                >
-                  <Icon size={16} />
-                </a>
-              ))}
-            </div>
-
-            <div className="pt-3">
               <Link
                 to="/contact"
-                data-cursor-text="Contact"
-                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg animate-shimmer-sweep btn-glow-brand active:scale-98 cursor-pointer"
+                className="lh-btn text-white shadow-[inset_0_0_0_2px_rgb(255_255_255/0.7)] hover:bg-white hover:text-[#07405C]"
               >
+                Enquire
+              </Link>
+            </div>
+          </div>
+
+          <div className="lh-foot-g">
+            <div>
+              <Link to="/" className="inline-block rounded-xl bg-white p-2.5 shadow-md">
+                <img src="/logo/logo.png" alt="LeSuccess Academy" className="h-8 w-auto object-contain" />
+              </Link>
+              <p className="lh-foot-note" style={{ marginTop: "1.25rem", maxWidth: "36ch" }}>
+                Premier technology learning accelerator in Coimbatore. Empowering
+                students and professionals with hands-on coding, enterprise
+                frameworks, and verified career placements.
+              </p>
+              <p className="lh-foot-note">
+                <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+                  4th Floor, Tristar Tower, Avinashi Rd, Coimbatore
+                </a>
+                <br />
+                <a href="tel:+918012060000" className="hover:text-white">
+                  +91 80120 60000
+                </a>
+                <br />
+                <a href="mailto:training@lesuccess.in" className="hover:text-white">
+                  training@lesuccess.in
+                </a>
+              </p>
+              <a
+                href="#employee-login"
+                onClick={(e) => e.preventDefault()}
+                role="button"
+                className="lh-btn lh-btn-sm text-white shadow-[inset_0_0_0_2px_rgb(255_255_255/0.5)] hover:bg-white hover:text-[#07405C]"
+              >
+                Employee Login
+                <ArrowRight size={16} className="lh-arr" aria-hidden="true" />
+              </a>
+            </div>
+
+            <div>
+              <h4>Popular Programs</h4>
+              <ul>
+                {COURSES.map((course) => (
+                  <li key={course.slug}>
+                    <Link to={`/courses/${course.slug}`}>{course.name}</Link>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/courses"
+                className="lh-btn lh-btn-sm mt-4 text-white shadow-[inset_0_0_0_2px_rgb(255_255_255/0.5)] hover:bg-white hover:text-[#07405C]"
+              >
+                View All 20+ Courses
+              </Link>
+            </div>
+
+            <div>
+              <h4>Navigation</h4>
+              <ul>
+                {QUICK_LINKS.map((link) => (
+                  <li key={link.path}>
+                    <Link to={link.path}>{link.name}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4>Connect With Us</h4>
+              <p className="lh-foot-note">
+                Follow our social channels for regular batch announcements, free
+                webinars, and student placement spotlights.
+              </p>
+              <div className="lh-soc">
+                {SOCIAL_LINKS.map(({ icon: Icon, href, name }, k) => (
+                  <a
+                    key={name}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={name}
+                    style={{ "--k": k }}
+                  >
+                    <Icon size={18} />
+                  </a>
+                ))}
+              </div>
+              <Link to="/contact" className="lh-btn lh-btn-a lh-btn-sm mt-4">
                 Request a Callback
+                <ArrowRight size={16} className="lh-arr" aria-hidden="true" />
               </Link>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Interactive watermark with smooth #DF1E26 brand hover transition and scale */}
-      <div className="w-full select-none overflow-hidden group py-2 sm:py-3">
-        <p className="whitespace-nowrap text-center font-black text-white/10 text-[9vw] sm:text-[7vw] md:text-[5.5vw] tracking-wider transition-all duration-700 ease-out cursor-default hover:text-[#DF1E26] hover:opacity-75 hover:scale-[1.01] leading-none">
-          LEARN • EDUCATE • SUCCEED
-        </p>
-      </div>
+        <div ref={wmRef} className="lh-wm" aria-hidden="true">
+          <span>LEARN.EDUCATE.SUCCEED</span>
+          <span>LEARN.EDUCATE.SUCCEED</span>
+        </div>
 
-      {/* Bottom Copyright Area with Glassmorphism Surface */}
-      <div className="relative z-10 px-4 sm:px-6 md:px-12 pb-6 pt-2">
-        <div className="max-w-7xl mx-auto rounded-2xl bg-white/[0.06] border border-white/15 backdrop-blur-md px-6 py-4.5 shadow-[0_8px_32px_rgba(0,0,0,0.25)] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 font-medium transition-all duration-300 hover:border-white/25">
-          <p className="tracking-wide">
-            © {new Date().getFullYear()} LeSuccess Academy. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
-            <Link to="/courses" className="hover:text-white transition-colors">
-              Courses
-            </Link>
-            <Link to="/services" className="hover:text-white transition-colors">
-              Services
-            </Link>
-            <Link to="/contact" className="hover:text-white transition-colors">
-              Contact
-            </Link>
+        <div className="lh-copy-bar">
+          <div className="lh-wrap lh-copy">
+            <span>© {new Date().getFullYear()} LeSuccess Academy. All rights reserved.</span>
+            <span className="flex flex-wrap gap-4">
+              <Link to="/courses">Courses</Link>
+              <Link to="/services">Services</Link>
+              <Link to="/contact">Contact</Link>
+            </span>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }

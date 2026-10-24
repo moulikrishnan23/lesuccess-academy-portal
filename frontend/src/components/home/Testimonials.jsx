@@ -1,60 +1,121 @@
-import { useState, useMemo } from "react";
-import {
-  Star,
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  ExternalLink,
-} from "lucide-react";
-import ScrollReveal from "../../animations/ScrollReveal.jsx";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, ExternalLink, Star, Check } from "lucide-react";
 import { useAppData } from "../../context/appData.js";
 import { getImageUrl } from "../../utils/imageUtils.js";
-import {
-  GOOGLE_REVIEWS,
-  GOOGLE_REVIEWS_META,
-} from "../../data/googleReviews.js";
-import SpotlightCard from "../ui/SpotlightCard.jsx";
-import Magnetic from "../ui/Magnetic.jsx";
+import { GOOGLE_REVIEWS, GOOGLE_REVIEWS_META } from "../../data/googleReviews.js";
+import SectionHead from "./SectionHead.jsx";
+import useClipReveal from "./useClipReveal.js";
+import { Reveal, useInView, useReducedMotion } from "../motion/index.js";
 
-const AVATAR_COLORS = [
-  "bg-[#07405C]",
-  "bg-[#024D72]",
-  "bg-[#101010]",
-  "bg-[#DF1E26]",
-  "bg-[#CA164B]",
-];
+const AUTO_MS = 5000;
+const GAP_PX = 24; // the carousel's 1.5rem gap
 
-function getAvatarColor(name = "") {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+/** Width of one slide plus the gap: the distance between scroll stops. */
+function slideStep(track) {
+  const first = track?.firstElementChild;
+  return first ? first.offsetWidth + GAP_PX : 1;
 }
 
+/** Scrolls to slide `index`; past the end wraps to the start. */
+function scrollToSlide(track, index, smooth) {
+  if (!track) return;
+  const max = track.scrollWidth - track.clientWidth;
+  const target = index * slideStep(track);
+  track.scrollTo({ left: target > max + 10 ? 0 : Math.max(0, target), behavior: smooth ? "smooth" : "auto" });
+}
+
+function Stars({ count = 5, size = 18 }) {
+  return (
+    <div className="lh-stars" role="img" aria-label={`${count} out of 5 stars`}>
+      {Array.from({ length: count }, (_, i) => (
+        <Star key={i} size={size} fill="currentColor" strokeWidth={0} style={{ "--s": i }} aria-hidden="true" />
+      ))}
+    </div>
+  );
+}
+
+/** One review card; its stars pop in one by one when it scrolls into view. */
+function ReviewCard({ review, expanded, onToggle }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { threshold: 0.2 });
+  const text = review.text || "";
+  const long = text.length > 160;
+
+  return (
+    <article ref={ref} className={`lh-glass lh-testi${inView ? " is-in" : ""}`}>
+      <div className="flex items-center justify-between gap-2">
+        <Stars count={review.rating || 5} />
+        <span className="lh-verified">
+          <Check size={12} aria-hidden="true" />
+          Verified
+        </span>
+      </div>
+      <q>
+        {expanded || !long ? text : `${text.slice(0, 160)}…`}
+        {long && (
+          <>
+            {" "}
+            <button type="button" className="lh-testi-more" onClick={onToggle}>
+              {expanded ? "Less" : "More"}
+            </button>
+          </>
+        )}
+      </q>
+      <div className="lh-who">
+        <div className="lh-av">
+          {review.photoUrl ? (
+            <img src={getImageUrl(review.photoUrl, "", { width: 160 })} alt="" />
+          ) : (
+            (review.name || "S").trim().charAt(0).toUpperCase()
+          )}
+        </div>
+        <div>
+          <b>{review.name}</b>
+          <small>{review.date || review.reviewCount}</small>
+          {review.course && (
+            <>
+              <br />
+              <span className="lh-ctag">{review.course}</span>
+            </>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/**
+ * "Verified Reviews from Our Learners" (spec: docs/mockup/lower-home.html,
+ * #testimonials): a dark band with the Google rating, and an auto-advancing,
+ * swipeable carousel with a progress bar that pauses on hover or focus.
+ *
+ * Reviews come from the admin-managed testimonials, falling back to the
+ * verified Google reviews; their order is the admin's displayOrder.
+ */
 export default function Testimonials() {
   const { testimonials } = useAppData();
+  const reduced = useReducedMotion();
+  const sectionRef = useRef(null);
+  const trackRef = useRef(null);
+  useClipReveal(sectionRef);
 
-  const [expandedIds, setExpandedIds] = useState(new Set());
-  const [startIndex, setStartIndex] = useState(0);
+  const [expandedIds, setExpandedIds] = useState(() => new Set());
+  const [page, setPage] = useState(0);
+  const [pageCount, setPageCount] = useState(1);
+  const [paused, setPaused] = useState(false);
+  const [cycle, setCycle] = useState(0);
 
-  // Use dynamic testimonials from Admin / DB, fallback to verified Google Reviews
   const reviews = useMemo(() => {
-    if (
-      testimonials?.data &&
-      Array.isArray(testimonials.data) &&
-      testimonials.data.length > 0
-    ) {
-      return testimonials.data;
-    }
-    return GOOGLE_REVIEWS;
+    const list =
+      Array.isArray(testimonials?.data) && testimonials.data.length > 0
+        ? testimonials.data
+        : GOOGLE_REVIEWS;
+    return [...list].sort((a, b) =>
+      typeof a.displayOrder === "number" && typeof b.displayOrder === "number"
+        ? a.displayOrder - b.displayOrder
+        : 0,
+    );
   }, [testimonials?.data]);
-
-  const cardsPerPage = 3;
-  const maxStart = Math.max(0, reviews.length - cardsPerPage);
-
-  const goPrev = () => setStartIndex((i) => Math.max(0, i - 1));
-  const goNext = () => setStartIndex((i) => Math.min(maxStart, i + 1));
 
   const toggleExpand = (id) => {
     setExpandedIds((prev) => {
@@ -65,262 +126,122 @@ export default function Testimonials() {
     });
   };
 
-  // Preserve admin displayOrder without overriding by rating
-  const sortedReviews = useMemo(() => {
-    return [...reviews].sort((a, b) => {
-      if (
-        typeof a.displayOrder === "number" &&
-        typeof b.displayOrder === "number" &&
-        a.displayOrder !== b.displayOrder
-      ) {
-        return a.displayOrder - b.displayOrder;
-      }
-      return 0;
+  const goTo = (index) => scrollToSlide(trackRef.current, index, !reduced);
+
+  // Pages = positions the first visible card can take. Measured in the
+  // ResizeObserver callback, which also fires once on observe.
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(() => {
+      const perView = Math.max(1, Math.round(track.clientWidth / slideStep(track)));
+      setPageCount(Math.max(1, reviews.length - perView + 1));
     });
-  }, [reviews]);
-  const visibleReviews = sortedReviews.slice(
-    startIndex,
-    startIndex + cardsPerPage,
-  );
+    ro.observe(track);
+    return () => ro.disconnect();
+  }, [reviews.length]);
+
+  // Auto-advance; each tick also restarts the progress bar (keyed on `cycle`).
+  useEffect(() => {
+    if (reduced || paused || pageCount <= 1) return undefined;
+    const timer = setInterval(() => {
+      setCycle((c) => c + 1);
+      const track = trackRef.current;
+      if (!track) return;
+      const next = Math.round(track.scrollLeft / slideStep(track)) + 1;
+      scrollToSlide(track, next >= pageCount ? 0 : next, true);
+    }, AUTO_MS);
+    return () => clearInterval(timer);
+  }, [reduced, paused, pageCount]);
 
   return (
-    <section className="relative w-full bg-slate-50/70 py-20 px-4 sm:px-8 lg:px-16 overflow-hidden transition-colors duration-200">
-      <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
-        <ScrollReveal className="text-center max-w-3xl mx-auto mb-10">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/30 bg-[#07405C]/5 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#07405C]">
-            Student Testimonials
-          </span>
-          <h2 className="mt-3 text-3xl font-extrabold text-[#101010] sm:text-4xl tracking-tight">
-            Verified Reviews from Our{" "}
-            <span className="text-[#DF1E26]">Learners</span>
-          </h2>
-          <p className="mt-2 text-base text-slate-600">
-            Real feedback from graduates who transformed their careers with
-            LeSuccess Academy.
-          </p>
-        </ScrollReveal>
+    <section ref={sectionRef} id="testimonials" className="lh-sec lh-dark lh-rv">
+      <div className="lh-wrap">
+        <SectionHead
+          center
+          badge="Student Testimonials"
+          title="Verified Reviews from Our"
+          highlight="Learners"
+          lead="Real feedback from graduates who transformed their careers with LeSuccess Academy."
+        >
+          <div className="lh-rate">
+            <span className="grid h-7 w-7 place-items-center rounded-full border border-slate-200 font-extrabold text-[#4285F4]">
+              G
+            </span>
+            <span>
+              Rated <b>{GOOGLE_REVIEWS_META.rating}/5</b>, <b>250+</b> Google Reviews
+            </span>
+            <Stars size={16} />
+          </div>
+        </SectionHead>
 
-        {/* Google Reviews Style Card */}
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/50 p-6 sm:p-10 transition-all">
-          {/* Card Top Header */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-6 border-b border-slate-100">
-            <div>
-              <div className="flex items-center gap-3">
-                <h3 className="text-2xl sm:text-3xl font-bold text-[#101010] tracking-tight">
-                  {GOOGLE_REVIEWS_META.placeName}
-                </h3>
-                {/* Google Multi-Color Icon */}
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-6 h-6 shrink-0"
-                  aria-label="Google"
-                >
-                  <path
-                    fill="#4285F4"
-                    d="M23.52 12.27c0-.85-.08-1.66-.22-2.44H12v4.62h6.47a5.54 5.54 0 0 1-2.4 3.64v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z"
+        <Reveal
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+        >
+          <div
+            ref={trackRef}
+            className="lh-car"
+            tabIndex={0}
+            aria-label="Student testimonials"
+            onScroll={(e) => setPage(Math.round(e.currentTarget.scrollLeft / slideStep(e.currentTarget)))}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight") goTo(page + 1);
+              if (e.key === "ArrowLeft") goTo(page - 1);
+            }}
+          >
+            {reviews.map((review) => (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                expanded={expandedIds.has(review.id)}
+                onToggle={() => toggleExpand(review.id)}
+              />
+            ))}
+          </div>
+
+          {pageCount > 1 && (
+            <div className="lh-car-ctl">
+              <div className="lh-dots">
+                {Array.from({ length: pageCount }, (_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`Go to slide ${i + 1}`}
+                    aria-current={i === page ? "true" : undefined}
+                    onClick={() => goTo(i)}
                   />
-                  <path
-                    fill="#34A853"
-                    d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.72-2.46 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.1A12 12 0 0 0 12 24Z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28v-3.1H1.26A12 12 0 0 0 0 12c0 1.94.46 3.77 1.26 5.38l4.01-3.1Z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.26 6.62l4.01 3.1C6.22 6.88 8.87 4.77 12 4.77Z"
-                  />
-                </svg>
+                ))}
               </div>
-              <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-xl">
-                {GOOGLE_REVIEWS_META.address}
-              </p>
-
-              {/* Overall Rating & Star Count */}
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <span className="text-3xl sm:text-4xl font-black text-[#101010]">
-                  {GOOGLE_REVIEWS_META.rating}
-                </span>
-                <div className="flex items-center text-[#ffb800] gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={22}
-                      className={
-                        i < Math.floor(GOOGLE_REVIEWS_META.rating)
-                          ? "fill-[#ffb800] text-[#ffb800]"
-                          : i < GOOGLE_REVIEWS_META.rating
-                            ? "fill-[#ffb800]/50 text-[#ffb800]"
-                            : "text-slate-300"
-                      }
-                    />
-                  ))}
+              {!reduced && (
+                <div className={`lh-prog${paused ? "" : " is-running"}`} style={{ "--prog-ms": `${AUTO_MS}ms` }} aria-hidden="true">
+                  <i key={cycle} />
                 </div>
-                <span className="text-sm sm:text-base font-semibold text-slate-600">
-                  {GOOGLE_REVIEWS_META.totalReviews} reviews
-                </span>
-                <Info size={16} className="text-slate-400" />
+              )}
+              <div className="lh-arrows">
+                <button type="button" aria-label="Previous review" onClick={() => goTo(page - 1)}>
+                  <ChevronLeft size={20} aria-hidden="true" />
+                </button>
+                <button type="button" aria-label="Next review" onClick={() => goTo(page + 1)}>
+                  <ChevronRight size={20} aria-hidden="true" />
+                </button>
               </div>
             </div>
+          )}
+        </Reveal>
 
-            {/* Write a review button */}
-            <div className="shrink-0 pt-2 sm:pt-0">
-              <Magnetic strength={0.25}>
-                <a
-                  href={GOOGLE_REVIEWS_META.writeReviewUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-glow-navy inline-flex items-center gap-2 rounded-xl border border-[#07405C] bg-white px-6 py-2.5 text-sm font-bold text-[#07405C] shadow-xs hover:bg-[#07405C] hover:text-white transition-all cursor-pointer"
-                >
-                  <span>Write a review</span>
-                  <ExternalLink size={14} />
-                </a>
-              </Magnetic>
-            </div>
-          </div>
-
-          {/* Carousel / Multi-Column Reviews Cards */}
-          <div className="relative mt-8">
-            {/* Desktop Navigation Arrows */}
-            {reviews.length > cardsPerPage && (
-              <>
-                <button
-                  type="button"
-                  onClick={goPrev}
-                  disabled={startIndex === 0}
-                  aria-label="Previous review"
-                  className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 items-center justify-center rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
-                >
-                  <ChevronLeft size={22} />
-                </button>
-                <button
-                  type="button"
-                  onClick={goNext}
-                  disabled={startIndex >= maxStart}
-                  aria-label="Next review"
-                  className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 items-center justify-center rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
-                >
-                  <ChevronRight size={22} />
-                </button>
-              </>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {visibleReviews.map((review, idx) => {
-                const initial = review.name
-                  ? review.name.trim().charAt(0).toUpperCase()
-                  : "S";
-                const isExpanded = expandedIds.has(review.id);
-
-                return (
-                  <ScrollReveal
-                    preset="hop"
-                    key={review.id}
-                    delay={idx * 0.08}
-                    className="h-full"
-                  >
-                    <SpotlightCard
-                      tilt={true}
-                      maxTilt={6}
-                      spotlightColor="rgba(255, 184, 0, 0.12)"
-                      className="card-lift-3d group h-full flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-xs cursor-default"
-                    >
-                      <div>
-                        {/* Reviewer Header: Avatar, Name, Review Count */}
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            {review.photoUrl ? (
-                              <img
-                                src={getImageUrl(review.photoUrl, "", { width: 160 })}
-                                alt={review.name}
-                                className="w-11 h-11 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div
-                                className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-inner ${getAvatarColor(
-                                  review.name,
-                                )}`}
-                              >
-                                {initial}
-                              </div>
-                            )}
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-bold text-slate-900 text-sm sm:text-base leading-tight">
-                                  {review.name}
-                                </h4>
-                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                  Verified
-                                </span>
-                              </div>
-                              <p className="text-xs text-slate-500 mt-0.5">
-                                {review.reviewCount || "1 review"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Stars and Date with Sequential Twinkle Animation */}
-                        <div className="mt-3 flex items-center gap-2">
-                          <div className="flex text-[#ffb800] gap-0.5">
-                            {[...Array(review.rating || 5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                size={15}
-                                fill="#ffb800"
-                                stroke="#ffb800"
-                                className="transition-transform duration-300 group-hover:scale-120"
-                                style={{
-                                  transitionDelay: `${i * 50}ms`,
-                                  animation:
-                                    "starTwinkle 3.5s ease-in-out infinite",
-                                  animationDelay: `${i * 0.25}s`,
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-xs text-slate-500 font-medium">
-                            {review.date}
-                          </span>
-                        </div>
-
-                        {/* Review Text with ... More toggle */}
-                        <p className="mt-3 text-sm text-slate-700 leading-relaxed font-normal">
-                          {isExpanded || review.text.length <= 160 ? (
-                            review.text
-                          ) : (
-                            <>
-                              {review.text.slice(0, 160)}
-                              <span>... </span>
-                              <button
-                                type="button"
-                                onClick={() => toggleExpand(review.id)}
-                                className="text-slate-500 hover:text-slate-900 font-medium text-xs inline underline cursor-pointer"
-                              >
-                                More
-                              </button>
-                            </>
-                          )}
-                        </p>
-                      </div>
-
-                      {/* Footer: Course Tag */}
-                      {review.course && (
-                        <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-end">
-                          <span className="text-[11px] font-bold text-[#DF1E26] bg-[#DF1E26]/10 px-2.5 py-0.5 rounded-full border border-[#DF1E26]/20">
-                            {review.course}
-                          </span>
-                        </div>
-                      )}
-                    </SpotlightCard>
-                  </ScrollReveal>
-                );
-              })}
-            </div>
-          </div>
+        <div className="mt-10 text-center">
+          <a
+            href={GOOGLE_REVIEWS_META.writeReviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lh-btn lh-btn-o"
+          >
+            Write a review
+            <ExternalLink size={16} aria-hidden="true" />
+          </a>
         </div>
       </div>
     </section>

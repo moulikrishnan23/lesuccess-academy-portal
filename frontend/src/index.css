@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import './components/motion/motion.css';
 @import './components/home/home-motion.css';
+@import './components/home/lower-home.css';
 
 /*
   LeSuccess Academy — design tokens taken from the reference PDFs

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
+  ArrowRight,
   ChevronDown,
   GraduationCap,
   Phone,
@@ -10,12 +11,12 @@ import {
   CheckCircle2,
   X,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import apiClient from "../../services/apiClient.js";
 import useCourses from "../../hooks/useCourses.js";
-import useReducedMotion from "../../hooks/useReducedMotion.js";
-import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import Magnetic from "../ui/Magnetic.jsx";
+import { Reveal, ConicBorder, burstConfetti } from "../motion/index.js";
+import FloatField from "./FloatField.jsx";
+import useClipReveal from "./useClipReveal.js";
 
 // Shown in the dropdown while the API response is loading or empty
 const FALLBACK_COURSES = [
@@ -31,7 +32,6 @@ const DemoClass = ({
   onClose,
   isModal = false,
 }) => {
-  const reduced = useReducedMotion();
   const { courses } = useCourses();
   const dropdownCourses = courses.length > 0 ? courses : FALLBACK_COURSES;
 
@@ -48,6 +48,16 @@ const DemoClass = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null); // "success" | "error"
   const [errorMessage, setErrorMessage] = useState("");
+
+  const sectionRef = useRef(null);
+  const okRef = useRef(null);
+  useClipReveal(sectionRef);
+
+  // Celebrate an inline booking once its success panel is on screen.
+  useEffect(() => {
+    if (isModal || submitStatus !== "success") return undefined;
+    return burstConfetti(okRef.current);
+  }, [isModal, submitStatus]);
 
   if (initialCourseName !== prevInitialCourseName) {
     setPrevInitialCourseName(initialCourseName);
@@ -188,142 +198,6 @@ const DemoClass = ({
           </button>
         )}
       </div>
-    </div>
-  );
-
-  const formContent = (
-    <div className="mx-auto max-w-5xl text-center relative z-10">
-      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-        <Sparkles size={13} className="text-[#F44246]" />
-        <span>Experience Before You Enroll</span>
-      </div>
-
-      <h2 className="text-3xl font-extrabold sm:text-4xl lg:text-5xl text-white tracking-tight">
-        Book Your{" "}
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-red-400">
-          Free Live Demo
-        </span>{" "}
-        Today!
-      </h2>
-
-      <p className="mt-4 text-base sm:text-lg text-slate-200 max-w-2xl mx-auto">
-        Experience our live hands-on teaching methodology, interactive coding
-        labs, and mentor guidance firsthand.
-      </p>
-
-      {/* Honeypot */}
-      <div
-        aria-hidden="true"
-        className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
-      >
-        <label htmlFor="demo-website">Leave this field empty</label>
-        <input
-          id="demo-website"
-          name="website"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
-        />
-      </div>
-
-      <div className="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Name */}
-        <div className="relative">
-          <User
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 z-10 pointer-events-none"
-          />
-          <input
-            type="text"
-            placeholder="Your Full Name *"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-xl border border-white/25 bg-white/10 py-3.5 pl-11 pr-4 text-white text-sm outline-none placeholder:text-slate-300/80 focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all"
-          />
-        </div>
-
-        {/* Email */}
-        <div className="relative">
-          <Mail
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 z-10 pointer-events-none"
-          />
-          <input
-            type="email"
-            placeholder="Email Address *"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-white/25 bg-white/10 py-3.5 pl-11 pr-4 text-white text-sm outline-none placeholder:text-slate-300/80 focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all"
-          />
-        </div>
-
-        {/* Mobile Number */}
-        <div className="relative">
-          <Phone
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 z-10 pointer-events-none"
-          />
-          <input
-            type="tel"
-            placeholder="Mobile Number *"
-            value={mobileNumber}
-            onChange={(e) => setMobileNumber(e.target.value)}
-            className="w-full rounded-xl border border-white/25 bg-white/10 py-3.5 pl-11 pr-4 text-white text-sm outline-none placeholder:text-slate-300/80 focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all"
-          />
-        </div>
-
-        {/* Course Select */}
-        <div className="relative">
-          <GraduationCap
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 z-10 pointer-events-none"
-          />
-
-          <select
-            value={selectedCourseName}
-            onChange={(e) => setSelectedCourseName(e.target.value)}
-            className="w-full appearance-none rounded-xl border border-white/25 bg-white/10 py-3.5 pl-11 pr-10 text-white text-sm outline-none focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all cursor-pointer"
-          >
-            <option value="" className="text-gray-800 bg-white">
-              Select Course *
-            </option>
-
-            {dropdownCourses.map((course, i) => (
-              <option
-                key={course.id ?? `fallback-${i}`}
-                value={course.title}
-                className="text-gray-800 bg-white"
-              >
-                {course.title}
-              </option>
-            ))}
-          </select>
-
-          <ChevronDown
-            size={18}
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/80 z-10"
-          />
-        </div>
-      </div>
-
-      {/* Submit Button */}
-      <div className="mt-8 flex justify-center">
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="animate-shimmer-sweep btn-glow-brand w-full sm:w-auto min-w-[280px] rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-8 py-3.5 text-sm sm:text-base font-bold text-white shadow-[0_6px_25px_rgba(244,66,70,0.45)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
-        >
-          {isSubmitting ? "Reserving Your Seat..." : "Reserve Free Demo Seat"}
-        </button>
-      </div>
-
-      {submitStatus === "error" && (
-        <p className="mt-4 text-sm font-semibold text-rose-300">
-          {errorMessage}
-        </p>
-      )}
     </div>
   );
 
@@ -504,40 +378,148 @@ const DemoClass = ({
     );
   }
 
-  // Inline Section Mode (Default, e.g. on Home Page)
-  if (submitStatus === "success") {
-    return (
-      <section className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-6 py-16 text-white sm:px-10 lg:px-20 relative overflow-hidden">
-        {successContent}
-      </section>
-    );
-  }
+  // Inline section on the Home page (spec: docs/mockup/lower-home.html, #demo).
+  const courseOptions = dropdownCourses.map((course) => ({
+    value: course.title,
+    label: course.title,
+  }));
 
   return (
     <section
+      ref={sectionRef}
       id="demo-class"
       data-competing-form="true"
-      className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-6 py-18 text-white sm:px-10 lg:px-20 relative overflow-hidden"
+      className="lh-sec lh-dark lh-rv"
     >
-      {/* Decorative ambient background with organic pulsing glow */}
-      <div
-        aria-hidden="true"
-        className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none animate-halo-pulse"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-[#DF1E26]/20 blur-3xl pointer-events-none animate-halo-pulse"
-        style={{ animationDelay: "2s" }}
-      />
+      <div className="lh-mesh" aria-hidden="true">
+        <i />
+        <i />
+      </div>
+      <span className="lh-glyph" style={{ left: "6%", top: "14%" }} aria-hidden="true">{"{ }"}</span>
+      <span className="lh-glyph" style={{ right: "9%", top: "10%", fontSize: "2.75rem", animationDelay: "-3s" }} aria-hidden="true">{"</>"}</span>
+      <span className="lh-glyph" style={{ left: "46%", bottom: "8%", animationDelay: "-5s" }} aria-hidden="true">SQL</span>
+      <span className="lh-glyph" style={{ right: "4%", bottom: "14%", fontSize: "1.75rem", animationDelay: "-2s" }} aria-hidden="true">py</span>
 
-      <motion.div
-        variants={motionSafe(fadeUp, reduced)}
-        initial="hidden"
-        whileInView="visible"
-        viewport={ONCE_IN_VIEW}
-      >
-        {formContent}
-      </motion.div>
+      <div className="lh-wrap lh-demo-g">
+        <Reveal>
+          <span className="lh-badge">Experience before you enroll</span>
+          <h2 className="lh-h2" style={{ margin: "1rem 0" }}>
+            Book Your Free Live Demo Today!
+          </h2>
+          <p className="lh-lead">
+            Experience our live hands-on teaching methodology, interactive coding
+            labs, and mentor guidance firsthand.
+          </p>
+        </Reveal>
+
+        <Reveal index={2}>
+          <ConicBorder
+            as="form"
+            tone="dark"
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+            className="lh-glass lh-demo-form"
+          >
+            {submitStatus === "success" ? (
+              <div ref={okRef} className="lh-ok" role="status">
+                <svg viewBox="0 0 84 84" aria-hidden="true">
+                  <circle cx="42" cy="42" r="36" />
+                  <path d="M26 43l11 11 21-23" />
+                </svg>
+                <h3>Demo class booked</h3>
+                <p>
+                  Your demo session reservation has been received. Our academic
+                  coordinator will contact you shortly to confirm timings.
+                </p>
+                <button
+                  type="button"
+                  className="lh-btn lh-btn-o lh-btn-sm"
+                  onClick={() => {
+                    setSubmitStatus(null);
+                    setName("");
+                    setEmail("");
+                    setMobileNumber("");
+                    setSelectedCourseName(initialCourseName || "");
+                  }}
+                >
+                  Book another demo
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Honeypot */}
+                <div
+                  aria-hidden="true"
+                  className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+                >
+                  <label htmlFor="demo-website">Leave this field empty</label>
+                  <input
+                    id="demo-website"
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                  />
+                </div>
+
+                <div className="lh-form-grid">
+                  <FloatField
+                    id="demo-name"
+                    label="Your full name *"
+                    autoComplete="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                  <FloatField
+                    id="demo-mobile"
+                    label="Mobile number *"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value)}
+                  />
+                  <FloatField
+                    id="demo-email"
+                    label="Email address *"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <FloatField
+                    id="demo-course"
+                    label="Select course *"
+                    options={courseOptions}
+                    value={selectedCourseName}
+                    onChange={(e) => setSelectedCourseName(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="lh-btn lh-btn-a lh-full"
+                    style={{ minHeight: "3.5rem" }}
+                  >
+                    {isSubmitting ? "Reserving your seat…" : "Reserve Free Demo Seat"}
+                    <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
+                  </button>
+                </div>
+
+                {submitStatus === "error" && (
+                  <p className="lh-form-error" role="alert">
+                    {errorMessage}
+                  </p>
+                )}
+              </>
+            )}
+          </ConicBorder>
+        </Reveal>
+      </div>
     </section>
   );
 };

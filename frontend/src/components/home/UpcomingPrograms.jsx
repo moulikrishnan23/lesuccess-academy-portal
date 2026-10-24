@@ -1,29 +1,43 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import {
+  ArrowRight,
+  Briefcase,
   CalendarDays,
-  Clock3,
-  Video,
-  Award,
-  MapPin,
-  Building2,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  MapPin,
   User,
-  Briefcase,
-  Code2,
-  Sparkles,
-  CheckCircle2,
+  Video,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import { useAppData } from "../../context/appData.js";
 import ProgramRegistrationModal from "./ProgramRegistrationModal.jsx";
-import Magnetic from "../ui/Magnetic.jsx";
-import BorderBeam from "../ui/BorderBeam.jsx";
+import SectionHead from "./SectionHead.jsx";
+import { Reveal } from "../motion/index.js";
 
 const INTERVAL_MS = 7000;
+
+const CATEGORIES = [
+  { id: "ALL", label: "All Events" },
+  { id: "WEBINAR", label: "Webinars" },
+  { id: "WORKSHOP", label: "Workshops" },
+  { id: "INTERNSHIP", label: "Internships" },
+];
+
+const TYPE_TAG = {
+  WEBINAR: "Free Webinar",
+  WORKSHOP: "Hands-on Workshop",
+  INTERNSHIP: "Internship Program",
+};
+
+const CTA_LABEL = {
+  WEBINAR: "Register For Free",
+  WORKSHOP: "Book Workshop Seat",
+  INTERNSHIP: "Apply For Internship",
+};
 
 /* =========================================================
    HELPERS
@@ -88,29 +102,73 @@ function formatTimeRange(startStr, endStr) {
   }
 }
 
+/** The event's start as a local timestamp, or null when the date is missing. */
+function eventStart(program) {
+  const [y, m, d] = String(program?.eventDate || "").split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const [hh = 0, mm = 0] = String(program?.startTime || "").split(":").map(Number);
+  const start = new Date(y, m - 1, d, hh || 0, mm || 0);
+  return Number.isNaN(start.getTime()) ? null : start.getTime();
+}
+
+const pad = (n) => String(n).padStart(2, "0");
+
+/**
+ * Days / hours / minutes / seconds until `target`, in flip tiles. Each tile is
+ * keyed by its value, so a change remounts it and replays the CSS flip
+ * (lower-home.css, .lh-fu b). Renders nothing once the event has started.
+ */
+function FlipCountdown({ target }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const left = Math.floor((target - now) / 1000);
+  if (left <= 0) return null;
+
+  const units = [
+    ["Days", Math.floor(left / 86400)],
+    ["Hours", Math.floor((left % 86400) / 3600)],
+    ["Min", Math.floor((left % 3600) / 60)],
+    ["Sec", left % 60],
+  ];
+
+  return (
+    <div className="lh-fcd" role="timer" aria-label="Time until the event starts">
+      {units.map(([label, value]) => (
+        <div key={label} className="lh-fu">
+          <b key={value}>{pad(value)}</b>
+          {label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Upcoming programs and events (spec: docs/mockup/lower-home.html, #upcoming):
+ * pill tabs with a sliding gradient indicator over a feature card with the
+ * speaker image, a flip countdown and the detail tiles. Programs come from the
+ * shared app data; registration and the remembered "registered" state are
+ * unchanged.
+ */
 export default function UpcomingPrograms() {
   const reduced = useReducedMotion();
   const { programs } = useAppData();
   const { status, data: allPrograms, refetch } = programs;
   const loading = status === "loading";
-  const [selectedCategory, setSelectedCategory] = useState("ALL"); // 'ALL' | 'WEBINAR' | 'WORKSHOP' | 'INTERNSHIP'
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const [direction, setDirection] = useState(1);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [selectedProgramForModal, setSelectedProgramForModal] = useState(null);
 
-  const handleOpenRegister = (programToRegister) => {
-    const target = programToRegister || currentProgram;
-    if (!target) return;
-    setSelectedProgramForModal(target);
-    setIsRegisterModalOpen(true);
-  };
-
-  const handleCloseRegister = () => {
-    setIsRegisterModalOpen(false);
-    setSelectedProgramForModal(null);
-  };
+  const tabsRef = useRef(null);
+  const indicatorRef = useRef(null);
 
   const [registeredEvents, setRegisteredEvents] = useState(() => {
     try {
@@ -137,43 +195,46 @@ export default function UpcomingPrograms() {
     });
   };
 
-  /* =======================================================
-     FILTERED PROGRAMS BY CATEGORY
-  ======================================================= */
   const filteredPrograms = useMemo(() => {
-    if (selectedCategory === "ALL") {
-      return allPrograms;
-    }
+    if (selectedCategory === "ALL") return allPrograms;
     return allPrograms.filter(
       (p) => (p.type || "").toUpperCase() === selectedCategory,
     );
   }, [allPrograms, selectedCategory]);
 
-  // Reset index when category changes
   const handleCategoryChange = (cat) => {
     if (cat === selectedCategory) return;
     setSelectedCategory(cat);
     setCurrentIndex(0);
   };
 
-  /* =======================================================
-     AUTO SLIDE WITH PAUSE ON HOVER OR OPEN MODAL
-  ======================================================= */
+  // Slide the tab indicator under the selected tab. Written straight to the
+  // element: it is pure presentation and must follow resizes too.
+  useLayoutEffect(() => {
+    const place = () => {
+      const tab = tabsRef.current?.querySelector('[aria-selected="true"]');
+      const ind = indicatorRef.current;
+      if (!tab || !ind) return;
+      ind.style.width = `${tab.offsetWidth}px`;
+      ind.style.height = `${tab.offsetHeight}px`;
+      ind.style.transform = `translate(${tab.offsetLeft}px, ${tab.offsetTop}px)`;
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [selectedCategory, loading]);
+
+  // Auto-advance, paused on hover and while the registration modal is open.
   useEffect(() => {
     if (filteredPrograms.length <= 1 || isHovered || isRegisterModalOpen)
       return undefined;
-
     const timer = setInterval(() => {
       setDirection(1);
       setCurrentIndex((prev) => (prev + 1) % filteredPrograms.length);
     }, INTERVAL_MS);
-
     return () => clearInterval(timer);
   }, [filteredPrograms.length, isHovered, isRegisterModalOpen]);
 
-  /* =======================================================
-     CAROUSEL NAVIGATION CONTROLS
-  ======================================================= */
   const goToNext = () => {
     if (filteredPrograms.length <= 1) return;
     setDirection(1);
@@ -194,547 +255,275 @@ export default function UpcomingPrograms() {
     setCurrentIndex(idx);
   };
 
-  // Current active event
   const currentProgram =
     filteredPrograms[currentIndex] || filteredPrograms[0] || null;
   const eventType = (currentProgram?.type || "WEBINAR").toUpperCase();
   const isOffline = (currentProgram?.mode || "").toUpperCase() === "OFFLINE";
-  const isRegisteredForCurrent = Boolean(
-    currentProgram?.id && registeredEvents[currentProgram.id],
-  );
   const registrationInfo = currentProgram?.id
     ? registeredEvents[currentProgram.id]
     : null;
+  const isRegisteredForCurrent = Boolean(registrationInfo);
   const registeredMeetLink =
     registrationInfo?.meetLink || currentProgram?.meetLink;
+  const startsAt = eventStart(currentProgram);
 
-  // Type-specific badge styling
-  const badgeColors = {
-    WEBINAR: {
-      bg: "bg-gradient-to-r from-[#DF1E26] to-[#b8141b] text-white shadow-sm shadow-[#DF1E26]/20",
-      tag: "Free Webinar",
-      accent: "border-l-4 border-l-[#DF1E26]",
-    },
-    WORKSHOP: {
-      bg: "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm shadow-amber-500/20",
-      tag: "Hands-on Workshop",
-      accent: "border-l-4 border-l-amber-500",
-    },
-    INTERNSHIP: {
-      bg: "bg-gradient-to-r from-[#DF1E26] to-[#CA164B] text-white shadow-sm shadow-[#DF1E26]/20",
-      tag: "Internship Program",
-      accent: "border-l-4 border-l-[#DF1E26]",
-    },
-  }[eventType] || {
-    bg: "bg-[#07405C] text-white",
-    tag: currentProgram?.label || "Event",
-    accent: "border-l-4 border-l-[#07405C]",
+  const handleOpenRegister = () => {
+    if (!currentProgram) return;
+    setSelectedProgramForModal(currentProgram);
+    setIsRegisterModalOpen(true);
+  };
+
+  const handleCloseRegister = () => {
+    setIsRegisterModalOpen(false);
+    setSelectedProgramForModal(null);
   };
 
   const formattedDate = formatDate(currentProgram?.eventDate) || "Upcoming";
   const formattedTime =
     formatTimeRange(currentProgram?.startTime, currentProgram?.endTime) ||
     "Flexible Timings";
+  const place = isOffline
+    ? currentProgram?.venueName || currentProgram?.venueAddress || "LeSuccess Campus"
+    : currentProgram?.platform || "Google Meet";
 
-  return (
-    <section
-      id="upcoming-events"
-      className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] px-4 sm:px-6 md:px-10 lg:px-20 py-20 relative overflow-hidden"
-    >
-      {/* Decorative ambient background */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#DF1E26]/15 blur-3xl pointer-events-none"
-      />
-
-      <div className="mx-auto max-w-5xl relative z-10">
-        {/* =================================================
-            HEADER
-        ================================================= */}
-        <motion.div
-          variants={motionSafe(fadeUp, reduced)}
-          initial="hidden"
-          whileInView="visible"
-          viewport={ONCE_IN_VIEW}
-          className="text-center"
-        >
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md shadow-xs mb-3">
-            <Sparkles size={13} className="text-[#DF1E26]" />
-            <span>Upcoming Programs & Events</span>
-          </span>
-          <h2 className="text-3xl font-extrabold text-white sm:text-4xl md:text-5xl tracking-tight">
-            Level Up With Live Sessions
-          </h2>
-          <p className="mt-3 text-base sm:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed">
-            Gain industry exposure, build hands-on projects, and learn live from
-            experienced tech mentors.
-          </p>
-        </motion.div>
-
-        {/* =================================================
-            CATEGORY FILTER TABS
-        ================================================= */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 w-fit mx-auto shadow-inner">
-          {[
-            { id: "ALL", label: "All Events" },
-            { id: "WEBINAR", label: "Webinars" },
-            { id: "WORKSHOP", label: "Workshops" },
-            { id: "INTERNSHIP", label: "Internships" },
-          ].map((cat) => {
-            const isActive = selectedCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => handleCategoryChange(cat.id)}
-                className={`relative rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-colors duration-200 cursor-pointer ${
-                  isActive ? "text-[#07405C]" : "text-white/80 hover:text-white"
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeProgramTab"
-                    className="absolute inset-0 rounded-xl bg-white shadow-lg"
-                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
-                  />
-                )}
-                <span className="relative z-10">{cat.label}</span>
-              </button>
-            );
-          })}
+  let body;
+  if (loading) {
+    body = (
+      <div className="lh-feat" aria-busy="true">
+        <div className="lh-feat-media" />
+        <div className="lh-feat-body">
+          <div className="h-6 w-1/3 animate-pulse rounded-lg bg-slate-200" />
+          <div className="h-10 animate-pulse rounded-lg bg-slate-200" />
+          <div className="h-16 animate-pulse rounded-lg bg-slate-100" />
+          <div className="h-12 w-2/5 animate-pulse rounded-full bg-slate-200" />
         </div>
-
-        {/* =================================================
-            EVENT CARD / CAROUSEL CONTAINER / EMPTY STATE
-        ================================================= */}
-        {loading ? (
-          <div className="mt-12 flex min-h-[360px] items-center justify-center rounded-3xl bg-white/5 border border-white/10 p-12">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
-          </div>
-        ) : status === "error" ? (
-          <div className="mt-12 mx-auto max-w-xl rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 p-8 sm:p-12 text-center text-white shadow-2xl">
-            <h3 className="text-xl sm:text-2xl font-bold text-white">
-              Unable to load upcoming programs
-            </h3>
-            <p className="mt-3 text-sm text-white/80 max-w-md mx-auto leading-relaxed">
-              We could not connect to the server to load scheduled events.
-              Please check your network and retry.
-            </p>
-            <div className="mt-7">
-              <button
-                type="button"
-                onClick={refetch}
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#07405C] shadow-lg transition hover:bg-slate-100 active:scale-95 cursor-pointer"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        ) : allPrograms.length === 0 ? (
-          /* Clean empty state when no upcoming events exist */
-          <div className="mt-12 mx-auto max-w-xl rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 p-8 sm:p-12 text-center text-white shadow-2xl">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 border border-white/25 text-white mb-4">
-              <CalendarDays size={32} className="text-white/90" />
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-white">
-              No upcoming programs or events at the moment
-            </h3>
-            <p className="mt-3 text-sm text-white/80 max-w-md mx-auto leading-relaxed">
-              Check back soon for new webinars, workshops, and internship
-              programs, or book a free 1-on-1 live demo today.
-            </p>
-            <div className="mt-7">
-              <a
-                href="#demo-class"
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:brightness-105 active:scale-95"
-              >
-                Book Free Demo
-              </a>
-            </div>
-          </div>
-        ) : filteredPrograms.length === 0 ? (
-          /* Clean empty category filter state */
-          <div className="mt-12 mx-auto max-w-lg rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-8 text-center text-white">
-            <p className="text-sm font-semibold text-white/90">
-              No upcoming {selectedCategory.toLowerCase()}s scheduled at the
-              moment.
-            </p>
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("ALL")}
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-cyan-300 hover:text-white underline cursor-pointer"
-            >
-              View all upcoming events ({allPrograms.length})
-            </button>
-          </div>
-        ) : (
-          <div
-            className="mt-10 relative"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+      </div>
+    );
+  } else if (status === "error") {
+    body = (
+      <div className="lh-ev-empty" role="status">
+        <div className="lh-ev-empty-icon">
+          <CalendarDays size={40} aria-hidden="true" />
+        </div>
+        <h3>Unable to load upcoming programs</h3>
+        <p>We could not connect to the server to load scheduled events. Please check your network and retry.</p>
+        <button type="button" onClick={refetch} className="lh-btn lh-btn-n">
+          Retry
+        </button>
+      </div>
+    );
+  } else if (allPrograms.length === 0) {
+    body = (
+      <div className="lh-ev-empty" role="status">
+        <div className="lh-ev-empty-icon">
+          <CalendarDays size={40} aria-hidden="true" />
+        </div>
+        <h3>No upcoming programs right now</h3>
+        <p>
+          New webinars, workshops and internships are listed here as soon as
+          they are scheduled. Meanwhile, book a free 1-on-1 live demo.
+        </p>
+        <a href="#demo-class" className="lh-btn lh-btn-a">
+          Book Free Demo
+          <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
+        </a>
+      </div>
+    );
+  } else if (filteredPrograms.length === 0) {
+    body = (
+      <div className="lh-ev-empty" role="status">
+        <p>No upcoming {selectedCategory.toLowerCase()}s scheduled at the moment.</p>
+        <button
+          type="button"
+          onClick={() => handleCategoryChange("ALL")}
+          className="lh-btn lh-btn-o lh-btn-sm"
+        >
+          View all upcoming events ({allPrograms.length})
+        </button>
+      </div>
+    );
+  } else {
+    body = (
+      <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.article
+            key={currentProgram?.id || currentIndex}
+            initial={reduced ? false : { opacity: 0, x: direction * 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={reduced ? { opacity: 1 } : { opacity: 0, x: direction * -30 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="lh-feat"
           >
-            {/* CAROUSEL CONTROLS (Rendered when 2+ events exist) */}
-            {filteredPrograms.length > 1 && (
-              <div className="flex items-center justify-between mb-3 px-2">
-                <div className="text-xs font-semibold text-white/70">
-                  Showing{" "}
-                  <span className="text-white font-bold">
-                    {currentIndex + 1}
-                  </span>{" "}
-                  of{" "}
-                  <span className="text-white font-bold">
-                    {filteredPrograms.length}
-                  </span>{" "}
-                  events
-                  {isHovered && (
-                    <span className="ml-2 text-[10px] uppercase font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
-                      Paused
-                    </span>
-                  )}
-                </div>
-
-                {/* Accessible Navigation Arrows */}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={goToPrev}
-                    aria-label="Previous upcoming event"
-                    className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/30 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-sm shadow-xs"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={goToNext}
-                    aria-label="Next upcoming event"
-                    className="h-9 w-9 rounded-full bg-white/15 hover:bg-white/30 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-sm shadow-xs"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* MAIN CARD SURFACE WITH PROGRESS BAR */}
-            <div className="group/eventcard relative mx-auto rounded-3xl bg-white shadow-2xl shadow-black/20 border border-white/40 overflow-hidden hover:shadow-[0_28px_65px_rgba(0,0,0,0.28)] transition-all duration-300">
-              <BorderBeam
-                size={220}
-                duration={8}
-                colorFrom="#DF1E26"
-                colorTo="#07405C"
-              />
-              {/* Animated auto-advance progress indicator bar (Fund AACPS style) */}
-              {filteredPrograms.length > 1 && !reduced && (
-                <div className="absolute top-0 inset-x-0 h-1 bg-white/20 z-30 overflow-hidden">
-                  <motion.div
-                    key={currentIndex}
-                    initial={{ width: "0%" }}
-                    animate={{ width: isHovered ? "0%" : "100%" }}
-                    transition={{
-                      duration: INTERVAL_MS / 1000,
-                      ease: "linear",
-                    }}
-                    className="h-full bg-gradient-to-r from-[#DF1E26] via-[#CA164B] to-rose-400"
-                  />
+            <div className="lh-feat-media">
+              {eventType !== "INTERNSHIP" && currentProgram?.imageUrl ? (
+                <img
+                  src={getImageUrl(currentProgram.imageUrl, "", { width: 800 })}
+                  alt={currentProgram.speakerName || currentProgram.title}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="relative grid justify-items-center gap-3 p-8 text-center">
+                  <span className="grid h-20 w-20 place-items-center rounded-2xl border border-white/20 bg-white/10">
+                    {eventType === "INTERNSHIP" ? (
+                      <Briefcase size={36} aria-hidden="true" />
+                    ) : (
+                      <User size={36} aria-hidden="true" />
+                    )}
+                  </span>
+                  <span className="text-sm font-bold">
+                    {eventType === "INTERNSHIP"
+                      ? "Live Industry Internship"
+                      : currentProgram?.speakerName || "Faculty & Tech Mentors"}
+                  </span>
                 </div>
               )}
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentProgram?.id || currentIndex}
-                  initial={{ opacity: 0, x: direction * 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: direction * -30 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="grid md:grid-cols-12 items-stretch"
-                >
-                  {/* LEFT VISUAL COLUMN (5 COLS) - Framed dedicated image layout */}
-                  <div className="md:col-span-5 relative bg-gradient-to-br from-[#07405C] via-[#024D72] to-[#01273C] p-6 sm:p-7 flex flex-col justify-between text-white overflow-hidden min-h-[300px] md:min-h-[440px]">
-                    {/* Top Badges */}
-                    <div className="relative z-10 flex items-center justify-between gap-2 flex-wrap mb-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wider ${badgeColors.bg}`}
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse-beacon" />
-                        {currentProgram?.label || badgeColors.tag}
-                      </span>
-
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white border border-white/25">
-                        {isOffline ? <MapPin size={12} /> : <Video size={12} />}
-                        <span>
-                          {isOffline ? "In-Person Campus" : "Online Meet"}
-                        </span>
-                      </span>
-                    </div>
-
-                    {/* Centerpiece Visual / Framed Image Container */}
-                    {eventType === "INTERNSHIP" ? (
-                      <div className="relative z-10 my-auto py-6 text-center">
-                        <div className="mx-auto h-20 w-20 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center shadow-inner mb-4">
-                          <Briefcase size={36} className="text-[#F44246]" />
-                        </div>
-                        <div className="inline-flex items-center gap-2 rounded-lg bg-[#DF1E26]/20 border border-[#F44246]/30 px-3 py-1 text-xs font-bold text-white">
-                          <Code2 size={13} />
-                          <span>Live Industry Internship</span>
-                        </div>
-                        <p className="text-xs text-white/80 mt-2 px-2">
-                          Work with senior architects on real enterprise
-                          codebases.
-                        </p>
-                      </div>
-                    ) : currentProgram?.imageUrl ? (
-                      <div className="relative z-10 my-auto w-full max-w-xs sm:max-w-sm mx-auto aspect-[4/3] rounded-2xl overflow-hidden border border-white/25 bg-slate-900/60 shadow-lg group/img">
-                        <img
-                          src={getImageUrl(currentProgram.imageUrl, "", { width: 800 })}
-                          alt={
-                            currentProgram.speakerName || currentProgram.title
-                          }
-                          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover/eventcard:scale-105 group-hover/img:scale-105"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                        {currentProgram.speakerName && (
-                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 pt-5">
-                            <div className="text-xs sm:text-sm font-bold text-white leading-tight">
-                              {currentProgram.speakerName}
-                            </div>
-                            <div className="text-[10px] sm:text-[11px] text-white/80">
-                              {eventType === "WORKSHOP"
-                                ? "Lead Workshop Trainer"
-                                : "Keynote Speaker"}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="relative z-10 my-auto py-6 text-center">
-                        <div className="mx-auto h-20 w-20 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center shadow-inner mb-4 text-white">
-                          <User size={36} />
-                        </div>
-                        <div className="text-sm font-bold text-white">
-                          {currentProgram?.speakerName ||
-                            "Faculty & Tech Mentors"}
-                        </div>
-                        <p className="text-xs text-white/70 mt-1">
-                          {eventType === "WORKSHOP"
-                            ? "Hands-on Technical Workshop"
-                            : "Live Interactive Webinar"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* RIGHT CONTENT COLUMN (7 COLS) */}
-                  <div className="md:col-span-7 p-6 sm:p-8 md:p-10 flex flex-col justify-between text-left bg-white">
-                    <div>
-                      {/* Top status & Certificate badge */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-xs font-bold text-emerald-700 tracking-wide uppercase">
-                            Registrations Open
-                          </span>
-                        </div>
-
-                        {currentProgram.certificateIncluded && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-bold text-amber-800">
-                            <Award size={14} className="text-amber-600" />
-                            <span>Certificate Included</span>
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight tracking-tight">
-                        {currentProgram.title}
-                      </h3>
-
-                      {/* Topic description */}
-                      <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
-                        {currentProgram.topic}
-                      </p>
-
-                      {/* Details Grid (Date, Time, Venue/Platform) */}
-                      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3.5 border-t border-slate-100 pt-5">
-                        {/* DATE */}
-                        <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 p-2.5 border border-slate-100">
-                          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#07405C]/10 text-[#07405C]">
-                            <CalendarDays size={16} />
-                          </div>
-                          <div className="min-w-0">
-                            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              Date
-                            </span>
-                            <span className="block text-xs font-bold text-slate-900">
-                              {formattedDate}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* TIME */}
-                        <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 p-2.5 border border-slate-100">
-                          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#07405C]/10 text-[#07405C]">
-                            <Clock3 size={16} />
-                          </div>
-                          <div className="min-w-0">
-                            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              Timing
-                            </span>
-                            <span className="block text-xs font-bold text-slate-900">
-                              {formattedTime}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* PLATFORM / VENUE */}
-                        <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 p-2.5 border border-slate-100">
-                          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#07405C]/10 text-[#07405C]">
-                            {isOffline ? (
-                              <MapPin size={16} />
-                            ) : (
-                              <Video size={16} />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              {isOffline ? "Venue" : "Platform"}
-                            </span>
-                            <span
-                              className="block text-xs font-bold text-slate-900 truncate"
-                              title={
-                                isOffline
-                                  ? currentProgram.venueName ||
-                                    currentProgram.venueAddress
-                                  : currentProgram.platform
-                              }
-                            >
-                              {isOffline
-                                ? currentProgram.venueName ||
-                                  currentProgram.venueAddress ||
-                                  "LeSuccess Campus"
-                                : currentProgram.platform || "Google Meet"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* OFFLINE DETAILS ACCORDION / BOX */}
-                      {isOffline &&
-                        (currentProgram.venueAddress ||
-                          currentProgram.organizationName) && (
-                          <div className="mt-4 rounded-xl bg-amber-50/70 border border-amber-200/80 p-3 space-y-1 text-xs">
-                            {currentProgram.organizationName && (
-                              <div className="flex items-center gap-2 text-slate-700">
-                                <Building2
-                                  size={13}
-                                  className="text-[#07405C] shrink-0"
-                                />
-                                <span className="font-semibold text-slate-500">
-                                  Host:
-                                </span>
-                                <span className="font-bold text-slate-900">
-                                  {currentProgram.organizationName}
-                                </span>
-                              </div>
-                            )}
-                            {currentProgram.venueAddress && (
-                              <div className="flex items-start gap-2 text-slate-700">
-                                <MapPin
-                                  size={13}
-                                  className="text-[#DF1E26] shrink-0 mt-0.5"
-                                />
-                                <span className="font-semibold text-slate-500">
-                                  Address:
-                                </span>
-                                <span className="text-slate-800 font-medium">
-                                  {currentProgram.venueAddress}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                    </div>
-
-                    {/* ACTION CTA BUTTONS */}
-                    <div className="mt-8 flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
-                      {isRegisteredForCurrent ? (
-                        <>
-                          <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-300 px-4 py-2.5 text-xs sm:text-sm font-bold text-emerald-700 select-none">
-                            <CheckCircle2
-                              size={16}
-                              className="text-emerald-600 shrink-0"
-                            />
-                            <span>Registered For This Session</span>
-                          </div>
-                          {!isOffline && registeredMeetLink && (
-                            <a
-                              href={registeredMeetLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-[#06334a] transition active:scale-98 cursor-pointer"
-                            >
-                              <Video size={16} />
-                              <span>Join Google Meet</span>
-                            </a>
-                          )}
-                        </>
-                      ) : (
-                        <Magnetic strength={0.25}>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenRegister(currentProgram)}
-                            className="animate-shimmer-sweep btn-glow-brand inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-8 py-3.5 text-sm font-bold text-white shadow-xl shadow-[#DF1E26]/25 transition hover:brightness-110 active:scale-98 cursor-pointer"
-                          >
-                            <Sparkles size={16} />
-                            <span>
-                              {eventType === "WEBINAR"
-                                ? "Register For Free"
-                                : eventType === "WORKSHOP"
-                                  ? "Book Workshop Seat"
-                                  : "Apply For Internship"}
-                            </span>
-                          </button>
-                        </Magnetic>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+              {currentProgram?.speakerName && currentProgram?.imageUrl && eventType !== "INTERNSHIP" && (
+                <span className="absolute bottom-3 left-3 rounded-full bg-[#0b2a45]/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                  {currentProgram.speakerName}
+                </span>
+              )}
             </div>
 
-            {/* SLIDE DOTS / INDICATORS (For 2+ items) */}
-            {filteredPrograms.length > 1 && (
-              <div className="mt-6 flex items-center justify-center gap-2">
-                {filteredPrograms.map((p, idx) => (
-                  <button
-                    key={p.id || idx}
-                    type="button"
-                    aria-label={`Go to event ${idx + 1}: ${p.title}`}
-                    aria-current={idx === currentIndex ? "true" : undefined}
-                    onClick={() => goToSlide(idx)}
-                    className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                      idx === currentIndex
-                        ? "w-8 bg-[#DF1E26]"
-                        : "w-2.5 bg-white/40 hover:bg-white/70"
-                    }`}
-                  />
-                ))}
+            <div className="lh-feat-body">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="lh-badge">
+                  {currentProgram?.label || TYPE_TAG[eventType] || "Event"}
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500">
+                  {isOffline ? <MapPin size={13} aria-hidden="true" /> : <Video size={13} aria-hidden="true" />}
+                  {isOffline ? "In-person campus" : "Online"}
+                </span>
               </div>
-            )}
+
+              <h3>{currentProgram.title}</h3>
+              {currentProgram.topic && <p>{currentProgram.topic}</p>}
+
+              {startsAt && <FlipCountdown target={startsAt} />}
+
+              <div className="lh-details">
+                <div>
+                  Date<b>{formattedDate}</b>
+                </div>
+                <div>
+                  Timing<b>{formattedTime}</b>
+                </div>
+                <div>
+                  {isOffline ? "Venue" : "Platform"}
+                  <b>{place}</b>
+                </div>
+              </div>
+
+              {isOffline && (currentProgram.organizationName || currentProgram.venueAddress) && (
+                <p className="text-sm">
+                  {currentProgram.organizationName && (
+                    <>
+                      <strong className="text-[#07405C]">Host:</strong> {currentProgram.organizationName}
+                      {currentProgram.venueAddress ? " · " : ""}
+                    </>
+                  )}
+                  {currentProgram.venueAddress}
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-4">
+                {isRegisteredForCurrent ? (
+                  <>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-700">
+                      <CheckCircle2 size={16} aria-hidden="true" />
+                      Registered for this session
+                    </span>
+                    {!isOffline && registeredMeetLink && (
+                      <a
+                        href={registeredMeetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="lh-btn lh-btn-n"
+                      >
+                        <Video size={16} aria-hidden="true" />
+                        Join Google Meet
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <button type="button" onClick={handleOpenRegister} className="lh-btn lh-btn-a">
+                    {CTA_LABEL[eventType] || "Register Now"}
+                    <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
+                  </button>
+                )}
+                {currentProgram.certificateIncluded && (
+                  <span className="lh-cert-tag">
+                    <CheckCircle2 size={18} aria-hidden="true" />
+                    Certificate Included
+                  </span>
+                )}
+              </div>
+            </div>
+          </motion.article>
+        </AnimatePresence>
+
+        {filteredPrograms.length > 1 && (
+          <div className="lh-car-ctl" style={{ marginTop: "1.5rem" }}>
+            <div className="lh-dots">
+              {filteredPrograms.map((p, idx) => (
+                <button
+                  key={p.id || idx}
+                  type="button"
+                  aria-label={`Go to event ${idx + 1}: ${p.title}`}
+                  aria-current={idx === currentIndex ? "true" : undefined}
+                  onClick={() => goToSlide(idx)}
+                />
+              ))}
+            </div>
+            <div className="lh-arrows">
+              <button type="button" onClick={goToPrev} aria-label="Previous upcoming event">
+                <ChevronLeft size={20} aria-hidden="true" />
+              </button>
+              <button type="button" onClick={goToNext} aria-label="Next upcoming event">
+                <ChevronRight size={20} aria-hidden="true" />
+              </button>
+            </div>
           </div>
         )}
       </div>
+    );
+  }
 
-      {/* REGISTRATION MODAL */}
+  return (
+    <section id="upcoming-events" className="lh-sec lh-soft">
+      <div className="lh-wrap">
+        <SectionHead
+          badge="Upcoming Programs & Events"
+          title="Level Up With Live Sessions"
+          lead="Gain industry exposure, build hands-on projects, and learn live from experienced tech mentors."
+        />
+
+        {!loading && status !== "error" && allPrograms.length > 0 && (
+          <Reveal>
+            <div ref={tabsRef} className="lh-tabs" role="tablist" aria-label="Event type">
+              <span ref={indicatorRef} className="lh-tab-ind" aria-hidden="true" />
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedCategory === cat.id}
+                  onClick={() => handleCategoryChange(cat.id)}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </Reveal>
+        )}
+
+        <Reveal>{body}</Reveal>
+      </div>
+
       <ProgramRegistrationModal
         isOpen={isRegisterModalOpen && Boolean(selectedProgramForModal)}
         onClose={handleCloseRegister}

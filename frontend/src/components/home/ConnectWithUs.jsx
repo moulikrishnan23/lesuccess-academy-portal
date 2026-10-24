@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useId } from "react";
 import {
+  ArrowRight,
   User,
   Phone,
   Mail,
@@ -10,6 +11,8 @@ import {
 } from "lucide-react";
 import useConnectWithUsSubmit from "../../hooks/useConnectWithUsSubmit.js";
 import Magnetic from "../ui/Magnetic.jsx";
+import { Reveal, ConicBorder, burstConfetti } from "../motion/index.js";
+import FloatField from "./FloatField.jsx";
 
 export default function ConnectWithUs({
   isModal = false,
@@ -34,6 +37,13 @@ export default function ConnectWithUs({
     useConnectWithUsSubmit();
 
   const hideTimerRef = useRef(null);
+  const okRef = useRef(null);
+
+  // Celebrate an inline inquiry once its thank-you panel is on screen.
+  useEffect(() => {
+    if (isModal || !submitted) return undefined;
+    return burstConfetti(okRef.current);
+  }, [isModal, submitted]);
 
   // Close on Escape key when in modal mode
   useEffect(() => {
@@ -368,32 +378,122 @@ export default function ConnectWithUs({
     );
   }
 
+  // Inline section on the Home page (spec: docs/mockup/lower-home.html, #connect).
   return (
     <section
       id="connect-with-us-section"
       data-competing-form="true"
-      className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#024D72] py-20 px-6 sm:px-10 lg:px-16 text-white relative overflow-hidden"
+      className="lh-sec"
     >
-      {/* Decorative ambient pulsing halos */}
-      <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none animate-halo-pulse" />
-      <div
-        className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-[#DF1E26]/15 blur-3xl pointer-events-none animate-halo-pulse"
-        style={{ animationDelay: "2s" }}
-      />
+      <div className="lh-wrap lh-conn-g">
+        <Reveal>
+          <span className="lh-badge">Get in touch</span>
+          <h2 className="lh-h2" style={{ margin: "1rem 0" }}>
+            Connect with Us
+          </h2>
+          <p className="lh-lead">
+            Have questions about courses, batches, or career paths? Reach out to
+            our advisors and we will connect with you promptly.
+          </p>
+          <div className="lh-cbubs" aria-hidden="true">
+            <div className="lh-cb lh-cb--me">I want to learn Python. Where do I start?</div>
+            <div className="lh-cb lh-cb--typing">
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className="lh-cb lh-cb--it">Book a free demo and our advisor will guide you.</div>
+          </div>
+        </Reveal>
 
-      <div className="mx-auto max-w-4xl text-center relative z-10">
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold text-white mb-3 tracking-wider uppercase">
-          GET IN TOUCH
-        </span>
-        <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl text-white tracking-tight">
-          Connect with <span className="text-[#DF1E26]">Us</span>
-        </h2>
-        <p className="mt-3 text-slate-200 max-w-2xl mx-auto text-base sm:text-lg font-normal">
-          Have questions about courses, batches, or career paths? Reach out to
-          our advisors and we will connect with you promptly.
-        </p>
+        <Reveal index={2}>
+          <ConicBorder
+            as="form"
+            noValidate
+            onSubmit={handleSubmit}
+            className="lh-card lh-conn-card"
+          >
+            {submitted ? (
+              <div ref={okRef} className="lh-ok" role="status">
+                <svg viewBox="0 0 84 84" aria-hidden="true">
+                  <circle cx="42" cy="42" r="36" />
+                  <path d="M26 43l11 11 21-23" />
+                </svg>
+                <h3>Thanks for connecting</h3>
+                <p>Your inquiry has been received. Our team will reach out within one working day.</p>
+              </div>
+            ) : (
+              <>
+                {/* Honeypot */}
+                <div
+                  aria-hidden="true"
+                  className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+                >
+                  <label htmlFor={`${uid}-website-inline`}>Leave this field empty</label>
+                  <input
+                    id={`${uid}-website-inline`}
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                  />
+                </div>
 
-        {formElement}
+                <div className="lh-form-grid">
+                  <FloatField
+                    id={`${uid}-name`}
+                    name="name"
+                    label="Name *"
+                    autoComplete="name"
+                    className="lh-full"
+                    value={form.name}
+                    onChange={handleChange}
+                  />
+                  <FloatField
+                    id={`${uid}-email`}
+                    name="email"
+                    label="Email *"
+                    type="email"
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={handleChange}
+                  />
+                  <FloatField
+                    id={`${uid}-mobile`}
+                    name="mobile"
+                    label="Phone number *"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={form.mobile}
+                    onChange={handleChange}
+                  />
+                  <FloatField
+                    id={`${uid}-message`}
+                    name="message"
+                    label="Message (optional)"
+                    multiline
+                    className="lh-full"
+                    value={form.message}
+                    onChange={handleChange}
+                  />
+                  <button type="submit" disabled={isSubmitting} className="lh-btn lh-btn-a lh-full">
+                    {isSubmitting ? "Submitting…" : "Submit Inquiry"}
+                    <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
+                  </button>
+                </div>
+
+                {errorMessage && (
+                  <p className="lh-form-error" role="alert">
+                    {errorMessage}
+                  </p>
+                )}
+              </>
+            )}
+          </ConicBorder>
+        </Reveal>
       </div>
     </section>
   );
