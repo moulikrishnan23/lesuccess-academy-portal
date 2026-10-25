@@ -76,7 +76,7 @@ export default function Button({
           className={
             reduced
               ? "shine-blade sheen-fade absolute inset-y-0 left-1/2 w-[45%] opacity-0 group-hover:opacity-100 pointer-events-none"
-              : "shine-blade absolute inset-y-0 left-0 w-[45%] -translate-x-[160%] transition-[translate] duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] group-hover:translate-x-[330%] pointer-events-none"
+              : "shine-blade absolute inset-y-0 left-0 w-[45%] -translate-x-[160%] transition-[translate] duration-900 ease-in-out group-hover:translate-x-[330%] pointer-events-none"
           }
         />
       )}

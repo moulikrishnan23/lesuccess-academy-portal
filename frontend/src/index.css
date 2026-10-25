@@ -374,7 +374,8 @@
   }
 
   /* Knife-cut shine: a slanted blade with a hard bright edge and a soft
-     trailing glow. Sweeps on a loop, and once quickly on hover. */
+     trailing glow. It travels the full width of the button edge to edge,
+     most of each cycle, then rests briefly; hover sends a faster pass. */
   .shine-blade,
   .animate-shimmer-sweep::after {
     background: linear-gradient(
@@ -400,11 +401,11 @@
     left: 0;
     width: 45%;
     transform: translateX(-160%) skewX(-28deg);
-    animation: shimmerSweep 3.8s cubic-bezier(0.7, 0, 0.2, 1) infinite;
+    animation: shimmerSweep 2.6s ease-in-out infinite;
     pointer-events: none;
   }
   .animate-shimmer-sweep:hover::after {
-    animation: shimmerSlice 0.65s cubic-bezier(0.7, 0, 0.2, 1) 1;
+    animation: shimmerSlice 0.9s ease-in-out 1;
   }
 
   /* Radar pulse beacon for active live indicators */
@@ -514,7 +515,7 @@
   0% {
     transform: translateX(-160%) skewX(-28deg);
   }
-  28%, 100% {
+  75%, 100% {
     transform: translateX(330%) skewX(-28deg);
   }
 }
