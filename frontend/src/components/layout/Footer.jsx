@@ -132,7 +132,11 @@ export default function Footer() {
       </div>
 
       <div className="lh-wm" aria-hidden="true">
-        LEARN <i /> EDUCATE <i /> SUCCEED
+        {[0, 1].map((k) => (
+          <span key={k}>
+            LEARN <i /> EDUCATE <i /> SUCCEED
+          </span>
+        ))}
       </div>
 
       <div className="lh-wrap">

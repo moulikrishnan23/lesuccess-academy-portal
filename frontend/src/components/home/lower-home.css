@@ -1627,15 +1627,13 @@
     animation: lh-soc-in 0.7s var(--ease-brand) backwards;
     animation-delay: calc(var(--k) * 90ms);
   }
-  /* Faint filled watermark between the columns and the copyright bar */
+  /* Faint filled watermark between the columns and the copyright bar. A
+     second, brand-gradient copy sits on top and fades in on hover (a text
+     colour can't transition into a gradient, but opacity can). */
   .lh-wm {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45em;
+    position: relative;
     margin: 3rem 0 -0.3em;
     padding-inline: 1rem;
-    color: rgb(255 255 255 / 0.07);
     font-size: 5.6vw;
     font-weight: 800;
     letter-spacing: 0.01em;
@@ -1643,11 +1641,35 @@
     white-space: nowrap;
     user-select: none;
   }
+  .lh-wm span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45em;
+    color: rgb(255 255 255 / 0.07);
+  }
+  .lh-wm span + span {
+    position: absolute;
+    inset: 0 1rem;
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: 0;
+    filter: drop-shadow(0 0 24px color-mix(in srgb, var(--color-brand) 45%, transparent));
+    transition: opacity 0.5s var(--ease-brand);
+  }
+  .lh-wm:hover span + span {
+    opacity: 1;
+  }
   .lh-wm i {
     width: 0.3em;
     height: 0.3em;
     border-radius: 50%;
     background: currentColor;
+  }
+  .lh-wm span + span i {
+    background: var(--color-brand);
   }
   .lh-copy {
     position: relative;
