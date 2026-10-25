@@ -197,8 +197,8 @@
     }
 
     .animate-shimmer-sweep::after {
-      left: 50% !important;
-      transform: skewX(-28deg) !important;
+      left: 20% !important;
+      transform: skewX(-24deg) !important;
       animation: none !important;
       opacity: 0;
       transition: opacity 0.35s ease !important;
@@ -373,21 +373,20 @@
     animation: gradientTextFlow 4s linear infinite;
   }
 
-  /* Knife-cut shine: a slanted blade with a hard bright edge and a soft
-     trailing glow. It travels the full width of the button edge to edge,
-     most of each cycle, then rests briefly; hover sends a faster pass. */
+  /* Glass sweep: a wide, slanted band of light with soft edges and a bright
+     centre, like a reflection sliding over glass. It glides the full width of
+     the button on a loop; hover sends one smooth pass. */
   .shine-blade,
   .animate-shimmer-sweep::after {
     background: linear-gradient(
       90deg,
       rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.08) 45%,
-      rgba(255, 255, 255, 0.22) 58%,
-      rgba(255, 255, 255, 0.7) 58.5%,
-      rgba(255, 255, 255, 0.7) 66%,
-      rgba(255, 255, 255, 0) 66.5%
+      rgba(255, 255, 255, 0.12) 25%,
+      rgba(255, 255, 255, 0.42) 50%,
+      rgba(255, 255, 255, 0.12) 75%,
+      rgba(255, 255, 255, 0) 100%
     );
-    transform: skewX(-28deg);
+    transform: skewX(-24deg);
   }
   .animate-shimmer-sweep {
     position: relative;
@@ -399,13 +398,13 @@
     top: 0;
     bottom: 0;
     left: 0;
-    width: 45%;
-    transform: translateX(-160%) skewX(-28deg);
-    animation: shimmerSweep 2.6s ease-in-out infinite;
+    width: 60%;
+    transform: translateX(-130%) skewX(-24deg);
+    animation: shimmerSweep 3s ease-in-out infinite;
     pointer-events: none;
   }
   .animate-shimmer-sweep:hover::after {
-    animation: shimmerSlice 0.9s ease-in-out 1;
+    animation: shimmerSlice 1s ease-in-out 1;
   }
 
   /* Radar pulse beacon for active live indicators */
@@ -513,19 +512,19 @@
 
 @keyframes shimmerSweep {
   0% {
-    transform: translateX(-160%) skewX(-28deg);
+    transform: translateX(-130%) skewX(-24deg);
   }
-  75%, 100% {
-    transform: translateX(330%) skewX(-28deg);
+  70%, 100% {
+    transform: translateX(200%) skewX(-24deg);
   }
 }
 
 @keyframes shimmerSlice {
   from {
-    transform: translateX(-160%) skewX(-28deg);
+    transform: translateX(-130%) skewX(-24deg);
   }
   to {
-    transform: translateX(330%) skewX(-28deg);
+    transform: translateX(200%) skewX(-24deg);
   }
 }
 
