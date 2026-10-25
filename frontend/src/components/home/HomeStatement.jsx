@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useReducedMotion, useScrollProgress } from "../motion/index.js";
 
-const WORDS = ["Learn.", "Educate.", "Succeed."];
+import StatementWords from "../ui/StatementWords.jsx";
 
 /**
  * "Learn. Educate. Succeed." pinned while the visitor scrolls through a tall
@@ -19,19 +19,11 @@ export default function HomeStatement() {
     <section ref={ref} id="statement" className="lh-stm">
       <div className="lh-stm-in">
         <h2 aria-label="Learn. Educate. Succeed.">
-          {WORDS.map((word, i) => (
-            <span key={word} aria-hidden="true">
-              <span className="lh-sw" style={{ "--i": i }}>
-                {word}
-              </span>
-              {i < WORDS.length - 1 ? " " : null}
-            </span>
-          ))}
+          <StatementWords />
         </h2>
         <div className="lh-stm-bar" aria-hidden="true">
           <i />
         </div>
-        <p>Premier technology learning in Coimbatore, from first line of code to first offer letter.</p>
       </div>
     </section>
   );

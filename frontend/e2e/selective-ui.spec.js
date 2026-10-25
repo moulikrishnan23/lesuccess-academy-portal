@@ -8,7 +8,7 @@ test.use({ channel: 'chrome' })
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     if (window !== window.top) return
-    localStorage.setItem('lesuccess_connect_submitted', 'true')
+    sessionStorage.setItem('lesuccess_connect_submitted', 'true')
     sessionStorage.setItem('lesuccess_initial_entry_done', 'true')
   })
   await page.route(url => url.hostname !== 'localhost', route => route.abort())
@@ -64,14 +64,26 @@ test('challenge builder supports keyboard runs, preview interaction, completion 
   await page.goto('/')
   const builder = page.getByRole('region', { name: 'LeSuccess Challenge Builder' })
   const editor = page.getByRole('textbox', { name: 'index.html editor' })
+  const preview = page.locator('iframe[title="Your project, live preview"]')
+  // Feedback updates before the sandbox document finishes navigating. Wait for
+  // its new run token so the click cannot land in the previous preview.
+  const waitForPreview = async () => {
+    const token = (await preview.getAttribute('srcdoc')).match(/var T=("[^"]+");/)[1]
+    await expect.poll(async () => {
+      try { return (await preview.contentFrame().locator('html').innerHTML()).includes(`var T=${token};`) }
+      catch { return false }
+    }).toBe(true)
+  }
   const html = '<article data-card><h2>My project</h2><p>Learning with LeSuccess.</p><button data-action="color">Switch colour</button><button data-action="theme">Light / dark</button></article>'
   await editor.fill(html)
   await editor.press('Control+Enter')
   await builder.getByRole('button', { name: 'Next challenge', exact: true }).click()
   await expect(builder.getByText('Now click your colour button in the preview.', { exact: true })).toBeVisible()
+  await waitForPreview()
   await page.frameLocator('iframe[title="Your project, live preview"]').getByRole('button', { name: 'Switch colour' }).click()
   await builder.getByRole('button', { name: 'Next challenge', exact: true }).click()
   await expect(builder.getByText('Now click your light / dark button in the preview.', { exact: true })).toBeVisible()
+  await waitForPreview()
   await page.frameLocator('iframe[title="Your project, live preview"]').getByRole('button', { name: 'Light / dark' }).click()
   await builder.getByRole('button', { name: 'Finish project', exact: true }).click()
   await expect(builder.getByRole('heading', { name: 'Nice! Learn this properly with us.' })).toBeVisible()
@@ -79,6 +91,7 @@ test('challenge builder supports keyboard runs, preview interaction, completion 
   await expect(builder.getByRole('textbox', { name: 'Email *', exact: true })).toBeVisible()
   // Return to the editor through the completion screen without sending a lead.
   await builder.getByRole('button', { name: /keep|back|continue/i }).click()
+  await builder.getByLabel('Playground tools', { exact: true }).click()
   await builder.getByRole('button', { name: 'Restart the challenges' }).click()
   await expect(editor).toHaveValue(/My first project/)
 })
@@ -109,7 +122,10 @@ for (const mode of ['BASIC', 'API']) {
     await page.route('**/api/settings', route => route.fulfill({ json: { success: true, data: { chatbot_mode: mode, chatbot_enabled: 'true' } } }))
     await page.route('**/api/chat', route => route.fulfill({ json: { sessionId: 'ui-test', reply: 'UI integration test reply.', sources: [] } }))
     await page.goto('/services')
-    await page.getByRole('button', { name: 'Open chat with LeBot', exact: true }).click()
+    // The source launcher floats continuously; keyboard activation avoids
+    // Playwright waiting indefinitely for its bounding box to stop moving.
+    await page.getByRole('button', { name: 'Open chat with LeBot', exact: true }).focus()
+    await page.keyboard.press('Enter')
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
     const input = dialog.locator('textarea, input').first()
@@ -121,3 +137,109 @@ for (const mode of ['BASIC', 'API']) {
     await expect(dialog).not.toBeVisible()
   })
 }
+
+
+test('source header dropdown, sticky behavior and About beams remain interactive', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await page.goto('/')
+  const nav = page.getByRole('navigation').first()
+  const courses = nav.getByRole('link', { name: 'Courses', exact: true })
+  await courses.hover()
+  await expect(courses).toHaveAttribute('aria-expanded', 'true')
+  await expect(nav.getByText('Popular Programs')).toBeVisible()
+  await courses.press('Escape')
+  await expect(courses).toHaveAttribute('aria-expanded', 'false')
+  const about = page.locator('#about-section')
+  await about.scrollIntoViewIfNeeded()
+  const beams = about.locator('[style*="--size"]')
+  await expect(beams).toHaveCount(3)
+  expect(await beams.evaluateAll(els => els.map(el => ({
+    duration: getComputedStyle(el.firstElementChild).animationDuration,
+    delay: getComputedStyle(el.firstElementChild).animationDelay,
+    mask: getComputedStyle(el).maskComposite,
+  })))).toEqual([0, 2, 4].map(delay => ({duration:'7s', delay:delay ? `-${delay}s` : '0s',mask:'exclude, exclude'})))
+  const streak = beams.first().locator('div')
+  const position = await streak.evaluate(el => getComputedStyle(el).offsetDistance)
+  await expect.poll(() => streak.evaluate(el => getComputedStyle(el).offsetDistance)).not.toBe(position)
+  const card = about.locator('.card-lift-3d').first()
+  await card.hover({position:{x:25,y:25}})
+  await expect.poll(() => card.evaluate(el => el.style.transform)).toContain('rotate')
+  await page.mouse.move(5, 400)
+  await expect(page.getByRole('button', {name:'Enroll Now', exact:true}).first()).toBeInViewport()
+  await about.screenshot({path:testInfo.outputPath('about-animation.png')})
+  await page.locator('footer').scrollIntoViewIfNeeded()
+  await expect(about).toHaveClass(/ls-motion-paused/)
+  await expect.poll(() => streak.evaluate(el => getComputedStyle(el).animationPlayState)).toBe('paused')
+  await expect(page.locator('footer')).toContainText('Build your future.')
+  await page.locator('footer').screenshot({path:testInfo.outputPath('footer.png')})
+})
+
+test('Results reveal retains source timing and settles without moving the layout', async ({ page }) => {
+  await page.goto('/')
+  const cards = page.locator('#numbers .lh-stat.motion-reveal')
+  await expect(cards.first()).not.toHaveClass(/is-in/)
+  await page.locator('#numbers').scrollIntoViewIfNeeded()
+  await expect(cards.first()).toHaveClass(/is-in/)
+  await expect.poll(() => cards.first().evaluate(el => getComputedStyle(el).opacity)).toBe('1')
+  const timing = await cards.first().evaluate(el => getComputedStyle(el).transitionDuration)
+  // Source .lh-stat overrides the base reveal duration with 0.4s.
+  expect(timing).toBe('0.4s, 0.4s')
+  expect(await cards.evaluateAll(els => els.map(el => el.style.getPropertyValue('--reveal-i')))).toEqual(['0','1','2','3'])
+  const before = await cards.first().evaluate(el => ({top:el.offsetTop,height:el.offsetHeight}))
+  await page.locator('footer').scrollIntoViewIfNeeded()
+  await page.locator('#numbers').scrollIntoViewIfNeeded()
+  expect(await cards.first().evaluate(el => ({top:el.offsetTop,height:el.offsetHeight}))).toEqual(before)
+})
+
+test('source Connect form retains validation, payload, failure feedback and success', async ({ page }) => {
+  let payload
+  let attempt = 0
+  await page.route('**/api/connect-with-us', route => {
+    payload = route.request().postDataJSON()
+    attempt++
+    return attempt === 1
+      ? route.fulfill({status:500,json:{success:false,message:'Please try again later'}})
+      : route.fulfill({json:{success:true,data:{id:'test-only'}}})
+  })
+  await page.goto('/')
+  const form = page.locator('#connect-with-us-section')
+  await form.scrollIntoViewIfNeeded()
+  await form.getByRole('button',{name:'Submit Inquiry'}).click()
+  expect(attempt).toBe(0)
+  await form.getByLabel('Name *',{exact:true}).fill('Test Learner')
+  await form.getByLabel('Email *',{exact:true}).fill('learner@example.com')
+  await form.getByLabel('Phone number *',{exact:true}).fill('9000000000')
+  await form.getByLabel('Message (optional)',{exact:true}).fill('A test inquiry')
+  await form.getByRole('button',{name:'Submit Inquiry'}).click()
+  await expect(form.getByRole('alert')).toBeVisible()
+  await form.getByRole('button',{name:'Submit Inquiry'}).click()
+  await expect(form.getByRole('heading',{name:'Thanks for connecting'})).toBeVisible()
+  expect(payload).toMatchObject({name:'Test Learner',email:'learner@example.com',mobile:'9000000000',message:'A test inquiry'})
+})
+
+test('reduced motion removes About beams and keeps protected illustrations intact', async ({ page }) => {
+  await page.emulateMedia({reducedMotion:'reduce'})
+  await page.goto('/')
+  const about = page.locator('#about-section')
+  await about.scrollIntoViewIfNeeded()
+  await expect(about.locator('[style*="--size"]')).toHaveCount(0)
+  await expect(about.locator('.ls-connection')).toBeVisible()
+  await expect(page.locator('[data-preserve-ui]')).toHaveCount(2)
+  await expect(page.locator('body')).not.toHaveClass(/has-custom-cursor/)
+})
+
+
+test('hero video pauses off screen and resumes; protected UI keeps its native cursor', async ({ page }) => {
+  await page.setViewportSize({width:1366,height:768})
+  await page.goto('/')
+  const video = page.locator('main video').first()
+  await expect.poll(() => video.evaluate(el => !el.paused && el.readyState >= 2)).toBe(true)
+  await page.locator('#numbers').scrollIntoViewIfNeeded()
+  await expect.poll(() => video.evaluate(el => el.paused)).toBe(true)
+  await page.locator('#about-section .ls-connection').hover()
+  await expect(page.locator('body')).toHaveClass(/has-native-cursor/)
+  await page.locator('#about-section .card-lift-3d').first().hover()
+  await expect(page.locator('body')).not.toHaveClass(/has-native-cursor/)
+  await page.evaluate(() => window.scrollTo({top:0,behavior:'instant'}))
+  await expect.poll(() => video.evaluate(el => !el.paused)).toBe(true)
+})

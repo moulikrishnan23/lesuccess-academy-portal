@@ -10,6 +10,10 @@ import {
   Layers,
   Lightbulb,
   Monitor,
+  Minus,
+  Maximize2,
+  Minimize2,
+  SlidersHorizontal,
   Play,
   RotateCcw,
   Smartphone,
@@ -69,8 +73,8 @@ function initialState() {
  * preview, a console, and, once all three missions are done, a short form that
  * submits to the Connect With Us endpoint.
  *
- * Window dots: red closes (hands back to the hero's launcher), yellow
- * collapses to the title bar, green opens a large focus view.
+ * Window controls close to the hero launcher, collapse the panel, and open
+ * a large focus view. Advanced controls live in the Tools disclosure.
  *
  * Progress and code are saved in the browser; usage events are announced via
  * trackBuilderEvent (challenges.js) for analytics.
@@ -429,9 +433,9 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
         {/* Title bar */}
         <div className="cb-bar">
           <div className="cb-dots">
-            <button type="button" className="cb-dot cb-dot--close" onClick={onMinimize} aria-label="Close the Challenge Builder" title="Close" />
-            <button type="button" className="cb-dot cb-dot--min" onClick={() => setCollapsed((c) => !c)} aria-label={collapsed ? "Expand the Challenge Builder" : "Collapse the Challenge Builder"} aria-expanded={!collapsed} title={collapsed ? "Expand" : "Collapse"} />
-            <button type="button" className="cb-dot cb-dot--focus" onClick={() => setFocusMode((f) => !f)} aria-label={focusMode ? "Exit focus view" : "Open focus view"} aria-pressed={focusMode} title="Focus view" />
+            <button type="button" className="cb-dot cb-dot--close" onClick={onMinimize} aria-label="Close the Challenge Builder" title="Close"><X size={12} aria-hidden="true" /></button>
+            <button type="button" className="cb-dot cb-dot--min" onClick={() => setCollapsed((c) => !c)} aria-label={collapsed ? "Expand the Challenge Builder" : "Collapse the Challenge Builder"} aria-expanded={!collapsed} title={collapsed ? "Expand" : "Collapse"}><Minus size={12} aria-hidden="true" /></button>
+            <button type="button" className="cb-dot cb-dot--focus" onClick={() => setFocusMode((f) => !f)} aria-label={focusMode ? "Exit focus view" : "Open focus view"} aria-pressed={focusMode} title="Focus view">{focusMode ? <Minimize2 size={12} aria-hidden="true" /> : <Maximize2 size={12} aria-hidden="true" />}</button>
           </div>
           <div className="cb-seg" role="tablist" aria-label="Mode">
             <button type="button" role="tab" aria-selected={mode === "challenge"} onClick={() => switchMode("challenge")}>
@@ -443,11 +447,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
           </div>
           <div className="cb-bar-end">
             {statusBadge}
-            {onMinimize && (
-              <button type="button" className="cb-icon-btn" onClick={onMinimize} aria-label="Minimise the Challenge Builder">
-                <X size={14} aria-hidden="true" />
-              </button>
-            )}
+
           </div>
         </div>
 
@@ -468,7 +468,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                   <div className="cb-mission">
                     <div className="flex items-center justify-between gap-2">
                       <h3>
-                        {completed ? "Your project playground" : `Challenge ${step + 1} of ${MISSIONS.length} · ${mission.title}`}
+                        {completed ? "Your project playground" : mission.title}
                       </h3>
                       <div className="cb-steps" aria-label={`${solved.length} of ${MISSIONS.length} missions complete`}>
                         {MISSIONS.map((m, i) => {
@@ -482,7 +482,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                       </div>
                     </div>
                     <p id={`${uid}-mission`}>
-                      {completed ? "All three done. Keep building, or switch to Playground for course-themed starters." : mission.detail}
+                      {completed ? "All three complete. Keep experimenting." : mission.detail}
                     </p>
                   </div>
                 ) : (
@@ -513,6 +513,9 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                     <span className="cb-tabs-label">Preview only</span>
                   )}
                   <div className="cb-toolset">
+                    <details className="cb-tools">
+                      <summary aria-label="Playground tools"><SlidersHorizontal size={13} aria-hidden="true" /><span>Tools</span></summary>
+                      <div className="cb-tools-menu">
                     <div className="cb-seg" role="group" aria-label="Layout">
                       {[["split", Layers, "Split view"], ["code", Code2, "Code only"], ["preview", Eye, "Preview only"]].map(([key, Icon, label]) => (
                         <button key={key} type="button" aria-pressed={viewMode === key} onClick={() => setViewMode(key)} title={label} aria-label={label}>
@@ -523,18 +526,33 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                     <button type="button" className="cb-icon-btn" onClick={resetCode} aria-label={mode === "challenge" ? "Restart the challenges" : "Reset this starter"} title="Reset">
                       <RotateCcw size={13} aria-hidden="true" />
                     </button>
-                    <button type="button" className="cb-icon-btn cb-copy" onClick={copyCode} aria-label="Copy this file" title="Copy">
+                    <button type="button" className="cb-icon-btn" onClick={copyCode} aria-label="Copy this file" title="Copy">
                       {copied ? <Check size={13} className="text-[#4fd18b]" aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
                     </button>
+                      <span className="flex items-center gap-1.5">
+                        {consoleToggle}
+                        <span className="cb-seg" role="group" aria-label="Preview size">
+                          <button type="button" aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")} title="Desktop width" aria-label="Desktop width">
+                            <Monitor size={12} aria-hidden="true" />
+                          </button>
+                          <button type="button" aria-pressed={device === "phone"} onClick={() => setDevice("phone")} title="Phone width" aria-label="Phone width">
+                            <Smartphone size={12} aria-hidden="true" />
+                          </button>
+                        </span>
+                      </span>
+                        <a href="#demo-class" className="cb-ghost">Book free demo</a>
+                      </div>
+                    </details>
                     <button type="button" className="cb-run" onClick={runNow} title="Run (Ctrl+Enter)">
                       <Play size={12} aria-hidden="true" /> Run <kbd>Ctrl ↵</kbd>
                     </button>
                   </div>
                 </div>
 
-                {/* Editor */}
+                {/* Code and result share one compact workspace. */}
+                <div className={`cb-workspace cb-workspace--${viewMode}`}>
                 {showEditor && (
-                  <>
+                  <div className="cb-editor-pane">
                     <div className={`cb-editor ${viewMode === "code" ? "cb-editor--tall" : ""}`}>
                       <div ref={gutterRef} className="cb-gutter" aria-hidden="true">
                         {Array.from({ length: lineCount }, (_, i) => (
@@ -572,7 +590,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                       <span className="cb-hint">Ctrl+Enter to run · Esc, then Tab to leave</span>
                       {!showPreview && consoleToggle}
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {/* Preview */}
@@ -582,17 +600,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                       <span className="flex items-center gap-1">
                         <Eye size={11} aria-hidden="true" /> Live preview
                       </span>
-                      <span className="flex items-center gap-1.5">
-                        {consoleToggle}
-                        <span className="cb-seg" role="group" aria-label="Preview size">
-                          <button type="button" aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")} title="Desktop width" aria-label="Desktop width">
-                            <Monitor size={12} aria-hidden="true" />
-                          </button>
-                          <button type="button" aria-pressed={device === "phone"} onClick={() => setDevice("phone")} title="Phone width" aria-label="Phone width">
-                            <Smartphone size={12} aria-hidden="true" />
-                          </button>
-                        </span>
-                      </span>
+
                     </div>
                     <div className={`cb-frame ${device === "phone" ? "cb-frame--phone" : ""}`}>
                       <iframe
@@ -606,6 +614,8 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                     </div>
                   </div>
                 )}
+
+                </div>
 
                 {/* Console (toggled from the preview header) */}
                 {consoleOpen && (
@@ -644,14 +654,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                           Learn with us <ArrowRight size={13} aria-hidden="true" />
                         </button>
                       )}
-                      {currentSolved && !completed && (
-                        <div className="cb-cta">
-                          Nice! Learn this properly in Full Stack Development.
-                          <a href="#demo-class" onClick={() => trackBuilderEvent("demo_click", { from: mission.id })}>
-                            Book free demo
-                          </a>
-                        </div>
-                      )}
+
                     </>
                   ) : (
                     <>

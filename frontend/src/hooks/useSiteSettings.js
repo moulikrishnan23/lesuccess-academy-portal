@@ -20,12 +20,9 @@ export default function useSiteSettings() {
   const [isLoading, setIsLoading] = useState(() => !cachedSettingsData);
 
   useEffect(() => {
-    if (cachedSettingsData) {
-      setSettings(cachedSettingsData);
-      setIsLoading(false);
-      return;
-    }
-
+    // No early return for an already-cached value: the lazy useState above has
+    // it, and the resolved promise below re-delivers the same object from a
+    // callback (a no-op render), so state is never set in the effect body.
     let ignore = false;
 
     if (!cachedSettingsPromise) {
@@ -35,7 +32,7 @@ export default function useSiteSettings() {
           cachedSettingsData = result;
           return result;
         })
-        .catch((err) => {
+        .catch(() => {
           cachedSettingsData = {};
           return {};
         });

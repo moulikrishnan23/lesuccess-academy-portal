@@ -1750,3 +1750,24 @@
     display: none;
   }
 }
+
+/* Scoped light testimonial treatment; surrounding Home sections are untouched. */
+.lh-testimonials-light { background: #F5F8FC; color: #07405C; }
+.lh-testimonials-light .lh-testi {
+  background: #fff; border: 1px solid #dfe7ee;
+  box-shadow: 0 8px 28px rgb(7 64 92 / .05);
+}
+.lh-testimonials-light .lh-testi q { color: #334b5d; }
+.lh-testimonials-light .lh-who b { color: #07405C; }
+.lh-testimonials-light .lh-who small { color: #5c6e7b; }
+.lh-testimonials-light .lh-testi-more, .lh-testimonials-light .lh-stars { color: #DF1E26; }
+.lh-testimonials-light .lh-verified { color: #07405C; background: #edf4f7; border-color: #d1e1e8; }
+.lh-testimonials-light .lh-ctag { color: #07405C; background: #edf4f7; }
+.lh-testimonials-light .lh-prog { background: #dbe5eb; }
+/* Only the animated statement moves to the intro; original copy stays here. */
+.lh-stm-caption { display: grid; place-items: center; padding: 32px 24px; background: var(--color-navy-900); }
+.lh-stm-caption p {
+  position: relative; max-width: 52ch; margin: 0;
+  color: color-mix(in srgb, #fff 80%, var(--color-navy-800));
+  font-size: 1.0625rem; text-align: center;
+}

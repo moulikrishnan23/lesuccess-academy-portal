@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, Star, Check } from "lucide-rea
 import { useAppData } from "../../context/AppDataContext.jsx";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import { GOOGLE_REVIEWS, GOOGLE_REVIEWS_META } from "../../data/googleReviews.js";
+import useAnimationActive from "../../hooks/useAnimationActive.js";
 import SectionHead from "./SectionHead.jsx";
 import useClipReveal from "./useClipReveal.js";
 import { Reveal, useInView, useReducedMotion } from "../motion/index.js";
@@ -64,7 +65,7 @@ function ReviewCard({ review, expanded, onToggle }) {
       <div className="lh-who">
         <div className="lh-av">
           {review.photoUrl ? (
-            <img src={getImageUrl(review.photoUrl, "", { width: 160 })} alt="" />
+            <img src={getImageUrl(review.photoUrl, "", { width: 160 })} alt="" loading="lazy" decoding="async" />
           ) : (
             (review.name || "S").trim().charAt(0).toUpperCase()
           )}
@@ -86,7 +87,7 @@ function ReviewCard({ review, expanded, onToggle }) {
 
 /**
  * "Verified Reviews from Our Learners" (spec: docs/mockup/lower-home.html,
- * #testimonials): a dark band with the Google rating, and an auto-advancing,
+ * #testimonials): a light band with the Google rating, and an auto-advancing,
  * swipeable carousel with a progress bar that pauses on hover or focus.
  *
  * Reviews come from the admin-managed testimonials, falling back to the
@@ -97,6 +98,7 @@ export default function Testimonials() {
   const reduced = useReducedMotion();
   const sectionRef = useRef(null);
   const trackRef = useRef(null);
+  const active = useAnimationActive(sectionRef);
   useClipReveal(sectionRef);
 
   const [expandedIds, setExpandedIds] = useState(() => new Set());
@@ -143,7 +145,7 @@ export default function Testimonials() {
 
   // Auto-advance; each tick also restarts the progress bar (keyed on `cycle`).
   useEffect(() => {
-    if (reduced || paused || pageCount <= 1) return undefined;
+    if (reduced || paused || !active || pageCount <= 1) return undefined;
     const timer = setInterval(() => {
       setCycle((c) => c + 1);
       const track = trackRef.current;
@@ -152,10 +154,10 @@ export default function Testimonials() {
       scrollToSlide(track, next >= pageCount ? 0 : next, true);
     }, AUTO_MS);
     return () => clearInterval(timer);
-  }, [reduced, paused, pageCount]);
+  }, [reduced, paused, active, pageCount]);
 
   return (
-    <section ref={sectionRef} id="testimonials" className="lh-sec lh-dark lh-rv">
+    <section ref={sectionRef} id="testimonials" className="lh-sec lh-testimonials-light lh-rv">
       <div className="lh-wrap">
         <SectionHead
           center
@@ -216,7 +218,7 @@ export default function Testimonials() {
                 ))}
               </div>
               {!reduced && (
-                <div className={`lh-prog${paused ? "" : " is-running"}`} style={{ "--prog-ms": `${AUTO_MS}ms` }} aria-hidden="true">
+                <div className={`lh-prog${paused || !active ? "" : " is-running"}`} style={{ "--prog-ms": `${AUTO_MS}ms` }} aria-hidden="true">
                   <i key={cycle} />
                 </div>
               )}

@@ -41,8 +41,8 @@
   --color-danger: #c62828;
   --color-danger-soft: #fdecec;
 
-  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
   --radius-card: 0.75rem;
 
@@ -120,6 +120,18 @@
     color: var(--color-ink-soft);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Creative Agency Custom Cursor Mode (Desktop only) */
+  @media (pointer: fine) {
+    body.has-custom-cursor:not(.has-native-cursor),
+    body.has-custom-cursor:not(.has-native-cursor) a,
+    body.has-custom-cursor:not(.has-native-cursor) button,
+    body.has-custom-cursor:not(.has-native-cursor) [role="button"],
+    body.has-custom-cursor:not(.has-native-cursor) select,
+    body.has-custom-cursor:not(.has-native-cursor) .cursor-pointer {
+      cursor: none !important;
+    }
   }
 
   h1,
@@ -803,4 +815,10 @@
   .chat-md a:hover {
     opacity: 0.8;
   }
+}
+
+/* Off-screen source loops pause without changing their visible timing. */
+.ls-motion-paused:not(.ls-connection),
+.ls-motion-paused :not(.ls-connection, .ls-connection *) {
+  animation-play-state: paused !important;
 }

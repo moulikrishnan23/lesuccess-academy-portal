@@ -1,3 +1,5 @@
+import { memo, useRef } from "react"
+import useSectionMotion from "../../hooks/useSectionMotion.js"
 import HeroVideo from '../../components/home/HeroVideo'
 import AboutSection from '../../components/home/AboutSection'
 import ChooseYourPath from '../../components/home/ChooseYourPath'
@@ -12,12 +14,13 @@ import LifeAtLeSuccess from '../../components/home/LifeAtLeSuccess'
 import WhereStudentsWork from '../../components/home/WhereStudentsWork'
 import Testimonials from "../../components/home/Testimonials"
 import SuccessStoriesSection from '../../components/home/SuccessStoriesSection'
-import HomeStatement from '../../components/home/HomeStatement'
 import ConnectWithUs from '../../components/home/ConnectWithUs'
 
 const Home = () => {
+  const rootRef = useRef(null)
+  useSectionMotion(rootRef)
   return (
-    <div>
+    <div ref={rootRef}>
       <HeroVideo />
       <AboutSection/>
       <WhyChooseUs/>
@@ -27,15 +30,16 @@ const Home = () => {
       <HomeTicker/>
       <ChooseYourPath/>
       <UpcomingPrograms/>
+      <div data-preserve-ui className="contents">
       <OurTeam/>
       <LifeAtLeSuccess/>
       <SuccessStoriesSection/>
       <WhereStudentsWork/>
+      </div>
       <Testimonials/>
-      <HomeStatement/>
       <ConnectWithUs/>
     </div>
   )
 }
 
-export default Home
+export default memo(Home)

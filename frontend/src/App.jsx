@@ -1,13 +1,13 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   lazy,
   Suspense,
 } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
-import { useAppData } from "./context/AppDataContext.jsx";
 
 import Navbar from "./components/layout/Navbar.jsx";
 import OfferHeader from "./components/layout/OfferHeader.jsx";
@@ -20,88 +20,56 @@ import BasicChatbot from "./components/chatbot/BasicChatbot.jsx";
 import ChatWidget from "./components/chatbot/ChatWidget.jsx";
 import useSiteSettings from "./hooks/useSiteSettings.js";
 import { AnimatePresence } from "framer-motion";
+import ScrollProgressBar from "./components/ui/ScrollProgressBar.jsx";
+import FloatingActionHub from "./components/ui/FloatingActionHub.jsx";
+import CustomCursor from "./components/ui/CustomCursor.jsx";
 
 import Home from "./pages/Home/HomePage.jsx";
-import AboutPage from "./pages/About/AboutPage.jsx";
-import TeamPage from "./pages/Team/TeamPage.jsx";
-import Contact from "./pages/Contact/ContactPage.jsx";
-import CourseCatalogPage from "./pages/Courses/CourseCatalogPage.jsx";
-import CourseDetailPage from "./pages/CourseDetail/[slug]/CourseDetailPage.jsx";
-import ServicePage from "./pages/Services/ServicePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
 import ConnectWithUsPopupTrigger from "./components/common/ConnectWithUsPopupTrigger.jsx";
-import GalleryPage from "./pages/Gallery/GalleryPage.jsx";
-import SuccessStoriesPage from './pages/SuccessStories/SuccessStoriesPage.jsx';
-import LoginPage from "./pages/Auth/LoginPage.jsx";
-import InitialReelExperience from "./components/common/InitialReelExperience.jsx";
+import BrandSplash from "./components/common/BrandSplash.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { AppDataProvider } from "./context/AppDataContext.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import useAdminShortcut from "./hooks/useAdminShortcut.js";
 
+// Home is the landing page and stays in the main bundle; every other public page
+// is split into its own chunk and fetched on first visit. The Suspense boundary
+// for these lives in PageTransition, which wraps every public route.
+const AboutPage = lazy(() => import("./pages/About/AboutPage.jsx"));
+const TeamPage = lazy(() => import("./pages/Team/TeamPage.jsx"));
+const Contact = lazy(() => import("./pages/Contact/ContactPage.jsx"));
+const CourseCatalogPage = lazy(() => import("./pages/Courses/CourseCatalogPage.jsx"));
+const CourseDetailPage = lazy(() => import("./pages/CourseDetail/[slug]/CourseDetailPage.jsx"));
+const ServicePage = lazy(() => import("./pages/Services/ServicePage.jsx"));
+const GalleryPage = lazy(() => import("./pages/Gallery/GalleryPage.jsx"));
+const SuccessStoriesPage = lazy(() => import("./pages/SuccessStories/SuccessStoriesPage.jsx"));
+const LoginPage = lazy(() => import("./pages/Auth/LoginPage.jsx"));
+
 const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard.jsx"));
-const TrainerDashboard = lazy(() => import("./pages/Trainer/TrainerDashboard.jsx"));
+const TrainerDashboard = lazy(
+  () => import("./pages/Trainer/TrainerDashboard.jsx"),
+);
 
-function HomeRoute() {
-  const { successStories } = useAppData();
-  const [userDismissed, setUserDismissed] = useState(false);
-
-  const isSessionDone = () => {
-    try {
-      return sessionStorage.getItem("lesuccess_initial_entry_done") === "true";
-    } catch {
-      return false;
-    }
-  };
-
-  const isItemActive = (item) => Boolean(item?.isActive ?? item?.active ?? false);
-  const activeReels = (successStories.data?.reels || [])
-    .filter(isItemActive)
-    .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
-
-  const handleContinue = useCallback(() => {
-    try {
-      sessionStorage.setItem("lesuccess_initial_entry_done", "true");
-    } catch {
-      /* ignore storage access error */
-    }
-    setUserDismissed(true);
-  }, []);
-
-  // If already dismissed in this session, render Home normally
-  if (userDismissed || isSessionDone()) {
-    return <Home />;
-  }
-
-  // If success stories data is still loading, show a subtle brand loader — do NOT show Home page first!
-  if (successStories.status === "loading" || successStories.status === "idle") {
-    return (
-      <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#07405C] text-white">
-        <div className="h-10 w-10 rounded-full border-4 border-white/20 border-t-[#DF1E26] animate-spin mb-3" />
-        <p className="text-xs font-semibold tracking-wider uppercase text-slate-300">Loading LeSuccess Academy...</p>
-      </div>
-    );
-  }
-
-  // If there are active reels, show the Success Stories popup first! (Home is covered by popup)
-  if (activeReels.length > 0) {
-    return (
-      <>
-        <Home />
-        <InitialReelExperience
-          activeReels={activeReels}
-          onContinue={handleContinue}
-        />
-      </>
-    );
-  }
-
-  // Requirement 8: If no active reels, do not show popup, show Home normally
-  return <Home />;
+function HomeRoute({ initialEntry, onIntroComplete }) {
+  const [showIntro, setShowIntro] = useState(() => {
+    if (!initialEntry) return false;
+    try { return sessionStorage.getItem("lesuccess_initial_entry_done") !== "true"; }
+    catch { return true; }
+  });
+  const finishIntro = useCallback(() => {
+    try { sessionStorage.setItem("lesuccess_initial_entry_done", "true"); } catch { /* Storage may be unavailable. */ }
+    setShowIntro(false);
+    onIntroComplete();
+  }, [onIntroComplete]);
+  return <><Home />{showIntro && <BrandSplash onComplete={finishIntro} />}</>;
 }
 
 const AppContent = () => {
   const location = useLocation();
+  const [initialPath] = useState(location.pathname);
+  const [introDone, setIntroDone] = useState(false);
+  const markIntroDone = useCallback(() => setIntroDone(true), []);
   const { settings } = useSiteSettings();
 
   // Ctrl+Shift+Alt+1 jumps to the admin area. Mounted here because this is the
@@ -124,13 +92,14 @@ const AppContent = () => {
   // Navbar visibility while scrolling
   const [navbarVisible, setNavbarVisible] = useState(true);
 
-  const [isCompactHeader, setIsCompactHeader] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  // Desktop vs mobile viewport tracking (breakpoint >= 1024px / lg)
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true,
   );
 
   useEffect(() => {
     const handleResize = () => {
-      setIsCompactHeader(window.innerWidth < 1024);
+      setIsDesktop(window.innerWidth >= 1024);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -165,10 +134,7 @@ const AppContent = () => {
 
   const updateOfferHeaderHeight = useCallback(() => {
     if (!offerHeaderRef.current) return;
-
-    const height =
-      offerHeaderRef.current.getBoundingClientRect().height;
-
+    const height = offerHeaderRef.current.getBoundingClientRect().height;
     setOfferHeaderHeight(height);
   }, []);
 
@@ -180,10 +146,7 @@ const AppContent = () => {
 
   const updateNavbarHeight = useCallback(() => {
     if (!navbarRef.current) return;
-
-    const height =
-      navbarRef.current.getBoundingClientRect().height;
-
+    const height = navbarRef.current.getBoundingClientRect().height;
     setNavbarHeight(height);
   }, []);
 
@@ -200,7 +163,8 @@ const AppContent = () => {
    * - Navbar changes height
    */
 
-  useEffect(() => {
+  // Reserve measured header space before the first paint to avoid shifting main.
+  useLayoutEffect(() => {
     updateOfferHeaderHeight();
     updateNavbarHeight();
 
@@ -217,33 +181,15 @@ const AppContent = () => {
       resizeObserver.observe(navbarRef.current);
     }
 
-    window.addEventListener(
-      "resize",
-      updateOfferHeaderHeight
-    );
-
-    window.addEventListener(
-      "resize",
-      updateNavbarHeight
-    );
+    window.addEventListener("resize", updateOfferHeaderHeight);
+    window.addEventListener("resize", updateNavbarHeight);
 
     return () => {
       resizeObserver.disconnect();
-
-      window.removeEventListener(
-        "resize",
-        updateOfferHeaderHeight
-      );
-
-      window.removeEventListener(
-        "resize",
-        updateNavbarHeight
-      );
+      window.removeEventListener("resize", updateOfferHeaderHeight);
+      window.removeEventListener("resize", updateNavbarHeight);
     };
-  }, [
-    updateOfferHeaderHeight,
-    updateNavbarHeight,
-  ]);
+  }, [updateOfferHeaderHeight, updateNavbarHeight]);
 
   /*
    * =========================================================
@@ -276,27 +222,9 @@ const AppContent = () => {
 
         if (currentScrollY <= 20) {
           setNavbarVisible(true);
-        }
-
-        /*
-         * Scrolling DOWN
-         */
-
-        else if (
-          currentScrollY >
-          lastScrollY.current + 5
-        ) {
+        } else if (currentScrollY > lastScrollY.current + 5) {
           setNavbarVisible(false);
-        }
-
-        /*
-         * Scrolling UP
-         */
-
-        else if (
-          currentScrollY <
-          lastScrollY.current - 5
-        ) {
+        } else if (currentScrollY < lastScrollY.current - 5) {
           setNavbarVisible(true);
         }
 
@@ -305,80 +233,102 @@ const AppContent = () => {
       });
     };
 
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      {
-        passive: true,
-      }
-    );
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
+  /*
+   * =========================================================
+   * NAVBAR POSITION
+   * =========================================================
+   *
+   * Navbar always stays below OfferHeader on desktop.
+   */
+
+  const navbarTop = offerHeaderHeight;
+
+  /*
+   * =========================================================
+   * TOTAL HEADER HEIGHT (DESKTOP)
+   * =========================================================
+   *
+   * Reserves space in the page so the fixed desktop
+   * headers don't cover the page content.
+   */
+
+  const totalHeaderHeight = offerHeaderHeight + navbarHeight;
 
   /*
    * =========================================================
    * PUBLISH HEADER HEIGHTS TO CSS
    * =========================================================
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = document.documentElement;
     root.style.setProperty("--offer-header-h", `${offerHeaderHeight}px`);
     root.style.setProperty("--navbar-h", `${navbarHeight}px`);
 
-    // On compact layouts, socials wrap beneath the offer. At lg and wider they
-    // share the offer row. Include the floating nav's gap and top inset.
-    const topInset = offerHeaderRef.current?.getBoundingClientRect().top ?? (isCompactHeader ? 8 : 10);
-    const navbarGap = isCompactHeader ? 8 : 10;
-    if (offerHeaderHeight > 0) {
-      root.style.setProperty(
-        "--navbar-top",
-        `${topInset + offerHeaderHeight + navbarGap}px`
-      );
-    }
+    // On mobile (< 1024px), navbar is fixed at the BOTTOM of the viewport.
+    // The only fixed element at the top of the mobile viewport is OfferHeader.
+    // On desktop (>= 1024px), navbar is fixed at the TOP below OfferHeader.
+    // When desktop navbar hides on scroll down (navbarVisible === false),
+    // the only visible top element is OfferHeader.
     const currentHeader =
-      topInset + offerHeaderHeight + (!isCompactHeader && navbarVisible ? navbarGap + navbarHeight : 0);
+      offerHeaderHeight + (isDesktop && navbarVisible ? navbarHeight : 0);
 
     root.style.setProperty("--app-header", `${currentHeader}px`);
     root.style.setProperty(
       "--app-header-max",
-      `${topInset + offerHeaderHeight + (isCompactHeader ? 0 : navbarGap + navbarHeight)}px`
+      `${offerHeaderHeight + (isDesktop ? navbarHeight : 0)}px`,
     );
-  }, [offerHeaderHeight, navbarHeight, navbarVisible, isCompactHeader]);
+  }, [offerHeaderHeight, navbarHeight, navbarVisible, isDesktop]);
 
   return (
     <div className="min-h-screen bg-surface text-ink transition-colors duration-200">
+      {/* Creative Agency Custom Cursor System */}
+      <CustomCursor />
+
+      {/* Global Top Scroll Progress Bar */}
+      <ScrollProgressBar />
+
       {/* =====================================================
-          OFFER STRIP AND SOCIAL LINKS
-          - The offer strip stays visible while scrolling.
-          - Social links stay visible independently of the scroll-responsive navbar.
+          OFFER HEADER (ALWAYS FIXED & VISIBLE)
       ===================================================== */}
+
       {!isDashboard && (
-        <OfferHeader
-          offerHeaderRef={offerHeaderRef}
-        />
+        <div
+          ref={offerHeaderRef}
+          className="fixed left-0 top-0 z-60 w-full shadow-xs"
+        >
+          <OfferHeader />
+        </div>
       )}
 
       {/* =====================================================
-          RESPONSIVE NAVBAR:
-          - Source desktop navbar sits beneath the preserved offer strip.
-          - Desktop hides on scroll down; compact navigation stays at the bottom.
+          NAVBAR:
+          - On mobile (< 1024px): Fixed at BOTTOM of viewport,
+            always visible.
+          - On desktop (>= 1024px): Fixed at TOP below OfferHeader,
+            scroll-responsive (hides on scroll down, shows on scroll up).
       ===================================================== */}
+
       {!isDashboard && (
         <div
           ref={navbarRef}
-          className={`fixed inset-x-0 z-40 transition-[transform,opacity] duration-300 ease-in-out ${
-            isCompactHeader || navbarVisible
-              ? "translate-y-0 opacity-100 pointer-events-auto"
-              : "-translate-y-28 opacity-0 pointer-events-none"
+          className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+            isDesktop
+              ? navbarVisible
+                ? "translate-y-0 opacity-100 shadow-xs"
+                : "-translate-y-full opacity-0 pointer-events-none"
+              : "translate-y-0 opacity-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
           }`}
-          style={{ top: isCompactHeader ? "auto" : "var(--navbar-top, 4rem)", bottom: isCompactHeader ? 0 : "auto" }}
+          style={{
+            top: isDesktop ? `${navbarTop}px` : "auto",
+            bottom: isDesktop ? "auto" : "0px",
+          }}
         >
           <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
         </div>
@@ -386,11 +336,29 @@ const AppContent = () => {
 
       {/* =====================================================
           TOP HEADER SPACE:
-          - Reserve the measured top header height for the source hero layout.
-          - Compact layouts exclude the bottom navbar from this top spacer.
+          - On mobile (< 1024px): Spacer height is ONLY offerHeaderHeight,
+            so Hero / page content starts IMMEDIATELY below OfferHeader!
+          - On desktop (>= 1024px): Spacer height is totalHeaderHeight
+            (offerHeaderHeight + navbarHeight), so content starts below Navbar.
       ===================================================== */}
+
       {!isDashboard && (
-        <div aria-hidden="true" className="w-full" style={{ height: "var(--app-header-max, 148px)" }} />
+        <>
+          <div
+            aria-hidden="true"
+            className="block lg:hidden"
+            style={{
+              height: `${offerHeaderHeight}px`,
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="hidden lg:block"
+            style={{
+              height: `${totalHeaderHeight}px`,
+            }}
+          />
+        </>
       )}
 
       {/* =====================================================
@@ -401,13 +369,12 @@ const AppContent = () => {
         <ScrollToTop />
         <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
-
             {/* Home */}
             <Route
               path="/"
               element={
                 <PageTransition>
-                  <HomeRoute />
+                  <HomeRoute initialEntry={initialPath === "/" && !introDone} onIntroComplete={markIntroDone} />
                 </PageTransition>
               }
             />
@@ -551,33 +518,36 @@ const AppContent = () => {
                 }
               />
             </Route>
-
           </Routes>
         </AnimatePresence>
       </main>
 
-
       {!isDashboard && (
         <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
-          <Footer/>
+          <Footer />
         </div>
       )}
 
       {/* Global Back to Top Button for Public Pages */}
       {!isDashboard && <BackToTop />}
 
+      {/* Floating Action Hub (Career Counseling, WhatsApp & Free Live Demo) */}
+      {!isDashboard && !isLoginPage && (
+        <FloatingActionHub onOpenDemo={() => setIsEnquiryOpen(true)} />
+      )}
+
       {/* =====================================================
           CHATBOT (Admin Switchable: API Chatbot vs Normal Chatbot)
           Only ONE chatbot is active and rendered at a time.
       ===================================================== */}
-      {!isDashboard && !isLoginPage && settings?.chatbot_enabled !== 'false' && (
-        settings?.chatbot_mode?.toUpperCase() === 'API' ? (
+      {!isDashboard &&
+        !isLoginPage &&
+        settings?.chatbot_enabled !== "false" &&
+        (settings?.chatbot_mode?.toUpperCase() === "API" ? (
           <ChatWidget onOpenEnquiry={() => setIsEnquiryOpen(true)} />
         ) : (
           <BasicChatbot onOpenEnquiry={() => setIsEnquiryOpen(true)} />
-        )
-      )}
-
+        ))}
 
       {/* =====================================================
           CONNECT WITH US POPUP (Triggered after ~3 sections)

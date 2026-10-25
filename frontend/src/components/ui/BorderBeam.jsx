@@ -25,11 +25,12 @@ export default function BorderBeam({
         "--size": `${size}px`,
         "--duration": `${duration}s`,
         "--border-width": `${borderWidth}px`,
+        borderWidth: `${borderWidth}px`,
         "--color-from": colorFrom,
         "--color-to": colorTo,
         "--delay": `-${delay}s`,
       }}
-      className={`pointer-events-none absolute inset-0 rounded-[inherit] border border-transparent [mask-clip:padding-box,border-box] [mask-composite:intersect] [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)] ${className}`}
+      className={`pointer-events-none absolute inset-0 rounded-[inherit] border border-transparent [mask-clip:padding-box,border-box] [mask-composite:exclude] [mask-image:linear-gradient(#000,#000),linear-gradient(#000,#000)] ${className}`}
     >
       <div
         className="absolute aspect-square w-[var(--size)] bg-gradient-to-l from-[var(--color-from)] via-[var(--color-to)] to-transparent opacity-90 [animation:borderBeamRotate_var(--duration)_linear_infinite_var(--delay)]"

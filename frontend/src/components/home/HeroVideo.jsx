@@ -1,3 +1,4 @@
+import useAnimationActive from "../../hooks/useAnimationActive.js";
 import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -17,6 +18,9 @@ import {
   CheckCircle2,
   GraduationCap,
   Code2,
+  Cloud,
+  ChartNoAxesCombined,
+  BriefcaseBusiness,
 } from "lucide-react";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import useSiteSettings from "../../hooks/useSiteSettings.js";
@@ -33,6 +37,8 @@ import TypewriterText from "../ui/TypewriterText.jsx";
 import WaveDivider from "../ui/WaveDivider.jsx";
 import ChallengeBuilder from "./challengeBuilder/ChallengeBuilder.jsx";
 
+import "./hero-refinements.css";
+
 const DEFAULT_VIDEO_URL = "/video/CompanyIntro.mp4";
 
 const STATS = [
@@ -46,6 +52,8 @@ const HeroVideo = () => {
   const reduced = useReducedMotion();
   const videoRef = useRef(null);
   const sectionRef = useRef(null);
+  const heroActive = useAnimationActive(sectionRef);
+  const playbackActive = useRef(false);
   const [isEditorMinimized, setIsEditorMinimized] = useState(false);
 
   const { scrollYProgress } = useScroll({
@@ -116,6 +124,7 @@ const HeroVideo = () => {
         }
       }
 
+      if (!playbackActive.current) return;
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
@@ -143,6 +152,7 @@ const HeroVideo = () => {
           // Loop seek error ignored
         }
       }
+      if (!playbackActive.current) return;
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
@@ -168,6 +178,14 @@ const HeroVideo = () => {
     };
   }, [activeVideoSrc, videoEnabled]);
 
+  useEffect(() => {
+    playbackActive.current = heroActive;
+    const video = videoRef.current;
+    if (!video || !videoEnabled) return;
+    if (heroActive) video.play()?.catch(() => {});
+    else video.pause();
+  }, [heroActive, videoEnabled, activeVideoSrc]);
+
   const scrollToNext = () => {
     const nextSection = document.getElementById("about-section");
     if (nextSection) {
@@ -189,11 +207,11 @@ const HeroVideo = () => {
   };
 
   return (
-    <div className="w-full bg-white">
+    <div className="home-hero w-full bg-white">
       {/* Integrated Full-Width Hero Section with Background Video */}
       <section
         ref={sectionRef}
-        className="relative w-full min-h-[580px] lg:min-h-[calc(100dvh-var(--app-header-max,116px))] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] text-white pt-6 sm:pt-8 lg:pt-8 pb-0"
+        className="hero-stage relative w-full min-h-[580px] lg:min-h-[calc(100dvh-var(--app-header-max,116px))] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] text-white pt-6 sm:pt-8 lg:pt-8 pb-0"
       >
         {/* PARALLAX SCROLL CONTAINER FOR BACKGROUND VIDEO & OVERLAYS */}
         <motion.div
@@ -256,7 +274,7 @@ const HeroVideo = () => {
         </motion.div>
 
         {/* 3. HERO CONTENT - Positioned on Top of Background Video & Overlay */}
-        <div className="relative z-10 mx-auto max-w-[1440px] 2xl:max-w-[1560px] px-5 sm:px-8 lg:px-10 xl:px-12 2xl:px-16 my-auto w-full py-4 lg:py-6">
+        <div className="hero-composition relative z-10 mx-auto max-w-[1440px] 2xl:max-w-[1560px] px-5 sm:px-8 lg:px-10 xl:px-12 2xl:px-16 my-auto w-full py-4 lg:py-6">
           <div
             className={`transition-all duration-500 items-center ${
               isEditorMinimized
@@ -296,25 +314,24 @@ const HeroVideo = () => {
               {/* Headline with Dynamic Typewriter Effect */}
               <motion.h1
                 variants={motionSafe(fadeUp, reduced)}
-                className={`font-display text-3xl sm:text-4xl md:text-5xl lg:text-[2.5rem] xl:text-[2.95rem] font-extrabold tracking-tight leading-[1.18] text-white ${
+                className={`hero-title font-display text-3xl sm:text-4xl md:text-5xl lg:text-[2.5rem] xl:text-[2.95rem] font-extrabold tracking-tight leading-[1.18] text-white ${
                   isEditorMinimized ? "text-center" : ""
                 }`}
               >
                 Master Enterprise Tech Skills
-                <span className="block mt-1 sm:mt-1.5 text-white">
-                  In{" "}
-                  <TypewriterText
+                <span className="hero-type-line block mt-1 sm:mt-1.5 text-white">
+                  <TypewriterText active={heroActive}
                     phrases={[
-                      { text: "Full Stack & AI Development", icon: "🚀" },
-                      { text: "Enterprise Cloud & DevOps", icon: "☁️" },
-                      { text: "Data Science & Analytics", icon: "📊" },
-                      { text: "100% Placement Assurance", icon: "💼" },
-                      { text: "Live Production Projects", icon: "💻" },
+                      { text: "Full Stack & AI Development", icon: Code2 },
+                      { text: "Cloud & DevOps", icon: Cloud },
+                      { text: "Data Science & Analytics", icon: ChartNoAxesCombined },
+                      { text: "Career & Placement Support", icon: BriefcaseBusiness },
+                      { text: "Live Production Projects", icon: Code2 },
                     ]}
                     typingSpeed={65}
                     deletingSpeed={35}
                     pauseDuration={2400}
-                    className="animate-gradient-text text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-[#F44246] to-amber-200 drop-shadow-md"
+                    className="animate-gradient-text text-transparent bg-clip-text bg-gradient-to-r from-[#FFFFFF] via-[#DF1E26] to-[#FFFFFF] drop-shadow-md"
                   />
                 </span>
               </motion.h1>
@@ -371,7 +388,7 @@ const HeroVideo = () => {
               {/* Trust Highlights Strip with Spring Micro-Interactions */}
               <motion.div
                 variants={motionSafe(fadeUp, reduced)}
-                className={`mt-6 sm:mt-7 lg:mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3 lg:gap-3.5 text-xs sm:text-sm font-semibold text-slate-200 ${
+                className={`hero-trust mt-6 sm:mt-7 lg:mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3 lg:gap-3.5 text-xs sm:text-sm font-semibold text-slate-200 ${
                   isEditorMinimized
                     ? "justify-center"
                     : "justify-center lg:justify-start"
@@ -382,7 +399,7 @@ const HeroVideo = () => {
                     size={14}
                     className="text-emerald-400 shrink-0"
                   />
-                  <span>100% Placement Assurance</span>
+                  <span>Career & Placement Support</span>
                 </div>
                 <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 sm:px-3.5 sm:py-1.5 backdrop-blur-md hover:bg-white/20 transition-all hover:scale-105 cursor-default">
                   <GraduationCap
@@ -407,7 +424,7 @@ const HeroVideo = () => {
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.85, x: 40 }}
                   transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="lg:col-span-6 xl:col-span-6 w-full flex justify-center lg:justify-end mt-4 lg:mt-0 xl:translate-x-4 2xl:translate-x-8"
+                  className="hero-playground lg:col-span-6 xl:col-span-6 w-full flex justify-center lg:justify-end mt-4 lg:mt-0 xl:translate-x-4 2xl:translate-x-8"
                 >
                   <ChallengeBuilder
                     onMinimize={() => setIsEditorMinimized(true)}
@@ -459,7 +476,7 @@ const HeroVideo = () => {
         </AnimatePresence>
 
         {/* Scroll Down Indicator */}
-        <div className="relative z-10 mt-4 sm:mt-5 lg:mt-4 mb-1 flex justify-center">
+        <div className="hero-explore relative z-10 mt-4 sm:mt-5 lg:mt-4 mb-1 flex justify-center">
           <button
             type="button"
             onClick={scrollToNext}
@@ -491,12 +508,12 @@ const HeroVideo = () => {
           type="wave"
           fill="#ffffff"
           glow={true}
-          className="z-20 relative w-full block mt-auto -mb-[2px]"
+          className="hero-wave z-20 relative w-full block mt-auto -mb-[2px]"
         />
       </section>
 
       {/* Crisp Trust & Stats Strip with Interactive Spotlight & 3D Tilt */}
-      <div className="border-b border-slate-200/80 bg-white py-6 px-6 sm:px-10 lg:px-20 shadow-xs relative z-20 transition-colors duration-200">
+      <div className="hero-stats border-b border-slate-200/80 bg-white py-6 px-6 sm:px-10 lg:px-20 shadow-xs relative z-20 transition-colors duration-200">
         <div className="mx-auto max-w-6xl grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {STATS.map((stat, i) => {
             const Icon = stat.icon;

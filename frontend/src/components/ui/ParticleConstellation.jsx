@@ -28,8 +28,8 @@ export default function ParticleConstellation({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationFrameId;
-    let isVisible = true;
+    let animationFrameId = 0;
+    let isVisible = false;
     let width = 0;
     let height = 0;
 
@@ -93,15 +93,6 @@ export default function ParticleConstellation({
       container.addEventListener("mouseleave", handleMouseLeave);
     }
 
-    // Observer to pause when scrolled out of view
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isVisible = entry.isIntersecting;
-      },
-      { threshold: 0.05 },
-    );
-    if (container) observer.observe(container);
-
     // Initialize particles
     const count = Math.min(
       particleCount,
@@ -122,10 +113,8 @@ export default function ParticleConstellation({
 
     // Main animation loop
     const animate = () => {
-      if (!isVisible) {
-        animationFrameId = requestAnimationFrame(animate);
-        return;
-      }
+      animationFrameId = 0;
+      if (!isVisible || document.hidden) return;
 
       ctx.clearRect(0, 0, width, height);
 
@@ -146,7 +135,7 @@ export default function ParticleConstellation({
           const dy = mouse.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < mouse.radius) {
+          if (dist > 0 && dist < mouse.radius) {
             const force = (mouse.radius - dist) / mouse.radius;
             p.x -= (dx / dist) * force * 1.2;
             p.y -= (dy / dist) * force * 1.2;
@@ -193,9 +182,24 @@ export default function ParticleConstellation({
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    animationFrameId = requestAnimationFrame(animate);
+    const updatePlayback = () => {
+      if (isVisible && !document.hidden) {
+        if (!animationFrameId) animationFrameId = requestAnimationFrame(animate);
+      } else {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+      }
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      updatePlayback();
+    }, { threshold: 0.05 });
+    if (container) observer.observe(container);
+    document.addEventListener("visibilitychange", updatePlayback);
 
     return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", updatePlayback);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
       if (container) {

@@ -611,3 +611,56 @@
   .cb-status--busy i { animation: none; }
   .cb-frame, .cb-frame iframe { transition: none; }
 }
+
+/* Minimal Mac workspace: primary controls stay visible; secondary tools unfold. */
+.cb-dot {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  background: #DF1E26;
+}
+.cb-dot--min, .cb-dot--focus { background: #b51820; }
+.cb-dot svg { display: block; opacity: 1; stroke-width: 2; }
+.cb-dot:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+.cb-tools { position: relative; }
+.cb-tools summary {
+  display: flex; align-items: center; gap: 5px; padding: 6px 8px;
+  list-style: none; cursor: pointer; color: var(--cb-text); font-size: 11px;
+}
+.cb-tools summary::-webkit-details-marker { display: none; }
+.cb-tools summary:focus-visible { outline: 2px solid #fff; border-radius: 4px; }
+.cb-tools-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 30;
+  width: 245px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  padding: 14px; border: 1px solid var(--cb-line); border-radius: 12px;
+  background: var(--cb-bar); box-shadow: 0 12px 32px #0005;
+}
+.cb-workspace { display: grid; min-width: 0; }
+.cb-editor-pane { min-width: 0; }
+.cb-workspace .cb-hint { display: none; }
+.cb-preview { min-width: 0; }
+.cb-feedback { min-height: 58px; padding: 10px 14px; }
+.cb-feedback p { font-size: 12px; }
+.cb-panel .cb-run kbd { display: none; }
+.cb-panel .cb-tablist button { min-height: 36px; }
+@container cb (min-width: 29rem) {
+  .cb-workspace--split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .cb-workspace--split .cb-editor-pane { display: flex; flex-direction: column; border-right: 1px solid var(--cb-line); }
+  .cb-workspace--split .cb-editor { flex: 1; min-height: 180px; }
+  .cb-workspace--split .cb-preview { padding: 12px; }
+  .cb-workspace--split .cb-frame { min-height: 180px; }
+}
+@media (min-width: 1024px) and (max-height: 800px) {
+  .cb:not(.cb--focus) .cb-workspace--split .cb-editor,
+  .cb:not(.cb--focus) .cb-workspace--split .cb-frame { min-height: clamp(116px, calc(100svh - var(--app-header-max, 113px) - 500px), 180px); }
+}
+@media (max-width: 420px) {
+  .cb-bar { gap: 6px; padding-inline: 10px; }
+  .cb-dots { gap: 5px; }
+  .cb-bar .cb-seg button { font-size: 10px; padding-inline: 4px; }
+  .cb-bar-end .cb-status { padding: 3px; }
+  .cb-tools summary span { display: none; }
+}

@@ -32,7 +32,7 @@ export const MISSIONS = [
   {
     id: 'card',
     title: 'Build your card',
-    detail: 'Inside the <article data-card>, add a <p> that introduces you. Make it yours!',
+    detail: 'Add a <p> introduction inside your card.',
     snippet: '  <p>Built by me, with LeSuccess.</p>',
     needs: ['card'],
     action: null,
@@ -40,7 +40,7 @@ export const MISSIONS = [
   {
     id: 'color',
     title: 'Make it change colour',
-    detail: 'Add <button data-action="color"> inside your card, run it, then click it in the preview.',
+    detail: 'Add a button with data-action="color". Run, then click it.',
     snippet: '  <button data-action="color">Switch colour</button>',
     needs: ['card', 'color'],
     action: 'color',
@@ -48,7 +48,7 @@ export const MISSIONS = [
   {
     id: 'theme',
     title: 'Add a dark mode',
-    detail: 'Add <button data-action="theme">, run it, then try your light / dark switch in the preview.',
+    detail: 'Add a button with data-action="theme". Try it in the preview.',
     snippet: '  <button data-action="theme">Light / dark</button>',
     needs: ['card', 'color', 'theme'],
     action: 'theme',

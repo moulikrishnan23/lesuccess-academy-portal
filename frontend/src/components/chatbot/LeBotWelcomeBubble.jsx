@@ -12,7 +12,7 @@ export default function LeBotWelcomeBubble({ isOpen, onOpenChat }) {
   const [displayedText, setDisplayedText] = useState(reducedMotion ? MESSAGE_TEXT : '')
   const [isTyping, setIsTyping] = useState(!reducedMotion)
   const [dismissed, setDismissed] = useState(false)
-  const [sessionSeen, setSessionSeen] = useState(() => {
+  const [sessionSeen] = useState(() => {
     try {
       return sessionStorage.getItem('lebot_welcome_dismissed') === 'true'
     } catch {
@@ -26,9 +26,9 @@ export default function LeBotWelcomeBubble({ isOpen, onOpenChat }) {
   useEffect(() => {
     if (sessionSeen || dismissed || isOpen) return
 
+    // Reduced motion shows the whole message at once (derived below), so only
+    // the auto-dismiss timer is needed.
     if (reducedMotion) {
-      setDisplayedText(MESSAGE_TEXT)
-      setIsTyping(false)
       dismissTimerRef.current = setTimeout(() => {
         setDismissed(true)
       }, AUTO_DISMISS_DELAY_MS)
@@ -38,13 +38,13 @@ export default function LeBotWelcomeBubble({ isOpen, onOpenChat }) {
     }
 
     let currentIndex = 0
-    setDisplayedText('')
-    setIsTyping(true)
 
+    // State is only set from the timer callbacks, never in the effect body.
     const intervalId = setInterval(() => {
       currentIndex += 1
       if (currentIndex <= MESSAGE_TEXT.length) {
         setDisplayedText(MESSAGE_TEXT.slice(0, currentIndex))
+        setIsTyping(true)
       } else {
         clearInterval(intervalId)
         setIsTyping(false)
@@ -58,6 +58,8 @@ export default function LeBotWelcomeBubble({ isOpen, onOpenChat }) {
     return () => {
       clearInterval(intervalId)
       if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current)
+      // Restart from an empty bubble next time (e.g. after the chat closes).
+      setDisplayedText('')
     }
   }, [reducedMotion, sessionSeen, dismissed, isOpen])
 
@@ -112,8 +114,8 @@ export default function LeBotWelcomeBubble({ isOpen, onOpenChat }) {
           {/* Typed Text Body */}
           <div className="min-w-0 flex-1 leading-snug">
             <p className="font-medium text-slate-700">
-              {displayedText}
-              {isTyping && (
+              {reducedMotion ? MESSAGE_TEXT : displayedText}
+              {!reducedMotion && isTyping && (
                 <span
                   aria-hidden="true"
                   className="inline-block h-3.5 w-[2px] ml-0.5 bg-[#DF1E26] animate-pulse align-middle"

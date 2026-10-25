@@ -8,7 +8,7 @@ import { API_BASE_URL } from '../services/apiClient.js'
  * 2. Backend uploaded files: '/uploads/...' or 'uploads/...' -> prefixed with VITE_API_BASE_URL (e.g. 'http://localhost:8080/uploads/...')
  * 3. Frontend static assets: '/images/...' or 'images/...' -> resolved from frontend public directory
  */
-export const getImageUrl = (url, fallback = '') => {
+export const getImageUrl = (url, fallback = '', { width } = {}) => {
   let target = url
   if (target && typeof target === 'object') {
     target = target.url || target.imageUrl || target.logoUrl || target.src || ''
@@ -25,7 +25,7 @@ export const getImageUrl = (url, fallback = '') => {
 
   // Already absolute or data/blob URL
   if (/^(https?:|\/\/|data:|blob:)/i.test(trimmed)) {
-    return trimmed
+    return width ? optimizeCloudinaryUrl(trimmed, width) : trimmed
   }
 
   const apiBase = API_BASE_URL
@@ -67,4 +67,32 @@ export const getCourseLogo = (course) => {
   }
 
   return COURSE_LOGO_PLACEHOLDER
+}
+
+const CLOUDINARY_IMAGE_UPLOAD = /^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)$/i
+
+/**
+ * Asks Cloudinary to serve a delivery-optimised copy of an uploaded image.
+ *
+ * Admin uploads are stored as the original file (phone photos of 600-700 KB were
+ * being shown in 64px logo slots). `f_auto` picks WebP/AVIF per browser,
+ * `q_auto` picks a visually lossless quality, and `c_limit,w_N` scales down —
+ * never up — to the size the slot actually needs. Cloudinary caches each
+ * variant on its CDN after the first request.
+ *
+ * Non-Cloudinary URLs, videos, and URLs that already carry a transformation
+ * are returned unchanged.
+ */
+export function optimizeCloudinaryUrl(url, width) {
+  const match = CLOUDINARY_IMAGE_UPLOAD.exec(url)
+  if (!match) return url
+  const [, prefix, rest] = match
+  // An existing transformation segment ("c_fill,w_200/...", "f_auto/...") wins.
+  if (/^[a-z]{1,3}_[^/]*\//i.test(rest)) return url
+
+  const transforms = ['f_auto', 'q_auto']
+  if (Number.isFinite(width) && width > 0) {
+    transforms.push('c_limit', `w_${Math.round(width)}`)
+  }
+  return `${prefix}${transforms.join(',')}/${rest}`
 }

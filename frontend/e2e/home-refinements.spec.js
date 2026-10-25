@@ -1,0 +1,177 @@
+import { test, expect } from '@playwright/test'
+import { COURSES } from '../src/mocks/catalog.js'
+
+test.use({ channel: 'chrome' })
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    if (window !== window.top) return
+    sessionStorage.setItem('lesuccess_initial_entry_done', 'true')
+    sessionStorage.setItem('lesuccess_connect_submitted', 'true')
+  })
+  await page.route(url => url.hostname !== 'localhost', route => route.abort())
+  await page.route('**/api/**', route => {
+    const path = new URL(route.request().url()).pathname
+    const data = path === '/api/courses' ? COURSES : path === '/api/success-stories' ? {images:[],reels:[]} : []
+    return route.fulfill({json:{success:true,data}})
+  })
+})
+
+for (const [width, height] of [[1366,768],[1440,900],[1536,864],[1920,1080],[768,1024],[390,844],[320,740]]) {
+  test(`Home fits ${width}x${height} at normal zoom`, async ({ page }, testInfo) => {
+    await page.setViewportSize({width,height})
+    await page.emulateMedia({reducedMotion:'reduce'})
+    await page.goto('/')
+    await expect(page.locator('.cb-panel')).toBeVisible()
+    await page.evaluate(() => document.fonts.ready)
+    await page.evaluate(() => window.scrollTo({top:0,behavior:'instant'}))
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+    if (width >= 1024) {
+      await expect.poll(() => page.locator('.home-hero').evaluate(el => el.getBoundingClientRect().bottom <= innerHeight + 1)).toBe(true)
+      await expect.poll(() => page.locator('.home-hero').evaluate(el => el.getBoundingClientRect().top >= document.querySelector('nav').getBoundingClientRect().bottom - 1)).toBe(true)
+      await expect(page.getByRole('button',{name:'Run',exact:true})).toBeInViewport()
+      await expect(page.getByRole('button',{name:'Scroll to discover more'})).toBeInViewport()
+      expect(await page.locator('.cb-panel').evaluate(el => el.scrollHeight <= el.clientHeight + 1)).toBe(true)
+    }
+    expect(await page.evaluate(() => visualViewport.scale)).toBe(1)
+    await expect(page.locator('.hero-title')).not.toContainText('100%')
+    await expect(page.locator('.hero-title [aria-label="emoji"]')).toHaveCount(0)
+    await page.screenshot({path:testInfo.outputPath('home.png')})
+    await page.locator('#testimonials').scrollIntoViewIfNeeded()
+    expect(await page.locator('#testimonials').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(245, 248, 252)')
+    await page.locator('#testimonials').screenshot({path:testInfo.outputPath('testimonials.png')})
+    await page.locator('footer').scrollIntoViewIfNeeded()
+    await page.locator('footer').screenshot({path:testInfo.outputPath('footer.png')})
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+  })
+}
+
+test('Mac controls keep visible centered symbols; focus, collapse, close and Tools work', async ({ page }) => {
+  await page.emulateMedia({reducedMotion:'reduce'})
+  await page.goto('/')
+  const controls = page.locator('.cb-dots button')
+  await expect(controls).toHaveCount(3)
+  for (const button of await controls.all()) {
+    await expect(button.locator('svg')).toBeVisible()
+    for (const hover of [false,true]) {
+      if (hover) await button.hover()
+      const geometry = await button.evaluate(el => {
+        const b = el.getBoundingClientRect(), s = el.querySelector('svg').getBoundingClientRect()
+        return {x:Math.abs(b.x+b.width/2-s.x-s.width/2),y:Math.abs(b.y+b.height/2-s.y-s.height/2),color:getComputedStyle(el.querySelector('svg')).color}
+      })
+      expect(geometry.x).toBeLessThan(1)
+      expect(geometry.y).toBeLessThan(1)
+      expect(geometry.color).toBe('rgb(255, 255, 255)')
+    }
+  }
+  await page.getByRole('button',{name:'Collapse the Challenge Builder'}).click()
+  await expect(page.getByRole('textbox',{name:'index.html editor'})).toHaveCount(0)
+  await page.getByRole('button',{name:'Expand the Challenge Builder'}).click()
+  await page.getByRole('button',{name:'Open focus view'}).click()
+  await expect(page.getByRole('dialog',{name:'LeSuccess Challenge Builder'})).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog',{name:'LeSuccess Challenge Builder'})).toHaveCount(0)
+  await page.getByLabel('Playground tools',{exact:true}).click()
+  await page.getByRole('button',{name:'Code only',exact:true}).click()
+  await expect(page.locator('iframe[title="Your project, live preview"]')).toHaveCount(0)
+  await page.getByRole('button',{name:'Split view',exact:true}).click()
+  await expect(page.locator('iframe[title="Your project, live preview"]')).toBeVisible()
+  await page.getByLabel('Playground tools',{exact:true}).click()
+  await page.getByRole('button',{name:'Close the Challenge Builder'}).click()
+  await page.getByRole('button',{name:'Open the Challenge Builder',exact:true}).click()
+  await expect(page.getByRole('tab',{name:'Challenges',exact:true})).toBeVisible()
+})
+
+test('fresh entry waits for scroll, fills text, reveals logo and never mounts splash reels', async ({ page }) => {
+  await page.addInitScript(() => { if (window === window.top) sessionStorage.removeItem('lesuccess_initial_entry_done') })
+  await page.route('**/api/success-stories',route=>route.fulfill({json:{success:true,data:{images:[],reels:[{id:'intro-test',title:'Existing reel',isActive:true,reelUrl:'https://www.instagram.com/reel/INTRO_TEST/'}]}}}))
+  const reelRequests=[]
+  page.on('request',r=>{if(/instagram.com.*(embed|INTRO_TEST)/.test(r.url())) reelRequests.push(r.url())})
+  await page.goto('/',{waitUntil:'domcontentloaded'})
+  const intro=page.getByRole('dialog',{name:'Welcome to LeSuccess. Scroll to explore.'})
+  await expect(intro).toBeVisible()
+  expect(await intro.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(255, 255, 255)')
+  await expect(page.locator('.home-hero')).toBeAttached()
+  await expect(page.locator('#root')).toHaveAttribute('inert','')
+  await expect(page.locator('.brand-splash-progress')).toHaveAttribute('aria-valuenow','0')
+  await expect(page.getByText('Premier Technology Learning in Coimbatore')).toBeVisible()
+  await expect(page.getByText('From First Line of Code to First Offer Letter')).toBeVisible()
+  await expect(page.locator('.lh-stm-caption')).toHaveCount(0)
+  await page.waitForTimeout(2500)
+  await expect(intro).toHaveAttribute('data-stage','text')
+  await expect(page.locator('.brand-splash-progress')).toHaveAttribute('aria-valuenow','0')
+  await page.mouse.wheel(0,3000)
+  await expect.poll(async()=>Number(await page.locator('.brand-splash-progress').getAttribute('aria-valuenow'))).toBeLessThan(20)
+  for(let i=0;i<11;i++) {
+    if(await intro.getAttribute('data-stage')==='logo') break
+    await page.mouse.wheel(0,78)
+    await page.waitForTimeout(20)
+  }
+  await expect(intro).toHaveAttribute('data-stage','logo')
+  const logo=page.locator('.brand-splash-logo')
+  await expect(logo).toHaveAttribute('src','/logo/logo.png')
+  await expect.poll(()=>logo.evaluate(el=>Number(getComputedStyle(el).opacity))).toBeGreaterThan(.95)
+  expect(await logo.evaluate(el=>el.complete && el.naturalWidth>0)).toBe(true)
+  await page.waitForTimeout(700)
+  await expect(intro).toHaveAttribute('data-stage','logo')
+  await page.mouse.wheel(0,78)
+  await expect(intro).toHaveCount(0)
+  await expect(page.locator('#root')).not.toHaveAttribute('inert','')
+  expect(reelRequests).toEqual([])
+  expect(await page.locator('iframe[src*="instagram"]').evaluateAll(els => els.every(el => el.closest('[data-preserve-ui]')))).toBe(true)
+  await page.getByRole('navigation').getByRole('link',{name:'About',exact:true}).click()
+  await page.getByRole('navigation').getByRole('link',{name:'Home',exact:true}).click()
+  await expect(intro).toHaveCount(0)
+  await expect(page.locator('#statement')).toHaveCount(0)
+  await expect(page.locator('.lh-stm-caption')).toHaveCount(0)
+})
+
+test('keyboard, touch and reduced motion still require deliberate scroll input', async ({ page }) => {
+  await page.addInitScript(() => { if (window === window.top) sessionStorage.removeItem('lesuccess_initial_entry_done') })
+  await page.emulateMedia({reducedMotion:'reduce'})
+  await page.goto('/',{waitUntil:'domcontentloaded'})
+  const intro=page.locator('.brand-splash')
+  await expect(intro).toBeVisible()
+  await page.waitForTimeout(2500)
+  await expect(intro).toHaveAttribute('data-stage','text')
+  await expect(page.locator('.brand-splash-progress')).toHaveAttribute('aria-valuenow','0')
+  for(let i=0;i<3;i++) await page.keyboard.press('ArrowDown')
+  await expect(intro).toHaveAttribute('data-stage','text')
+  await page.evaluate(() => {
+    const node=document.querySelector('.brand-splash')
+    const touch=(type,y)=>node.dispatchEvent(new TouchEvent(type,{bubbles:true,cancelable:true,touches:[new Touch({identifier:1,target:node,clientX:100,clientY:y})]}))
+    touch('touchstart',500)
+    touch('touchmove',422)
+  })
+  await expect.poll(async()=>Number(await page.locator('.brand-splash-progress').getAttribute('aria-valuenow'))).toBeGreaterThan(0)
+  for(let i=0;i<10 && await intro.getAttribute('data-stage')==='text';i++) await page.keyboard.press('ArrowDown')
+  await expect(intro).toHaveAttribute('data-stage','logo')
+  await expect(page.locator('.brand-splash-logo')).toBeVisible()
+  await expect(page.locator('#root')).toHaveAttribute('inert','')
+  await page.keyboard.press('PageDown')
+  await expect(intro).toHaveCount(0)
+  await expect(page.locator('.home-hero')).toBeVisible()
+})
+
+test('light reviews retain carousel and expansion; footer restores exact original details', async ({ page }) => {
+  await page.emulateMedia({reducedMotion:'reduce'})
+  await page.goto('/')
+  const reviews=page.locator('#testimonials')
+  await reviews.scrollIntoViewIfNeeded()
+  await reviews.getByRole('button',{name:'More',exact:true}).first().click()
+  await expect(reviews.getByRole('button',{name:'Less',exact:true})).toBeVisible()
+  await reviews.getByRole('button',{name:'Next review'}).click()
+  await expect.poll(()=>reviews.locator('.lh-car').evaluate(el=>el.scrollLeft)).toBeGreaterThan(0)
+  const footer=page.locator('footer')
+  await footer.scrollIntoViewIfNeeded()
+  for(const icon of ['map-pin','phone','mail']) await expect(footer.locator(`.lucide-${icon}`).first()).toBeVisible()
+  const colors=await footer.locator('h4 > span').evaluateAll(els=>els.map(el=>({size:el.getBoundingClientRect().width,color:getComputedStyle(el).backgroundColor})))
+  expect(colors[0]).toEqual({size:8,color:'rgb(223, 30, 38)'})
+  expect(colors[1].size).toBe(8)
+  expect(colors[2]).toEqual(colors[0])
+  const gradient=await footer.evaluate(el=>getComputedStyle(el).backgroundImage)
+  expect(gradient).toContain('linear-gradient')
+  expect(gradient).toContain('rgb(2, 77, 114)')
+  expect(await page.locator('.footer-copyright').evaluate(el=>getComputedStyle(el).borderTopWidth)).toBe('0px')
+  await expect(footer.getByRole('button',{name:'Employee Login'})).toHaveAttribute('href','#employee-login')
+  await expect(page.locator('.lh-wave svg')).toHaveCount(2)
+})

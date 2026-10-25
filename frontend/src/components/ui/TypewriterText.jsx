@@ -8,6 +8,7 @@ import useReducedMotion from "../../hooks/useReducedMotion.js";
  */
 export default function TypewriterText({
   phrases = [],
+  active = true,
   typingSpeed = 65,
   deletingSpeed = 35,
   pauseDuration = 2200,
@@ -46,7 +47,7 @@ export default function TypewriterText({
   const maxSteps = fullText.length + (hasIcon ? 1 : 0);
 
   useEffect(() => {
-    if (reduced || normalizedPhrases.length === 0) return undefined;
+    if (!active || reduced || normalizedPhrases.length === 0) return undefined;
 
     let timeout;
     if (!isDeleting) {
@@ -86,6 +87,7 @@ export default function TypewriterText({
     deletingSpeed,
     pauseDuration,
     reduced,
+    active,
   ]);
 
   const renderIcon = (icon) => {
@@ -109,14 +111,8 @@ export default function TypewriterText({
     }
     const IconComponent = icon;
     return (
-      <span
-        className="inline-flex items-center ml-1.5 text-white select-none align-middle"
-        style={{
-          color: "initial",
-          WebkitTextFillColor: "initial",
-        }}
-      >
-        <IconComponent size={24} className="shrink-0" />
+      <span className="hero-type-icon" aria-hidden="true">
+        <IconComponent size={24} className="shrink-0 h-[0.62em] w-[0.62em]" />
       </span>
     );
   };
@@ -139,7 +135,7 @@ export default function TypewriterText({
       {/* Animated gradient text */}
       <span className={className}>{currentTypedText}</span>
 
-      {/* Icon displayed in authentic original color */}
+      {/* Brand-lit dimensional icon treatment */}
       {showIcon && renderIcon(currentPhrase.icon)}
 
       {/* Glowing cursor */}
