@@ -21,7 +21,7 @@ const DEFAULT_COMPANIES_ROW2 = [
 ];
 
 const CompanyCard = ({ company }) => (
-  <div className="inline-flex h-[88px] w-[200px] mx-3 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white px-5 shadow-lg hover:shadow-xl hover:border-[#DF1E26]/50 hover:scale-[1.02] transition-all duration-300">
+  <div data-cursor-text="Partner" className="inline-flex h-[88px] w-[200px] mx-3 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white px-5 shadow-lg hover:shadow-xl hover:border-[#DF1E26]/50 hover:scale-[1.02] transition-all duration-300">
     <img
       src={getImageUrl(company.logo || company.logoUrl, '/assets/companies/lavendel.png')}
       alt={company.name}

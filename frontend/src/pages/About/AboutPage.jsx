@@ -40,24 +40,28 @@ const STATS = [
     target: 37,
     suffix: "K+",
     label: "Students Trained",
+    cursor: "Trained",
     sub: "Across multiple batches",
   },
   {
     target: 150,
     suffix: "+",
     label: "Hiring Partners",
+    cursor: "Hiring",
     sub: "Leading tech enterprises",
   },
   {
     target: 95,
     suffix: "%",
     label: "Placement Success",
+    cursor: "Placed",
     sub: "Career transitions verified",
   },
   {
     target: 20,
     suffix: "+",
     label: "Specialized Courses",
+    cursor: "Courses",
     sub: "Industry-aligned programs",
   },
 ];
@@ -131,21 +135,25 @@ const STEPS = [
   {
     step: "01",
     title: "Learn Fundamentals",
+    cursor: "Learn",
     desc: "Master core concepts and language depths from expert instructors.",
   },
   {
     step: "02",
     title: "Build Real Projects",
+    cursor: "Build",
     desc: "Develop end-to-end full stack and data applications following clean architecture.",
   },
   {
     step: "03",
     title: "Code Review & Polish",
+    cursor: "Review",
     desc: "Refactor with mentors, optimize queries, write tests, and document your code.",
   },
   {
     step: "04",
     title: "Get Placed",
+    cursor: "Placed",
     desc: "Interview preparation, resume optimization, and placement drives until you succeed.",
   },
 ];
@@ -276,6 +284,7 @@ export default function AboutPage() {
             {/* Mission */}
             <div className="h-full">
               <SpotlightCard
+                data-cursor-text="Mission"
                 tilt={true}
                 maxTilt={7}
                 spotlightColor="rgba(7, 64, 92, 0.12)"
@@ -329,6 +338,7 @@ export default function AboutPage() {
             {/* Vision */}
             <div className="h-full">
               <SpotlightCard
+                data-cursor-text="Vision"
                 tilt={true}
                 maxTilt={7}
                 spotlightColor="rgba(223, 30, 38, 0.12)"
@@ -418,6 +428,7 @@ export default function AboutPage() {
             {STATS.map((stat) => (
               <div key={stat.label} className="h-full">
                 <SpotlightCard
+                  data-cursor-text={stat.cursor}
                   tilt={true}
                   maxTilt={8}
                   spotlightColor="rgba(255, 255, 255, 0.16)"
@@ -551,6 +562,7 @@ export default function AboutPage() {
                 className="h-full"
               >
                 <SpotlightCard
+                  data-cursor-text={step.cursor}
                   tilt={true}
                   maxTilt={8}
                   spotlightColor="rgba(223, 30, 38, 0.12)"

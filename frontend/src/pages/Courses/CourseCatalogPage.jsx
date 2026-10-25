@@ -100,6 +100,7 @@ function CourseCard({ course, column, reduced }) {
       {hasBatch ? (
         /* FULL RED BRANDED CARD FOR COURSES WITH BATCH/CODE */
         <SpotlightCard
+          data-cursor-text="Batch"
           tilt={true}
           maxTilt={6}
           spotlightColor="rgba(255, 255, 255, 0.22)"
@@ -121,6 +122,7 @@ function CourseCard({ course, column, reduced }) {
           <Link
             to={`/courses/${course.slug}`}
             className="flex flex-col flex-1 p-4 sm:p-6 text-left cursor-pointer min-w-0"
+            data-cursor-text="View"
           >
             {/* ================= ZONE 1: HEADER ================= */}
             <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
@@ -235,6 +237,7 @@ function CourseCard({ course, column, reduced }) {
       ) : (
         /* NORMAL STYLING FOR COURSES WITHOUT BATCH */
         <SpotlightCard
+          data-cursor-text="Course"
           tilt={true}
           maxTilt={6}
           spotlightColor="rgba(7, 64, 92, 0.12)"
@@ -256,6 +259,7 @@ function CourseCard({ course, column, reduced }) {
           <Link
             to={`/courses/${course.slug}`}
             className="flex flex-col flex-1 p-4 sm:p-6 text-left cursor-pointer min-w-0"
+            data-cursor-text="View"
           >
             {/* ================= ZONE 1: HEADER ================= */}
             <div className="flex flex-wrap items-start justify-between gap-3 mb-4">

@@ -78,7 +78,7 @@ function TypePreview({ type, onRetry }) {
   const preview = TYPE_PREVIEW[type];
   const Icon = preview.icon;
   return (
-    <article className="lh-feat">
+    <article className="lh-feat" data-cursor-text="Soon">
       <div className="lh-feat-media lh-feat-art" aria-hidden="true">
         <span className="lh-art-ring lh-art-ring--1" />
         <span className="lh-art-ring lh-art-ring--2" />
@@ -430,6 +430,7 @@ export default function UpcomingPrograms() {
         <AnimatePresence mode="wait" initial={false}>
           <motion.article
             key={currentProgram?.id || currentIndex}
+            data-cursor-text="Event"
             initial={reduced ? false : { opacity: 0, x: direction * 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={reduced ? { opacity: 1 } : { opacity: 0, x: direction * -30 }}

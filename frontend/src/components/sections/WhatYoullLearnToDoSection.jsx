@@ -111,6 +111,7 @@ export default function WhatYoullLearnToDoSection({ course }) {
             {bullets.map((bullet, idx) => (
               <li
                 key={idx}
+                data-cursor-text="Learn"
                 className="flex items-start gap-2.5 text-[0.9375rem] text-slate-700 bg-slate-50/80 p-3 rounded-xl border border-slate-200/80 shadow-2xs hover:border-[#DF1E26]/20 transition-colors"
               >
                 <span className="mt-1.5 h-2 w-2 rounded-full bg-[#DF1E26] shrink-0" />

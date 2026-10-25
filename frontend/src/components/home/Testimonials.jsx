@@ -43,7 +43,7 @@ function ReviewCard({ review, expanded, onToggle }) {
   const long = text.length > 160;
 
   return (
-    <article ref={ref} className={`lh-glass lh-testi${inView ? " is-in" : ""}`}>
+    <article ref={ref} className={`lh-glass lh-testi${inView ? " is-in" : ""}`} data-cursor-text="Review">
       <div className="flex items-center justify-between gap-2">
         <Stars count={review.rating || 5} />
         <span className="lh-verified">
@@ -56,7 +56,7 @@ function ReviewCard({ review, expanded, onToggle }) {
         {long && (
           <>
             {" "}
-            <button type="button" className="lh-testi-more" onClick={onToggle}>
+            <button type="button" className="lh-testi-more" onClick={onToggle} data-cursor-text="Read">
               {expanded ? "Less" : "More"}
             </button>
           </>

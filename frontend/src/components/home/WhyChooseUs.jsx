@@ -27,6 +27,7 @@ import { SITE_STATS } from "../../data/siteStats.js";
 const features = [
   {
     title: "Career Counseling",
+    cursor: "1-on-1",
     icon: MessageCircleMore,
     motion: "pop",
     description:
@@ -36,6 +37,7 @@ const features = [
   },
   {
     title: "Skill Development Programs",
+    cursor: "Skills",
     icon: BrainCircuit,
     motion: "sway",
     description:
@@ -43,6 +45,7 @@ const features = [
   },
   {
     title: "Communication Training",
+    cursor: "Speak",
     icon: Volume2,
     motion: "pop",
     description:
@@ -50,6 +53,7 @@ const features = [
   },
   {
     title: "Corporate Transition",
+    cursor: "Career",
     icon: ArrowUpRight,
     motion: "slide",
     description:
@@ -57,6 +61,7 @@ const features = [
   },
   {
     title: "Placement Opportunities",
+    cursor: "Hired",
     icon: Rocket,
     motion: "launch",
     description:
@@ -65,6 +70,7 @@ const features = [
   },
   {
     title: "Community Engagement",
+    cursor: "Connect",
     icon: UsersRound,
     motion: "bounce",
     description:
@@ -98,6 +104,7 @@ function FeatureCard({ feature, index }) {
     <ConicBorder
       as="article"
       tone={lead ? "dark" : "light"}
+      data-cursor-text={feature.cursor}
       className={`bento-card motion-spot group relative flex h-full overflow-hidden rounded-bento border p-6 text-left shadow-lift-sm sm:p-8 ${
         wide ? "flex-col gap-4 sm:flex-row sm:items-center sm:gap-8" : "flex-col gap-4"
       } ${lead ? "min-h-[17.5rem]" : ""} ${surface}`}
@@ -198,6 +205,7 @@ const WhyChooseUs = () => {
           <Link
             to="/about"
             className="group inline-flex min-h-12 items-center gap-2.5 rounded-full bg-navy-800 px-6 py-3 text-[0.9375rem] font-bold text-white transition-[transform,background-color] duration-300 ease-brand hover:bg-navy-700"
+            data-cursor-text="About"
           >
             Know More
             <ArrowRight size={18} className="transition-transform duration-300 ease-brand group-hover:translate-x-1" aria-hidden="true" />
@@ -205,6 +213,7 @@ const WhyChooseUs = () => {
           <Link
             to="/gallery"
             className="inline-flex min-h-12 items-center rounded-full px-6 py-3 text-[0.9375rem] font-bold text-navy-800 shadow-[inset_0_0_0_2px_var(--color-navy-800)] transition-colors duration-300 hover:bg-navy-800 hover:text-white"
+            data-cursor-text="Gallery"
           >
             See Campus Gallery
           </Link>

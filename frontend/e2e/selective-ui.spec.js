@@ -243,3 +243,32 @@ test('hero video pauses off screen and resumes; protected UI keeps its native cu
   await page.evaluate(() => window.scrollTo({top:0,behavior:'instant'}))
   await expect.poll(() => video.evaluate(el => !el.paused)).toBe(true)
 })
+
+test('the global custom cursor stays enabled through protected Home motion sections', async ({ page }) => {
+  await page.setViewportSize({width:1366,height:768})
+  await page.route('**/api/success-stories', route => route.fulfill({
+    json: {success:true,data:{images:[{id:'cursor-test-story',imageUrl:'/cursor-test.jpg',isActive:true}],reels:[]}},
+  }))
+  await page.goto('/')
+  const body = page.locator('body')
+  const protectedSections = page.locator('[data-preserve-ui].contents > section')
+  await expect(protectedSections).toHaveCount(4)
+
+  for (let index = 0; index < await protectedSections.count(); index += 1) {
+    await protectedSections.nth(index).hover()
+    await expect(body).toHaveClass(/has-custom-cursor/)
+    await expect(body).not.toHaveClass(/has-native-cursor/)
+  }
+})
+
+test('the custom cursor remains mounted across all public pages', async ({ page }) => {
+  await page.setViewportSize({width:1366,height:768})
+  const routes = ['/', '/about', '/services', '/our-team', '/courses', '/gallery', '/contact']
+
+  for (const route of routes) {
+    await page.goto(route)
+    await expect(page.locator('main').first()).toBeVisible()
+    await expect(page.locator('body')).toHaveClass(/has-custom-cursor/)
+    await expect(page.locator('body')).not.toHaveClass(/has-native-cursor/)
+  }
+})

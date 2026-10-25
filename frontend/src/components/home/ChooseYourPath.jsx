@@ -114,6 +114,7 @@ function CourseCard({ course, barScale }) {
             <Link
               to={`/courses/${course.slug}`}
               className="course-card-title inline-flex items-start gap-1.5 transition-colors duration-200 hover:text-brand"
+              data-cursor-text="View"
             >
               <span className="min-w-0 break-words">{course.title}</span>
               <ArrowUpRight
@@ -167,6 +168,7 @@ function CourseCard({ course, barScale }) {
             onClick={() => downloadSyllabus(course)}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-3 text-sm font-bold text-navy-800 shadow-[inset_0_0_0_2px_var(--color-navy-800)] transition-colors duration-300 hover:bg-navy-800 hover:text-white active:scale-95"
             title={`Download ${course.title} Syllabus (PDF)`}
+            data-cursor-text="PDF"
           >
             <Download size={15} className="shrink-0" aria-hidden="true" />
             <span className="truncate">Syllabus</span>
@@ -175,6 +177,7 @@ function CourseCard({ course, barScale }) {
         <Link
           to={`/courses/${course.slug}`}
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-[image:var(--gradient-brand)] px-3 text-sm font-bold text-white shadow-[0_6px_20px_color-mix(in_srgb,var(--color-brand-deep)_25%,transparent)] transition-shadow duration-300 hover:shadow-glow-brand active:scale-95"
+          data-cursor-text="Enroll"
         >
           <span className="truncate">Enroll Now</span>
         </Link>
@@ -300,6 +303,7 @@ function CourseCarousel({ courses }) {
                 type="button"
                 onClick={() => goTo(i)}
                 aria-label={`Go to slide ${i + 1}`}
+                data-cursor-text="Go"
                 aria-current={i === page ? "true" : undefined}
                 className="grid h-11 min-w-7 place-items-center"
               >
@@ -316,6 +320,7 @@ function CourseCarousel({ courses }) {
               type="button"
               onClick={() => goTo(page - 1)}
               aria-label="Previous course"
+              data-cursor-text="Prev"
               className="grid h-12 w-12 place-items-center rounded-full border-[1.5px] border-line bg-white text-navy-800 transition-[background-color,color,transform] duration-300 hover:scale-105 hover:bg-navy-800 hover:text-white"
             >
               <ChevronLeft size={20} aria-hidden="true" />
@@ -324,6 +329,7 @@ function CourseCarousel({ courses }) {
               type="button"
               onClick={() => goTo(page + 1)}
               aria-label="Next course"
+              data-cursor-text="Next"
               className="grid h-12 w-12 place-items-center rounded-full border-[1.5px] border-line bg-white text-navy-800 transition-[background-color,color,transform] duration-300 hover:scale-105 hover:bg-navy-800 hover:text-white"
             >
               <ChevronRight size={20} aria-hidden="true" />
@@ -414,6 +420,7 @@ const ChooseYourPath = () => {
         <div className="mt-10">
           <Link
             to="/courses"
+            data-cursor-text="Courses"
             className="group inline-flex min-h-12 items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-navy-800 shadow-[inset_0_0_0_2px_var(--color-navy-800)] transition-colors duration-300 hover:bg-navy-800 hover:text-white"
           >
             <span>View All Courses</span>

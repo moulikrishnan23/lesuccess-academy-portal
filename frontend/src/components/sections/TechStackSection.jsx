@@ -53,6 +53,7 @@ function TechCard({ group, reduced, className = "" }) {
       variants={fadeUp}
       whileHover={reduced ? undefined : cardHover.hover}
       className={`rounded-lg border border-line bg-white px-4 py-3 ${className}`}
+      data-cursor-text="Tool"
     >
       <h3 className="text-center text-[0.8125rem] font-medium text-navy-800">
         {group.name}

@@ -7,6 +7,34 @@ import {
 } from "framer-motion";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 
+// Source-branch cursor labels apply to real controls on public pages. Cards
+// still need an explicit data-cursor-text so decorative hover targets do not
+// unexpectedly acquire a label.
+const CONTROL =
+  'a[href], button, [role="button"], [role="tab"], [role="option"], summary, input[type="button"], input[type="submit"]';
+// `contents` wrappers can contain whole page sections that are only excluded
+// from scroll-motion observation. They must not disable the global cursor.
+const NATIVE_CURSOR_SCOPE = '[data-preserve-ui]:not(.contents), .ls-connection, [href="#employee-login"]';
+const LABEL_MAX = 8;
+const WEAK_WORDS = new Set(["a", "an", "the", "to", "for", "of", "and", "in", "on", "our", "your", "my", "get", "see", "go", "&"]);
+
+function autoLabel(el) {
+  if (el.getAttribute("aria-haspopup") === "listbox") return "Choose";
+  if (el.getAttribute("role") === "option") return "Pick";
+  if (el.hasAttribute("aria-expanded") && !el.hasAttribute("aria-haspopup") && !el.hasAttribute("aria-label")) {
+    return el.getAttribute("aria-expanded") === "true" ? "Close" : "Expand";
+  }
+  const text = el.getAttribute("aria-label") || el.textContent || "";
+  const word = text
+    .split(/\s+/)
+    .map((value) => value.replace(/[^\p{L}\p{N}+#]/gu, ""))
+    .find((value) => /\p{L}/u.test(value) && !WEAK_WORDS.has(value.toLowerCase()) && value.length <= LABEL_MAX);
+  if (word) return word;
+  return el.tagName === "A" ? "Open" : "Click";
+}
+
+const isPublicPage = () => !/^\/(admin|trainer|login)(\/|$)/.test(window.location.pathname);
+
 /**
  * Creative Agency Custom Mouse Cursor & Follower System.
  * Inspired by Cloudious & award-winning interactive experiences.
@@ -101,14 +129,23 @@ export default function CustomCursor() {
       const target = e.target;
       if (!target || !(target instanceof Element)) return;
 
-      const protectedTarget = Boolean(target.closest('[data-preserve-ui], .ls-connection, [href="#employee-login"]'));
+      const protectedTarget = Boolean(target.closest(NATIVE_CURSOR_SCOPE));
       setIsProtected(protectedTarget);
       if (protectedTarget) return;
 
       // Check for custom cursor text
       const textElem = target.closest("[data-cursor-text]");
-      if (textElem) {
+      const control = target.closest(CONTROL);
+      const controlIsNearer =
+        control && textElem && control !== textElem && textElem.contains(control);
+      if (textElem && !controlIsNearer) {
         setCursorText(textElem.getAttribute("data-cursor-text") || "");
+        setIsHovered(true);
+        setIsTextInput(false);
+        return;
+      }
+      if (control && isPublicPage()) {
+        setCursorText(autoLabel(control));
         setIsHovered(true);
         setIsTextInput(false);
         return;
@@ -139,7 +176,7 @@ export default function CustomCursor() {
     };
 
     const handleClick = (e) => {
-      if (e.target instanceof Element && e.target.closest('[data-preserve-ui], .ls-connection, [href="#employee-login"]')) return;
+      if (e.target instanceof Element && e.target.closest(NATIVE_CURSOR_SCOPE)) return;
       const id = Date.now() + Math.random();
       const ripple = { id, x: e.clientX, y: e.clientY };
       setRipples((prev) => [...prev.slice(-4), ripple]);

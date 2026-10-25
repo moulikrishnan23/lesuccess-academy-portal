@@ -29,6 +29,7 @@ const marqueeStyles = `
 const StoryImageCard = ({ image, onClick }) => (
   <div
     onClick={onClick}
+    data-cursor-text="View"
     className="inline-flex h-[220px] w-[300px] mx-3 shrink-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs hover:shadow-md transition-all duration-300 relative group cursor-pointer"
   >
     <img
@@ -137,7 +138,7 @@ export default function SuccessStoriesSection() {
               </div>
               <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 px-1 snap-x hide-scrollbar items-stretch">
                 {activeReels.map((reel) => (
-                  <div key={reel.id} className="snap-start flex justify-center shrink-0">
+                  <div key={reel.id} className="snap-start flex justify-center shrink-0" data-cursor-text="Watch">
                     <ReelEmbedCard reel={reel} />
                   </div>
                 ))}
@@ -150,6 +151,7 @@ export default function SuccessStoriesSection() {
           <Link
             to="/success-stories"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 px-6 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-[#07405C] transition-colors shadow-sm"
+            data-cursor-text="Stories"
           >
             View All Success Stories <ChevronRight size={16} />
           </Link>

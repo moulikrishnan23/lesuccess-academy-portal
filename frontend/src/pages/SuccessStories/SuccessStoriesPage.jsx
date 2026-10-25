@@ -116,6 +116,7 @@ export default function SuccessStoriesPage() {
                   <div
                     key={image.id}
                     onClick={() => setLightboxIndex(idx)}
+                    data-cursor-text="View"
                     className="group relative overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-xl border border-slate-200 cursor-pointer"
                   >
                     <div className="aspect-[4/3] overflow-hidden relative">
@@ -158,6 +159,7 @@ export default function SuccessStoriesPage() {
                   <div
                     key={reel.id}
                     className="w-full max-w-[260px] sm:max-w-[280px] flex justify-center"
+                    data-cursor-text="Watch"
                   >
                     <InstagramReelEmbed reelUrl={reel.reelUrl} title={reel.title} />
                   </div>

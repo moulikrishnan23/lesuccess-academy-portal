@@ -26,7 +26,7 @@ const FeaturedTeamCard = ({ member }) => {
     : member.image || "/home/team/dummy.png";
 
   return (
-    <div className="group relative flex flex-col items-center transition-all duration-300 hover:-translate-y-2">
+    <div className="group relative flex flex-col items-center transition-all duration-300 hover:-translate-y-2" data-cursor-text="Profile">
       {/* Background Image Container with TeamBg.png */}
       <div
         className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center bg-no-repeat shadow-[0_4px_20px_rgba(7,64,92,0.06)] border border-slate-200/90 transition-all duration-300 group-hover:shadow-[0_20px_40px_rgba(7,64,92,0.12)] group-hover:border-[#07405C]/35"
@@ -64,6 +64,7 @@ const FeaturedTeamCard = ({ member }) => {
           <a
             href={`mailto:${member.email}`}
             className="mt-2 inline-flex items-center gap-1 text-[11px] text-gray-300 transition-colors hover:text-white"
+            data-cursor-text="Email"
           >
             <Mail size={12} />
             {member.email}
@@ -151,6 +152,7 @@ export default function OurTeam() {
               <Link
                 to="/our-team"
                 className="group inline-flex items-center gap-2.5 rounded-xl bg-[#07405C] px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:bg-[#024D72] hover:shadow-xl hover:gap-3.5"
+                data-cursor-text="Team"
               >
                 View All Team Members
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />

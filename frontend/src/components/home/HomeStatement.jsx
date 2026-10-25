@@ -16,7 +16,7 @@ export default function HomeStatement() {
   useScrollProgress(ref, { disabled: reduced });
 
   return (
-    <section ref={ref} id="statement" className="lh-stm">
+    <section ref={ref} id="statement" className="lh-stm" data-cursor-text="Scroll">
       <div className="lh-stm-in">
         <h2 aria-label="Learn. Educate. Succeed.">
           <StatementWords />
