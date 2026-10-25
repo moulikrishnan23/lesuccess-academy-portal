@@ -211,7 +211,7 @@
     /* The colour flow keeps streaming: it shifts hue across the button
        rather than moving any shape, and the site keeps it on by request. */
     .btn-flow::before {
-      animation-duration: 6s !important;
+      animation-duration: 2s !important;
       animation-iteration-count: infinite !important;
     }
   }
@@ -418,8 +418,9 @@
      itself streams right to left, with a coral glow passing through. The
      strip is two identical tiles (each 3x the button, so about a third of
      the gradient shows at once) moved left by one tile per loop, so the
-     restart is invisible. It sits under the label inside its own stacking
-     context. */
+     restart is invisible. It rests until the button is hovered or focused,
+     then streams; pausing (not removing) the animation means it resumes from
+     where it stopped. It sits under the label in its own stacking context. */
   .btn-flow {
     position: relative;
     isolation: isolate;
@@ -442,8 +443,12 @@
         var(--color-brand-deep)
       )
       0 0 / 50% 100% repeat-x;
-    animation: btnFlow 6s linear infinite;
+    animation: btnFlow 2s linear infinite paused;
     pointer-events: none;
+  }
+  .btn-flow:hover::before,
+  .btn-flow:focus-visible::before {
+    animation-play-state: running;
   }
 
   /* Radar pulse beacon for active live indicators */
