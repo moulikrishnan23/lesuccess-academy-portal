@@ -325,7 +325,7 @@ const DemoClass = ({
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="animate-shimmer-sweep btn-glow-brand w-full sm:w-auto min-w-[220px] rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-2.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_20px_rgba(244,66,70,0.4)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
+            className="btn-flow btn-glow-brand w-full sm:w-auto min-w-[220px] rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-2.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_20px_rgba(244,66,70,0.4)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
           >
             {isSubmitting ? "Reserving Your Seat..." : "Reserve Free Demo Seat"}
           </button>
@@ -502,7 +502,7 @@ const DemoClass = ({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="lh-btn lh-btn-a lh-full"
+                    className="lh-btn lh-btn-a lh-full btn-flow"
                     style={{ minHeight: "3.5rem" }}
                   >
                     {isSubmitting ? "Reserving your seat…" : "Reserve Free Demo Seat"}

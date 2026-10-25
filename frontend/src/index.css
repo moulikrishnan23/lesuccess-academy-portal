@@ -207,6 +207,13 @@
     .animate-shimmer-sweep:hover::after {
       opacity: 1;
     }
+
+    /* The colour flow keeps streaming: it shifts hue across the button
+       rather than moving any shape, and the site keeps it on by request. */
+    .btn-flow::before {
+      animation-duration: 6s !important;
+      animation-iteration-count: infinite !important;
+    }
   }
 }
 
@@ -407,6 +414,38 @@
     animation: shimmerSlice 1s ease-in-out 1;
   }
 
+  /* Liquid colour flow for the Home page's red CTAs: the brand gradient
+     itself streams right to left, with a coral glow passing through. The
+     strip is two identical tiles (each 3x the button, so about a third of
+     the gradient shows at once) moved left by one tile per loop, so the
+     restart is invisible. It sits under the label inside its own stacking
+     context. */
+  .btn-flow {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .btn-flow::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: -1;
+    width: 600%;
+    background: linear-gradient(
+        90deg,
+        var(--color-brand-deep),
+        var(--color-brand),
+        var(--color-brand-light),
+        #ff8a7a,
+        var(--color-brand-light),
+        var(--color-brand),
+        var(--color-brand-deep)
+      )
+      0 0 / 50% 100% repeat-x;
+    animation: btnFlow 6s linear infinite;
+    pointer-events: none;
+  }
+
   /* Radar pulse beacon for active live indicators */
   .animate-pulse-beacon {
     animation: pulseBeacon 2s cubic-bezier(0, 0, 0.2, 1) infinite;
@@ -516,6 +555,12 @@
   }
   70%, 100% {
     transform: translateX(200%) skewX(-24deg);
+  }
+}
+
+@keyframes btnFlow {
+  to {
+    transform: translateX(-50%);
   }
 }
 

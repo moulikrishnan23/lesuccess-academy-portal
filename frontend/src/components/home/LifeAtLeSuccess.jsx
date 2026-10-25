@@ -58,7 +58,7 @@ export default function LifeAtLeSuccess() {
         </div>
 
         <div className="mt-10 text-center">
-          <Link to="/gallery" className="lh-btn lh-btn-a">
+          <Link to="/gallery" className="lh-btn lh-btn-a btn-flow">
             Explore Full Gallery
             <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
           </Link>

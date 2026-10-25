@@ -299,7 +299,7 @@ export default function ConnectWithUs({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="animate-shimmer-sweep btn-glow-brand w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white font-bold hover:brightness-110 active:scale-98 transition shadow-md disabled:opacity-50 cursor-pointer py-2 px-5 text-xs rounded-lg"
+              className="btn-flow btn-glow-brand w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white font-bold hover:brightness-110 active:scale-98 transition shadow-md disabled:opacity-50 cursor-pointer py-2 px-5 text-xs rounded-lg"
             >
               {isSubmitting ? "Submitting..." : "Submit Inquiry"}{" "}
               <Send size={13} />
@@ -309,7 +309,7 @@ export default function ConnectWithUs({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="animate-shimmer-sweep btn-glow-brand w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white font-bold hover:brightness-110 active:scale-98 transition shadow-md disabled:opacity-50 cursor-pointer sm:w-auto min-w-[240px] py-3.5 px-8 text-sm rounded-xl shadow-lg"
+                className="btn-flow btn-glow-brand w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white font-bold hover:brightness-110 active:scale-98 transition shadow-md disabled:opacity-50 cursor-pointer sm:w-auto min-w-[240px] py-3.5 px-8 text-sm rounded-xl shadow-lg"
               >
                 {isSubmitting ? "Submitting..." : "Submit Inquiry"}{" "}
                 <Send size={15} />
@@ -479,7 +479,7 @@ export default function ConnectWithUs({
                     value={form.message}
                     onChange={handleChange}
                   />
-                  <button type="submit" disabled={isSubmitting} className="lh-btn lh-btn-a lh-full">
+                  <button type="submit" disabled={isSubmitting} className="lh-btn lh-btn-a lh-full btn-flow">
                     {isSubmitting ? "Submitting…" : "Submit Inquiry"}
                     <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
                   </button>

@@ -346,7 +346,7 @@ const HeroVideo = () => {
                   <Link
                     to="/courses"
                     data-cursor-text="Courses"
-                    className="animate-shimmer-sweep btn-glow-brand group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-7 py-3 text-sm sm:text-base font-bold text-white shadow-[0_6px_25px_rgba(244,66,70,0.5)] transition-all duration-300 hover:brightness-110 active:scale-98"
+                    className="btn-flow btn-glow-brand group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-7 py-3 text-sm sm:text-base font-bold text-white shadow-[0_6px_25px_rgba(244,66,70,0.5)] transition-all duration-300 hover:brightness-110 active:scale-98"
                   >
                     <span>Explore Courses</span>
                     <ArrowRight

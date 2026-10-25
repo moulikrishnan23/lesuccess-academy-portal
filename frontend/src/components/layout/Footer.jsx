@@ -27,7 +27,7 @@ const GOOGLE_MAPS_URL =
 /**
  * Site footer: brand rule along the top, four link columns, a faint
  * "Learn • Educate • Succeed" watermark and an inset copyright bar. The red
- * CTAs carry the site's slanted blade shine (.animate-shimmer-sweep).
+ * CTA carries the Home page colour flow (.btn-flow).
  */
 export default function Footer() {
   const footRef = useRef(null);
@@ -115,7 +115,7 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-            <Link to="/contact" className="lh-foot-cta lh-foot-cta--block animate-shimmer-sweep">
+            <Link to="/contact" className="lh-foot-cta lh-foot-cta--block btn-flow">
               Request a Callback
             </Link>
           </div>

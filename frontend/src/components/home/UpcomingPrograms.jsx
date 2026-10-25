@@ -108,7 +108,7 @@ function TypePreview({ type, onRetry }) {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <a href="#connect-with-us-section" className="lh-btn lh-btn-a">
+          <a href="#connect-with-us-section" className="lh-btn lh-btn-a btn-flow">
             Get notified
             <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
           </a>
@@ -529,7 +529,7 @@ export default function UpcomingPrograms() {
                     )}
                   </>
                 ) : (
-                  <button type="button" onClick={handleOpenRegister} className="lh-btn lh-btn-a">
+                  <button type="button" onClick={handleOpenRegister} className="lh-btn lh-btn-a btn-flow">
                     {CTA_LABEL[eventType] || "Register Now"}
                     <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
                   </button>

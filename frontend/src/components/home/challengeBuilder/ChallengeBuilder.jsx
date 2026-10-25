@@ -380,7 +380,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
             Thank you, {form.name.trim()}. Our advisors will reach out shortly.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <a href="#demo-class" className="cb-run" onClick={() => trackBuilderEvent("demo_click", { from: "completion" })}>
+            <a href="#demo-class" className="cb-run btn-flow" onClick={() => trackBuilderEvent("demo_click", { from: "completion" })}>
               Book free demo <ArrowRight size={14} aria-hidden="true" />
             </a>
             <button type="button" className="cb-ghost" onClick={() => { setShowForm(false); switchMode("playground"); }}>
@@ -404,7 +404,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                 {clientError || fieldErrors.mobile || fieldErrors.email || fieldErrors.name || error?.message || "We could not send that. Please try again."}
               </p>
             )}
-            <button type="submit" disabled={isSubmitting} className="lh-btn lh-btn-a lh-full">
+            <button type="submit" disabled={isSubmitting} className="lh-btn lh-btn-a lh-full btn-flow">
               {isSubmitting ? "Sending…" : "Start learning with LeSuccess"}
               <ArrowRight size={16} className="lh-arr" aria-hidden="true" />
             </button>
@@ -526,7 +526,7 @@ export default function ChallengeBuilder({ className = "", onMinimize }) {
                     <button type="button" className="cb-icon-btn cb-copy" onClick={copyCode} aria-label="Copy this file" title="Copy">
                       {copied ? <Check size={13} className="text-[#4fd18b]" aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
                     </button>
-                    <button type="button" className="cb-run" onClick={runNow} title="Run (Ctrl+Enter)">
+                    <button type="button" className="cb-run btn-flow" onClick={runNow} title="Run (Ctrl+Enter)">
                       <Play size={12} aria-hidden="true" /> Run <kbd>Ctrl ↵</kbd>
                     </button>
                   </div>

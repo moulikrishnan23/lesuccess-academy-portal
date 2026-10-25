@@ -257,7 +257,7 @@ const Navbar = ({ onOpenEnquiry }) => {
                 type="button"
                 onClick={onOpenEnquiry}
                 data-cursor-text="Enquire"
-                className="animate-shimmer-sweep btn-glow-brand group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:brightness-110 active:scale-98 cursor-pointer"
+                className="btn-flow btn-glow-brand group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:brightness-110 active:scale-98 cursor-pointer"
               >
                 <span>Enquire Now</span>
                 <ArrowRight
