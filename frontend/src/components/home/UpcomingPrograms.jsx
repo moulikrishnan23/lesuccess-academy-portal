@@ -462,7 +462,7 @@ export default function UpcomingPrograms() {
                 </div>
               )}
               {currentProgram?.speakerName && currentProgram?.imageUrl && eventType !== "INTERNSHIP" && (
-                <span className="absolute bottom-3 left-3 rounded-full bg-[#0b2a45]/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                <span className="absolute bottom-3 left-3 rounded-full bg-[#013550]/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
                   {currentProgram.speakerName}
                 </span>
               )}

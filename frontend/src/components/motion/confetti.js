@@ -6,7 +6,7 @@ const TOKENS = [
   ['--color-brand', '#DF1E26'],
   ['--color-brand-deep', '#CA164B'],
   ['--color-navy-800', '#07405C'],
-  ['--color-navy-600', '#256a9e'],
+  ['--color-navy-600', '#0B759B'],
   ['--color-section', '#f6f9fc'],
 ]
 

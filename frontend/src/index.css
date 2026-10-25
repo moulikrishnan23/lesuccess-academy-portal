@@ -23,11 +23,12 @@
   rating stars, green for the discount badge.
 */
 @theme {
-  /* Navy — headings, dark bands, carousel arrows, hero. Approved: #07405C */
-  --color-navy-900: #0b2a45;
+  /* Navy — the hero's teal-navy (#024D72 → #07405C → #013550), shared by
+     every dark band so no section drifts to a colder blue. */
+  --color-navy-900: #013550;
   --color-navy-800: #07405C;
-  --color-navy-700: #1a5280;
-  --color-navy-600: #256a9e;
+  --color-navy-700: #024D72;
+  --color-navy-600: #0B759B;
 
   /* Text */
   --color-ink: #1f2a37;
@@ -40,7 +41,8 @@
   --color-line: #e3e9ef;
   --color-line-strong: #cfd9e3;
 
-  /* Brand red → deep red. Approved palette: #DF1E26 → #CA164B */
+  /* Brand red, as the hero CTAs run it: #F44246 → #DF1E26 → #CA164B */
+  --color-brand-light: #F44246;
   --color-brand: #DF1E26;
   --color-brand-deep: #CA164B;
   --color-brand-soft: #fdedef;
@@ -91,11 +93,12 @@
 
   /*
     Not Tailwind utilities (gradients have no @theme namespace), so they live on
-    :root. Both are built from the approved stops: brand #DF1E26 → #CA164B and
-    navy #0b2a45 → #07405C.
+    :root. Both use the hero's stops, so the lower sections match the top of
+    the page: brand #F44246 → #DF1E26 → #CA164B, navy #024D72 → #07405C →
+    #013550.
   */
-  --gradient-brand: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-deep) 100%);
-  --gradient-navy: linear-gradient(135deg, var(--color-navy-900) 0%, var(--color-navy-800) 60%, var(--color-navy-600) 130%);
+  --gradient-brand: linear-gradient(135deg, var(--color-brand-light) 0%, var(--color-brand) 50%, var(--color-brand-deep) 100%);
+  --gradient-navy: linear-gradient(135deg, var(--color-navy-700) 0%, var(--color-navy-800) 50%, var(--color-navy-900) 100%);
 }
 
 @layer base {

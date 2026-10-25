@@ -8,7 +8,7 @@
 
 .cb {
   --cb-bg: #0a1d2e;
-  --cb-bar: var(--color-navy-900, #0b2a45);
+  --cb-bar: var(--color-navy-900, #013550);
   --cb-status: var(--color-navy-800, #07405C);
   --cb-line: rgb(255 255 255 / 0.1);
   --cb-text: #d6e2ee;
@@ -37,7 +37,7 @@
   border-radius: 1.75rem;
   background: linear-gradient(90deg,
       color-mix(in srgb, var(--cb-brand) 22%, transparent),
-      color-mix(in srgb, var(--color-navy-600, #256a9e) 22%, transparent));
+      color-mix(in srgb, var(--color-navy-600, #0B759B) 22%, transparent));
   filter: blur(22px);
   pointer-events: none;
 }
