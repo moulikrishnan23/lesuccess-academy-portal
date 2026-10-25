@@ -10,16 +10,13 @@ import {
   GraduationCap,
   Sparkles,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
-import aboutImage from "../../assets/home/about.png";
+import LeSuccessConnection from "../../components/ui/LeSuccessConnection.jsx";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import {
-  fadeUp,
   fadeLeft,
   fadeRight,
-  staggerContainer,
   motionSafe,
   ONCE_IN_VIEW,
 } from "../../animations/variants.js";
@@ -188,20 +185,7 @@ export default function AboutPage() {
               viewport={ONCE_IN_VIEW}
               className="relative"
             >
-              <div className="relative overflow-hidden rounded-3xl border-4 border-white shadow-2xl max-h-[380px] lg:max-h-[420px]">
-                <img
-                  src={aboutImage}
-                  alt="LeSuccess Learning Center"
-                  className="h-full w-full max-h-[380px] lg:max-h-[420px] object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-4 -left-4 hidden sm:flex items-center gap-3 rounded-2xl bg-[#07405C] p-4 text-white shadow-xl">
-                <ShieldCheck size={32} className="text-[#DF1E26] shrink-0" />
-                <div>
-                  <p className="text-lg font-extrabold leading-none">100% Verified</p>
-                  <p className="text-xs text-slate-200 mt-1">Hands-on Practical Training</p>
-                </div>
-              </div>
+              <LeSuccessConnection interactive />
             </motion.div>
           </div>
         </div>
