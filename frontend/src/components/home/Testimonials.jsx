@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, ExternalLink, Star, Check } from "lucide-react";
-import { useAppData } from "../../context/AppDataContext.jsx";
+import { useTestimonialsData } from "../../context/AppDataContext.jsx";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import { GOOGLE_REVIEWS, GOOGLE_REVIEWS_META } from "../../data/googleReviews.js";
 import useAnimationActive from "../../hooks/useAnimationActive.js";
@@ -94,7 +94,7 @@ function ReviewCard({ review, expanded, onToggle }) {
  * verified Google reviews; their order is the admin's displayOrder.
  */
 export default function Testimonials() {
-  const { testimonials } = useAppData();
+  const testimonials = useTestimonialsData();
   const reduced = useReducedMotion();
   const sectionRef = useRef(null);
   const trackRef = useRef(null);

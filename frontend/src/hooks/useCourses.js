@@ -1,5 +1,5 @@
-import { useContext, useCallback, useEffect, useRef, useState } from "react";
-import AppDataContext from "../context/AppDataContext.jsx";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useCoursesData } from "../context/AppDataContext.jsx";
 import courseApi from "../services/courseApi.js";
 
 const EMPTY = [];
@@ -10,8 +10,8 @@ const EMPTY = [];
  * or gracefully falls back to local fetch if used standalone.
  */
 export default function useCourses() {
-  const context = useContext(AppDataContext);
-  const hasContext = Boolean(context?.courses);
+  const context = useCoursesData();
+  const hasContext = Boolean(context);
 
   // Standalone fallback
   const [attempt, setAttempt] = useState(0);
@@ -52,7 +52,7 @@ export default function useCourses() {
   }, [attempt, hasContext]);
 
   if (hasContext) {
-    const { status, data, error, refetch } = context.courses;
+    const { status, data, error, refetch } = context;
     return {
       courses: Array.isArray(data) ? data : EMPTY,
       isLoading: status === "loading",

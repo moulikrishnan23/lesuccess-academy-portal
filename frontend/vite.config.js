@@ -18,6 +18,26 @@ export default defineConfig({
     },
   },
 
+  build: {
+    // Disable inline sourcemaps in production — halves bundle size.
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        // Split heavy vendor libraries into separate cacheable chunks.
+        // framer-motion alone is ~120kB gzipped; splitting it means
+        // React re-deploys don't bust the animation cache and vice-versa.
+        manualChunks: (id) => {
+          if (id.includes('node_modules/framer-motion')) return 'vendor-framer';
+          if (id.includes('node_modules/react-icons')) return 'vendor-icons';
+          if (id.includes('node_modules/lucide-react')) return 'vendor-lucide';
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) return 'vendor-react';
+          if (id.includes('node_modules/react-router')) return 'vendor-router';
+          if (id.includes('node_modules/axios')) return 'vendor-axios';
+        },
+      },
+    },
+  },
+
   /*
    * `vite preview` serves the PRODUCTION bundle, and Vite loads .env.development
    * only for `vite dev`. There is no .env.production, so VITE_API_BASE_URL is

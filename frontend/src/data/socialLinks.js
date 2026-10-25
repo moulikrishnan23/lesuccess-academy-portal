@@ -57,4 +57,34 @@ export const SOCIAL_LINKS = [
   },
 ];
 
+const SETTING_KEYS = {
+  Instagram: "social_instagram",
+  LinkedIn: "social_linkedin",
+  YouTube: "social_youtube",
+  Facebook: "social_facebook",
+  WhatsApp: "social_whatsapp",
+};
+
+export function getSocialLinks(settings = {}) {
+  return SOCIAL_LINKS.map((item) => ({
+    ...item,
+    href: settings[SETTING_KEYS[item.name]]?.trim() || item.href,
+  }));
+}
+
+export function getWhatsAppUrl(settings = {}, message = "") {
+  const configured = settings.social_whatsapp?.trim();
+  const phone = settings.phone_primary?.replace(/\D/g, "");
+  const href = configured || (phone ? `https://wa.me/${phone}` : OFFICIAL_SOCIAL_URLS.whatsapp);
+  if (!message) return href;
+  return `${href}${href.includes("?") ? "&" : "?"}text=${encodeURIComponent(message)}`;
+}
+
+export function formatPhone(value = "") {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return `+91 ${digits.slice(2, 7)} ${digits.slice(7)}`;
+  if (digits.length === 10) return `${digits.slice(0, 5)} ${digits.slice(5)}`;
+  return value;
+}
+
 export default SOCIAL_LINKS;

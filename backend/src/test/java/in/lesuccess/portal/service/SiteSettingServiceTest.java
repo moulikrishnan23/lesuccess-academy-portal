@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
@@ -27,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.atLeastOnce;
 
 @ExtendWith(MockitoExtension.class)
 class SiteSettingServiceTest {
@@ -148,6 +150,49 @@ class SiteSettingServiceTest {
                     .isInstanceOf(InvalidRequestException.class);
 
             verify(repository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Primary Admin contact update validation")
+    class ContactUpdateTests {
+
+        @Test
+        @DisplayName("Rejects unsafe social URL before writing")
+        void rejectsUnsafeSocialUrl() {
+            assertThatThrownBy(() -> service.updateContactSettings(Map.of(
+                    "social_instagram", "javascript:alert(1)")))
+                    .isInstanceOf(InvalidRequestException.class)
+                    .satisfies(ex -> assertThat(((InvalidRequestException) ex).getFieldErrors())
+                            .extracting("field").containsExactly("social_instagram"));
+            verify(repository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Rejects malformed contact email before writing")
+        void rejectsInvalidEmail() {
+            assertThatThrownBy(() -> service.updateContactSettings(Map.of(
+                    "email_primary", "not-an-email")))
+                    .isInstanceOf(InvalidRequestException.class);
+            verify(repository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Primary phone update also persists the matching WhatsApp URL")
+        void phoneUpdateSynchronizesWhatsAppLink() {
+            when(repository.existsById(any())).thenReturn(true);
+            when(repository.findById(any())).thenAnswer(invocation -> Optional.of(
+                    buildSetting(invocation.getArgument(0), "")));
+            when(repository.findAll(any(Sort.class))).thenReturn(List.of());
+
+            service.updateContactSettings(Map.of("phone_primary", "+91 80120 60000"));
+
+            ArgumentCaptor<SiteSetting> saved = ArgumentCaptor.forClass(SiteSetting.class);
+            verify(repository, atLeastOnce()).save(saved.capture());
+            assertThat(saved.getAllValues()).anySatisfy(setting -> {
+                assertThat(setting.getKey()).isEqualTo("social_whatsapp");
+                assertThat(setting.getValue()).isEqualTo("https://wa.me/918012060000");
+            });
         }
     }
 

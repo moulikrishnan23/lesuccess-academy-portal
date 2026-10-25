@@ -14,9 +14,11 @@ import {
   BookOpen,
   Image as ImageIcon,
   Send,
+  LogIn,
 } from "lucide-react";
 import useCourses from "../../hooks/useCourses.js";
-import { SOCIAL_LINKS } from "../../data/socialLinks.js";
+import useSiteSettings from "../../hooks/useSiteSettings.js";
+import { getSocialLinks } from "../../data/socialLinks.js";
 import Magnetic from "../ui/Magnetic.jsx";
 
 const MENU_SLUGS = [
@@ -38,6 +40,7 @@ const MOBILE_NAV_ITEMS = [
   { name: "Courses", path: "/courses", icon: BookOpen },
   { name: "Gallery", path: "/gallery", icon: ImageIcon },
   { name: "Contact", path: "/contact", icon: Send },
+  { name: "Employee Login", path: "/login", icon: LogIn },
 ];
 
 const Navbar = ({ onOpenEnquiry }) => {
@@ -46,6 +49,8 @@ const Navbar = ({ onOpenEnquiry }) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   const { courses } = useCourses();
+  const { settings } = useSiteSettings();
+  const socialLinks = getSocialLinks(settings);
 
   useEffect(() => {
     let ticking = false;
@@ -251,13 +256,22 @@ const Navbar = ({ onOpenEnquiry }) => {
           {/* =====================================================
               DESKTOP ENQUIRE CTA
           ===================================================== */}
-          <div className="hidden items-center gap-4 lg:flex">
+          <div className="hidden items-center gap-3 lg:flex">
+            <Magnetic strength={0.2}>
+              <Link
+                to="/login"
+                data-cursor-text="Employee Login"
+                className="inline-flex h-[42px] w-36 items-center justify-center rounded-xl border border-[#07405C] bg-white px-3 text-sm font-bold text-[#07405C] shadow-sm transition hover:bg-[#07405C] hover:text-white"
+              >
+                Employee Login
+              </Link>
+            </Magnetic>
             <Magnetic strength={0.25}>
               <button
                 type="button"
                 onClick={onOpenEnquiry}
                 data-cursor-text="Enquire"
-                className="animate-shimmer-sweep btn-glow-brand group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:brightness-110 active:scale-98 cursor-pointer"
+                className="animate-shimmer-sweep btn-glow-brand group inline-flex h-[42px] w-36 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-3 text-sm font-bold text-white shadow-md transition hover:brightness-110 active:scale-98 cursor-pointer"
               >
                 <span>Enquire Now</span>
                 <ArrowRight
@@ -363,7 +377,7 @@ const Navbar = ({ onOpenEnquiry }) => {
               <div className="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between">
                 {/* Social Icons */}
                 <div className="flex items-center gap-2">
-                  {SOCIAL_LINKS.map((item) => {
+                  {socialLinks.map((item) => {
                     const Icon = item.icon;
                     return (
                       <a

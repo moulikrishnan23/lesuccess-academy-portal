@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Mail, Phone, MapPin, Send, ChevronDown } from "lucide-react";
-import { SOCIAL_LINKS } from "../../data/socialLinks.js";
+import useSiteSettings from "../../hooks/useSiteSettings.js";
+import { formatPhone, getSocialLinks } from "../../data/socialLinks.js";
 import useContactSubmit from "../../hooks/useContactSubmit.js";
 import { validateContactForm } from "../../utils/validation.js";
 import SpotlightCard from "../../components/ui/SpotlightCard.jsx";
@@ -20,6 +21,11 @@ const initialForm = {
 };
 
 export default function Contact() {
+  const { settings } = useSiteSettings();
+  const socialLinks = getSocialLinks(settings);
+  const contactEmail = settings.email_primary || "contact@lesuccess.in";
+  const trainingEmail = settings.email_training || "training@lesuccess.in";
+  const primaryPhone = settings.phone_primary || "+91 80120 60000";
   const [form, setForm] = useState(initialForm);
   const [clientErrors, setClientErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -429,16 +435,16 @@ export default function Contact() {
                 <div className="text-sm leading-relaxed">
                   <p className="font-semibold text-slate-200">Email Us</p>
                   <a
-                    href="mailto:training@lesuccess.in"
+                    href={`mailto:${trainingEmail}`}
                     className="hover:text-[#F44246] transition-colors block"
                   >
-                    training@lesuccess.in
+                    {trainingEmail}
                   </a>
                   <a
-                    href="mailto:contact@lesuccess.in"
+                    href={`mailto:${contactEmail}`}
                     className="hover:text-[#F44246] transition-colors block text-slate-300"
                   >
-                    contact@lesuccess.in
+                    {contactEmail}
                   </a>
                 </div>
               </div>
@@ -450,10 +456,10 @@ export default function Contact() {
                 <div className="text-sm leading-relaxed">
                   <p className="font-semibold text-slate-200">Call Us</p>
                   <a
-                    href="tel:+918012060000"
+                    href={`tel:${primaryPhone.replace(/[^+\d]/g, "")}`}
                     className="hover:text-[#F44246] transition-colors block"
                   >
-                    +91 80120 60000
+                    {formatPhone(primaryPhone)}
                   </a>
                   <a
                     href="tel:+918189822000"
@@ -491,7 +497,7 @@ export default function Contact() {
                   Follow Us
                 </p>
                 <div className="flex items-center gap-2.5">
-                  {SOCIAL_LINKS.map(({ icon: Icon, href, name }) => (
+                  {socialLinks.map(({ icon: Icon, href, name }) => (
                     <a
                       key={name}
                       href={href}

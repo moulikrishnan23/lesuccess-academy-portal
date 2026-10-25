@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
+import useSiteSettings from "../../hooks/useSiteSettings.js";
+import { formatPhone, getWhatsAppUrl } from "../../data/socialLinks.js";
 
 /**
  * Floating Quick Guidance Action Hub.
@@ -18,11 +20,12 @@ import useReducedMotion from "../../hooks/useReducedMotion.js";
  */
 export default function FloatingActionHub({ onOpenDemo }) {
   const reduced = useReducedMotion();
+  const { settings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
 
-  const WHATSAPP_LINK =
-    "https://wa.me/918012060000?text=Hi%20LeSuccess%20Academy,%20I%20would%20like%20to%20know%20more%20about%20your%20courses%20and%20placement%20programs.";
-  const PHONE_LINK = "tel:+918012060000";
+  const phone = settings.phone_primary || "+91 80120 60000";
+  const WHATSAPP_LINK = getWhatsAppUrl(settings, "Hi LeSuccess Academy, I would like to know more about your courses and placement programs.");
+  const PHONE_LINK = `tel:${phone.replace(/[^+\d]/g, "")}`;
 
   const handleDemoClick = (e) => {
     e.preventDefault();
@@ -93,7 +96,7 @@ export default function FloatingActionHub({ onOpenDemo }) {
               <div className="text-left">
                 <div>Call Counselor</div>
                 <div className="text-[10px] font-normal opacity-80">
-                  +91 80120 60000
+                  {formatPhone(phone)}
                 </div>
               </div>
             </a>

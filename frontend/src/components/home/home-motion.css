@@ -229,3 +229,36 @@
     transform: none;
   }
 }
+
+/* ── LifeAtLeSuccess marquee ─────────────────────────────────────────── */
+
+@keyframes marqueeScrollRight {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-marquee-right {
+  animation: marqueeScrollRight 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right-slow {
+  animation: marqueeScrollRight 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right:hover,
+.animate-marquee-right-slow:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-right,
+  .animate-marquee-right-slow {
+    animation: none !important;
+  }
+}

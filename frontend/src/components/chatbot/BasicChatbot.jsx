@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, RotateCcw, SendHorizontal, X, Sparkles } from 'lucide-react'
 import LeBotWelcomeBubble from './LeBotWelcomeBubble.jsx'
+import useSiteSettings from '../../hooks/useSiteSettings.js'
+import { formatPhone } from '../../data/socialLinks.js'
 
 let msgIdCounter = 0
 function createMsgId(role) {
@@ -279,6 +281,7 @@ function FormattedBotText({ text }) {
  * 100% Frontend-only, NO API Key, NO external API calls.
  */
 export default function BasicChatbot({ onOpenEnquiry }) {
+  const { settings } = useSiteSettings()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState(() => [
     {
@@ -378,10 +381,15 @@ export default function BasicChatbot({ onOpenEnquiry }) {
     // Simulate natural response latency (350ms)
     setTimeout(() => {
       const match = matchIntent(text)
+      const contactResponse = match.id === 'contact'
+        ? match.response
+          .replace('+91 99622 28445', formatPhone(settings.phone_primary || '+91 80120 60000'))
+          .replace('info@lesuccess.in', settings.email_primary || 'contact@lesuccess.in')
+        : match.response
       const botMsg = {
         id: createMsgId('b'),
         role: 'bot',
-        text: match.response,
+        text: contactResponse,
         links: match.links || [],
         time: getFormattedTime(),
       }

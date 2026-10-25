@@ -181,13 +181,16 @@ const AppContent = () => {
       resizeObserver.observe(navbarRef.current);
     }
 
-    window.addEventListener("resize", updateOfferHeaderHeight);
-    window.addEventListener("resize", updateNavbarHeight);
+    const handleResize = () => {
+      updateOfferHeaderHeight();
+      updateNavbarHeight();
+    };
+
+    window.addEventListener("resize", handleResize);
 
     return () => {
       resizeObserver.disconnect();
-      window.removeEventListener("resize", updateOfferHeaderHeight);
-      window.removeEventListener("resize", updateNavbarHeight);
+      window.removeEventListener("resize", handleResize);
     };
   }, [updateOfferHeaderHeight, updateNavbarHeight]);
 
@@ -328,6 +331,7 @@ const AppContent = () => {
           style={{
             top: isDesktop ? `${navbarTop}px` : "auto",
             bottom: isDesktop ? "auto" : "0px",
+            willChange: "transform",
           }}
         >
           <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />

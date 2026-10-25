@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Trophy, ChevronRight, Maximize2 } from 'lucide-react'
 import { FaInstagram } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
-import { useAppData } from '../../context/AppDataContext.jsx'
+import { useSuccessStoriesData } from '../../context/AppDataContext.jsx'
+import useAnimationActive from '../../hooks/useAnimationActive.js'
 import { getImageUrl } from '../../utils/imageUtils.js'
 import InstagramReelEmbed from '../common/InstagramReelEmbed.jsx'
 import ImageLightboxModal from '../common/ImageLightboxModal.jsx'
@@ -59,17 +60,20 @@ const ReelEmbedCard = ({ reel }) => (
 )
 
 export default function SuccessStoriesSection() {
-  const { successStories } = useAppData()
+  const sectionRef = useRef(null)
+  const successStories = useSuccessStoriesData()
   const [lightboxIndex, setLightboxIndex] = useState(null)
+  const { images = [], reels = [] } = successStories?.data ?? {}
+  const isItemActive = (item) => Boolean(item?.isActive ?? item?.active ?? false)
+  const hasActiveItems = successStories?.status === 'success' &&
+    [...images, ...reels].some(isItemActive)
+  const animationActive = useAnimationActive(sectionRef, hasActiveItems)
   
-  if (successStories.status === 'loading' || successStories.status === 'empty' || successStories.status === 'error') {
+  if (!successStories || successStories.status === 'loading' || successStories.status === 'empty' || successStories.status === 'error') {
     return null
   }
 
-  const { images = [], reels = [] } = successStories.data
-  
   // Filter active only
-  const isItemActive = (item) => Boolean(item?.isActive ?? item?.active ?? false)
   const activeImages = images.filter(isItemActive).sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
   const activeReels = reels.filter(isItemActive).sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
 
@@ -87,7 +91,7 @@ export default function SuccessStoriesSection() {
   const marqueeImages = getMarqueeItems(activeImages)
 
   return (
-    <section className="relative overflow-hidden bg-slate-50 py-20 lg:py-24">
+    <section ref={sectionRef} className="relative overflow-hidden bg-slate-50 py-20 lg:py-24">
       <style>{marqueeStyles}</style>
 
       {/* Background decorations */}
@@ -114,7 +118,7 @@ export default function SuccessStoriesSection() {
           {/* Row 1: Images Marquee Row */}
           {activeImages.length > 0 && (
             <div className="group relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] py-4">
-              <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused]">
+              <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused]" style={{ animationPlayState: animationActive ? undefined : 'paused' }}>
                 {marqueeImages.map((image, idx) => {
                   const originalIndex = activeImages.findIndex((img) => img.id === image.id)
                   return (

@@ -32,6 +32,7 @@ import {
   Bot,
   ChevronUp,
   ChevronDown,
+  Share2,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import apiClient from '../../services/apiClient.js'
@@ -48,9 +49,10 @@ import AdminReviewsTab from './components/AdminReviewsTab.jsx'
 import AdminMessagesTab from './components/AdminMessagesTab.jsx'
 import AdminSuccessStoriesTab from './components/AdminSuccessStoriesTab.jsx'
 import AdminChatbotTab from './components/AdminChatbotTab.jsx'
+import AdminWebsiteContactSettingsTab from './components/AdminWebsiteContactSettingsTab.jsx'
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth()
+  const { user, logout, isPrimaryAdmin } = useAuth()
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'gallery' | 'courses' | 'programs' | 'team' | 'reviews' | 'companies' | 'users' | form submissions
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
@@ -510,6 +512,7 @@ export default function AdminDashboard() {
               { id: 'success-stories', label: 'Success Stories', icon: Award },
               { id: 'companies', label: 'Companies', icon: Building2 },
               { id: 'users', label: 'User Management', icon: ShieldCheck },
+              ...(isPrimaryAdmin ? [{ id: 'website-contact', label: 'Website Contacts', icon: Share2 }] : []),
             ].map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -615,6 +618,7 @@ export default function AdminDashboard() {
             {activeTab === 'companies' && <AdminCompaniesTab showAlert={showAlert} />}
             {activeTab === 'users' && <AdminUsersTab showAlert={showAlert} />}
             {activeTab === 'messages' && <AdminMessagesTab showAlert={showAlert} />}
+            {activeTab === 'website-contact' && isPrimaryAdmin && <AdminWebsiteContactSettingsTab showAlert={showAlert} />}
 
             {/* Form Submission Views */}
             {[

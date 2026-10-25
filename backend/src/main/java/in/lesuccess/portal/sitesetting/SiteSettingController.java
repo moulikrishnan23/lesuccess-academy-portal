@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
 import java.util.Map;
+import in.lesuccess.portal.security.PrimaryAdminSecurity;
 
 @RestController
 @RequestMapping("/api/settings")
@@ -18,19 +18,18 @@ public class SiteSettingController {
 
     private final SiteSettingService service;
     private final in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
+    private final PrimaryAdminSecurity primaryAdminSecurity;
 
     /**
-     * How long a client or CDN may serve this response without revalidating.
-     * Five minutes: settings change on the order of months, but an admin who
-     * fixes a wrong phone number should not wait an hour to see it.
+     * Public settings are revalidated on every load so changes take effect
+     * without waiting for a browser or CDN cache to expire.
      */
-    private static final Duration CACHE_TTL = Duration.ofMinutes(5);
 
-    /** Public — the whole key/value map, cacheable. */
+    /** Public — the whole key/value map, requiring revalidation. */
     @GetMapping
     public ResponseEntity<ApiResponse<Map<String, String>>> getAll() {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(CACHE_TTL).cachePublic())
+                .cacheControl(CacheControl.noCache().cachePublic())
                 .body(ApiResponse.success("Settings retrieved successfully", service.getAll()));
     }
 
@@ -44,8 +43,22 @@ public class SiteSettingController {
     public ResponseEntity<ApiResponse<Map<String, String>>> update(
             @RequestBody Map<String, String> updates) {
 
+        if (service.containsContactSettings(updates)) {
+            primaryAdminSecurity.checkPrimaryAdmin();
+            return ResponseEntity.ok(ApiResponse.success(
+                    "Website contact settings updated successfully", service.updateContactSettings(updates)));
+        }
+
         return ResponseEntity.ok(ApiResponse.success(
                 "Settings updated successfully", service.updateAll(updates)));
+    }
+
+    @PutMapping("/contact")
+    @PreAuthorize("@primaryAdminSecurity.isPrimaryAdmin()")
+    public ResponseEntity<ApiResponse<Map<String, String>>> updateContactSettings(
+            @RequestBody Map<String, String> updates) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Website contact settings updated successfully", service.updateContactSettings(updates)));
     }
 
     /**

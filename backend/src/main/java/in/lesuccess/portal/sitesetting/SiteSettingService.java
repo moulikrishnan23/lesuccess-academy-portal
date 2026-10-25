@@ -13,6 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -23,6 +25,14 @@ public class SiteSettingService {
 
     /** Longest value the store accepts, so a paste accident cannot fill a TEXT column. */
     private static final int MAX_VALUE_LENGTH = 2000;
+    private static final Set<String> CONTACT_KEYS = Set.of(
+            "social_instagram", "social_facebook", "social_linkedin", "social_youtube", "social_whatsapp",
+            "phone_primary", "email_primary", "email_training");
+    private static final Set<String> EDITABLE_CONTACT_KEYS = Set.of(
+            "social_instagram", "social_facebook", "social_linkedin", "social_youtube",
+            "phone_primary", "email_primary", "email_training");
+    private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+    private static final Pattern PHONE = Pattern.compile("^\\+?[0-9 ().-]{7,24}$");
 
     /**
      * Every setting as a flat key -> value map, key-ordered so the response body
@@ -72,6 +82,58 @@ public class SiteSettingService {
 
         log.info("Site settings updated: keys={}", updates.keySet());
         return getAll();
+    }
+
+    public boolean containsContactSettings(Map<String, String> updates) {
+        return updates != null && updates.keySet().stream().anyMatch(CONTACT_KEYS::contains);
+    }
+
+    /** Contact values are updated only through the Primary Admin endpoint. */
+    @Transactional
+    public Map<String, String> updateContactSettings(Map<String, String> updates) {
+        if (updates == null || updates.isEmpty()) {
+            throw new InvalidRequestException("At least one contact setting must be provided");
+        }
+        Map<String, String> normalized = new LinkedHashMap<>();
+        List<FieldError> errors = updates.entrySet().stream().map(entry -> {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (!EDITABLE_CONTACT_KEYS.contains(key)) return InvalidRequestException.fieldError(key, "Unknown contact setting");
+            if (value == null) return InvalidRequestException.fieldError(key, "Value must not be null");
+            String clean = value.trim();
+            if (clean.length() > 300) return InvalidRequestException.fieldError(key, "Value must not exceed 300 characters");
+            if (key.startsWith("social_") && !clean.isEmpty() && !isHttpsUrl(clean)) {
+                return InvalidRequestException.fieldError(key, "Enter a valid HTTPS URL");
+            }
+            if (key.startsWith("email_") && !EMAIL.matcher(clean).matches()) {
+                return InvalidRequestException.fieldError(key, "Enter a valid email address");
+            }
+            if ("phone_primary".equals(key) && !PHONE.matcher(clean).matches()) {
+                return InvalidRequestException.fieldError(key, "Enter a valid phone number");
+            }
+            normalized.put(key, clean);
+            return null;
+        }).filter(Objects::nonNull).toList();
+        if (!errors.isEmpty()) throw new InvalidRequestException("Validation failed", errors);
+        if (normalized.containsKey("phone_primary")) {
+            String digits = normalized.get("phone_primary").replaceAll("\\D", "");
+            if (digits.length() < 7 || digits.length() > 15) {
+                throw new InvalidRequestException("Validation failed", List.of(
+                        InvalidRequestException.fieldError("phone_primary", "Phone number must contain 7 to 15 digits")));
+            }
+            normalized.put("social_whatsapp", "https://wa.me/" + digits);
+        }
+        return updateAll(normalized);
+    }
+
+    private boolean isHttpsUrl(String value) {
+        try {
+            java.net.URI uri = java.net.URI.create(value);
+            return "https".equalsIgnoreCase(uri.getScheme()) && uri.getHost() != null
+                    && uri.getHost().contains(".") && uri.getUserInfo() == null;
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
     }
 
     /** @return a field error, or null when the entry is acceptable. */

@@ -151,14 +151,11 @@ export default function ParticleConstellation({
           }
         }
 
-        // Draw particle dot
+        // Draw particle dot (no shadowBlur — GPU-expensive on every frame)
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 6;
         ctx.fill();
-        ctx.shadowBlur = 0;
 
         // Draw connecting lines between nearby particles
         for (let j = i + 1; j < particles.length; j++) {

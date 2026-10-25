@@ -33,6 +33,12 @@ function autoLabel(el) {
   return el.tagName === "A" ? "Open" : "Click";
 }
 
+function setIfChanged(ref, setState, nextValue) {
+  if (ref.current === nextValue) return;
+  ref.current = nextValue;
+  setState(nextValue);
+}
+
 const isPublicPage = () => !/^\/(admin|trainer|login)(\/|$)/.test(window.location.pathname);
 
 /**
@@ -55,12 +61,20 @@ export default function CustomCursor() {
   });
 
   const [isProtected, setIsProtected] = useState(false);
+  const isProtectedRef = useRef(false);
   const rippleTimers = useRef(new Set());
   const [isVisible, setIsVisible] = useState(false);
+  // Ref mirrors isVisible to avoid including it in the mousemove effect
+  // dependency array — which would re-register all listeners on every move.
+  const isVisibleRef = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
+  const isHoveredRef = useRef(false);
   const [isClicking, setIsClicking] = useState(false);
+  const isClickingRef = useRef(false);
   const [cursorText, setCursorText] = useState("");
+  const cursorTextRef = useRef("");
   const [isTextInput, setIsTextInput] = useState(false);
+  const isTextInputRef = useRef(false);
   const [ripples, setRipples] = useState([]);
 
   // Raw mouse coordinates
@@ -108,20 +122,27 @@ export default function CustomCursor() {
     const handleMouseMove = (e) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
-      if (!isVisible) setIsVisible(true);
+      // Only call setIsVisible once (on first movement); avoids re-registering
+      // this entire effect after every mousemove that changes isVisible state.
+      if (!isVisibleRef.current) {
+        isVisibleRef.current = true;
+        setIsVisible(true);
+      }
     };
 
-    const handleMouseDown = () => setIsClicking(true);
-    const handleMouseUp = () => setIsClicking(false);
+    const handleMouseDown = () => setIfChanged(isClickingRef, setIsClicking, true);
+    const handleMouseUp = () => setIfChanged(isClickingRef, setIsClicking, false);
 
     const handleMouseLeave = () => {
+      isVisibleRef.current = false;
       setIsVisible(false);
-      setIsHovered(false);
-      setCursorText("");
-      setIsTextInput(false);
+      setIfChanged(isHoveredRef, setIsHovered, false);
+      setIfChanged(cursorTextRef, setCursorText, "");
+      setIfChanged(isTextInputRef, setIsTextInput, false);
     };
 
     const handleMouseEnter = () => {
+      isVisibleRef.current = true;
       setIsVisible(true);
     };
 
@@ -130,7 +151,7 @@ export default function CustomCursor() {
       if (!target || !(target instanceof Element)) return;
 
       const protectedTarget = Boolean(target.closest(NATIVE_CURSOR_SCOPE));
-      setIsProtected(protectedTarget);
+      setIfChanged(isProtectedRef, setIsProtected, protectedTarget);
       if (protectedTarget) return;
 
       // Check for custom cursor text
@@ -139,29 +160,29 @@ export default function CustomCursor() {
       const controlIsNearer =
         control && textElem && control !== textElem && textElem.contains(control);
       if (textElem && !controlIsNearer) {
-        setCursorText(textElem.getAttribute("data-cursor-text") || "");
-        setIsHovered(true);
-        setIsTextInput(false);
+        setIfChanged(cursorTextRef, setCursorText, textElem.getAttribute("data-cursor-text") || "");
+        setIfChanged(isHoveredRef, setIsHovered, true);
+        setIfChanged(isTextInputRef, setIsTextInput, false);
         return;
       }
       if (control && isPublicPage()) {
-        setCursorText(autoLabel(control));
-        setIsHovered(true);
-        setIsTextInput(false);
+        setIfChanged(cursorTextRef, setCursorText, autoLabel(control));
+        setIfChanged(isHoveredRef, setIsHovered, true);
+        setIfChanged(isTextInputRef, setIsTextInput, false);
         return;
       }
-      setCursorText("");
+      setIfChanged(cursorTextRef, setCursorText, "");
 
       // Check for text inputs
       const isInput = target.closest(
         "input:not([type='button']):not([type='submit']), textarea",
       );
       if (isInput) {
-        setIsTextInput(true);
-        setIsHovered(false);
+        setIfChanged(isTextInputRef, setIsTextInput, true);
+        setIfChanged(isHoveredRef, setIsHovered, false);
         return;
       }
-      setIsTextInput(false);
+      setIfChanged(isTextInputRef, setIsTextInput, false);
 
       // Check for clickable/interactive items
       const interactive = target.closest(
@@ -169,9 +190,9 @@ export default function CustomCursor() {
       );
 
       if (interactive) {
-        setIsHovered(true);
+        setIfChanged(isHoveredRef, setIsHovered, true);
       } else {
-        setIsHovered(false);
+        setIfChanged(isHoveredRef, setIsHovered, false);
       }
     };
 
@@ -208,7 +229,9 @@ export default function CustomCursor() {
       document.removeEventListener("mouseleave", handleMouseLeave);
       document.removeEventListener("mouseenter", handleMouseEnter);
     };
-  }, [isPointer, reduced, isVisible, mouseX, mouseY]);
+  // isVisible intentionally excluded: the ref tracks it without triggering
+  // effect re-registration on every mouse-enter/leave cycle.
+  }, [isPointer, reduced, mouseX, mouseY]);
 
   if (!isPointer || reduced || isProtected) return null;
 

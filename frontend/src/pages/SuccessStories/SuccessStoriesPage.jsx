@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { Trophy, ArrowRight, Maximize2 } from 'lucide-react'
 import { FaInstagram } from 'react-icons/fa6'
-import { useAppData } from '../../context/AppDataContext.jsx'
+import { useSuccessStoriesData } from '../../context/AppDataContext.jsx'
 import { getImageUrl } from '../../utils/imageUtils.js'
 import Skeleton from '../../components/ui/Skeleton.jsx'
 import ErrorState from '../../components/ui/ErrorState.jsx'
@@ -11,7 +11,7 @@ import ImageLightboxModal from '../../components/common/ImageLightboxModal.jsx'
 import InitialReelExperience from '../../components/common/InitialReelExperience.jsx'
 
 export default function SuccessStoriesPage() {
-  const { successStories } = useAppData()
+  const successStories = useSuccessStoriesData()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const isEntry = searchParams.get('entry') === 'true'

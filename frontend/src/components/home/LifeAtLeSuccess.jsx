@@ -1,8 +1,10 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
+import useAnimationActive from "../../hooks/useAnimationActive.js";
 
 // Individual image configs matching the reference image layout and preserving subject faces
 const row1Items = [
@@ -85,16 +87,18 @@ const row2Items = [
 
 export default function LifeAtLeSuccess() {
   const reduced = useReducedMotion();
+  const sectionRef = useRef(null);
+  const animationActive = useAnimationActive(sectionRef);
   // Seamless loop: duplicate array for infinite marquee moving right
   const marqueeRow1 = [...row1Items, ...row1Items];
   const marqueeRow2 = [...row2Items, ...row2Items];
 
   return (
-    <section className="relative h-[480px] sm:h-[540px] lg:h-[580px] w-full overflow-hidden bg-[#07405C] bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#012f45]">
+    <section ref={sectionRef} className="relative h-[480px] sm:h-[540px] lg:h-[580px] w-full overflow-hidden bg-[#07405C] bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#012f45]">
       {/* Background Marquee Tracks moving towards the right with edge-to-edge vertical coverage */}
       <div className="absolute inset-0 flex flex-col justify-between gap-1.5 sm:gap-2.5 opacity-90 sm:opacity-95 hover:opacity-100 transition-opacity duration-300">
         {/* Row 1 - Marquee moving to the right */}
-        <div className="flex w-max flex-1 min-h-0 animate-marquee-right">
+        <div className="flex w-max flex-1 min-h-0 animate-marquee-right" style={{ animationPlayState: animationActive ? undefined : "paused" }}>
           {marqueeRow1.map((item, idx) => (
             <div
               key={`row1-${idx}`}
@@ -103,7 +107,7 @@ export default function LifeAtLeSuccess() {
               <img
                 src={item.src}
                 alt={item.alt}
-                className={`h-full w-full object-cover ${item.posClass} filter brightness-105 contrast-105 transition-transform duration-500 hover:scale-105`}
+                className={`h-full w-full object-cover ${item.posClass} transition-transform duration-500 hover:scale-105`}
                 loading="lazy"
               />
             </div>
@@ -111,7 +115,7 @@ export default function LifeAtLeSuccess() {
         </div>
 
         {/* Row 2 - Marquee moving to the right slightly offset */}
-        <div className="flex w-max flex-1 min-h-0 animate-marquee-right-slow">
+        <div className="flex w-max flex-1 min-h-0 animate-marquee-right-slow" style={{ animationPlayState: animationActive ? undefined : "paused" }}>
           {marqueeRow2.map((item, idx) => (
             <div
               key={`row2-${idx}`}
@@ -120,7 +124,7 @@ export default function LifeAtLeSuccess() {
               <img
                 src={item.src}
                 alt={item.alt}
-                className={`h-full w-full object-cover ${item.posClass} filter brightness-105 contrast-105 transition-transform duration-500 hover:scale-105`}
+                className={`h-full w-full object-cover ${item.posClass} transition-transform duration-500 hover:scale-105`}
                 loading="lazy"
               />
             </div>
@@ -166,27 +170,6 @@ export default function LifeAtLeSuccess() {
         </motion.div>
       </div>
 
-      {/* Inline styles for smooth marquee animation moving to the right */}
-      <style>{`
-        @keyframes marqueeScrollRight {
-          0% {
-            transform: translateX(-50%);
-          }
-          100% {
-            transform: translateX(0%);
-          }
-        }
-        .animate-marquee-right {
-          animation: marqueeScrollRight 35s linear infinite;
-        }
-        .animate-marquee-right-slow {
-          animation: marqueeScrollRight 45s linear infinite;
-        }
-        .animate-marquee-right:hover,
-        .animate-marquee-right-slow:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
     </section>
   );
 }

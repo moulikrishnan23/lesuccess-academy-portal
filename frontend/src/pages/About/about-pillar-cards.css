@@ -1,8 +1,3 @@
-.about-pillar-copy { opacity: 0; transform: translateY(5px); transition: opacity 300ms ease, transform 300ms ease; }
-.about-pillar-card:hover .about-pillar-copy,
-.about-pillar-card:focus-visible .about-pillar-copy { opacity: 1; transform: translateY(0); }
+.about-pillar-copy { opacity: 1; transform: none; transition: color 300ms ease; }
 .about-pillar-card:focus-visible { outline: 3px solid #DF1E26; outline-offset: 3px; }
-@media (hover: none), (prefers-reduced-motion: reduce) {
-  .about-pillar-copy { opacity: 1; transform: none; }
-}
 @media (prefers-reduced-motion: reduce) { .about-pillar-copy { transition: none; } }

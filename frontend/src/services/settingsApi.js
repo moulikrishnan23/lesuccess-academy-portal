@@ -42,4 +42,9 @@ export async function getAll({ signal } = {}) {
   return normalizeSettings(data?.data ?? data)
 }
 
-export default { getAll, normalizeSettings }
+export async function updateContactSettings(settings) {
+  const { data } = await apiClient.put('/api/settings/contact', settings)
+  return normalizeSettings(data?.data ?? data)
+}
+
+export default { getAll, updateContactSettings, normalizeSettings }

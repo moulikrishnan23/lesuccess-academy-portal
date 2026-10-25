@@ -4,7 +4,7 @@ import { Users, Mail, ArrowRight, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp, motionSafe, ONCE_IN_VIEW } from "../../animations/variants.js";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
-import { useAppData } from "../../context/AppDataContext.jsx";
+import { useTeamData } from "../../context/AppDataContext.jsx";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import ErrorState from "../ui/ErrorState.jsx";
 
@@ -35,6 +35,8 @@ const FeaturedTeamCard = ({ member }) => {
         <img
           src={imgSrc}
           alt={member.name}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full select-none object-cover object-top transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {
             e.currentTarget.src = "/home/team/dummy.png";
@@ -77,8 +79,7 @@ const FeaturedTeamCard = ({ member }) => {
 
 export default function OurTeam() {
   const reduced = useReducedMotion();
-  const { team } = useAppData();
-  const { status, data: teamMembers, refetch } = team;
+  const { status, data: teamMembers, refetch } = useTeamData();
 
   const featuredMembers = useMemo(() => {
     const list = Array.isArray(teamMembers) ? teamMembers : [];

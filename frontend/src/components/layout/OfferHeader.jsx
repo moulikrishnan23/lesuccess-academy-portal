@@ -5,7 +5,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useCourses from "../../hooks/useCourses.js";
-import { SOCIAL_LINKS } from "../../data/socialLinks.js";
+import useSiteSettings from "../../hooks/useSiteSettings.js";
+import { getSocialLinks } from "../../data/socialLinks.js";
 import {
   BADGE_THEMES,
   getBadgeTheme,
@@ -63,6 +64,8 @@ const OfferHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { courses } = useCourses();
+  const { settings } = useSiteSettings();
+  const socialLinks = getSocialLinks(settings);
 
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -248,7 +251,7 @@ const OfferHeader = () => {
 
         {/* Right: Official LeSuccess Social Media Links */}
         <div className="hidden lg:flex items-center gap-1 sm:gap-1.5 shrink-0 w-36 xl:w-44 justify-end">
-          {SOCIAL_LINKS.map((item) => {
+          {socialLinks.map((item) => {
             const Icon = item.icon;
             return (
               <a

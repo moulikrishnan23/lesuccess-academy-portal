@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import apiClient from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils.js";
+import useAnimationActive from "../../hooks/useAnimationActive.js";
 
 const DEFAULT_COMPANIES_ROW1 = [
   { name: "Lavendel Consulting", logo: "/assets/companies/lavendel.png" },
@@ -25,6 +26,8 @@ const CompanyCard = ({ company }) => (
     <img
       src={getImageUrl(company.logo || company.logoUrl, '/assets/companies/lavendel.png')}
       alt={company.name}
+      loading="lazy"
+      decoding="async"
       className="max-h-[50px] max-w-[155px] object-contain transition-transform duration-300 hover:scale-105"
     />
   </div>
@@ -33,7 +36,7 @@ const CompanyCard = ({ company }) => (
 /**
  * A single seamless marquee row with mask-faded edges.
  */
-const MarqueeRow = ({ companies, direction = "left", duration = 30 }) => {
+const MarqueeRow = ({ companies, direction = "left", duration = 30, isActive }) => {
   return (
     <div className="group relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
       <div
@@ -41,6 +44,7 @@ const MarqueeRow = ({ companies, direction = "left", duration = 30 }) => {
         style={{
           animationDirection: direction === "right" ? "reverse" : "normal",
           animationDuration: `${duration}s`,
+          animationPlayState: isActive ? undefined : "paused",
         }}
       >
         {companies.map((company, index) => (
@@ -55,6 +59,8 @@ const MarqueeRow = ({ companies, direction = "left", duration = 30 }) => {
 };
 
 const WhereStudentsWork = () => {
+  const sectionRef = useRef(null);
+  const animationActive = useAnimationActive(sectionRef);
   const [row1, setRow1] = useState(DEFAULT_COMPANIES_ROW1);
   const [row2, setRow2] = useState(DEFAULT_COMPANIES_ROW2);
 
@@ -80,7 +86,7 @@ const WhereStudentsWork = () => {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#024D72] via-[#07405C] to-[#022a3d] py-16 sm:py-20 transition-colors duration-200">
+    <section ref={sectionRef} className="relative overflow-hidden bg-gradient-to-b from-[#024D72] via-[#07405C] to-[#022a3d] py-16 sm:py-20 transition-colors duration-200">
       {/* Subtle brand glow decorations */}
       <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#DF1E26]/15 blur-[100px] pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-[#024D72]/40 blur-[100px] pointer-events-none" />
@@ -102,33 +108,12 @@ const WhereStudentsWork = () => {
 
       {/* Row 1 - scrolls left continuously */}
       <div className="mb-6">
-        <MarqueeRow companies={row1} direction="left" duration={28} />
+        <MarqueeRow companies={row1} direction="left" duration={28} isActive={animationActive} />
       </div>
 
       {/* Row 2 - scrolls right continuously */}
-      <MarqueeRow companies={row2} direction="right" duration={28} />
+      <MarqueeRow companies={row2} direction="right" duration={28} isActive={animationActive} />
 
-      {/* Keyframes for the seamless loop */}
-      <style>{`
-        @keyframes marquee {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
-        }
-        .animate-marquee {
-          animation-name: marquee;
-          animation-timing-function: linear;
-          animation-iteration-count: infinite;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .animate-marquee {
-            animation: none;
-          }
-        }
-      `}</style>
     </section>
   );
 };

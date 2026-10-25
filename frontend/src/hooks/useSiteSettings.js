@@ -14,6 +14,14 @@ import settingsApi from '../services/settingsApi.js'
  */
 let cachedSettingsPromise = null;
 let cachedSettingsData = null;
+const SETTINGS_UPDATED_EVENT = 'lesuccess:site-settings-updated';
+
+export function publishSiteSettings(settings) {
+  cachedSettingsData = settings ?? {};
+  cachedSettingsPromise = Promise.resolve(cachedSettingsData);
+  window.dispatchEvent(new CustomEvent(SETTINGS_UPDATED_EVENT, { detail: cachedSettingsData }));
+  try { localStorage.setItem('lesuccess-site-settings-updated', String(Date.now())); } catch { /* storage may be unavailable */ }
+}
 
 export default function useSiteSettings() {
   const [settings, setSettings] = useState(() => cachedSettingsData);
@@ -24,6 +32,20 @@ export default function useSiteSettings() {
     // it, and the resolved promise below re-delivers the same object from a
     // callback (a no-op render), so state is never set in the effect body.
     let ignore = false;
+    const applyUpdate = (event) => {
+      const next = event.detail ?? cachedSettingsData;
+      if (next) setSettings(next);
+    };
+    const onStorage = (event) => {
+      if (event.key !== 'lesuccess-site-settings-updated') return;
+      cachedSettingsPromise = null;
+      settingsApi.getAll().then((fresh) => {
+        cachedSettingsData = fresh;
+        if (!ignore) setSettings(fresh);
+      }).catch(() => {});
+    };
+    window.addEventListener(SETTINGS_UPDATED_EVENT, applyUpdate);
+    window.addEventListener('storage', onStorage);
 
     if (!cachedSettingsPromise) {
       cachedSettingsPromise = settingsApi
@@ -47,6 +69,8 @@ export default function useSiteSettings() {
 
     return () => {
       ignore = true;
+      window.removeEventListener(SETTINGS_UPDATED_EVENT, applyUpdate);
+      window.removeEventListener('storage', onStorage);
     };
   }, []);
 

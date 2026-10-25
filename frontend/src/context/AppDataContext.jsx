@@ -12,6 +12,12 @@ import apiClient from "../services/apiClient.js";
 import { listUpcoming } from "../services/upcomingProgramApi.js";
 
 const AppDataContext = createContext(null);
+const CoursesDataContext = createContext(null);
+const TeamDataContext = createContext(null);
+const ProgramsDataContext = createContext(null);
+const TestimonialsDataContext = createContext(null);
+const GalleryDataContext = createContext(null);
+const SuccessStoriesDataContext = createContext(null);
 
 /* =========================================================
    CACHE PERSISTENCE HELPERS
@@ -404,11 +410,47 @@ export function AppDataProvider({ children }) {
     fetchSuccessStories,
   ]);
 
+  const coursesData = useMemo(() => ({ ...coursesState, refetch: fetchCourses }), [coursesState, fetchCourses]);
+  const teamData = useMemo(() => ({ ...teamState, refetch: fetchTeam }), [teamState, fetchTeam]);
+  const programsData = useMemo(() => ({ ...programsState, refetch: fetchPrograms }), [programsState, fetchPrograms]);
+  const testimonialsData = useMemo(() => ({ ...testimonialsState, refetch: fetchTestimonials }), [testimonialsState, fetchTestimonials]);
+  const galleryData = useMemo(() => ({ ...galleryState, refetch: fetchGallery }), [galleryState, fetchGallery]);
+  const successStoriesData = useMemo(() => ({ ...successStoriesState, refetch: fetchSuccessStories }), [successStoriesState, fetchSuccessStories]);
+
   return (
-    <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>
+    <AppDataContext.Provider value={value}>
+      <CoursesDataContext.Provider value={coursesData}>
+        <TeamDataContext.Provider value={teamData}>
+          <ProgramsDataContext.Provider value={programsData}>
+            <TestimonialsDataContext.Provider value={testimonialsData}>
+              <GalleryDataContext.Provider value={galleryData}>
+                <SuccessStoriesDataContext.Provider value={successStoriesData}>
+                  {children}
+                </SuccessStoriesDataContext.Provider>
+              </GalleryDataContext.Provider>
+            </TestimonialsDataContext.Provider>
+          </ProgramsDataContext.Provider>
+        </TeamDataContext.Provider>
+      </CoursesDataContext.Provider>
+    </AppDataContext.Provider>
   );
 }
 
+// These hooks intentionally live beside the provider contexts they consume.
+// eslint-disable-next-line react-refresh/only-export-components
+export const useCoursesData = () => useContext(CoursesDataContext);
+// eslint-disable-next-line react-refresh/only-export-components
+export const useTeamData = () => useContext(TeamDataContext);
+// eslint-disable-next-line react-refresh/only-export-components
+export const useProgramsData = () => useContext(ProgramsDataContext);
+// eslint-disable-next-line react-refresh/only-export-components
+export const useTestimonialsData = () => useContext(TestimonialsDataContext);
+// eslint-disable-next-line react-refresh/only-export-components
+export const useGalleryData = () => useContext(GalleryDataContext);
+// eslint-disable-next-line react-refresh/only-export-components
+export const useSuccessStoriesData = () => useContext(SuccessStoriesDataContext);
+
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAppData() {
   const context = useContext(AppDataContext);
   if (!context) {

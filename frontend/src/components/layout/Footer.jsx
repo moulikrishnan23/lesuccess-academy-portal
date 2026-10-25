@@ -1,7 +1,8 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
-import { SOCIAL_LINKS } from "../../data/socialLinks.js";
+import useSiteSettings from "../../hooks/useSiteSettings.js";
+import { formatPhone, getSocialLinks } from "../../data/socialLinks.js";
 import { useInView } from "../motion/index.js";
 
 const COURSES = [
@@ -35,6 +36,10 @@ const WAVE = (
  * "Build your future." band, four link columns, the preserved watermark, and the copyright bar.
  */
 export default function Footer() {
+  const { settings } = useSiteSettings();
+  const socialLinks = getSocialLinks(settings);
+  const phone = settings.phone_primary || "+91 80120 60000";
+  const trainingEmail = settings.email_training || "training@lesuccess.in";
   const footRef = useRef(null);
   const inView = useInView(footRef, { threshold: 0.1 });
 
@@ -83,23 +88,12 @@ export default function Footer() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone size={14} className="text-cyan-400 shrink-0" aria-hidden="true" />
-                  <a href="tel:+918012060000" className="text-slate-200 hover:text-white font-medium transition-colors">+91 80120 60000</a>
+                  <a href={`tel:${phone.replace(/[^+\d]/g, "")}`} className="text-slate-200 hover:text-white font-medium transition-colors">{formatPhone(phone)}</a>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail size={14} className="text-[#F44246] shrink-0" aria-hidden="true" />
-                  <a href="mailto:training@lesuccess.in" className="text-slate-200 hover:text-white font-medium transition-colors">training@lesuccess.in</a>
+                  <a href={`mailto:${trainingEmail}`} className="text-slate-200 hover:text-white font-medium transition-colors">{trainingEmail}</a>
                 </div>
-              </div>
-              <div className="pt-1.5">
-                <a
-                  href="#employee-login"
-                  onClick={(e) => e.preventDefault()}
-                  role="button"
-                  aria-label="Employee Login"
-                  className="inline-flex items-center justify-center w-auto py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] hover:brightness-110 text-white text-xs font-bold transition shadow-lg"
-                >
-                  Employee Login →
-                </a>
               </div>
             </div>
 
@@ -138,7 +132,7 @@ export default function Footer() {
                 webinars, and student placement spotlights.
               </p>
               <div className="lh-soc">
-                {SOCIAL_LINKS.map(({ icon: Icon, href, name }, k) => (
+                {socialLinks.map(({ icon: Icon, href, name }, k) => (
                   <a
                     key={name}
                     href={href}

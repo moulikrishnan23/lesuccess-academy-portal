@@ -4,6 +4,8 @@ import in.lesuccess.portal.config.CorsConfig;
 import in.lesuccess.portal.config.SecurityConfig;
 import in.lesuccess.portal.security.JwtAuthenticationFilter;
 import in.lesuccess.portal.security.JwtTokenProvider;
+import in.lesuccess.portal.security.PrimaryAdminSecurity;
+import in.lesuccess.portal.auth.AppUserRepository;
 import in.lesuccess.portal.shared.exception.GlobalExceptionHandler;
 import in.lesuccess.portal.shared.exception.InvalidRequestException;
 import in.lesuccess.portal.sitesetting.SiteSettingController;
@@ -40,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(SiteSettingController.class)
 @Import({SecurityConfig.class, JwtAuthenticationFilter.class, JwtTokenProvider.class,
-        CorsConfig.class, GlobalExceptionHandler.class, JacksonAutoConfiguration.class})
+        CorsConfig.class, GlobalExceptionHandler.class, JacksonAutoConfiguration.class, PrimaryAdminSecurity.class})
 @ActiveProfiles("test")
 class SiteSettingControllerTest {
 
@@ -54,6 +56,9 @@ class SiteSettingControllerTest {
 
     @MockitoBean
     private in.lesuccess.portal.shared.media.CloudinaryService cloudinaryService;
+
+    @MockitoBean
+    private AppUserRepository appUserRepository;
 
     private static final String BASE_URL = "/api/settings";
 
@@ -89,7 +94,7 @@ class SiteSettingControllerTest {
 
             mockMvc.perform(get(BASE_URL))
                     .andExpect(status().isOk())
-                    .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "max-age=300, public"));
+                    .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-cache, public"));
         }
     }
 
@@ -118,9 +123,10 @@ class SiteSettingControllerTest {
 
         @Test
         @DisplayName("Partial map -> 200 with the full map back")
-        @WithMockUser(roles = "ADMIN")
+        @WithMockUser(username = "admin", roles = "ADMIN")
         void partialUpdate_shouldReturn200() throws Exception {
-            when(service.updateAll(any())).thenReturn(Map.of(
+            when(service.containsContactSettings(any())).thenReturn(true);
+            when(service.updateContactSettings(any())).thenReturn(Map.of(
                     "phone_primary", "+919000000000",
                     "email_primary", "hello@lesuccess.in"));
 
@@ -131,6 +137,40 @@ class SiteSettingControllerTest {
                     .andExpect(jsonPath("$.data.phone_primary").value("+919000000000"))
                     // Untouched keys still come back, so the caller can refresh its cache.
                     .andExpect(jsonPath("$.data.email_primary").value("hello@lesuccess.in"));
+        }
+
+        @Test
+        @DisplayName("Non-primary admin cannot update official contact settings")
+        @WithMockUser(username = "manager", roles = "ADMIN")
+        void contactUpdate_requiresPrimaryAdmin() throws Exception {
+            mockMvc.perform(put(BASE_URL + "/contact")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email_primary\":\"new@example.com\"}"))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Primary Admin can update official contact settings")
+        @WithMockUser(username = "admin", roles = "ADMIN")
+        void primaryAdminContactUpdate_shouldReturn200() throws Exception {
+            when(service.updateContactSettings(any())).thenReturn(Map.of(
+                    "email_primary", "hello@lesuccess.in"));
+            mockMvc.perform(put(BASE_URL + "/contact")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email_primary\":\"hello@lesuccess.in\"}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.email_primary").value("hello@lesuccess.in"));
+        }
+
+        @Test
+        @DisplayName("Legacy settings endpoint also protects contact settings")
+        @WithMockUser(username = "manager", roles = "ADMIN")
+        void legacyContactUpdate_requiresPrimaryAdmin() throws Exception {
+            when(service.containsContactSettings(any())).thenReturn(true);
+            mockMvc.perform(put(BASE_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email_primary\":\"new@example.com\"}"))
+                    .andExpect(status().isForbidden());
         }
 
         @Test

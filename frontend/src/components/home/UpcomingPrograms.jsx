@@ -13,7 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import { getImageUrl } from "../../utils/imageUtils.js";
-import { useAppData } from "../../context/AppDataContext.jsx";
+import { useProgramsData } from "../../context/AppDataContext.jsx";
 import ProgramRegistrationModal from "./ProgramRegistrationModal.jsx";
 import SectionHead from "./SectionHead.jsx";
 import { Reveal } from "../motion/index.js";
@@ -260,7 +260,7 @@ function FlipCountdown({ target }) {
  */
 export default function UpcomingPrograms() {
   const reduced = useReducedMotion();
-  const { programs } = useAppData();
+  const programs = useProgramsData();
   const { status, data: allPrograms, refetch } = programs;
   const loading = status === "loading";
   // Until the visitor picks a tab, open the first type that has events.

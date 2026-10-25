@@ -221,12 +221,11 @@ const HeroVideo = () => {
               <video
                 ref={videoRef}
                 className="absolute inset-0 h-full w-full object-cover object-center scale-105"
-                autoPlay
                 muted
                 playsInline
                 src={activeVideoSrc}
                 onError={handleVideoError}
-                preload="auto"
+                preload="none"
                 aria-hidden="true"
               />
             </div>
@@ -247,11 +246,11 @@ const HeroVideo = () => {
           {/* Ambient decorative pulsing glow halos (inspired by Xplore IT Corp haloColor) */}
           <div
             aria-hidden="true"
-            className="absolute -top-32 -left-32 z-[3] h-96 w-96 rounded-full bg-cyan-500/25 blur-3xl animate-halo-pulse"
+            className="absolute -top-32 -left-32 z-[3] h-96 w-96 rounded-full bg-cyan-500/25 blur-2xl animate-halo-pulse"
           />
           <div
             aria-hidden="true"
-            className="absolute top-1/2 -right-32 z-[3] h-96 w-96 rounded-full bg-[#DF1E26]/25 blur-3xl animate-halo-pulse"
+            className="absolute top-1/2 -right-32 z-[3] h-96 w-96 rounded-full bg-[#DF1E26]/25 blur-2xl animate-halo-pulse"
             style={{ animationDelay: "2s" }}
           />
 

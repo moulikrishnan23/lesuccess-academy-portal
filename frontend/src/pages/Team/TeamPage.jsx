@@ -12,7 +12,7 @@ import {
   Star,
 } from "lucide-react";
 import { FaLinkedinIn } from "react-icons/fa";
-import { useAppData } from "../../context/AppDataContext.jsx";
+import { useTeamData } from "../../context/AppDataContext.jsx";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import ErrorState, { EmptyState } from "../../components/ui/ErrorState.jsx";
 import SpotlightCard from "../../components/ui/SpotlightCard.jsx";
@@ -199,8 +199,7 @@ const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
 };
 
 export default function TeamPage() {
-  const { team } = useAppData();
-  const { status, data: teamMembers, refetch } = team;
+  const { status, data: teamMembers, refetch } = useTeamData();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedMember, setSelectedMember] = useState(null);
   const [modalEmailCopied, setModalEmailCopied] = useState(false);
