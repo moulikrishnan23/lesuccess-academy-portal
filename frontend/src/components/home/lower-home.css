@@ -1483,7 +1483,7 @@
   .lh-foot-contact {
     display: grid;
     gap: 0.625rem;
-    margin: 0 0 1.5rem;
+    margin: 0;
     padding: 0;
     list-style: none;
     font-size: 0.8125rem;
@@ -1587,12 +1587,6 @@
     transform: translateY(-2px);
     box-shadow: var(--shadow-glow-brand);
   }
-  .lh-foot-cta svg {
-    transition: transform 0.35s var(--ease-brand);
-  }
-  .lh-foot-cta:hover svg.lh-arr {
-    transform: translateX(4px);
-  }
   .lh-foot-cta--block {
     display: flex;
     width: 100%;
@@ -1632,7 +1626,7 @@
      colour can't transition into a gradient, but opacity can). */
   .lh-wm {
     position: relative;
-    margin: 3rem 0 -0.3em;
+    margin: 1.5rem 0 1.75rem;
     padding-inline: 1rem;
     font-size: 5.6vw;
     font-weight: 800;

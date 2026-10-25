@@ -67,15 +67,6 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
-            <a
-              href="#employee-login"
-              onClick={(e) => e.preventDefault()}
-              role="button"
-              className="lh-foot-cta animate-shimmer-sweep"
-            >
-              Employee Login
-              <ArrowRight size={15} className="lh-arr" aria-hidden="true" />
-            </a>
           </div>
 
           <div>
