@@ -52,7 +52,7 @@ function TechCard({ group, reduced, className = "" }) {
       // with rest/hover on one element makes them fight over the same `y`.
       variants={fadeUp}
       whileHover={reduced ? undefined : cardHover.hover}
-      className={`rounded-lg border border-line bg-white px-4 py-3 ${className}`}
+      className={`motion-spot relative rounded-lg border border-line bg-white px-4 py-3 ${className}`}
     >
       <h3 className="text-center text-[0.8125rem] font-medium text-navy-800">
         {group.name}
@@ -91,7 +91,7 @@ function TechCard({ group, reduced, className = "" }) {
 
 function TechCardSkeleton() {
   return (
-    <li className="rounded-lg border border-line bg-white px-4 py-3">
+    <li className="motion-spot relative rounded-lg border border-line bg-white px-4 py-3">
       <Skeleton className="mx-auto h-3 w-20" />
       <div className="mt-3 flex justify-center gap-5">
         {Array.from({ length: 4 }, (_, index) => (

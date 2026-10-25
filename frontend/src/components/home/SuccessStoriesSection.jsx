@@ -53,7 +53,7 @@ export default function SuccessStoriesSection() {
             <button
               key={image.id ?? i}
               type="button"
-              className="lh-card lh-story"
+              className="lh-card lh-story motion-spot"
               data-cursor-text="View"
               onClick={() => setLightboxIndex(i)}
               aria-label={`View story: ${image.caption || `Student story ${i + 1}`}`}

@@ -27,7 +27,7 @@ export default function SiteNumbers() {
         />
         <div className="lh-stats">
           {STATS.map((stat, i) => (
-            <Reveal key={stat.label} index={i} className="lh-stat" data-cursor-text={stat.cursor}>
+            <Reveal key={stat.label} index={i} className="lh-stat motion-spot" data-cursor-text={stat.cursor}>
               <Odometer value={stat.value} suffix={stat.suffix} className="lh-stat-n" />
               <p>{stat.label}</p>
             </Reveal>

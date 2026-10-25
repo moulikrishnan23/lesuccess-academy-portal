@@ -20,7 +20,7 @@ import { getCourseLogo } from "../../utils/imageUtils.js";
 import { TechGrid } from "../ui/BackgroundMotion.jsx";
 import SectionHead from "./SectionHead.jsx";
 import ErrorState from "../ui/ErrorState.jsx";
-import { useInView, useSpotlight } from "../motion/index.js";
+import { useInView } from "../motion/index.js";
 import {
   isEligibleCourse,
   sortCoursesByOffer,
@@ -193,7 +193,6 @@ function CourseCarousel({ courses }) {
   const trackRef = useRef(null);
   const reduced = useReducedMotion();
   const inView = useInView(wrapRef, { threshold: 0.2 });
-  useSpotlight(wrapRef);
 
   const [page, setPage] = useState(0);
   const [pageCount, setPageCount] = useState(1);

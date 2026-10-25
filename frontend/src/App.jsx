@@ -23,6 +23,7 @@ import { AnimatePresence } from "framer-motion";
 import ScrollProgressBar from "./components/ui/ScrollProgressBar.jsx";
 import FloatingActionHub from "./components/ui/FloatingActionHub.jsx";
 import CustomCursor from "./components/ui/CustomCursor.jsx";
+import useSpotlight from "./components/motion/useSpotlight.js";
 
 import Home from "./pages/Home/HomePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
@@ -123,6 +124,10 @@ const AppContent = () => {
     location.pathname.startsWith("/admin") ||
     location.pathname.startsWith("/trainer");
   const isLoginPage = location.pathname === "/login";
+
+  // One brand-red glow follower for every .motion-spot card on the site.
+  const documentRef = useRef(typeof document === "undefined" ? null : document.documentElement);
+  useSpotlight(documentRef);
 
   // Enquiry popup modal visibility (starts closed on open, interactive launcher available)
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);

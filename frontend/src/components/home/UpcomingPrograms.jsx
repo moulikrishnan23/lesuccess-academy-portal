@@ -435,7 +435,7 @@ export default function UpcomingPrograms() {
             animate={{ opacity: 1, x: 0 }}
             exit={reduced ? { opacity: 1 } : { opacity: 0, x: direction * -30 }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="lh-feat"
+            className="lh-feat motion-spot relative"
           >
             <div className="lh-feat-media">
               {eventType !== "INTERNSHIP" && currentProgram?.imageUrl ? (

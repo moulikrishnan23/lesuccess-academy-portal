@@ -11,7 +11,7 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { TechGrid } from "../ui/BackgroundMotion.jsx";
 import SectionHead from "./SectionHead.jsx";
-import { Reveal, ConicBorder, Odometer, useSpotlight } from "../motion/index.js";
+import { Reveal, ConicBorder, Odometer } from "../motion/index.js";
 import { SITE_STATS } from "../../data/siteStats.js";
 
 /*
@@ -172,7 +172,6 @@ function FeatureCard({ feature, index }) {
 
 const WhyChooseUs = () => {
   const sectionRef = useRef(null);
-  useSpotlight(sectionRef);
 
   return (
     <section
