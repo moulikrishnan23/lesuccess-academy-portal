@@ -14,7 +14,8 @@ import useReducedMotion from "../../hooks/useReducedMotion.js";
  * - Precision tracking center dot
  * - Physics-spring outer magnetic aura ring
  * - Interactive scale expansion on links, cards, and buttons
- * - Morphing micro-label support via `data-cursor-text="..."`
+ * - Morphing micro-label support via `data-cursor-text="..."`; on public pages
+ *   any other link or button gets a label derived from its own text
  * - Tactile click shrink & expanding ripple wave
  * - Purely non-interfering (pointer-events: none, z-index: 999999)
  * - Auto-disabled on touch-only devices; under prefers-reduced-motion it stays
@@ -23,6 +24,33 @@ import useReducedMotion from "../../hooks/useReducedMotion.js";
 // `any-pointer` rather than `pointer`: touchscreen laptops often report the
 // touchscreen as the primary pointer even while a mouse/trackpad is in use.
 const FINE_POINTER = "(any-pointer: fine)";
+
+// Real controls that earn an automatic label. Broader hover targets (cards
+// with .card-lift-3d / .cursor-pointer) only grow the ring.
+const CONTROL =
+  'a[href], button, [role="button"], [role="tab"], [role="option"], summary, input[type="button"], input[type="submit"]';
+const LABEL_MAX = 8; // longer words overflow the bubble
+const WEAK_WORDS = new Set(["a", "an", "the", "to", "for", "of", "and", "in", "on", "our", "your", "my", "get", "see", "go", "&"]);
+
+/** The admin and trainer dashboards and the login page keep the plain ring. */
+const isPublicPage = () => !/^\/(admin|trainer|login)(\/|$)/.test(window.location.pathname);
+
+/**
+ * A one-word label for a control without data-cursor-text: the first strong
+ * word of its aria-label or text ("Explore Courses" -> Explore, "Get notified"
+ * -> notified), else Open for links and Click for anything else.
+ */
+function autoLabel(el) {
+  if (el.getAttribute("aria-haspopup") === "listbox") return "Choose";
+  if (el.getAttribute("role") === "option") return "Pick";
+  const text = el.getAttribute("aria-label") || el.textContent || "";
+  const word = text
+    .split(/\s+/)
+    .map((w) => w.replace(/[^\p{L}\p{N}+#]/gu, ""))
+    .find((w) => /\p{L}/u.test(w) && !WEAK_WORDS.has(w.toLowerCase()) && w.length <= LABEL_MAX);
+  if (word) return word;
+  return el.tagName === "A" ? "Open" : "Click";
+}
 
 export default function CustomCursor() {
   const reduced = useReducedMotion();
@@ -104,10 +132,20 @@ export default function CustomCursor() {
       const target = e.target;
       if (!target || !(target instanceof Element)) return;
 
-      // Check for custom cursor text
+      // A label set by hand wins, unless an unlabelled control sits inside the
+      // labelled element (a button in a labelled card): the nearer one wins.
       const textElem = target.closest("[data-cursor-text]");
-      if (textElem) {
+      const control = target.closest(CONTROL);
+      const controlIsNearer =
+        control && textElem && control !== textElem && textElem.contains(control);
+      if (textElem && !controlIsNearer) {
         setCursorText(textElem.getAttribute("data-cursor-text") || "");
+        setIsHovered(true);
+        setIsTextInput(false);
+        return;
+      }
+      if (control && isPublicPage()) {
+        setCursorText(autoLabel(control));
         setIsHovered(true);
         setIsTextInput(false);
         return;
