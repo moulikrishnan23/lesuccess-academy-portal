@@ -1,11 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { Mail, Phone, MapPin, Send, ChevronDown } from "lucide-react";
+import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 import useContactSubmit from "../../hooks/useContactSubmit.js";
 import { validateContactForm } from "../../utils/validation.js";
 import SpotlightCard from "../../components/ui/SpotlightCard.jsx";
 import Magnetic from "../../components/ui/Magnetic.jsx";
 import BorderBeam from "../../components/ui/BorderBeam.jsx";
+import Select from "../../components/ui/Select.jsx";
+
+const WHO_YOU_ARE_OPTIONS = [
+  { value: "College Student", label: "College Student / Fresher" },
+  { value: "Working Professional", label: "Working Professional" },
+  { value: "Career Switcher", label: "Career Switcher" },
+  { value: "Corporate Representative", label: "Corporate / HR" },
+  { value: "Other", label: "Other" },
+];
+
+const LOOKING_FOR_OPTIONS = [
+  { value: "Full Stack Java Development", label: "Full Stack Java Development" },
+  { value: "Python Full Stack Development", label: "Python Full Stack Development" },
+  { value: "Data Analytics & AI", label: "Data Analytics & AI" },
+  { value: "AWS Cloud & DevOps", label: "AWS Cloud & DevOps" },
+  { value: "Internship Program", label: "Internship Program" },
+  { value: "Corporate Training", label: "Corporate Training" },
+  { value: "Other", label: "Other Query" },
+];
 
 const initialForm = {
   name: "",
@@ -188,61 +207,25 @@ export default function Contact() {
                       Who you are?
                     </label>
                     <div className="relative">
-                      <select
+                      <Select
                         id="whoYouAre"
                         name="whoYouAre"
                         value={form.whoYouAre}
                         onChange={handleChange}
+                        options={WHO_YOU_ARE_OPTIONS}
+                        placeholder="Who you are?"
                         disabled={isSubmitting}
                         aria-invalid={errors.whoYouAre ? "true" : undefined}
                         aria-describedby={
                           errors.whoYouAre ? "whoYouAre-error" : undefined
                         }
-                        className={`w-full h-12 appearance-none rounded-full px-6 pr-12 text-sm focus:outline-none focus:ring-2 disabled:opacity-60 transition-all cursor-pointer ${
-                          !form.whoYouAre ? "text-slate-400" : "text-slate-700"
-                        } ${
+                        placeholderClassName="!text-slate-400"
+                        className={`w-full h-12 rounded-full px-6 text-sm text-slate-700 focus:outline-none focus:ring-2 disabled:opacity-60 transition-all ${
                           errors.whoYouAre
                             ? "bg-red-50 ring-1 ring-red-300 focus:ring-red-500"
                             : "bg-[#F5F8FC] focus:bg-white focus:ring-[#07405C] border border-slate-200"
                         }`}
-                      >
-                        <option value="" className="text-slate-400">
-                          Who you are?
-                        </option>
-                        <option
-                          value="College Student"
-                          className="text-slate-700 bg-white"
-                        >
-                          College Student / Fresher
-                        </option>
-                        <option
-                          value="Working Professional"
-                          className="text-slate-700 bg-white"
-                        >
-                          Working Professional
-                        </option>
-                        <option
-                          value="Career Switcher"
-                          className="text-slate-700 bg-white"
-                        >
-                          Career Switcher
-                        </option>
-                        <option
-                          value="Corporate Representative"
-                          className="text-slate-700 bg-white"
-                        >
-                          Corporate / HR
-                        </option>
-                        <option
-                          value="Other"
-                          className="text-slate-700 bg-white"
-                        >
-                          Other
-                        </option>
-                      </select>
-                      <ChevronDown
-                        size={18}
-                        className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 text-slate-400"
+                        chevronClassName="text-slate-400"
                       />
                     </div>
                     {errors.whoYouAre && (
@@ -261,73 +244,25 @@ export default function Contact() {
                       You looking for?
                     </label>
                     <div className="relative">
-                      <select
+                      <Select
                         id="lookingFor"
                         name="lookingFor"
                         value={form.lookingFor}
                         onChange={handleChange}
+                        options={LOOKING_FOR_OPTIONS}
+                        placeholder="You looking for?"
                         disabled={isSubmitting}
                         aria-invalid={errors.lookingFor ? "true" : undefined}
                         aria-describedby={
                           errors.lookingFor ? "lookingFor-error" : undefined
                         }
-                        className={`w-full h-12 appearance-none rounded-full px-6 pr-12 text-sm focus:outline-none focus:ring-2 disabled:opacity-60 transition-all cursor-pointer ${
-                          !form.lookingFor ? "text-slate-400" : "text-slate-700"
-                        } ${
+                        placeholderClassName="!text-slate-400"
+                        className={`w-full h-12 rounded-full px-6 text-sm text-slate-700 focus:outline-none focus:ring-2 disabled:opacity-60 transition-all ${
                           errors.lookingFor
                             ? "bg-red-50 ring-1 ring-red-300 focus:ring-red-500"
                             : "bg-[#F5F8FC] focus:bg-white focus:ring-[#07405C] border border-slate-200"
                         }`}
-                      >
-                        <option value="" className="text-slate-400">
-                          You looking for?
-                        </option>
-                        <option
-                          value="Full Stack Java Development"
-                          className="text-slate-700 bg-white"
-                        >
-                          Full Stack Java Development
-                        </option>
-                        <option
-                          value="Python Full Stack Development"
-                          className="text-slate-700 bg-white"
-                        >
-                          Python Full Stack Development
-                        </option>
-                        <option
-                          value="Data Analytics & AI"
-                          className="text-slate-700 bg-white"
-                        >
-                          Data Analytics & AI
-                        </option>
-                        <option
-                          value="AWS Cloud & DevOps"
-                          className="text-slate-700 bg-white"
-                        >
-                          AWS Cloud & DevOps
-                        </option>
-                        <option
-                          value="Internship Program"
-                          className="text-slate-700 bg-white"
-                        >
-                          Internship Program
-                        </option>
-                        <option
-                          value="Corporate Training"
-                          className="text-slate-700 bg-white"
-                        >
-                          Corporate Training
-                        </option>
-                        <option
-                          value="Other"
-                          className="text-slate-700 bg-white"
-                        >
-                          Other Query
-                        </option>
-                      </select>
-                      <ChevronDown
-                        size={18}
-                        className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 text-slate-400"
+                        chevronClassName="text-slate-400"
                       />
                     </div>
                     {errors.lookingFor && (

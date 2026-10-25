@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown, Send, X } from 'lucide-react'
+import { Send, X } from 'lucide-react'
 import courseEnquiryApi from '../../services/courseEnquiryApi.js'
 import useCourses from '../../hooks/useCourses.js'
 import { normalizeMobile } from '../../utils/validation.js'
+import Select from '../ui/Select.jsx'
+import { getCourseLogo } from '../../utils/imageUtils.js'
 
 const CURRENTLY_YOU_ARE_OPTIONS = [
   'College Student',
@@ -348,23 +350,23 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                       Select Your Course
                     </label>
                     <div className="relative">
-                      <select
+                      <Select
                         id="enquiry-course"
                         value={form.courseId}
                         onChange={(e) => handleChange('courseId', e.target.value)}
+                        options={availableCourses.map((c) => ({
+                          value: c.id || '',
+                          label: c.title || c.name,
+                          icon: getCourseLogo(c),
+                          hint: c.category,
+                        }))}
+                        placeholder="Select course"
+                        searchLabel="courses"
+                        minPanelWidth={300}
                         disabled={isSubmitting}
-                        className="h-9.5 w-full appearance-none rounded-lg border border-slate-300 bg-[#f6f7f9] px-3 pr-8 text-xs sm:text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#07405C]"
-                      >
-                        <option value="">Select course</option>
-                        {availableCourses.map((c) => (
-                          <option key={c.id || c.slug} value={c.id || ''}>
-                            {c.title || c.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={16}
-                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
+                        className="h-9.5 w-full rounded-lg border border-slate-300 bg-[#f6f7f9] px-3 text-xs sm:text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#07405C]"
+                        placeholderClassName="!text-slate-400"
+                        chevronClassName="text-slate-500"
                       />
                     </div>
                   </div>
@@ -378,23 +380,16 @@ export default function CourseEnquiryModal({ isOpen, onClose }) {
                       Currently you are a
                     </label>
                     <div className="relative">
-                      <select
+                      <Select
                         id="enquiry-role"
                         value={form.currentlyYouAre}
                         onChange={(e) => handleChange('currentlyYouAre', e.target.value)}
+                        options={CURRENTLY_YOU_ARE_OPTIONS.map((role) => ({ value: role, label: role }))}
+                        placeholder="Select role"
                         disabled={isSubmitting}
-                        className="h-9.5 w-full appearance-none rounded-lg border border-slate-300 bg-[#f6f7f9] px-3 pr-8 text-xs sm:text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#07405C]"
-                      >
-                        <option value="">Select role</option>
-                        {CURRENTLY_YOU_ARE_OPTIONS.map((role) => (
-                          <option key={role} value={role}>
-                            {role}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={16}
-                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
+                        className="h-9.5 w-full rounded-lg border border-slate-300 bg-[#f6f7f9] px-3 text-xs sm:text-sm text-slate-800 transition focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#07405C]"
+                        placeholderClassName="!text-slate-400"
+                        chevronClassName="text-slate-500"
                       />
                     </div>
                   </div>

@@ -78,6 +78,11 @@ export function optimizeCloudinaryUrl(url, width) {
 /** Shown for a course whose logo has not been uploaded yet. */
 export const COURSE_LOGO_PLACEHOLDER = '/tech/api.svg'
 
+/** onError for a course logo <img>: swap a logo that fails to load for the placeholder. */
+export const onCourseLogoError = (e) => {
+  if (!e.currentTarget.src.endsWith(COURSE_LOGO_PLACEHOLDER)) e.currentTarget.src = COURSE_LOGO_PLACEHOLDER
+}
+
 /**
  * The logo URL for a course: its own uploaded icon, or a neutral placeholder.
  *

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Plus, Edit2, Trash2, Users, Upload, X, Star, ChevronUp, ChevronDown } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
+import Select from '../../../components/ui/Select.jsx'
 
 const formatCategoryName = (raw) => {
   if (!raw) return ''
@@ -848,29 +849,13 @@ export default function AdminTeamTab({ showAlert }) {
                       </button>
                     </div>
 
-                    <select
+                    <Select
                       value={form.department || 'None'}
                       onChange={(e) => setForm({ ...form, department: e.target.value })}
                       className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#07405C] focus:outline-none focus:ring-1 focus:ring-[#07405C] bg-white text-slate-700"
-                    >
-                      <option value="None">None</option>
-                      <option value="Management Visionaries">Management Visionaries</option>
-                      <option value="Tech Visionaries">Tech Visionaries</option>
-                      {categories
-                        .filter((c) => c.name !== 'Management Visionaries' && c.name !== 'Tech Visionaries')
-                        .map((c) => (
-                          <option key={c.id || c.name} value={c.name}>
-                            {c.name}
-                          </option>
-                        ))}
-                      {form.department &&
-                        form.department !== 'None' &&
-                        form.department !== 'Management Visionaries' &&
-                        form.department !== 'Tech Visionaries' &&
-                        !categories.some((c) => c.name === form.department) && (
-                          <option value={form.department}>{form.department}</option>
-                        )}
-                    </select>
+                      options={[...new Set(['None', 'Management Visionaries', 'Tech Visionaries', ...categories.map((c) => c.name), ...(form.department ? [form.department] : [])])].map((n) => ({ value: n, label: n }))}
+                      searchLabel="departments"
+                    />
                   </div>
 
                   {/* Featured Status Option */}

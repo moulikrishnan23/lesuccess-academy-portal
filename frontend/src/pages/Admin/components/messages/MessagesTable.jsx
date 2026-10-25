@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Inbox, RefreshCw } from 'lucide-react'
 import { listMessages, updateMessageStatus } from '../../../../services/messagesApi.js'
 import { STATUS_STYLES, humanizeEnum } from './messageSources.js'
 import useGrabScroll from '../../../../hooks/useGrabScroll.js'
+import Select from '../../../../components/ui/Select.jsx'
 
 const PAGE_SIZE = 20
 const SEARCH_DEBOUNCE_MS = 400
@@ -191,18 +192,12 @@ export default function MessagesTable({ source, courseNames, showAlert }) {
             return (
               <label key={filter.key} className="flex flex-col gap-1">
                 <span className="text-xs font-semibold text-slate-600">{filter.label}</span>
-                <select
+                <Select
                   value={filters[filter.key] ?? ''}
                   onChange={(event) => setFilter(filter.key, event.target.value)}
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                >
-                  <option value="">All</option>
-                  {options.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  className="bg-white rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  options={[{ value: '', label: 'All' }, ...options]}
+                />
               </label>
             )
           })}
@@ -287,7 +282,7 @@ export default function MessagesTable({ source, courseNames, showAlert }) {
 
                   {hasStatus ? (
                     <td className="px-4 py-3 align-top">
-                      <select
+                      <Select
                         value={row[source.statusField] ?? ''}
                         disabled={savingId === row.id}
                         onChange={(event) => handleStatusChange(row, event.target.value)}
@@ -301,13 +296,8 @@ export default function MessagesTable({ source, courseNames, showAlert }) {
                           STATUS_STYLES[row[source.statusField]] ??
                           'bg-slate-100 text-slate-600 border-slate-200'
                         }`}
-                      >
-                        {source.statusOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {humanizeEnum(option)}
-                          </option>
-                        ))}
-                      </select>
+                        options={source.statusOptions.map((option) => ({ value: option, label: humanizeEnum(option) }))}
+                      />
                     </td>
                   ) : null}
                 </tr>

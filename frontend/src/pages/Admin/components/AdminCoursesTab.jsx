@@ -24,6 +24,11 @@ import { getImageUrl } from '../../../utils/imageUtils.js'
 // Shared with the public offer banner: the banner rotates through exactly the
 // courses this tab lists under Group 1, so both read the test from one place.
 import { isBatchCourse } from '../../../utils/courseOfferUtils.js'
+import Select from '../../../components/ui/Select.jsx'
+
+const TOOL_GROUP_OPTIONS = ['Tools', 'Front End', 'Back End', 'Database', 'Tools & Deploy', 'Soft Skill', 'Cloud'].map(
+  (g) => ({ value: g, label: g }),
+)
 
 const PRESET_ICONS = [
   { name: 'Java', url: '/tech/java.svg' },
@@ -1065,15 +1070,12 @@ export default function AdminCoursesTab({ showAlert }) {
                       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
                         Learning Mode
                       </label>
-                      <select
+                      <Select
                         value={form.mode}
                         onChange={(e) => setForm({ ...form, mode: e.target.value })}
-                        className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                      >
-                        <option value="BOTH">Offline / Online (Both)</option>
-                        <option value="OFFLINE">Offline Only</option>
-                        <option value="ONLINE">Online Only</option>
-                      </select>
+                        className="bg-white w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
+                        options={[{ value: 'BOTH', label: 'Offline / Online (Both)' }, { value: 'OFFLINE', label: 'Offline Only' }, { value: 'ONLINE', label: 'Online Only' }]}
+                      />
                     </div>
 
                     <div>
@@ -1103,7 +1105,7 @@ export default function AdminCoursesTab({ showAlert }) {
                         <label className="block text-xs font-medium text-slate-700 mb-1">
                           Badge Style / Category
                         </label>
-                        <select
+                        <Select
                           value={form.badge}
                           onChange={(e) => {
                             const val = e.target.value
@@ -1121,18 +1123,9 @@ export default function AdminCoursesTab({ showAlert }) {
                             setForm({ ...form, badge: val, badgeText: suggestedText })
                           }}
                           className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                        >
-                          <option value="">No Badge</option>
-                          <option value="MOST_ENROLLED">Most Enrolled (Blue)</option>
-                          <option value="OFFER">30% Offer / Offer (Pink/Red)</option>
-                          <option value="TRENDING">Trending (Purple)</option>
-                          <option value="HIGH_DEMAND">High Demand (Green)</option>
-                          <option value="BEST_SELLER">Best Seller (Yellow/Amber)</option>
-                          <option value="NEW">New (Cyan)</option>
-                          <option value="LIMITED_SEATS">Limited Seats (Rose)</option>
-                          <option value="POPULAR">Popular (Orange)</option>
-                          <option value="CUSTOM">Custom Badge...</option>
-                        </select>
+                          options={[{ value: '', label: 'No Badge' }, { value: 'MOST_ENROLLED', label: 'Most Enrolled (Blue)' }, { value: 'OFFER', label: '30% Offer / Offer (Pink/Red)' }, { value: 'TRENDING', label: 'Trending (Purple)' }, { value: 'HIGH_DEMAND', label: 'High Demand (Green)' }, { value: 'BEST_SELLER', label: 'Best Seller (Yellow/Amber)' }, { value: 'NEW', label: 'New (Cyan)' }, { value: 'LIMITED_SEATS', label: 'Limited Seats (Rose)' }, { value: 'POPULAR', label: 'Popular (Orange)' }, { value: 'CUSTOM', label: 'Custom Badge...' }]}
+                          searchLabel="badges"
+                        />
                       </div>
 
                       <div>
@@ -1221,19 +1214,13 @@ export default function AdminCoursesTab({ showAlert }) {
                         <label className="block text-[11px] font-medium text-slate-600 mb-1">
                           Group / Category
                         </label>
-                        <select
+                        <Select
                           value={newTool.groupName}
                           onChange={(e) => setNewTool({ ...newTool, groupName: e.target.value })}
                           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs focus:border-[#084b66] focus:outline-none"
-                        >
-                          <option value="Tools">Tools</option>
-                          <option value="Front End">Front End</option>
-                          <option value="Back End">Back End</option>
-                          <option value="Database">Database</option>
-                          <option value="Tools & Deploy">Tools & Deploy</option>
-                          <option value="Soft Skill">Soft Skill</option>
-                          <option value="Cloud">Cloud</option>
-                        </select>
+                          options={TOOL_GROUP_OPTIONS}
+                          searchLabel="groups"
+                        />
                       </div>
 
                       <div>
@@ -1374,19 +1361,13 @@ export default function AdminCoursesTab({ showAlert }) {
 
                             {/* Group Tag Input */}
                             <div className="w-28 shrink-0">
-                              <select
+                              <Select
                                 value={tool.groupName || 'Tools'}
                                 onChange={(e) => handleUpdateTool(idx, 'groupName', e.target.value)}
                                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600 focus:outline-none"
-                              >
-                                <option value="Tools">Tools</option>
-                                <option value="Front End">Front End</option>
-                                <option value="Back End">Back End</option>
-                                <option value="Database">Database</option>
-                                <option value="Tools & Deploy">Tools & Deploy</option>
-                                <option value="Soft Skill">Soft Skill</option>
-                                <option value="Cloud">Cloud</option>
-                              </select>
+                                options={TOOL_GROUP_OPTIONS}
+                                searchLabel="groups"
+                              />
                             </div>
 
                             {/* Icon URL Input */}

@@ -45,6 +45,7 @@ import AdminReviewsTab from './components/AdminReviewsTab.jsx'
 import AdminMessagesTab from './components/AdminMessagesTab.jsx'
 import AdminSuccessStoriesTab from './components/AdminSuccessStoriesTab.jsx'
 import AdminChatbotTab from './components/AdminChatbotTab.jsx'
+import Select from '../../components/ui/Select.jsx'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -986,20 +987,13 @@ export default function AdminDashboard() {
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Parent Category (for Subfolders)
                 </label>
-                <select
+                <Select
                   value={catForm.parentId}
                   onChange={(e) => setCatForm({ ...catForm, parentId: e.target.value })}
-                  className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm focus:border-[#084b66] focus:outline-none focus:ring-2 focus:ring-[#084b66]/20"
-                >
-                  <option value="">None (Top-Level Folder)</option>
-                  {categories
-                    .filter((c) => !c.parentId && (!editingCategory || c.id !== editingCategory.id))
-                    .map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                </select>
+                  className="bg-white h-10 w-full rounded-lg border border-slate-300 px-3 text-sm focus:border-[#084b66] focus:outline-none focus:ring-2 focus:ring-[#084b66]/20"
+                  options={[{ value: '', label: 'None (Top-Level Folder)' }, ...categories.filter((c) => !c.parentId && (!editingCategory || c.id !== editingCategory.id)).map((c) => ({ value: c.id, label: c.name }))]}
+                  searchLabel="folders"
+                />
               </div>
 
               <div>

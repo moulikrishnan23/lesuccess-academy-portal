@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowRight,
-  ChevronDown,
   GraduationCap,
   Phone,
   User,
@@ -16,6 +15,7 @@ import useCourses from "../../hooks/useCourses.js";
 import Magnetic from "../ui/Magnetic.jsx";
 import { Reveal, ConicBorder, burstConfetti } from "../motion/index.js";
 import FloatField from "./FloatField.jsx";
+import Select from "../ui/Select.jsx";
 import useClipReveal from "./useClipReveal.js";
 import { getCourseLogo } from "../../utils/imageUtils.js";
 
@@ -295,29 +295,21 @@ const DemoClass = ({
             className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/70 z-10 pointer-events-none"
           />
 
-          <select
+          <Select
             value={selectedCourseName}
             onChange={(e) => setSelectedCourseName(e.target.value)}
-            className="w-full appearance-none rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-8 text-white text-xs sm:text-sm outline-none focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all cursor-pointer"
-          >
-            <option value="" className="text-gray-800 bg-white">
-              Select Course *
-            </option>
-
-            {dropdownCourses.map((course, i) => (
-              <option
-                key={course.id ?? `fallback-${i}`}
-                value={course.title}
-                className="text-gray-800 bg-white"
-              >
-                {course.title}
-              </option>
-            ))}
-          </select>
-
-          <ChevronDown
-            size={16}
-            className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/70 z-10"
+            options={dropdownCourses.map((course) => ({
+              value: course.title,
+              label: course.title,
+              icon: getCourseLogo(course),
+              hint: course.category,
+            }))}
+            placeholder="Select Course *"
+            searchLabel="courses"
+            minPanelWidth={300}
+            className="w-full rounded-xl border border-white/25 bg-white/10 py-2.5 pl-10 pr-3.5 text-white text-xs sm:text-sm outline-none focus:bg-white/20 focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all"
+            placeholderClassName="!text-white/80"
+            chevronClassName="text-white/70"
           />
         </div>
       </div>

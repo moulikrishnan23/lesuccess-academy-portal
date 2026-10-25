@@ -23,6 +23,7 @@ import apiClient from '../../../services/apiClient.js'
 import { uploadProgramImage } from '../../../services/upcomingProgramApi.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
 import ImageCropperModal from './ImageCropperModal.jsx'
+import Select from '../../../components/ui/Select.jsx'
 
 export default function AdminProgramsTab({ showAlert }) {
   const [programs, setPrograms] = useState([])
@@ -580,15 +581,12 @@ export default function AdminProgramsTab({ showAlert }) {
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                       Program Type *
                     </label>
-                    <select
+                    <Select
                       value={form.type}
                       onChange={(e) => setForm({ ...form, type: e.target.value })}
                       className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#07405C] focus:outline-none bg-white"
-                    >
-                      <option value="WEBINAR">Webinar</option>
-                      <option value="WORKSHOP">Workshop</option>
-                      <option value="INTERNSHIP">Internship</option>
-                    </select>
+                      options={[{ value: 'WEBINAR', label: 'Webinar' }, { value: 'WORKSHOP', label: 'Workshop' }, { value: 'INTERNSHIP', label: 'Internship' }]}
+                    />
                   </div>
 
                   <div>

@@ -13,6 +13,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
+import Select from '../../../components/ui/Select.jsx'
 
 export default function AdminReviewsTab({ showAlert }) {
   const [reviews, setReviews] = useState([])
@@ -386,29 +387,21 @@ export default function AdminReviewsTab({ showAlert }) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Rating (1 to 5)</label>
-                  <select
+                  <Select
                     value={form.rating}
                     onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })}
                     className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-slate-800 focus:border-[#084b66] focus:outline-none"
-                  >
-                    <option value={5}>5 Stars</option>
-                    <option value={4}>4 Stars</option>
-                    <option value={3}>3 Stars</option>
-                    <option value={2}>2 Stars</option>
-                    <option value={1}>1 Star</option>
-                  </select>
+                    options={[5, 4, 3, 2, 1].map((n) => ({ value: n, label: `${n} Star${n === 1 ? '' : 's'}` }))}
+                  />
                 </div>
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Source</label>
-                  <select
+                  <Select
                     value={form.source}
                     onChange={(e) => setForm({ ...form, source: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-slate-800 focus:border-[#084b66] focus:outline-none"
-                  >
-                    <option value="Google">Google</option>
-                    <option value="Website">Website</option>
-                    <option value="LinkedIn">LinkedIn</option>
-                  </select>
+                    options={['Google', 'Website', 'LinkedIn'].map((s) => ({ value: s, label: s }))}
+                  />
                 </div>
               </div>
 

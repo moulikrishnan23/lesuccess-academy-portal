@@ -18,6 +18,7 @@ import {
 import apiClient from '../../../services/apiClient.js'
 import { useAuth } from '../../../context/AuthContext.jsx'
 import useGrabScroll from '../../../hooks/useGrabScroll.js'
+import Select from '../../../components/ui/Select.jsx'
 
 const FORM_CONFIGS = {
   'demo-bookings': {
@@ -467,18 +468,12 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
         {config.statusOptions && (
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <span className="text-xs font-medium text-slate-500">Status:</span>
-            <select
+            <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-[#07405C] focus:outline-none"
-            >
-              <option value="ALL">All Statuses</option>
-              {config.statusOptions.map((st) => (
-                <option key={st} value={st}>
-                  {st}
-                </option>
-              ))}
-            </select>
+              options={[{ value: 'ALL', label: 'All Statuses' }, ...config.statusOptions.map((st) => ({ value: st, label: st }))]}
+            />
           </div>
         )}
       </div>
@@ -594,18 +589,13 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
                     <td className="px-5 py-3.5 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-2">
                         {config.statusOptions && (
-                          <select
+                          <Select
                             value={item.status || ''}
                             onChange={(e) => handleUpdateStatus(item, e.target.value)}
                             disabled={updatingId === item.id}
                             className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
-                          >
-                            {config.statusOptions.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
+                            options={config.statusOptions.map((opt) => ({ value: opt, label: opt }))}
+                          />
                         )}
                         <button
                           type="button"
@@ -643,15 +633,12 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <span>Rows per page:</span>
-              <select
+              <Select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
                 className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
+                options={[10, 20, 50].map((n) => ({ value: n, label: String(n) }))}
+              />
             </div>
 
             <div className="flex items-center gap-1">

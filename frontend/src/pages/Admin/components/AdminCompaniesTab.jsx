@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Plus, Edit2, Trash2, Building2, Upload, X, ChevronUp, ChevronDown } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
+import Select from '../../../components/ui/Select.jsx'
 
 export default function AdminCompaniesTab({ showAlert }) {
   const [companies, setCompanies] = useState([])
@@ -486,14 +487,12 @@ export default function AdminCompaniesTab({ showAlert }) {
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                       Marquee Row
                     </label>
-                    <select
+                    <Select
                       value={form.rowNumber}
                       onChange={(e) => setForm({ ...form, rowNumber: Number(e.target.value) })}
-                      className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
-                    >
-                      <option value={1}>Row 1 (Scrolls Left)</option>
-                      <option value={2}>Row 2 (Scrolls Right)</option>
-                    </select>
+                      className="bg-white w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-[#084b66] focus:outline-none"
+                      options={[{ value: 1, label: 'Row 1 (Scrolls Left)' }, { value: 2, label: 'Row 2 (Scrolls Right)' }]}
+                    />
                   </div>
 
                   <div>

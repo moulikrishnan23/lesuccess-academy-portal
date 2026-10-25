@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
 import Button from '../ui/Button.jsx'
+import Select from '../ui/Select.jsx'
 import useLeadSubmit from '../../hooks/useLeadSubmit.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
 import { crossFade, errorShake, motionSafe } from '../../animations/variants.js'
@@ -253,44 +253,24 @@ export default function LeadCaptureForm({
       >
         {(errorId) => (
           /*
-            The native control is suppressed with appearance-none and a caret is
-            drawn over it, so the select matches the text inputs beside it
-            instead of rendering the OS widget. Same approach the home page's
-            demo-class select already uses.
+            The site Select (the same dropdown as the rest of the site): its
+            trigger takes controlClass so it matches the text inputs beside it,
+            and its options open in the shared panel instead of the OS menu.
           */
-          <div className="relative">
-            <select
-              id={`${baseId}-lookingFor`}
-              value={values.lookingFor}
-              onChange={(event) => setField('lookingFor')(event.target.value)}
-              disabled={isSubmitting}
-              aria-invalid={errors.lookingFor ? 'true' : undefined}
-              aria-describedby={errors.lookingFor ? errorId : undefined}
-              className={`${controlClass(errors.lookingFor, isRow)} appearance-none pr-11 ${
-                // Unchosen reads as placeholder text, chosen as input text.
-                values.lookingFor ? '' : isRow ? 'text-white/60' : 'text-ink-muted'
-              }`}
-            >
-              {/* Option text inherits the OS menu surface, not the control, so
-                  it is set explicitly rather than left white on white. */}
-              <option value="" className="text-navy-800">
-                {isRow ? 'You looking for?' : 'Select an option'}
-              </option>
-              {options.map((option) => (
-                <option key={option.value} value={option.value} className="text-navy-800">
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <ChevronDown
-              size={18}
-              aria-hidden="true"
-              className={`pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 ${
-                isRow ? 'text-white/70' : 'text-ink-muted'
-              }`}
-            />
-          </div>
+          <Select
+            id={`${baseId}-lookingFor`}
+            value={values.lookingFor}
+            onChange={(event) => setField('lookingFor')(event.target.value)}
+            options={options}
+            placeholder={isRow ? 'You looking for?' : 'Select an option'}
+            disabled={isSubmitting}
+            aria-invalid={errors.lookingFor ? 'true' : undefined}
+            aria-describedby={errors.lookingFor ? errorId : undefined}
+            className={controlClass(errors.lookingFor, isRow)}
+            // Unchosen reads as placeholder text, chosen as input text.
+            placeholderClassName={isRow ? '!text-white/60' : '!text-ink-muted'}
+            chevronClassName={isRow ? 'text-white/70' : 'text-ink-muted'}
+          />
         )}
       </FieldShell>
     </>
