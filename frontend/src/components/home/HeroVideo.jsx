@@ -18,9 +18,6 @@ import {
   CheckCircle2,
   GraduationCap,
   Code2,
-  Cloud,
-  ChartNoAxesCombined,
-  BriefcaseBusiness,
 } from "lucide-react";
 import useReducedMotion from "../../hooks/useReducedMotion.js";
 import useSiteSettings from "../../hooks/useSiteSettings.js";
@@ -322,11 +319,11 @@ const HeroVideo = () => {
                 <span className="hero-type-line block mt-1 sm:mt-1.5 text-white">
                   <TypewriterText active={heroActive}
                     phrases={[
-                      { text: "Full Stack & AI Development", icon: Code2 },
-                      { text: "Cloud & DevOps", icon: Cloud },
-                      { text: "Data Science & Analytics", icon: ChartNoAxesCombined },
-                      { text: "Career & Placement Support", icon: BriefcaseBusiness },
-                      { text: "Live Production Projects", icon: Code2 },
+                      { text: "Full Stack & AI Development" },
+                      { text: "Cloud & DevOps" },
+                      { text: "Data Science & Analytics" },
+                      { text: "Career & Placement Support" },
+                      { text: "Live Production Projects" },
                     ]}
                     typingSpeed={65}
                     deletingSpeed={35}

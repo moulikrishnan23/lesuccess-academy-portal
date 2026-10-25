@@ -56,6 +56,11 @@ export default function BrandSplash({ onComplete }) {
       touchY = nextY ?? null;
     };
     const keydown = (event) => {
+      if (event.key === "Tab") {
+        event.preventDefault();
+        splashRef.current?.focus({ preventScroll: true });
+        return;
+      }
       if (["ArrowDown", "PageDown", " "].includes(event.key)) {
         event.preventDefault();
         moveForward(event.key === "PageDown" || event.key === " " ? 78 : 52);
@@ -93,6 +98,9 @@ export default function BrandSplash({ onComplete }) {
     >
       <div className="brand-splash-content">
         <h1 className="brand-splash-words" aria-label="Learn. Educate. Succeed."><StatementWords /></h1>
+        <div className="brand-splash-progress" role="progressbar" aria-label="Splash introduction" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
+          <span />
+        </div>
         <div className="brand-splash-support">
           <p>Premier Technology Learning in Coimbatore</p>
           <p>From First Line of Code to First Offer Letter</p>
@@ -103,7 +111,6 @@ export default function BrandSplash({ onComplete }) {
         <span className="brand-splash-scroll-mark" aria-hidden="true">↓</span>
         <span>{stage === "text" ? "Scroll to Explore" : stage === "logo" ? "Scroll to Enter" : "Entering LeSuccess"}</span>
       </div>
-      <div className="brand-splash-progress" role="progressbar" aria-label="Splash introduction" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0} />
     </div>, document.body,
   );
 }

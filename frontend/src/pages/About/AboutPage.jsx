@@ -1,4 +1,5 @@
 import LeSuccessConnection from "../../components/ui/LeSuccessConnection.jsx";
+import "./about-pillar-cards.css";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -99,24 +100,28 @@ const PILLARS = [
   {
     icon: Award,
     title: "Industry-Driven Curriculum",
+    cursor: "Syllabus",
     description:
       "Designed with insights from seasoned tech architects to align with current hiring demands and production practices.",
   },
   {
     icon: Briefcase,
     title: "Practical Project-Based Learning",
+    cursor: "Build",
     description:
       "Over 70% of learning happens through live application development, code reviews, and containerized deployments.",
   },
   {
     icon: Users,
     title: "1-on-1 Mentorship",
+    cursor: "1-on-1",
     description:
       "Individual attention from experienced senior software developers who guide you through every concept and code challenge.",
   },
   {
     icon: GraduationCap,
     title: "Dedicated Placement Cell",
+    cursor: "Hired",
     description:
       "Comprehensive career support including resume audits, mock technical interviews, and direct interviews with top employers.",
   },
@@ -481,10 +486,12 @@ export default function AboutPage() {
                   className="h-full"
                 >
                   <SpotlightCard
+                    data-cursor-text={pillar.cursor}
                     tilt={true}
                     maxTilt={8}
                     spotlightColor="rgba(7, 64, 92, 0.12)"
-                    className="card-lift-3d group relative h-full overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-8 text-center shadow-[0_4px_20px_rgba(7,64,92,0.05)] cursor-default"
+                    className="about-pillar-card card-lift-3d group relative h-full overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-8 text-center shadow-[0_4px_20px_rgba(7,64,92,0.05)] cursor-default"
+                    tabIndex={0}
                   >
                     <BorderBeam
                       size={180}
@@ -502,7 +509,7 @@ export default function AboutPage() {
                     <h3 className="mt-6 text-lg font-bold text-[#101010] transition-colors group-hover:text-[#07405C]">
                       {pillar.title}
                     </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                    <p className="about-pillar-copy mt-3 text-sm leading-relaxed text-slate-600">
                       {pillar.description}
                     </p>
                   </SpotlightCard>

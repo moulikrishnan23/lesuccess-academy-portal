@@ -51,17 +51,18 @@ test('Mac controls keep visible centered symbols; focus, collapse, close and Too
   const controls = page.locator('.cb-dots button')
   await expect(controls).toHaveCount(3)
   for (const button of await controls.all()) {
-    await expect(button.locator('svg')).toBeVisible()
-    for (const hover of [false,true]) {
-      if (hover) await button.hover()
-      const geometry = await button.evaluate(el => {
-        const b = el.getBoundingClientRect(), s = el.querySelector('svg').getBoundingClientRect()
-        return {x:Math.abs(b.x+b.width/2-s.x-s.width/2),y:Math.abs(b.y+b.height/2-s.y-s.height/2),color:getComputedStyle(el.querySelector('svg')).color}
-      })
-      expect(geometry.x).toBeLessThan(1)
-      expect(geometry.y).toBeLessThan(1)
-      expect(geometry.color).toBe('rgb(255, 255, 255)')
-    }
+    await page.mouse.move(0,0)
+    const circle = await button.evaluate(el => getComputedStyle(el, '::before').backgroundColor)
+    expect(['rgb(255, 95, 86)','rgb(255, 189, 46)','rgb(39, 201, 63)']).toContain(circle)
+    await expect(button.locator('svg')).toHaveCSS('opacity','0')
+    await button.hover()
+    await expect(button.locator('svg')).toHaveCSS('opacity','1')
+    const geometry = await button.evaluate(el => {
+      const b = el.getBoundingClientRect(), s = el.querySelector('svg').getBoundingClientRect()
+      return {x:Math.abs(b.x+b.width/2-s.x-s.width/2),y:Math.abs(b.y+b.height/2-s.y-s.height/2)}
+    })
+    expect(geometry.x).toBeLessThan(1)
+    expect(geometry.y).toBeLessThan(1)
   }
   await page.getByRole('button',{name:'Collapse the Challenge Builder'}).click()
   await expect(page.getByRole('textbox',{name:'index.html editor'})).toHaveCount(0)
@@ -89,7 +90,7 @@ test('fresh entry waits for scroll, fills text, reveals logo and never mounts sp
   await page.goto('/',{waitUntil:'domcontentloaded'})
   const intro=page.getByRole('dialog',{name:'Welcome to LeSuccess. Scroll to explore.'})
   await expect(intro).toBeVisible()
-  expect(await intro.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(255, 255, 255)')
+  expect(await intro.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(11, 42, 69)')
   await expect(page.locator('.home-hero')).toBeAttached()
   await expect(page.locator('#root')).toHaveAttribute('inert','')
   await expect(page.locator('.brand-splash-progress')).toHaveAttribute('aria-valuenow','0')

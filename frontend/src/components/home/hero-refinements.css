@@ -23,29 +23,3 @@
 @media (min-width: 1280px) {
   .home-hero .hero-type-line { min-height: 1.16em; }
 }
-
-.hero-type-icon {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: .96em;
-  height: .96em;
-  margin-left: .2em;
-  vertical-align: -.02em;
-  border-radius: .32em;
-  color: #fff;
-  background: linear-gradient(145deg, #ff8588 0%, #DF1E26 54%, #a9151c 100%);
-  box-shadow: inset 1px 1px 2px rgb(255 255 255 / .82), inset -2px -2px 4px rgb(80 0 8 / .36), 0 2px 0 #771017, 0 4px 8px rgb(0 0 0 / .28);
-  transform: perspective(100px) rotateY(-10deg) rotateX(5deg);
-  -webkit-text-fill-color: #fff;
-}
-.hero-type-icon::before {
-  content: "";
-  position: absolute;
-  inset: 1px 2px auto;
-  height: 38%;
-  border-radius: .28em .28em 55% 45%;
-  background: linear-gradient(180deg, rgb(255 255 255 / .55), transparent);
-  pointer-events: none;
-}
-.hero-type-icon svg { position: relative; filter: drop-shadow(0 1px 1px rgb(65 0 8 / .5)); }

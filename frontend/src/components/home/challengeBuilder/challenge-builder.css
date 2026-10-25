@@ -617,13 +617,22 @@
   display: inline-grid;
   place-items: center;
   flex: none;
+  position: relative;
   width: 24px;
   height: 24px;
+  padding: 0;
+  border-radius: 50%;
   color: #fff;
-  background: #DF1E26;
+  background: transparent;
 }
-.cb-dot--min, .cb-dot--focus { background: #b51820; }
-.cb-dot svg { display: block; opacity: 1; stroke-width: 2; }
+.cb-dot::before { content: ""; position: absolute; inset: 6px; border-radius: 50%; }
+.cb-dot--close::before { background: #ff5f56; }
+.cb-dot--min::before { background: #ffbd2e; }
+.cb-dot--focus::before { background: #27c93f; }
+.cb-dot svg { position: relative; display: block; width: 9px; height: 9px; opacity: 0; stroke-width: 2.4; }
+.cb-dots:hover .cb-dot svg,
+.cb-dots:focus-within .cb-dot svg { opacity: 1; }
+.cb-dot--min svg, .cb-dot--focus svg { color: #07405C; }
 .cb-dot:focus-visible { outline: 2px solid white; outline-offset: 3px; }
 .cb-tools { position: relative; }
 .cb-tools summary {
