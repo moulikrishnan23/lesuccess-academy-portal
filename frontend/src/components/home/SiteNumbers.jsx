@@ -3,10 +3,10 @@ import { SITE_STATS } from "../../data/siteStats.js";
 import SectionHead from "./SectionHead.jsx";
 
 const STATS = [
-  { value: SITE_STATS.hiringCompanies, suffix: "+", label: "actively hiring tech companies" },
-  { value: SITE_STATS.courses, suffix: "+", label: "courses across full stack, data, cloud and AI" },
-  { value: SITE_STATS.googleReviews, suffix: "+", label: "Google reviews from learners" },
-  { value: SITE_STATS.googleRating, suffix: "", label: "average Google rating out of 5" },
+  { value: SITE_STATS.hiringCompanies, suffix: "+", label: "actively hiring tech companies", cursor: "Hiring" },
+  { value: SITE_STATS.courses, suffix: "+", label: "courses across full stack, data, cloud and AI", cursor: "Courses" },
+  { value: SITE_STATS.googleReviews, suffix: "+", label: "Google reviews from learners", cursor: "Reviews" },
+  { value: SITE_STATS.googleRating, suffix: "", label: "average Google rating out of 5", cursor: "Rating" },
 ];
 
 /**
@@ -27,7 +27,7 @@ export default function SiteNumbers() {
         />
         <div className="lh-stats">
           {STATS.map((stat, i) => (
-            <Reveal key={stat.label} index={i} className="lh-stat">
+            <Reveal key={stat.label} index={i} className="lh-stat" data-cursor-text={stat.cursor}>
               <Odometer value={stat.value} suffix={stat.suffix} className="lh-stat-n" />
               <p>{stat.label}</p>
             </Reveal>

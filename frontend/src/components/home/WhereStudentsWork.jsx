@@ -24,7 +24,7 @@ const DEFAULT_COMPANIES_ROW2 = [
 
 const logoCards = (companies, row) =>
   companies.map((company, i) => (
-    <div key={`${row}-${company.id ?? company.name}-${i}`} className="lh-logo">
+    <div key={`${row}-${company.id ?? company.name}-${i}`} className="lh-logo" data-cursor-text="Partner">
       <img
         src={getImageUrl(company.logo || company.logoUrl, "/assets/companies/lavendel.png", { width: 400 })}
         alt={company.name}

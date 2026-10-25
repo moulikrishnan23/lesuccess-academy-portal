@@ -42,7 +42,7 @@ function ReviewCard({ review, expanded, onToggle }) {
   const long = text.length > 160;
 
   return (
-    <article ref={ref} className={`lh-glass lh-testi${inView ? " is-in" : ""}`}>
+    <article ref={ref} className={`lh-glass lh-testi${inView ? " is-in" : ""}`} data-cursor-text="Review">
       <div className="flex items-center justify-between gap-2">
         <Stars count={review.rating || 5} />
         <span className="lh-verified">
@@ -55,7 +55,7 @@ function ReviewCard({ review, expanded, onToggle }) {
         {long && (
           <>
             {" "}
-            <button type="button" className="lh-testi-more" onClick={onToggle}>
+            <button type="button" className="lh-testi-more" onClick={onToggle} data-cursor-text="Read">
               {expanded ? "Less" : "More"}
             </button>
           </>
@@ -210,6 +210,7 @@ export default function Testimonials() {
                     key={i}
                     type="button"
                     aria-label={`Go to slide ${i + 1}`}
+                    data-cursor-text="Go"
                     aria-current={i === page ? "true" : undefined}
                     onClick={() => goTo(i)}
                   />
@@ -221,10 +222,10 @@ export default function Testimonials() {
                 </div>
               )}
               <div className="lh-arrows">
-                <button type="button" aria-label="Previous review" onClick={() => goTo(page - 1)}>
+                <button type="button" aria-label="Previous review" data-cursor-text="Prev" onClick={() => goTo(page - 1)}>
                   <ChevronLeft size={20} aria-hidden="true" />
                 </button>
-                <button type="button" aria-label="Next review" onClick={() => goTo(page + 1)}>
+                <button type="button" aria-label="Next review" data-cursor-text="Next" onClick={() => goTo(page + 1)}>
                   <ChevronRight size={20} aria-hidden="true" />
                 </button>
               </div>
@@ -238,6 +239,7 @@ export default function Testimonials() {
             target="_blank"
             rel="noopener noreferrer"
             className="lh-btn lh-btn-o"
+            data-cursor-text="Write"
           >
             Write a review
             <ExternalLink size={16} aria-hidden="true" />

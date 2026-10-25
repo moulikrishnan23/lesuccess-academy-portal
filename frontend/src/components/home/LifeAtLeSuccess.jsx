@@ -44,6 +44,7 @@ export default function LifeAtLeSuccess() {
               <button
                 type="button"
                 className="lh-gal-tile"
+                data-cursor-text="Open"
                 aria-label={`Open photo: ${photo.caption}`}
                 onClick={() => setLightboxIndex(i)}
               >
@@ -58,7 +59,7 @@ export default function LifeAtLeSuccess() {
         </div>
 
         <div className="mt-10 text-center">
-          <Link to="/gallery" className="lh-btn lh-btn-a btn-flow">
+          <Link to="/gallery" className="lh-btn lh-btn-a btn-flow" data-cursor-text="Gallery">
             Explore Full Gallery
             <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
           </Link>

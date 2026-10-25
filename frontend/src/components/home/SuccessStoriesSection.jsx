@@ -54,6 +54,7 @@ export default function SuccessStoriesSection() {
               key={image.id ?? i}
               type="button"
               className="lh-card lh-story"
+              data-cursor-text="View"
               onClick={() => setLightboxIndex(i)}
               aria-label={`View story: ${image.caption || `Student story ${i + 1}`}`}
             >
@@ -82,7 +83,7 @@ export default function SuccessStoriesSection() {
             </h3>
             <div className="flex snap-x items-stretch gap-6 overflow-x-auto pb-6">
               {activeReels.map((reel) => (
-                <div key={reel.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
+                <div key={reel.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]" data-cursor-text="Watch">
                   <InstagramReelEmbed reelUrl={reel.reelUrl} title={reel.title} />
                 </div>
               ))}
@@ -91,7 +92,7 @@ export default function SuccessStoriesSection() {
         )}
 
         <div className="mt-8 text-center">
-          <Link to="/success-stories" className="lh-btn lh-btn-o">
+          <Link to="/success-stories" className="lh-btn lh-btn-o" data-cursor-text="Stories">
             View All Success Stories
             <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
           </Link>

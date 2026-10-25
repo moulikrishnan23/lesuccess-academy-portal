@@ -300,6 +300,7 @@ export default function ConnectWithUs({
               type="submit"
               disabled={isSubmitting}
               className="btn-flow btn-glow-brand w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white font-bold hover:brightness-110 active:scale-98 transition shadow-md disabled:opacity-50 cursor-pointer py-2 px-5 text-xs rounded-lg"
+              data-cursor-text="Send"
             >
               {isSubmitting ? "Submitting..." : "Submit Inquiry"}{" "}
               <Send size={13} />
@@ -310,6 +311,7 @@ export default function ConnectWithUs({
                 type="submit"
                 disabled={isSubmitting}
                 className="btn-flow btn-glow-brand w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] text-white font-bold hover:brightness-110 active:scale-98 transition shadow-md disabled:opacity-50 cursor-pointer sm:w-auto min-w-[240px] py-3.5 px-8 text-sm rounded-xl shadow-lg"
+                data-cursor-text="Send"
               >
                 {isSubmitting ? "Submitting..." : "Submit Inquiry"}{" "}
                 <Send size={15} />
@@ -353,6 +355,7 @@ export default function ConnectWithUs({
           type="button"
           onClick={onClose}
           aria-label="Close"
+          data-cursor-text="Close"
           className="absolute top-3 right-3 p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
         >
           <X size={16} />
@@ -479,7 +482,7 @@ export default function ConnectWithUs({
                     value={form.message}
                     onChange={handleChange}
                   />
-                  <button type="submit" disabled={isSubmitting} className="lh-btn lh-btn-a lh-full btn-flow">
+                  <button type="submit" disabled={isSubmitting} className="lh-btn lh-btn-a lh-full btn-flow" data-cursor-text="Send">
                     {isSubmitting ? "Submitting…" : "Submit Inquiry"}
                     <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
                   </button>

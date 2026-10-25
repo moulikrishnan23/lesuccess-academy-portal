@@ -22,7 +22,7 @@ function MemberCard({ member, index }) {
 
   return (
     <Reveal index={index}>
-      <article ref={ref} className={`lh-member${inView ? " is-in" : ""}`} tabIndex={0}>
+      <article ref={ref} className={`lh-member${inView ? " is-in" : ""}`} tabIndex={0} data-cursor-text="Mentor">
         <img
           src={imgSrc}
           alt={member.name}
@@ -37,7 +37,7 @@ function MemberCard({ member, index }) {
           </h3>
           {role && <span className="lh-member-role">{role}</span>}
           {member.email && (
-            <a className="lh-member-mail" href={`mailto:${member.email}`}>
+            <a className="lh-member-mail" data-cursor-text="Email" href={`mailto:${member.email}`}>
               {member.email}
             </a>
           )}
@@ -107,7 +107,7 @@ export default function OurTeam() {
               ))}
             </div>
             <div className="mt-10 text-center">
-              <Link to="/our-team" className="lh-btn lh-btn-o">
+              <Link to="/our-team" className="lh-btn lh-btn-o" data-cursor-text="Team">
                 View All Team Members
                 <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
               </Link>

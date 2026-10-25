@@ -78,7 +78,7 @@ function TypePreview({ type, onRetry }) {
   const preview = TYPE_PREVIEW[type];
   const Icon = preview.icon;
   return (
-    <article className="lh-feat">
+    <article className="lh-feat" data-cursor-text="Soon">
       <div className="lh-feat-media lh-feat-art" aria-hidden="true">
         <span className="lh-art-ring lh-art-ring--1" />
         <span className="lh-art-ring lh-art-ring--2" />
@@ -108,7 +108,7 @@ function TypePreview({ type, onRetry }) {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <a href="#connect-with-us-section" className="lh-btn lh-btn-a btn-flow">
+          <a href="#connect-with-us-section" className="lh-btn lh-btn-a btn-flow" data-cursor-text="Notify">
             Get notified
             <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
           </a>
@@ -430,6 +430,7 @@ export default function UpcomingPrograms() {
         <AnimatePresence mode="wait" initial={false}>
           <motion.article
             key={currentProgram?.id || currentIndex}
+            data-cursor-text="Event"
             initial={reduced ? false : { opacity: 0, x: direction * 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={reduced ? { opacity: 1 } : { opacity: 0, x: direction * -30 }}
@@ -522,6 +523,7 @@ export default function UpcomingPrograms() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="lh-btn lh-btn-n"
+                        data-cursor-text="Meet"
                       >
                         <Video size={16} aria-hidden="true" />
                         Join Google Meet
@@ -529,7 +531,7 @@ export default function UpcomingPrograms() {
                     )}
                   </>
                 ) : (
-                  <button type="button" onClick={handleOpenRegister} className="lh-btn lh-btn-a btn-flow">
+                  <button type="button" onClick={handleOpenRegister} className="lh-btn lh-btn-a btn-flow" data-cursor-text="Join">
                     {CTA_LABEL[eventType] || "Register Now"}
                     <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
                   </button>
@@ -553,16 +555,17 @@ export default function UpcomingPrograms() {
                   key={p.id || idx}
                   type="button"
                   aria-label={`Go to event ${idx + 1}: ${p.title}`}
+                  data-cursor-text="Go"
                   aria-current={idx === currentIndex ? "true" : undefined}
                   onClick={() => goToSlide(idx)}
                 />
               ))}
             </div>
             <div className="lh-arrows">
-              <button type="button" onClick={goToPrev} aria-label="Previous upcoming event">
+              <button type="button" onClick={goToPrev} aria-label="Previous upcoming event" data-cursor-text="Prev">
                 <ChevronLeft size={20} aria-hidden="true" />
               </button>
-              <button type="button" onClick={goToNext} aria-label="Next upcoming event">
+              <button type="button" onClick={goToNext} aria-label="Next upcoming event" data-cursor-text="Next">
                 <ChevronRight size={20} aria-hidden="true" />
               </button>
             </div>
@@ -591,6 +594,7 @@ export default function UpcomingPrograms() {
                 role="tab"
                 aria-selected={selectedCategory === cat.id}
                 onClick={() => handleCategoryChange(cat.id)}
+                data-cursor-text="View"
               >
                 {cat.label}
                 {countByType[cat.id] > 0 && <span className="lh-tab-count">{countByType[cat.id]}</span>}

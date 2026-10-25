@@ -45,7 +45,7 @@ export default function StartingFromZero() {
             basics, with a mentor beside you and live labs from the first week.
           </p>
           <div style={{ marginTop: "1.75rem" }}>
-            <a href="#demo-class" className="lh-btn lh-btn-a btn-flow">
+            <a href="#demo-class" className="lh-btn lh-btn-a btn-flow" data-cursor-text="Demo">
               Book Free Demo
               <ArrowRight size={18} className="lh-arr" aria-hidden="true" />
             </a>
@@ -54,6 +54,7 @@ export default function StartingFromZero() {
 
         <div
           ref={chatRef}
+          data-cursor-text="Relax"
           className={`lh-dchat${inView ? " is-in" : ""}`}
           role="list"
           aria-label="Common worries, answered"

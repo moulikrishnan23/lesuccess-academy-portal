@@ -185,6 +185,7 @@ const DemoClass = ({
             setSelectedCourseName(initialCourseName || "");
           }}
           className="rounded-xl border border-white/40 bg-white/10 px-8 py-3 text-sm font-semibold transition hover:bg-white/20 active:scale-98 cursor-pointer"
+          data-cursor-text="Again"
         >
           Book Another Demo
         </button>
@@ -193,6 +194,7 @@ const DemoClass = ({
           <button
             onClick={onClose}
             className="rounded-xl bg-white px-8 py-3 text-sm font-bold text-[#07405C] transition hover:bg-slate-100 active:scale-98 cursor-pointer"
+            data-cursor-text="Close"
           >
             Close
           </button>
@@ -324,6 +326,7 @@ const DemoClass = ({
         <Magnetic strength={0.25}>
           <button
             onClick={handleSubmit}
+            data-cursor-text="Reserve"
             disabled={isSubmitting}
             className="btn-flow btn-glow-brand w-full sm:w-auto min-w-[220px] rounded-xl bg-gradient-to-r from-[#F44246] to-[#CA164B] px-8 py-2.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_20px_rgba(244,66,70,0.4)] transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 cursor-pointer"
           >
@@ -356,6 +359,7 @@ const DemoClass = ({
             type="button"
             onClick={onClose}
             aria-label="Close demo modal"
+            data-cursor-text="Close"
             className="absolute right-4 top-4 sm:right-6 sm:top-6 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition cursor-pointer z-20"
           >
             <X size={16} />
@@ -437,6 +441,7 @@ const DemoClass = ({
                 <button
                   type="button"
                   className="lh-btn lh-btn-o lh-btn-sm"
+                  data-cursor-text="Again"
                   onClick={() => {
                     setSubmitStatus(null);
                     setName("");
@@ -503,6 +508,7 @@ const DemoClass = ({
                     type="submit"
                     disabled={isSubmitting}
                     className="lh-btn lh-btn-a lh-full btn-flow"
+                    data-cursor-text="Reserve"
                     style={{ minHeight: "3.5rem" }}
                   >
                     {isSubmitting ? "Reserving your seat…" : "Reserve Free Demo Seat"}
