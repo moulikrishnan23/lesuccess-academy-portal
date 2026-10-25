@@ -1,4 +1,15 @@
 @import 'tailwindcss';
+
+/* Tailwind v4 gates hover: on (hover: hover), which only checks the primary
+   pointer — touchscreen laptops report "none" there and lose every hover style
+   even with a mouse attached. any-hover still excludes touch-only phones. */
+@custom-variant hover {
+  @media (any-hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+}
 @import './components/motion/motion.css';
 @import './components/home/home-motion.css';
 @import './components/home/lower-home.css';
@@ -123,7 +134,7 @@
   }
 
   /* Creative Agency Custom Cursor Mode (Desktop only) */
-  @media (pointer: fine) {
+  @media (any-pointer: fine) {
     body.has-custom-cursor,
     body.has-custom-cursor a,
     body.has-custom-cursor button,
@@ -173,6 +184,25 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+    }
+
+    /* Button shine survives reduced motion as a fade in place, not a sweep.
+       Lives in this layer because important declarations in an earlier layer
+       beat later ones, so a utilities-layer override could never win. */
+    .sheen-fade {
+      transition: opacity 0.35s ease !important;
+    }
+
+    .animate-shimmer-sweep::after {
+      left: 50% !important;
+      transform: skewX(-28deg) !important;
+      animation: none !important;
+      opacity: 0;
+      transition: opacity 0.35s ease !important;
+    }
+
+    .animate-shimmer-sweep:hover::after {
+      opacity: 1;
     }
   }
 }
@@ -340,7 +370,21 @@
     animation: gradientTextFlow 4s linear infinite;
   }
 
-  /* Diagonal light sheen sweep across buttons and cards */
+  /* Knife-cut shine: a slanted blade with a hard bright edge and a soft
+     trailing glow. Sweeps on a loop, and once quickly on hover. */
+  .shine-blade,
+  .animate-shimmer-sweep::after {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.08) 45%,
+      rgba(255, 255, 255, 0.22) 58%,
+      rgba(255, 255, 255, 0.7) 58.5%,
+      rgba(255, 255, 255, 0.7) 66%,
+      rgba(255, 255, 255, 0) 66.5%
+    );
+    transform: skewX(-28deg);
+  }
   .animate-shimmer-sweep {
     position: relative;
     overflow: hidden;
@@ -348,19 +392,16 @@
   .animate-shimmer-sweep::after {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      60deg,
-      transparent 25%,
-      rgba(255, 255, 255, 0.4) 50%,
-      transparent 75%
-    );
-    transform: rotate(25deg) translateY(-100%);
-    animation: shimmerSweep 3.8s ease-in-out infinite;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 45%;
+    transform: translateX(-160%) skewX(-28deg);
+    animation: shimmerSweep 3.8s cubic-bezier(0.7, 0, 0.2, 1) infinite;
     pointer-events: none;
+  }
+  .animate-shimmer-sweep:hover::after {
+    animation: shimmerSlice 0.65s cubic-bezier(0.7, 0, 0.2, 1) 1;
   }
 
   /* Radar pulse beacon for active live indicators */
@@ -468,10 +509,19 @@
 
 @keyframes shimmerSweep {
   0% {
-    transform: rotate(25deg) translateY(-140%);
+    transform: translateX(-160%) skewX(-28deg);
   }
-  30%, 100% {
-    transform: rotate(25deg) translateY(140%);
+  28%, 100% {
+    transform: translateX(330%) skewX(-28deg);
+  }
+}
+
+@keyframes shimmerSlice {
+  from {
+    transform: translateX(-160%) skewX(-28deg);
+  }
+  to {
+    transform: translateX(330%) skewX(-28deg);
   }
 }
 

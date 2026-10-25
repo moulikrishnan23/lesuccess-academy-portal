@@ -17,13 +17,18 @@ import useReducedMotion from "../../hooks/useReducedMotion.js";
  * - Morphing micro-label support via `data-cursor-text="..."`
  * - Tactile click shrink & expanding ripple wave
  * - Purely non-interfering (pointer-events: none, z-index: 999999)
- * - Safely auto-disabled on touch devices & under prefers-reduced-motion
+ * - Auto-disabled on touch-only devices; under prefers-reduced-motion it stays
+ *   visible but snaps to the pointer with no spring lag, scaling or ripples
  */
+// `any-pointer` rather than `pointer`: touchscreen laptops often report the
+// touchscreen as the primary pointer even while a mouse/trackpad is in use.
+const FINE_POINTER = "(any-pointer: fine)";
+
 export default function CustomCursor() {
   const reduced = useReducedMotion();
   const [isPointer, setIsPointer] = useState(() => {
     if (typeof window === "undefined") return false;
-    return window.matchMedia("(pointer: fine)").matches;
+    return window.matchMedia(FINE_POINTER).matches;
   });
 
   const [isVisible, setIsVisible] = useState(false);
@@ -45,9 +50,14 @@ export default function CustomCursor() {
   const ringX = useSpring(mouseX, { stiffness: 280, damping: 24, mass: 0.28 });
   const ringY = useSpring(mouseY, { stiffness: 280, damping: 24, mass: 0.28 });
 
+  // Reduced motion: follow the raw pointer and change state instantly
+  const dotPos = reduced ? { x: mouseX, y: mouseY } : { x: dotX, y: dotY };
+  const ringPos = reduced ? { x: mouseX, y: mouseY } : { x: ringX, y: ringY };
+  const instant = { duration: 0 };
+
   // Track pointer media query
   useEffect(() => {
-    const media = window.matchMedia("(pointer: fine)");
+    const media = window.matchMedia(FINE_POINTER);
     const handler = (e) => setIsPointer(e.matches);
     media.addEventListener("change", handler);
     return () => media.removeEventListener("change", handler);
@@ -55,7 +65,7 @@ export default function CustomCursor() {
 
   // Manage body cursor: none class
   useEffect(() => {
-    if (!isPointer || reduced) {
+    if (!isPointer) {
       document.body.classList.remove("has-custom-cursor");
       return undefined;
     }
@@ -64,11 +74,11 @@ export default function CustomCursor() {
     return () => {
       document.body.classList.remove("has-custom-cursor");
     };
-  }, [isPointer, reduced]);
+  }, [isPointer]);
 
   // Mouse event listeners
   useEffect(() => {
-    if (!isPointer || reduced) return undefined;
+    if (!isPointer) return undefined;
 
     const handleMouseMove = (e) => {
       mouseX.set(e.clientX);
@@ -128,6 +138,7 @@ export default function CustomCursor() {
     };
 
     const handleClick = (e) => {
+      if (reduced) return;
       const id = Date.now() + Math.random();
       const ripple = { id, x: e.clientX, y: e.clientY };
       setRipples((prev) => [...prev.slice(-4), ripple]);
@@ -156,7 +167,7 @@ export default function CustomCursor() {
     };
   }, [isPointer, reduced, isVisible, mouseX, mouseY]);
 
-  if (!isPointer || reduced) return null;
+  if (!isPointer) return null;
 
   return (
     <div
@@ -167,8 +178,7 @@ export default function CustomCursor() {
       {isVisible && (
         <motion.div
           style={{
-            x: ringX,
-            y: ringY,
+            ...ringPos,
             translateX: "-50%",
             translateY: "-50%",
           }}
@@ -184,12 +194,11 @@ export default function CustomCursor() {
                     : 1,
             opacity: isTextInput ? 0.25 : 1,
           }}
-          transition={{
-            type: "spring",
-            stiffness: 400,
-            damping: 25,
-            mass: 0.2,
-          }}
+          transition={
+            reduced
+              ? instant
+              : { type: "spring", stiffness: 400, damping: 25, mass: 0.2 }
+          }
           className={`absolute flex items-center justify-center rounded-full transition-colors duration-200 ${
             cursorText
               ? "h-14 w-14 border-2 border-white/90 bg-[#DF1E26] shadow-[0_0_24px_rgba(223,30,38,0.7)] text-white"
@@ -217,8 +226,7 @@ export default function CustomCursor() {
       {isVisible && !cursorText && !isTextInput && (
         <motion.div
           style={{
-            x: dotX,
-            y: dotY,
+            ...dotPos,
             translateX: "-50%",
             translateY: "-50%",
           }}
@@ -226,7 +234,9 @@ export default function CustomCursor() {
             scale: isClicking ? 1.4 : isHovered ? 0.5 : 1,
             opacity: isHovered ? 0.7 : 1,
           }}
-          transition={{ type: "spring", stiffness: 600, damping: 30 }}
+          transition={
+            reduced ? instant : { type: "spring", stiffness: 600, damping: 30 }
+          }
           className="absolute h-2 w-2 rounded-full bg-[#DF1E26] shadow-[0_0_8px_#DF1E26] ring-1 ring-white/90"
         />
       )}
