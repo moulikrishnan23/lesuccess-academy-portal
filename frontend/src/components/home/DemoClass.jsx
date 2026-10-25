@@ -17,6 +17,7 @@ import Magnetic from "../ui/Magnetic.jsx";
 import { Reveal, ConicBorder, burstConfetti } from "../motion/index.js";
 import FloatField from "./FloatField.jsx";
 import useClipReveal from "./useClipReveal.js";
+import { getCourseLogo } from "../../utils/imageUtils.js";
 
 // Shown in the dropdown while the API response is loading or empty
 const FALLBACK_COURSES = [
@@ -386,6 +387,8 @@ const DemoClass = ({
   const courseOptions = dropdownCourses.map((course) => ({
     value: course.title,
     label: course.title,
+    icon: getCourseLogo(course),
+    hint: course.category,
   }));
 
   return (
