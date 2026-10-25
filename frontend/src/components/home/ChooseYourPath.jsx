@@ -89,7 +89,7 @@ function CourseCard({ course, barScale }) {
   const syllabus = hasSyllabus(course);
 
   return (
-    <article className="course-card motion-spot group relative flex h-full flex-col overflow-hidden rounded-bento border border-slate-200/90 bg-white text-left shadow-lift-sm" data-cursor-text="View">
+    <article className="course-card motion-spot group relative flex h-full flex-col overflow-hidden rounded-bento border border-slate-200/90 bg-white text-left shadow-lift-sm">
       {/* Header: navy band with a dot grid and a brand glow, logo in a tile. */}
       <div className="course-card-top relative grid h-40 place-items-center overflow-hidden">
         {(course.badge || badgeText) && (
@@ -113,8 +113,10 @@ function CourseCard({ course, barScale }) {
           <h3 className="text-[1.1875rem] font-bold leading-snug text-[#101010]">
             <Link
               to={`/courses/${course.slug}`}
-              className="course-card-title inline-flex items-start gap-1.5 transition-colors duration-200 hover:text-brand"
-              data-cursor-text="Open"
+              // Stretched link: its ::after covers the whole card, so a click
+              // anywhere opens the course; the footer buttons sit above it.
+              className="course-card-title inline-flex items-start gap-1.5 transition-colors duration-200 hover:text-brand after:absolute after:inset-0 after:z-[1] after:rounded-[inherit] after:content-['']"
+              data-cursor-text="View"
             >
               <span className="min-w-0 break-words">{course.title}</span>
               <ArrowUpRight
@@ -161,7 +163,7 @@ function CourseCard({ course, barScale }) {
 
       {/* One column when there is no syllabus, so Enroll Now does not sit
           beside a gap. */}
-      <div className={`mt-auto grid gap-2 px-6 pb-6 pt-5 ${syllabus ? "grid-cols-2" : "grid-cols-1"}`}>
+      <div className={`relative z-[2] mt-auto grid gap-2 px-6 pb-6 pt-5 ${syllabus ? "grid-cols-2" : "grid-cols-1"}`}>
         {syllabus && (
           <button
             type="button"
