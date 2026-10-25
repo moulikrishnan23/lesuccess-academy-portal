@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
-import Button from '../ui/Button.jsx'
+import Button from '../ui/RedesignButton.jsx'
 import useLeadSubmit from '../../hooks/useLeadSubmit.js'
 import useReducedMotion from '../../hooks/useReducedMotion.js'
 import { crossFade, errorShake, motionSafe } from '../../animations/variants.js'

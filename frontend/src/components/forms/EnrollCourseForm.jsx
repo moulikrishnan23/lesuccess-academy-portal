@@ -1,13 +1,17 @@
-import { forwardRef, useEffect, useId, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import Button from '../ui/Button.jsx'
-import useLeadSubmit from '../../hooks/useLeadSubmit.js'
-import useReducedMotion from '../../hooks/useReducedMotion.js'
-import { crossFade, errorShake, motionSafe } from '../../animations/variants.js'
-import { normalizeMobile, validateEnrollForm } from '../../utils/validation.js'
-import { LEAD_SOURCE } from '../../services/leadApi.js'
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import Button from "../ui/RedesignButton.jsx";
+import useLeadSubmit from "../../hooks/useLeadSubmit.js";
+import useReducedMotion from "../../hooks/useReducedMotion.js";
+import {
+  crossFade,
+  errorShake,
+  motionSafe,
+} from "../../animations/redesignVariants.js";
+import { normalizeMobile, validateEnrollForm } from "../../utils/validation.js";
+import { LEAD_SOURCE } from "../../services/leadApi.js";
 
-const EMPTY_FORM = { name: '', mobile: '', email: '' }
+const EMPTY_FORM = { name: "", mobile: "", email: "" };
 
 /**
  * Enroll-card field: a small grey label above a bordered input box, matching
@@ -16,7 +20,7 @@ const EMPTY_FORM = { name: '', mobile: '', email: '' }
 function Field({
   id,
   label,
-  type = 'text',
+  type = "text",
   value,
   onChange,
   error,
@@ -26,11 +30,14 @@ function Field({
   inputRef,
   reduced,
 }) {
-  const errorId = `${id}-error`
+  const errorId = `${id}-error`;
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold text-navy-800/85">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-xs font-semibold text-navy-800/85"
+      >
         {label}
       </label>
 
@@ -43,10 +50,10 @@ function Field({
         disabled={disabled}
         inputMode={inputMode}
         autoComplete={autoComplete}
-        aria-invalid={error ? 'true' : undefined}
+        aria-invalid={error ? "true" : undefined}
         aria-describedby={error ? errorId : undefined}
         className={`h-10.5 w-full rounded-lg border bg-white px-3.5 text-sm text-navy-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-60 ${
-          error ? 'border-danger' : 'border-line-strong focus:border-brand'
+          error ? "border-danger" : "border-line-strong focus:border-brand"
         }`}
       />
 
@@ -59,7 +66,7 @@ function Field({
             variants={motionSafe(errorShake, reduced)}
             initial="hidden"
             animate="visible"
-            exit={reduced ? undefined : 'exit'}
+            exit={reduced ? undefined : "exit"}
             className="mt-1 text-[0.75rem] text-danger"
           >
             {error}
@@ -67,7 +74,7 @@ function Field({
         ) : null}
       </AnimatePresence>
     </div>
-  )
+  );
 }
 
 /**
@@ -81,57 +88,60 @@ function Field({
  * hero and mid-page CTAs.
  */
 const EnrollCourseForm = forwardRef(function EnrollCourseForm(
-  { courseId, courseName, discountLabel, className = '' },
+  { courseId, courseName, discountLabel, className = "" },
   ref,
 ) {
-  const baseId = useId()
-  const reduced = useReducedMotion()
+  const baseId = useId();
+  const reduced = useReducedMotion();
   // live: this form posts for real; the mock gateway still serves everything
   // else. Without it, useLeadSubmit defaults to live:false and every submission
   // resolves via mockSubmitLead while VITE_USE_MOCKS is 'true' — showing the
   // confirmation panel below without ever reaching the backend.
-  const { submit, isSubmitting, isSuccess, error, fieldErrors, reset } = useLeadSubmit({
-    live: true,
-  })
+  const { submit, isSubmitting, isSuccess, error, fieldErrors, reset } =
+    useLeadSubmit({
+      live: true,
+    });
 
-  const [values, setValues] = useState(EMPTY_FORM)
-  const [learningMode, setLearningMode] = useState('Online')
-  const [clientErrors, setClientErrors] = useState({})
+  const [values, setValues] = useState(EMPTY_FORM);
+  const [learningMode, setLearningMode] = useState("Online");
+  const [clientErrors, setClientErrors] = useState({});
   // Validate on change only after the first submit, so the form doesn't scold
   // someone who is still typing their name.
-  const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const nameInputRef = useRef(null)
-  const successRef = useRef(null)
+  const nameInputRef = useRef(null);
+  const successRef = useRef(null);
 
   // Server-side field errors sit alongside client ones; the server wins.
-  const errors = { ...clientErrors, ...fieldErrors }
+  const errors = { ...clientErrors, ...fieldErrors };
 
   const setField = (field) => (nextValue) => {
     setValues((current) => {
-      const next = { ...current, [field]: nextValue }
-      if (hasSubmitted) setClientErrors(validateEnrollForm(next))
-      return next
-    })
-  }
+      const next = { ...current, [field]: nextValue };
+      if (hasSubmitted) setClientErrors(validateEnrollForm(next));
+      return next;
+    });
+  };
 
   // Move focus to the confirmation so screen reader users are told it worked.
   useEffect(() => {
-    if (isSuccess) successRef.current?.focus()
-  }, [isSuccess])
+    if (isSuccess) successRef.current?.focus();
+  }, [isSuccess]);
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
-    setHasSubmitted(true)
+    event.preventDefault();
+    setHasSubmitted(true);
 
-    const validationErrors = validateEnrollForm(values)
-    setClientErrors(validationErrors)
+    const validationErrors = validateEnrollForm(values);
+    setClientErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
       // Send focus to the first problem rather than leaving it on the button.
-      const firstField = ['name', 'mobile', 'email'].find((f) => validationErrors[f])
-      document.getElementById(`${baseId}-${firstField}`)?.focus()
-      return
+      const firstField = ["name", "mobile", "email"].find(
+        (f) => validationErrors[f],
+      );
+      document.getElementById(`${baseId}-${firstField}`)?.focus();
+      return;
     }
 
     await submit({
@@ -142,16 +152,16 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
       courseName,
       learningMode,
       source: LEAD_SOURCE.COURSE_ENROLL_FORM,
-    })
-  }
+    });
+  };
 
   const handleReset = () => {
-    setValues(EMPTY_FORM)
-    setClientErrors({})
-    setHasSubmitted(false)
-    reset()
-    nameInputRef.current?.focus()
-  }
+    setValues(EMPTY_FORM);
+    setClientErrors({});
+    setHasSubmitted(false);
+    reset();
+    nameInputRef.current?.focus();
+  };
 
   return (
     <div
@@ -169,10 +179,18 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
         without drawing a box around itself.
       */
       data-competing-form="true"
-      className={`scroll-mt-28 rounded-2xl bg-white ring-1 ring-navy-900/[0.06] shadow-[0_1px_2px_rgba(18,58,92,0.05),0_8px_20px_-8px_rgba(18,58,92,0.14),0_28px_56px_-28px_rgba(18,58,92,0.30)] ${className}`}
+      className={`card-lift-3d scroll-mt-28 rounded-2xl bg-white ring-1 ring-navy-900/[0.06] shadow-[0_1px_2px_rgba(18,58,92,0.05),0_8px_20px_-8px_rgba(18,58,92,0.14),0_28px_56px_-28px_rgba(18,58,92,0.30)] overflow-hidden transition-all duration-300 hover:shadow-2xl ${className}`}
     >
-      {/* Brand cap — the reference card's navy bar, carrying the site gradient. */}
-      <div aria-hidden="true" className="bg-brand-gradient h-1.5" />
+      {/* Brand cap with animated laser sweep sheen */}
+      <div
+        aria-hidden="true"
+        className="bg-brand-gradient h-1.5 relative overflow-hidden"
+      >
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-shimmer-sweep"
+        />
+      </div>
 
       <div className="p-5 sm:p-6">
         <AnimatePresence mode="wait" initial={false}>
@@ -182,7 +200,7 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
               variants={motionSafe(crossFade, reduced)}
               initial="hidden"
               animate="visible"
-              exit={reduced ? undefined : 'exit'}
+              exit={reduced ? undefined : "exit"}
             >
               <div
                 ref={successRef}
@@ -193,8 +211,8 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                   Thanks — we have your details
                 </p>
                 <p className="mt-2 text-[0.8125rem] leading-relaxed text-ink-soft">
-                  A counsellor will call you within one working day to confirm your
-                  batch and answer your questions.
+                  A counsellor will call you within one working day to confirm
+                  your batch and answer your questions.
                 </p>
               </div>
 
@@ -212,7 +230,7 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
               variants={motionSafe(crossFade, reduced)}
               initial="hidden"
               animate="visible"
-              exit={reduced ? undefined : 'exit'}
+              exit={reduced ? undefined : "exit"}
             >
               <div className="mb-4 sm:mb-5 flex items-center justify-between gap-2">
                 <h3 className="font-display text-lg sm:text-xl font-bold text-navy-800 tracking-tight">
@@ -227,12 +245,16 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                 ) : null}
               </div>
 
-              <form onSubmit={handleSubmit} noValidate className="space-y-3 sm:space-y-3.5">
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                className="space-y-3 sm:space-y-3.5"
+              >
                 <Field
                   id={`${baseId}-name`}
                   label="Name"
                   value={values.name}
-                  onChange={setField('name')}
+                  onChange={setField("name")}
                   error={errors.name}
                   disabled={isSubmitting}
                   autoComplete="name"
@@ -246,7 +268,7 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                   type="tel"
                   inputMode="numeric"
                   value={values.mobile}
-                  onChange={setField('mobile')}
+                  onChange={setField("mobile")}
                   error={errors.mobile}
                   disabled={isSubmitting}
                   autoComplete="tel"
@@ -259,7 +281,7 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                   type="email"
                   inputMode="email"
                   value={values.email}
-                  onChange={setField('email')}
+                  onChange={setField("email")}
                   error={errors.email}
                   disabled={isSubmitting}
                   autoComplete="email"
@@ -272,7 +294,7 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                     Learning Mode
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {['Online', 'Offline'].map((mode) => (
+                    {["Online", "Offline"].map((mode) => (
                       <button
                         key={mode}
                         type="button"
@@ -280,8 +302,8 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                         disabled={isSubmitting}
                         className={`flex items-center justify-center rounded-lg border py-2 text-xs font-semibold transition-all cursor-pointer ${
                           learningMode === mode
-                            ? 'border-[#07405C] bg-[#07405C] text-white shadow-xs'
-                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                            ? "border-[#07405C] bg-[#07405C] text-white shadow-xs"
+                            : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
                         }`}
                       >
                         <span>{mode}</span>
@@ -304,10 +326,10 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
                   type="submit"
                   variant="primary"
                   size="md"
-                  className="mt-2 w-full h-11 text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                  className="mt-2 w-full h-11 text-sm font-bold shadow-md hover:shadow-xl transition-all animate-shimmer-sweep active:scale-95"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Sending…' : 'Enroll Now'}
+                  {isSubmitting ? "Sending…" : "Enroll Now"}
                 </Button>
               </form>
             </motion.div>
@@ -315,7 +337,7 @@ const EnrollCourseForm = forwardRef(function EnrollCourseForm(
         </AnimatePresence>
       </div>
     </div>
-  )
-})
+  );
+});
 
-export default EnrollCourseForm
+export default EnrollCourseForm;

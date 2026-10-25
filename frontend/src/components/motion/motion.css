@@ -1,0 +1,227 @@
+/*
+  Motion primitives (src/components/motion/). Spec: docs/mockup/lower-home.html.
+
+  Same house rules as src/animations/variants.js: animate transform and opacity
+  only (clip-path where the mockup asks for it), on the shared --ease-brand
+  curve, and settle to a static final state under prefers-reduced-motion.
+
+  Every class and keyframe is prefixed `motion-`: several home sections still
+  inject their own unprefixed `@keyframes marquee` through <style> tags, and an
+  unprefixed name here would silently override or be overridden by them.
+
+  Colours come from the @theme tokens (index.css), never from the mockup's own
+  palette.
+*/
+
+/* Registered so the conic ring's angle can be animated (unregistered custom
+   properties only flip between values, they do not interpolate). */
+@property --ang {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes motion-marquee {
+  to {
+    transform: translateX(calc(-50% - var(--marquee-gap) / 2));
+  }
+}
+
+@keyframes motion-spin {
+  to {
+    --ang: 360deg;
+  }
+}
+
+@layer components {
+  /* Reveal */
+  .motion-reveal {
+    opacity: 0;
+    transform: translateY(2rem);
+    transition:
+      opacity 0.8s var(--ease-brand),
+      transform 0.8s var(--ease-brand);
+    transition-delay: calc(var(--reveal-i, 0) * 60ms);
+  }
+
+  .motion-reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Odometer: 1em windows over 0-9 strips */
+  .motion-odometer {
+    display: inline-flex;
+    align-items: baseline;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .motion-odometer-digit {
+    display: inline-block;
+    height: 1em;
+    overflow: hidden;
+  }
+
+  .motion-odometer-strip {
+    display: block;
+    transition: transform 1.6s var(--ease-brand);
+  }
+
+  .motion-odometer-strip > span {
+    display: block;
+    height: 1em;
+    line-height: 1em;
+  }
+
+  .motion-odometer--static .motion-odometer-strip {
+    transition: none;
+  }
+
+  /* Marquee */
+  .motion-marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .motion-marquee-track {
+    display: flex;
+    gap: var(--marquee-gap);
+    width: max-content;
+    animation: motion-marquee var(--marquee-duration, 38s) linear infinite;
+  }
+
+  .motion-marquee-group {
+    display: flex;
+    flex: none;
+    gap: var(--marquee-gap);
+  }
+
+  /* A repeated copy of the items that lays out as part of the group's flex row. */
+  .motion-marquee-set {
+    display: contents;
+  }
+
+  .motion-marquee--reverse .motion-marquee-track {
+    animation-direction: reverse;
+  }
+
+  .motion-marquee--pause:hover .motion-marquee-track,
+  .motion-marquee:focus-within .motion-marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* Moved by Marquee.jsx's rAF loop instead of the CSS animation. */
+  .motion-marquee--driven .motion-marquee-track {
+    animation: none;
+    will-change: transform;
+  }
+
+  .motion-marquee--static {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .motion-marquee--static .motion-marquee-track {
+    animation: none;
+  }
+
+  /* Conic ring */
+  .motion-conic {
+    position: relative;
+  }
+
+  .motion-conic::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    padding: 2px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--ang),
+      var(--color-brand),
+      transparent 28%,
+      var(--color-brand-deep) 52%,
+      transparent 78%,
+      var(--color-brand)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s;
+    animation: motion-spin 3.2s linear infinite paused;
+  }
+
+  .motion-conic:hover::after,
+  .motion-conic:focus-within::after {
+    opacity: 1;
+    animation-play-state: running;
+  }
+
+  /*
+    Pointer spotlight (useSpotlight.js). The card isolates its own stacking
+    context, so the glow at z-index -1 paints above the card's background but
+    below its content; no child needs repositioning. The card itself must be
+    `position: relative`. --spot-strength tunes the red per surface.
+  */
+  .motion-spot {
+    isolation: isolate;
+  }
+
+  .motion-spot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(
+      var(--spot-size, 24rem) circle at var(--sx, 50%) var(--sy, 50%),
+      color-mix(in srgb, var(--color-brand) var(--spot-strength, 16%), transparent),
+      transparent 65%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s var(--ease-brand);
+  }
+
+  .motion-spot:hover::before,
+  .motion-spot:focus-within::before {
+    opacity: 1;
+  }
+
+  .motion-conic--dark::after {
+    background: conic-gradient(
+      from var(--ang),
+      #fff,
+      transparent 28%,
+      var(--color-brand) 52%,
+      transparent 78%,
+      #fff
+    );
+  }
+}
+
+/* Explicit final states. The global backstop in index.css only shortens
+   durations; a marquee shortened to 0.01ms would jump, so these switch the
+   animations off outright. */
+@media (prefers-reduced-motion: reduce) {
+  .motion-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .motion-odometer-strip {
+    transition: none;
+  }
+
+  .motion-marquee-track,
+  .motion-conic::after {
+    animation: none;
+  }
+}

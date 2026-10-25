@@ -343,12 +343,12 @@ const AppContent = () => {
       );
     }
     const currentHeader =
-      topInset + offerHeaderHeight + (navbarVisible ? navbarGap + navbarHeight : 0);
+      topInset + offerHeaderHeight + (!isCompactHeader && navbarVisible ? navbarGap + navbarHeight : 0);
 
     root.style.setProperty("--app-header", `${currentHeader}px`);
     root.style.setProperty(
       "--app-header-max",
-      `${topInset + offerHeaderHeight + navbarGap + navbarHeight}px`
+      `${topInset + offerHeaderHeight + (isCompactHeader ? 0 : navbarGap + navbarHeight)}px`
     );
   }, [offerHeaderHeight, navbarHeight, navbarVisible, isCompactHeader]);
 
@@ -366,32 +366,31 @@ const AppContent = () => {
       )}
 
       {/* =====================================================
-          FLOATING PILL NAVBAR:
-          - Centered floating pill navbar inspired by Reference Image 2
-          - Hides on scroll down, reappears on scroll up / top.
+          RESPONSIVE NAVBAR:
+          - Source desktop navbar sits beneath the preserved offer strip.
+          - Desktop hides on scroll down; compact navigation stays at the bottom.
       ===================================================== */}
       {!isDashboard && (
         <div
           ref={navbarRef}
-          className={`fixed top-[var(--navbar-top,6.5rem)] lg:top-[var(--navbar-top,3.75rem)] inset-x-4 sm:inset-x-6 lg:inset-x-8 z-40 flex justify-center transition-[transform,opacity] duration-300 ease-in-out ${
-            navbarVisible
+          className={`fixed inset-x-0 z-40 transition-[transform,opacity] duration-300 ease-in-out ${
+            isCompactHeader || navbarVisible
               ? "translate-y-0 opacity-100 pointer-events-auto"
               : "-translate-y-28 opacity-0 pointer-events-none"
           }`}
+          style={{ top: isCompactHeader ? "auto" : "var(--navbar-top, 4rem)", bottom: isCompactHeader ? 0 : "auto" }}
         >
-          <div className="w-full max-w-[76rem]">
-            <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
-          </div>
+          <Navbar onOpenEnquiry={() => setIsEnquiryOpen(true)} />
         </div>
       )}
 
       {/* =====================================================
           TOP HEADER SPACE:
-          - On Home page (/), Hero starts edge-to-edge at top: 0 with internal padding.
-          - On other public pages, add spacer so floating navbar doesn't cover content.
+          - Reserve the measured top header height for the source hero layout.
+          - Compact layouts exclude the bottom navbar from this top spacer.
       ===================================================== */}
-      {!isDashboard && location.pathname !== "/" && (
-        <div aria-hidden="true" className="w-full" style={{ height: "calc(var(--app-header-max, 148px) + 1rem)" }} />
+      {!isDashboard && (
+        <div aria-hidden="true" className="w-full" style={{ height: "var(--app-header-max, 148px)" }} />
       )}
 
       {/* =====================================================

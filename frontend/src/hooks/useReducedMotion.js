@@ -28,3 +28,9 @@ function getServerSnapshot() {
 export default function useReducedMotion() {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }
+
+export function prefersReducedMotion() {
+  return typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+}

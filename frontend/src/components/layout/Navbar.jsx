@@ -16,6 +16,8 @@ import {
   Send,
 } from "lucide-react";
 import useCourses from "../../hooks/useCourses.js";
+import { SOCIAL_LINKS } from "../../data/socialLinks.js";
+import Magnetic from "../ui/Magnetic.jsx";
 
 const MENU_SLUGS = [
   "python-full-stack-development",
@@ -41,18 +43,35 @@ const MOBILE_NAV_ITEMS = [
 const Navbar = ({ onOpenEnquiry }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [courseMenuOpen, setCourseMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const { courses } = useCourses();
 
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled((window.scrollY || 0) > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const menuCourses = MENU_SLUGS.map((slug) =>
-    courses.find((course) => course.slug === slug)
+    courses.find((course) => course.slug === slug),
   ).filter(Boolean);
 
   const navLinkClass = ({ isActive }) =>
-    `relative px-1.5 2xl:px-2 py-1.5 text-sm font-semibold tracking-normal rounded-full transition-all duration-200 flex items-center gap-1 whitespace-nowrap ${
+    `relative py-2 text-sm font-semibold tracking-wide transition-all duration-200 hover-underline-expand ${
       isActive
-        ? "text-[#DF1E26] font-bold bg-[#DF1E26]/8 shadow-2xs"
-        : "text-slate-700 hover:text-[#07405C] hover:bg-slate-100/80"
+        ? "text-[#DF1E26] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#DF1E26] after:rounded-full"
+        : "text-slate-700 hover:text-[#07405C]"
     }`;
 
   const closeMobileMenu = () => {
@@ -80,36 +99,39 @@ const Navbar = ({ onOpenEnquiry }) => {
   return (
     <>
       <nav
-        className="lesuccess-navbar w-full max-w-[76rem] min-h-12 sm:min-h-14 xl:min-h-16 rounded-full bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_32px_rgba(7,64,92,0.09)] px-3 sm:px-4 xl:px-4 2xl:px-5 py-1.5 transition-colors flex items-center justify-between gap-2.5 sm:gap-4 xl:gap-3 2xl:gap-6 mx-auto"
+        className={`w-full transition-all duration-300 border-t lg:border-t-0 lg:border-b ${
+          isScrolled
+            ? "bg-white/95 backdrop-blur-xl border-slate-200/90 shadow-[0_10px_30px_rgba(7,64,92,0.08)]"
+            : "bg-white/90 backdrop-blur-md border-slate-200/70 shadow-xs"
+        }`}
+        style={{
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
       >
         {/* =====================================================
             MAIN NAVBAR CONTAINER:
-            Floating Pill layout inspired by Reference Image 2
+            - Mobile (< lg): Compact bottom bar (h-14 / 56px)
+            - Desktop (>= lg): Full top bar (min-h-[72px])
         ===================================================== */}
-        <div className="flex w-full items-center justify-between gap-2 sm:gap-4 xl:gap-2 2xl:gap-5">
-          {/* Logo & Live Admissions Telemetry */}
-          <div className="flex items-center gap-2.5">
-            <Link
-              to="/"
-              className="flex items-center transition-transform hover:scale-[1.02] active:scale-95"
-              onClick={closeMobileMenu}
-            >
-              <img
-                src="/logo/logo.png"
-                alt="LeSuccess Academy"
-                className="lesuccess-nav-logo h-[26px] sm:h-[30px] xl:h-9 2xl:h-9 w-auto object-contain"
-              />
-            </Link>
-            <span className="hidden 2xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/70 text-[10px] font-mono font-bold text-emerald-700 tracking-wide">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              BATCHES OPEN
-            </span>
-          </div>
+        <div className="mx-auto flex h-14 sm:h-16 lg:min-h-[72px] max-w-7xl items-center justify-between px-5 sm:px-6 lg:px-8">
+          {/* Logo */}
+          <Link
+            to="/"
+            data-cursor-text="Home"
+            className="flex items-center transition-transform hover:scale-[1.02] active:scale-95"
+            onClick={closeMobileMenu}
+          >
+            <img
+              src="/logo/logo.png"
+              alt="LeSuccess Academy"
+              className="h-7 sm:h-8 lg:h-9 xl:h-10 w-auto object-contain"
+            />
+          </Link>
 
           {/* =====================================================
-              DESKTOP CLEAN NAVIGATION (Brilliant.org Archetype)
+              DESKTOP NAVIGATION (>= 1024px / lg)
           ===================================================== */}
-          <div className="hidden lg:flex items-center gap-0.5 2xl:gap-1.5">
+          <div className="hidden items-center gap-3.5 xl:gap-7 lg:flex">
             {/* Home */}
             <NavLink to="/" className={navLinkClass}>
               Home
@@ -161,7 +183,9 @@ const Navbar = ({ onOpenEnquiry }) => {
                 <ChevronDown
                   size={14}
                   className={`transition-transform duration-200 ${
-                    courseMenuOpen ? "rotate-180 text-current" : "text-current opacity-70"
+                    courseMenuOpen
+                      ? "rotate-180 text-[#07405C]"
+                      : "text-slate-400"
                   }`}
                 />
               </NavLink>
@@ -169,7 +193,7 @@ const Navbar = ({ onOpenEnquiry }) => {
               {/* Modern Elevated Dropdown */}
               {courseMenuOpen && menuCourses.length > 0 && (
                 <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3">
-                  <div className="w-80 rounded-2xl border border-slate-200/90 bg-white/98 p-3 shadow-[0_20px_50px_rgba(7,64,92,0.14)] backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-3 py-1.5 mb-1 flex items-center justify-between border-b border-slate-100">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         Popular Programs
@@ -227,44 +251,38 @@ const Navbar = ({ onOpenEnquiry }) => {
           {/* =====================================================
               DESKTOP ENQUIRE CTA
           ===================================================== */}
-          <div className="hidden items-center gap-2 lg:flex 2xl:gap-3">
-            <button
-              type="button"
-              onClick={onOpenEnquiry}
-              className="group inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F44246] to-[#CA164B] px-3 2xl:px-4 py-1.5 lg:py-2 2xl:py-2 text-xs lg:text-[13px] font-bold text-white shadow-[0_4px_16px_rgba(244,66,70,0.35)] transition-all duration-200 hover:brightness-105 hover:shadow-[0_6px_24px_rgba(244,66,70,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-98 cursor-pointer"
-            >
-              <span>Enquire Now</span>
-              <ArrowRight
-                size={14}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
-            </button>
+          <div className="hidden items-center gap-4 lg:flex">
+            <Magnetic strength={0.25}>
+              <button
+                type="button"
+                onClick={onOpenEnquiry}
+                data-cursor-text="Enquire"
+                className="animate-shimmer-sweep btn-glow-brand group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F44246] via-[#DF1E26] to-[#CA164B] px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:brightness-110 active:scale-98 cursor-pointer"
+              >
+                <span>Enquire Now</span>
+                <ArrowRight
+                  size={15}
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                />
+              </button>
+            </Magnetic>
           </div>
 
           {/* =====================================================
-              MOBILE RIGHT CONTROLS: Enquire + Menu Trigger
+              MOBILE 4-SQUARES GRID TRIGGER (LayoutGrid)
           ===================================================== */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <button
-              type="button"
-              onClick={onOpenEnquiry}
-              className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F44246] to-[#CA164B] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:brightness-105 active:scale-95 transition cursor-pointer"
-            >
-              <span>Enquire</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((previous) => !previous)}
-              className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-slate-200 text-[#07405C] hover:bg-slate-50 active:scale-95 transition cursor-pointer"
-              aria-label="Toggle navigation menu"
-              aria-expanded={menuOpen}
-            >
-              <LayoutGrid
-                size={17}
-                className={`transition-colors ${menuOpen ? "text-[#DF1E26]" : "text-[#07405C]"}`}
-              />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((previous) => !previous)}
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-slate-200 text-[#07405C] hover:bg-slate-50 active:scale-95 transition lg:hidden cursor-pointer"
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+          >
+            <LayoutGrid
+              size={20}
+              className={`transition-colors ${menuOpen ? "text-[#DF1E26]" : "text-[#07405C]"}`}
+            />
+          </button>
         </div>
       </nav>
 
@@ -341,8 +359,28 @@ const Navbar = ({ onOpenEnquiry }) => {
                 </button>
               </div>
 
-              {/* Social links stay available in the fixed top rail as this drawer opens. */}
-              <div className="mt-8 flex justify-end border-t border-slate-100 pt-4">
+              {/* Bottom Bar: Social Icons on Left, Close Button 'X' on Right (Image 2) */}
+              <div className="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between">
+                {/* Social Icons */}
+                <div className="flex items-center gap-2">
+                  {SOCIAL_LINKS.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <a
+                        key={item.name}
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={item.name}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-[#07405C] hover:text-white transition-colors"
+                      >
+                        <Icon size={14} />
+                      </a>
+                    );
+                  })}
+                </div>
+
+                {/* Close button at bottom-right matching Image 2 */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -358,7 +396,7 @@ const Navbar = ({ onOpenEnquiry }) => {
               </div>
             </div>
           </>,
-          document.body
+          document.body,
         )}
     </>
   );

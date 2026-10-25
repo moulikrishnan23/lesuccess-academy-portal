@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Mail, Phone, MapPin, MessageCircle, Send, ChevronDown } from "lucide-react";
+import { Mail, Phone, MapPin, Send, ChevronDown } from "lucide-react";
 import { SOCIAL_LINKS } from "../../data/socialLinks.js";
 import useContactSubmit from "../../hooks/useContactSubmit.js";
 import { validateContactForm } from "../../utils/validation.js";
+import SpotlightCard from "../../components/ui/SpotlightCard.jsx";
+import Magnetic from "../../components/ui/Magnetic.jsx";
+import BorderBeam from "../../components/ui/BorderBeam.jsx";
 
 const initialForm = {
   name: "",
@@ -53,7 +56,7 @@ export default function Contact() {
 
     if (Object.keys(validationErrors).length > 0) {
       const firstField = ["name", "mobile", "email"].find(
-        (f) => validationErrors[f]
+        (f) => validationErrors[f],
       );
       document.getElementById(firstField)?.focus();
       return;
@@ -74,9 +77,8 @@ export default function Contact() {
       <div className="max-w-7xl mx-auto">
         {/* 2-Column Side-by-Side Layout for Desktop, Stacks vertically on Mobile */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
           {/* ================= LEFT COLUMN: Contact Form ================= */}
-          <div className="lg:col-span-7 bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-8 lg:p-10">
+          <div className="card-lift-3d lg:col-span-7 bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-8 lg:p-10 transition-all duration-300 hover:shadow-xl">
             <div className="mb-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#07405C]/20 bg-[#07405C]/10 px-3.5 py-1 text-xs font-bold text-[#07405C] mb-3">
                 LET&apos;S CONNECT
@@ -103,7 +105,8 @@ export default function Contact() {
                   Thank you for reaching out!
                 </h3>
                 <p className="text-slate-600 text-sm mt-2 max-w-md mx-auto">
-                  We have received your message and our career advisory team will get back to you shortly.
+                  We have received your message and our career advisory team
+                  will get back to you shortly.
                 </p>
                 <button
                   type="button"
@@ -116,7 +119,10 @@ export default function Contact() {
             ) : (
               <form noValidate onSubmit={handleSend} className="space-y-4">
                 {/* Honeypot: Hidden from real users */}
-                <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+                <div
+                  aria-hidden="true"
+                  className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+                >
                   <label htmlFor="website">Leave this field empty</label>
                   <input
                     id="website"
@@ -189,7 +195,9 @@ export default function Contact() {
                         onChange={handleChange}
                         disabled={isSubmitting}
                         aria-invalid={errors.whoYouAre ? "true" : undefined}
-                        aria-describedby={errors.whoYouAre ? "whoYouAre-error" : undefined}
+                        aria-describedby={
+                          errors.whoYouAre ? "whoYouAre-error" : undefined
+                        }
                         className={`w-full h-12 appearance-none rounded-full px-6 pr-12 text-sm focus:outline-none focus:ring-2 disabled:opacity-60 transition-all cursor-pointer ${
                           !form.whoYouAre ? "text-slate-400" : "text-slate-700"
                         } ${
@@ -198,12 +206,39 @@ export default function Contact() {
                             : "bg-[#F5F8FC] focus:bg-white focus:ring-[#07405C] border border-slate-200"
                         }`}
                       >
-                        <option value="" className="text-slate-400">Who you are?</option>
-                        <option value="College Student" className="text-slate-700 bg-white">College Student / Fresher</option>
-                        <option value="Working Professional" className="text-slate-700 bg-white">Working Professional</option>
-                        <option value="Career Switcher" className="text-slate-700 bg-white">Career Switcher</option>
-                        <option value="Corporate Representative" className="text-slate-700 bg-white">Corporate / HR</option>
-                        <option value="Other" className="text-slate-700 bg-white">Other</option>
+                        <option value="" className="text-slate-400">
+                          Who you are?
+                        </option>
+                        <option
+                          value="College Student"
+                          className="text-slate-700 bg-white"
+                        >
+                          College Student / Fresher
+                        </option>
+                        <option
+                          value="Working Professional"
+                          className="text-slate-700 bg-white"
+                        >
+                          Working Professional
+                        </option>
+                        <option
+                          value="Career Switcher"
+                          className="text-slate-700 bg-white"
+                        >
+                          Career Switcher
+                        </option>
+                        <option
+                          value="Corporate Representative"
+                          className="text-slate-700 bg-white"
+                        >
+                          Corporate / HR
+                        </option>
+                        <option
+                          value="Other"
+                          className="text-slate-700 bg-white"
+                        >
+                          Other
+                        </option>
                       </select>
                       <ChevronDown
                         size={18}
@@ -211,7 +246,10 @@ export default function Contact() {
                       />
                     </div>
                     {errors.whoYouAre && (
-                      <p id="whoYouAre-error" className="mt-1 text-xs text-red-600 font-medium pl-4">
+                      <p
+                        id="whoYouAre-error"
+                        className="mt-1 text-xs text-red-600 font-medium pl-4"
+                      >
                         {errors.whoYouAre}
                       </p>
                     )}
@@ -230,7 +268,9 @@ export default function Contact() {
                         onChange={handleChange}
                         disabled={isSubmitting}
                         aria-invalid={errors.lookingFor ? "true" : undefined}
-                        aria-describedby={errors.lookingFor ? "lookingFor-error" : undefined}
+                        aria-describedby={
+                          errors.lookingFor ? "lookingFor-error" : undefined
+                        }
                         className={`w-full h-12 appearance-none rounded-full px-6 pr-12 text-sm focus:outline-none focus:ring-2 disabled:opacity-60 transition-all cursor-pointer ${
                           !form.lookingFor ? "text-slate-400" : "text-slate-700"
                         } ${
@@ -239,14 +279,51 @@ export default function Contact() {
                             : "bg-[#F5F8FC] focus:bg-white focus:ring-[#07405C] border border-slate-200"
                         }`}
                       >
-                        <option value="" className="text-slate-400">You looking for?</option>
-                        <option value="Full Stack Java Development" className="text-slate-700 bg-white">Full Stack Java Development</option>
-                        <option value="Python Full Stack Development" className="text-slate-700 bg-white">Python Full Stack Development</option>
-                        <option value="Data Analytics & AI" className="text-slate-700 bg-white">Data Analytics & AI</option>
-                        <option value="AWS Cloud & DevOps" className="text-slate-700 bg-white">AWS Cloud & DevOps</option>
-                        <option value="Internship Program" className="text-slate-700 bg-white">Internship Program</option>
-                        <option value="Corporate Training" className="text-slate-700 bg-white">Corporate Training</option>
-                        <option value="Other" className="text-slate-700 bg-white">Other Query</option>
+                        <option value="" className="text-slate-400">
+                          You looking for?
+                        </option>
+                        <option
+                          value="Full Stack Java Development"
+                          className="text-slate-700 bg-white"
+                        >
+                          Full Stack Java Development
+                        </option>
+                        <option
+                          value="Python Full Stack Development"
+                          className="text-slate-700 bg-white"
+                        >
+                          Python Full Stack Development
+                        </option>
+                        <option
+                          value="Data Analytics & AI"
+                          className="text-slate-700 bg-white"
+                        >
+                          Data Analytics & AI
+                        </option>
+                        <option
+                          value="AWS Cloud & DevOps"
+                          className="text-slate-700 bg-white"
+                        >
+                          AWS Cloud & DevOps
+                        </option>
+                        <option
+                          value="Internship Program"
+                          className="text-slate-700 bg-white"
+                        >
+                          Internship Program
+                        </option>
+                        <option
+                          value="Corporate Training"
+                          className="text-slate-700 bg-white"
+                        >
+                          Corporate Training
+                        </option>
+                        <option
+                          value="Other"
+                          className="text-slate-700 bg-white"
+                        >
+                          Other Query
+                        </option>
                       </select>
                       <ChevronDown
                         size={18}
@@ -254,7 +331,10 @@ export default function Contact() {
                       />
                     </div>
                     {errors.lookingFor && (
-                      <p id="lookingFor-error" className="mt-1 text-xs text-red-600 font-medium pl-4">
+                      <p
+                        id="lookingFor-error"
+                        className="mt-1 text-xs text-red-600 font-medium pl-4"
+                      >
                         {errors.lookingFor}
                       </p>
                     )}
@@ -284,26 +364,37 @@ export default function Contact() {
                       disabled={isSubmitting}
                       placeholder="What help you want? (Optional message)"
                       aria-invalid={errors.message ? "true" : undefined}
-                      aria-describedby={errors.message ? "message-error" : undefined}
+                      aria-describedby={
+                        errors.message ? "message-error" : undefined
+                      }
                       className="w-full rounded-2xl bg-[#F5F8FC] px-6 py-4 text-sm text-slate-700 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#07405C] focus:bg-white border border-slate-200 transition-all disabled:opacity-60"
                     />
                     {errors.message && (
-                      <p id="message-error" className="mt-1 text-xs text-red-600 font-medium pl-4">
+                      <p
+                        id="message-error"
+                        className="mt-1 text-xs text-red-600 font-medium pl-4"
+                      >
                         {errors.message}
                       </p>
                     )}
                   </div>
                 </div>
 
-                {/* Submit button: Pill shaped, prominent */}
-                <div className="pt-3">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white font-bold py-3.5 px-10 rounded-full hover:brightness-105 active:scale-98 transition-all shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer"
+                {/* Submit button: Pill shaped, centered in middle with laser shimmer sheen */}
+                <div className="pt-3 flex justify-center">
+                  <Magnetic
+                    strength={0.25}
+                    className="w-full sm:w-auto flex justify-center"
                   >
-                    {isSubmitting ? "Sending..." : "Send Message"} <Send size={16} />
-                  </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#F44246] to-[#CA164B] text-white font-bold py-3.5 px-10 rounded-full hover:brightness-105 active:scale-95 transition-all shadow-md hover:shadow-xl disabled:opacity-60 cursor-pointer animate-shimmer-sweep btn-glow-brand"
+                    >
+                      {isSubmitting ? "Sending..." : "Send Message"}{" "}
+                      <Send size={16} />
+                    </button>
+                  </Magnetic>
                 </div>
               </form>
             )}
@@ -311,8 +402,19 @@ export default function Contact() {
 
           {/* ================= RIGHT COLUMN: Info Card + Map ================= */}
           <div className="lg:col-span-5 flex flex-col gap-6">
-            {/* Deep Navy Gradient Contact Info Card */}
-            <div className="bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] rounded-3xl p-6 sm:p-8 text-white flex flex-col gap-5 shadow-xl relative overflow-hidden">
+            {/* Deep Navy Gradient Contact Info Card with 3D Spotlight Tilt */}
+            <SpotlightCard
+              tilt={true}
+              maxTilt={6}
+              spotlightColor="rgba(255, 255, 255, 0.16)"
+              className="card-lift-3d bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#013550] rounded-3xl p-6 sm:p-8 text-white flex flex-col gap-5 shadow-xl relative overflow-hidden transition-all duration-300 hover:shadow-2xl border-0"
+            >
+              <BorderBeam
+                size={220}
+                duration={8}
+                colorFrom="#00bcd4"
+                colorTo="#DF1E26"
+              />
               {/* Subtle ambient decorative blur */}
               <div
                 aria-hidden="true"
@@ -325,10 +427,16 @@ export default function Contact() {
                 </div>
                 <div className="text-sm leading-relaxed">
                   <p className="font-semibold text-slate-200">Email Us</p>
-                  <a href="mailto:training@lesuccess.in" className="hover:text-[#F44246] transition-colors block">
+                  <a
+                    href="mailto:training@lesuccess.in"
+                    className="hover:text-[#F44246] transition-colors block"
+                  >
                     training@lesuccess.in
                   </a>
-                  <a href="mailto:contact@lesuccess.in" className="hover:text-[#F44246] transition-colors block text-slate-300">
+                  <a
+                    href="mailto:contact@lesuccess.in"
+                    className="hover:text-[#F44246] transition-colors block text-slate-300"
+                  >
                     contact@lesuccess.in
                   </a>
                 </div>
@@ -340,29 +448,47 @@ export default function Contact() {
                 </div>
                 <div className="text-sm leading-relaxed">
                   <p className="font-semibold text-slate-200">Call Us</p>
-                  <a href="tel:+918012060000" className="hover:text-[#F44246] transition-colors block">
+                  <a
+                    href="tel:+918012060000"
+                    className="hover:text-[#F44246] transition-colors block"
+                  >
                     +91 80120 60000
                   </a>
-                  <a href="tel:+918189822000" className="hover:text-[#F44246] transition-colors block text-slate-300">
+                  <a
+                    href="tel:+918189822000"
+                    className="hover:text-[#F44246] transition-colors block text-slate-300"
+                  >
                     +91 81898 22000
                   </a>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5 relative z-10">
-                <div className="p-2.5 rounded-xl bg-white/10 text-[#F44246] shrink-0">
+                <div className="p-2.5 rounded-xl bg-white/10 text-[#F44246] shrink-0 relative">
+                  <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                  </span>
                   <MapPin size={18} />
                 </div>
                 <div className="text-sm leading-relaxed">
-                  <p className="font-semibold text-slate-200">Our Center</p>
-                  <p className="text-slate-300">
-                    4th Floor, Tristar Tower, Avinashi road, Lakshmi Mills, Coimbatore, Tamil Nadu - 641037
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-slate-200">Our Center</p>
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.2 rounded-full uppercase tracking-wider">
+                      Live Campus
+                    </span>
+                  </div>
+                  <p className="text-slate-300 mt-0.5">
+                    4th Floor, Tristar Tower, Avinashi road, Lakshmi Mills,
+                    Coimbatore, Tamil Nadu - 641037
                   </p>
                 </div>
               </div>
 
               <div className="pt-2 border-t border-white/10 relative z-10">
-                <p className="text-sm font-semibold mb-3 text-slate-200">Follow Us</p>
+                <p className="text-sm font-semibold mb-3 text-slate-200">
+                  Follow Us
+                </p>
                 <div className="flex items-center gap-2.5">
                   {SOCIAL_LINKS.map(({ icon: Icon, href, name }) => (
                     <a
@@ -371,17 +497,17 @@ export default function Contact() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={name}
-                      className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-gradient-to-r hover:from-[#F44246] hover:to-[#CA164B] hover:scale-110 active:scale-95 transition-all shadow-xs"
+                      className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-gradient-to-r hover:from-[#F44246] hover:to-[#CA164B] hover:scale-115 hover:-translate-y-1 active:scale-95 transition-all duration-300 shadow-xs hover:shadow-[0_6px_16px_rgba(223,30,38,0.45)]"
                     >
                       <Icon size={16} />
                     </a>
                   ))}
                 </div>
               </div>
-            </div>
+            </SpotlightCard>
 
-            {/* Google Map Embed directly below dark teal card */}
-            <div className="rounded-3xl overflow-hidden shadow-sm border border-slate-200 h-[260px] sm:h-[300px] w-full">
+            {/* Google Map Embed directly below dark teal card with hover depth */}
+            <div className="rounded-3xl overflow-hidden shadow-sm border border-slate-200 h-[260px] sm:h-[300px] w-full transition-all duration-300 hover:shadow-xl hover:border-slate-300">
               <iframe
                 title="LeSuccess location map"
                 className="w-full h-full border-0"
@@ -391,7 +517,6 @@ export default function Contact() {
               />
             </div>
           </div>
-
         </div>
       </div>
     </div>

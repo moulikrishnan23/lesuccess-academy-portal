@@ -24,6 +24,16 @@ const GOOGLE_MAPS_URL = "https://www.google.com/maps/place/LeSuccess/@11.0118985
 
 export default function Footer() {
   return (
+    <>
+      <div className="lh-wave" aria-hidden="true">
+        <div>
+          {[0, 1].map((part) => (
+            <svg key={part} viewBox="0 0 1440 70" preserveAspectRatio="none">
+              <path d="M0 35C180 0 360 70 540 35S900 0 1080 35 1260 70 1440 35V70H0Z" />
+            </svg>
+          ))}
+        </div>
+      </div>
     <footer className="w-full bg-gradient-to-br from-[#024D72] via-[#07405C] to-[#012f45] text-white overflow-hidden relative">
       {/* Top brand gradient accent bar */}
       <div className="h-1.5 w-full bg-gradient-to-r from-[#DF1E26] via-[#F44246] to-[#CA164B]" />
@@ -199,5 +209,6 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }
