@@ -26,7 +26,7 @@ export default function FeatureCard({
         tilt={true}
         maxTilt={7}
         spotlightColor="rgba(223, 30, 38, 0.12)"
-        data-cursor-text="Feature"
+        data-cursor-text="Service"
         className="group card-lift-3d relative flex h-full flex-col items-center rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 text-center shadow-xs transition-all duration-300 hover:border-[#07405C]/40 hover:shadow-2xl cursor-default"
       >
         <BorderBeam

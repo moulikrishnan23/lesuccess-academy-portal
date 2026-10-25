@@ -115,6 +115,7 @@ const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
 
       {/* Actual card — with 3D Spotlight tilt */}
       <SpotlightCard
+        data-cursor-text="Profile"
         tilt={true}
         maxTilt={6}
         spotlightColor="rgba(7, 64, 92, 0.12)"

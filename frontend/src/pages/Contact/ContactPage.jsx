@@ -339,6 +339,7 @@ export default function Contact() {
           <div className="lg:col-span-5 flex flex-col gap-6">
             {/* Deep Navy Gradient Contact Info Card with 3D Spotlight Tilt */}
             <SpotlightCard
+              data-cursor-text="Contact"
               tilt={true}
               maxTilt={6}
               spotlightColor="rgba(255, 255, 255, 0.16)"

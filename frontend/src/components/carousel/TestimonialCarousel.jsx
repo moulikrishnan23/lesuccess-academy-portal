@@ -101,6 +101,7 @@ export default function TestimonialCarousel({
         wider, so the panel lifts off the white page at the same apparent height
         as the card without shouting.
       */
+      data-cursor-text="Review"
       className="motion-spot relative overflow-hidden rounded-card bg-section ring-1 ring-navy-900/[0.05] shadow-[0_1px_2px_rgba(18,58,92,0.04),0_10px_24px_-12px_rgba(18,58,92,0.10),0_36px_64px_-32px_rgba(18,58,92,0.22)]"
     >
       <motion.div

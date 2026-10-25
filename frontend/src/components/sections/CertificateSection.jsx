@@ -343,7 +343,7 @@ export default function CertificateSection({ course, imageUrl }) {
             The certificate is light-on-light against the section card, so it
             carries its own hairline ring and a soft shadow to hold an edge.
           */}
-          <div className="w-full max-w-[240px] shrink-0 overflow-hidden rounded-lg bg-white shadow-[0_2px_14px_rgba(15,64,52,0.14)] ring-1 ring-black/5">
+          <div data-cursor-text="Certify" className="w-full max-w-[240px] shrink-0 overflow-hidden rounded-lg bg-white shadow-[0_2px_14px_rgba(15,64,52,0.14)] ring-1 ring-black/5">
             {showImage ? (
               <img
                 src={imageUrl}

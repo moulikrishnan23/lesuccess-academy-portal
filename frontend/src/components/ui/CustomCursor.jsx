@@ -43,6 +43,10 @@ const isPublicPage = () => !/^\/(admin|trainer|login)(\/|$)/.test(window.locatio
 function autoLabel(el) {
   if (el.getAttribute("aria-haspopup") === "listbox") return "Choose";
   if (el.getAttribute("role") === "option") return "Pick";
+  // Accordion-style toggles read as what a click does, not their long title.
+  if (el.hasAttribute("aria-expanded") && !el.hasAttribute("aria-haspopup") && !el.hasAttribute("aria-label")) {
+    return el.getAttribute("aria-expanded") === "true" ? "Close" : "Expand";
+  }
   const text = el.getAttribute("aria-label") || el.textContent || "";
   const word = text
     .split(/\s+/)

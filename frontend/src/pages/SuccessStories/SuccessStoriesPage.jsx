@@ -151,6 +151,7 @@ export default function SuccessStoriesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {activeImages.map((image, idx) => (
                   <SpotlightCard
+                    data-cursor-text="View"
                     key={image.id}
                     tilt={true}
                     maxTilt={6}
@@ -210,6 +211,7 @@ export default function SuccessStoriesPage() {
                   <div
                     key={reel.id}
                     className="w-full max-w-[260px] sm:max-w-[280px] flex justify-center"
+                    data-cursor-text="Watch"
                   >
                     <InstagramReelEmbed
                       reelUrl={reel.reelUrl}
