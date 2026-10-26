@@ -86,12 +86,12 @@ lesuccess:
   # Google Sheets sync
   sheets:
     enabled: ${LESUCCESS_SHEETS_ENABLED:false}
-    spreadsheet-id: ${SHEETS_SPREADSHEET_ID:}
+    spreadsheet-id: ${LESUCCESS_SHEETS_SPREADSHEET_ID:${SHEETS_SPREADSHEET_ID:}}
     # Two credential sources; base64 wins when both are set. Both default to empty so
     # GoogleSheetsConfig can fail fast naming the missing variable, rather than the
     # placeholder resolver failing with a less obvious message.
-    credentials-base64: ${SHEETS_CREDENTIALS_BASE64:}
-    credentials-path: ${SHEETS_CREDENTIALS_PATH:}
+    credentials-base64: ${LESUCCESS_SHEETS_CREDENTIALS_BASE64:${SHEETS_CREDENTIALS_BASE64:}}
+    credentials-path: ${LESUCCESS_SHEETS_CREDENTIALS_PATH:${SHEETS_CREDENTIALS_PATH:}}
     sheet-name: Contact Messages
     # Socket timeouts for every Sheets call. The google-http-client default is
     # 20000ms for both, which is what made an unreachable Sheets endpoint cost

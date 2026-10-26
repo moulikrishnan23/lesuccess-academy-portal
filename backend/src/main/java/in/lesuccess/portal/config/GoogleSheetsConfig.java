@@ -154,28 +154,42 @@ public class GoogleSheetsConfig {
      * to a temp file, so there is no window in which the key exists on disk.
      */
     private InputStream openCredentialsStream() throws IOException {
-        if (StringUtils.hasText(credentialsBase64)) {
-            log.info("Loading Google Sheets credentials from LESUCCESS_SHEETS_CREDENTIALS_BASE64 (in memory)");
+        String base64 = StringUtils.hasText(credentialsBase64)
+                ? credentialsBase64
+                : System.getenv("LESUCCESS_SHEETS_CREDENTIALS_BASE64");
+        if (!StringUtils.hasText(base64)) {
+            base64 = System.getenv("SHEETS_CREDENTIALS_BASE64");
+        }
+
+        if (StringUtils.hasText(base64)) {
+            log.info("Loading Google Sheets credentials from base64 env var (in memory)");
             // Secret managers and CI systems routinely line-wrap long base64 values, and the
             // strict decoder rejects embedded whitespace — strip it rather than fail on a valid key.
             byte[] decoded;
             try {
-                decoded = Base64.getDecoder().decode(credentialsBase64.replaceAll("\\s", ""));
+                decoded = Base64.getDecoder().decode(base64.replaceAll("\\s", ""));
             } catch (IllegalArgumentException ex) {
                 throw new IllegalStateException(
-                        "lesuccess.sheets.credentials-base64 (env LESUCCESS_SHEETS_CREDENTIALS_BASE64) "
+                        "Google Sheets base64 credentials (LESUCCESS_SHEETS_CREDENTIALS_BASE64 / SHEETS_CREDENTIALS_BASE64) "
                                 + "is not valid base64. Expected the base64-encoded service account JSON key.", ex);
             }
             return new ByteArrayInputStream(decoded);
         }
 
-        if (StringUtils.hasText(credentialsPath)) {
-            File file = new File(credentialsPath);
+        String path = StringUtils.hasText(credentialsPath)
+                ? credentialsPath
+                : System.getenv("LESUCCESS_SHEETS_CREDENTIALS_PATH");
+        if (!StringUtils.hasText(path)) {
+            path = System.getenv("SHEETS_CREDENTIALS_PATH");
+        }
+
+        if (StringUtils.hasText(path)) {
+            File file = new File(path);
             if (file.exists() && file.isFile()) {
-                log.info("Loading Google Sheets credentials from file: {}", credentialsPath);
+                log.info("Loading Google Sheets credentials from file: {}", path);
                 return new FileInputStream(file);
             }
-            log.warn("Configured credentials-path '{}' does not exist on disk.", credentialsPath);
+            log.warn("Configured credentials-path '{}' does not exist on disk.", path);
         }
 
         // Automatic local dev fallbacks for convenience if key file is present in project

@@ -47,9 +47,9 @@ lesuccess:
 
   sheets:
     enabled: ${LESUCCESS_SHEETS_ENABLED:false}
-    spreadsheet-id: ${SHEETS_SPREADSHEET_ID:}
+    spreadsheet-id: ${LESUCCESS_SHEETS_SPREADSHEET_ID:${SHEETS_SPREADSHEET_ID:}}
     # Base64-encoded service account JSON, decoded in memory at startup — never written to disk.
-    credentials-base64: ${SHEETS_CREDENTIALS_BASE64:}
+    credentials-base64: ${LESUCCESS_SHEETS_CREDENTIALS_BASE64:${SHEETS_CREDENTIALS_BASE64:}}
 
   cloudinary:
     cloud-name: ${CLOUDINARY_CLOUD_NAME:}
