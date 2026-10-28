@@ -47,18 +47,6 @@ export default function LoginPage() {
     }
   }
 
-  // Helper function to fill demo credentials
-  const fillDemo = (userType) => {
-    if (userType === 'admin') {
-      setUsernameOrEmail('admin@lesuccess.in')
-      setPassword('admin123')
-    } else {
-      setUsernameOrEmail('trainer@lesuccess.in')
-      setPassword('trainer123')
-    }
-    setError('')
-  }
-
   return (
     <div className="flex min-h-[85vh] items-center justify-center bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-xl">
@@ -68,7 +56,7 @@ export default function LoginPage() {
             <ShieldCheck size={32} />
           </div>
           <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-[#084b66] sm:text-3xl">
-            Staff Portal Login
+            Website Administration Login
           </h2>
           <p className="mt-2 text-sm text-slate-500">
             Sign in to access your Admin or Trainer Dashboard
@@ -148,27 +136,6 @@ export default function LoginPage() {
             {isSubmitting ? 'Signing in…' : 'Sign In to Dashboard'}
           </button>
         </form>
-
-        {/* Demo Credentials Helper */}
-        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs text-slate-600">
-          <p className="font-semibold text-slate-700 mb-2">Demo Quick-Fill:</p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => fillDemo('admin')}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium hover:bg-slate-100 transition"
-            >
-              Fill Admin (admin@lesuccess.in)
-            </button>
-            <button
-              type="button"
-              onClick={() => fillDemo('trainer')}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium hover:bg-slate-100 transition"
-            >
-              Fill Trainer (trainer@lesuccess.in)
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   )

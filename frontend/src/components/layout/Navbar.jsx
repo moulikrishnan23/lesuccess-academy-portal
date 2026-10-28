@@ -32,6 +32,9 @@ const MENU_SLUGS = [
   "cybersecurity",
 ];
 
+const FACTOHR_PORTAL_URL =
+  "https://app.factohr.com/lesuccess/Welcome?t=1793010715227#";
+
 const MOBILE_NAV_ITEMS = [
   { name: "Home", path: "/", icon: Home },
   { name: "About", path: "/about", icon: GraduationCap },
@@ -40,7 +43,12 @@ const MOBILE_NAV_ITEMS = [
   { name: "Courses", path: "/courses", icon: BookOpen },
   { name: "Gallery", path: "/gallery", icon: ImageIcon },
   { name: "Contact", path: "/contact", icon: Send },
-  { name: "Employee Login", path: "/login", icon: LogIn },
+  {
+    name: "Employee Login",
+    path: FACTOHR_PORTAL_URL,
+    icon: LogIn,
+    isExternal: true,
+  },
 ];
 
 const Navbar = ({ onOpenEnquiry }) => {
@@ -258,13 +266,15 @@ const Navbar = ({ onOpenEnquiry }) => {
           ===================================================== */}
           <div className="hidden items-center gap-3 lg:flex">
             <Magnetic strength={0.2}>
-              <Link
-                to="/login"
+              <a
+                href={FACTOHR_PORTAL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 data-cursor-text="Employee Login"
                 className="inline-flex h-[42px] w-36 items-center justify-center rounded-xl border border-[#07405C] bg-white px-3 text-sm font-bold text-[#07405C] shadow-sm transition hover:bg-[#07405C] hover:text-white"
               >
                 Employee Login
-              </Link>
+              </a>
             </Magnetic>
             <Magnetic strength={0.25}>
               <button
@@ -336,6 +346,23 @@ const Navbar = ({ onOpenEnquiry }) => {
               <div className="grid grid-cols-3 gap-y-6 gap-x-2 text-center">
                 {MOBILE_NAV_ITEMS.map((item) => {
                   const Icon = item.icon;
+                  if (item.isExternal) {
+                    return (
+                      <a
+                        key={item.name}
+                        href={item.path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={closeMobileMenu}
+                        className="flex flex-col items-center justify-center gap-2 p-2 rounded-2xl text-slate-700 hover:text-[#07405C] hover:bg-slate-50 active:scale-95 transition-all"
+                      >
+                        <Icon size={24} />
+                        <span className="text-xs font-semibold tracking-wide">
+                          {item.name}
+                        </span>
+                      </a>
+                    );
+                  }
                   return (
                     <NavLink
                       key={item.path}
