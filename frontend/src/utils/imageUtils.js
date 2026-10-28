@@ -63,7 +63,7 @@ export const getCourseLogo = (course) => {
    */
   const icon = course?.iconUrl || course?.icon_url || course?.logoUrl || course?.logo_url
   if (icon && typeof icon === 'string' && icon.trim()) {
-    return getImageUrl(icon)
+    return getImageUrl(icon, '', { width: 160 })
   }
 
   return COURSE_LOGO_PLACEHOLDER

@@ -1,6 +1,5 @@
 import { normalizeOfficialContactSettings } from "../data/contactDetails.js";
 import apiClient from './apiClient.js'
-import { isMockEnabled, mockGetSettings } from '../mocks/mockGateway.js'
 
 /**
  * GET /api/settings returns site-wide key/value settings. This page reads
@@ -34,8 +33,8 @@ export function normalizeSettings(raw) {
 }
 
 export async function getAll({ signal } = {}) {
-  if (isMockEnabled()) {
-    return normalizeSettings(await mockGetSettings())
+  if (import.meta.env.VITE_USE_MOCKS === 'true') {
+    return normalizeSettings(await (await import('../mocks/mockGateway.js')).mockGetSettings())
   }
 
   const { data } = await apiClient.get('/api/settings', { signal })

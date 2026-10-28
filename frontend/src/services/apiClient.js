@@ -56,6 +56,7 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (axios.isCancel(error) || error?.config?.signal?.aborted) return Promise.reject(error)
     const config = error?.config
     if (
       config &&

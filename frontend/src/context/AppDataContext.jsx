@@ -28,6 +28,8 @@ function loadCache(key) {
     const raw = typeof window !== "undefined" ? localStorage.getItem(key) : null;
     if (!raw) return null;
     const parsed = JSON.parse(raw);
+    // Public content only. Revalidate on mount; never revive indefinitely old records.
+    if (!Number.isFinite(parsed?.savedAt) || Date.now() - parsed.savedAt > 5 * 60 * 1000) return null;
     if (parsed && (Array.isArray(parsed.data) || (parsed.data && typeof parsed.data === 'object' && (Array.isArray(parsed.data.images) || Array.isArray(parsed.data.reels))))) {
       return parsed;
     }
@@ -74,9 +76,7 @@ export function AppDataProvider({ children }) {
       const list = await courseApi.getAll();
       if (currentAttempt !== coursesAttempt.current) return;
       const data = Array.isArray(list) ? list : [];
-      if (data.length > 0) {
-        saveCache("lesuccess_cache_courses_v1", data);
-      }
+      saveCache("lesuccess_cache_courses_v1", data);
       setCoursesState({
         status: data.length === 0 ? "empty" : "success",
         data,
@@ -115,46 +115,13 @@ export function AppDataProvider({ children }) {
       error: null,
     }));
     try {
-      const [teamRes, catRes] = await Promise.allSettled([
-        apiClient.get("/api/team-members"),
-        apiClient.get("/api/team-categories"),
-      ]);
-
+      const teamRes = await apiClient.get("/api/team-members");
       if (currentAttempt !== teamAttempt.current) return;
-
-      if (teamRes.status === "fulfilled" && teamRes.value?.data?.data) {
-        const members = Array.isArray(teamRes.value.data.data)
-          ? teamRes.value.data.data
-          : [];
-        let categories = ["Management Visionaries", "Tech Visionaries"];
-        if (
-          catRes.status === "fulfilled" &&
-          catRes.value?.data?.data &&
-          Array.isArray(catRes.value.data.data)
-        ) {
-          const names = catRes.value.data.data.map((c) => {
-            const raw = (c.name || '').trim();
-            const lower = raw.toLowerCase();
-            if (lower === 'management team' || lower === 'management visionaries' || lower === 'management') {
-              return 'Management Visionaries';
-            }
-            if (
-              lower === 'technical leadership team' ||
-              lower === 'tech visionaries' ||
-              lower === 'our mentors' ||
-              lower.includes('technical leadership')
-            ) {
-              return 'Tech Visionaries';
-            }
-            return raw;
-          });
-          categories = Array.from(
-            new Set(["Management Visionaries", "Tech Visionaries", ...names])
-          );
-        }
-        if (members.length > 0) {
-          saveCache("lesuccess_cache_team_v1", members, { categories });
-        }
+      if (Array.isArray(teamRes?.data?.data)) {
+        const members = teamRes.data.data;
+        // Public pages derive category filters from members, not category administration.
+        const categories = ["Management Visionaries", "Tech Visionaries"];
+        saveCache("lesuccess_cache_team_v1", members, { categories });
         setTeamState({
           status: members.length === 0 ? "empty" : "success",
           data: members,
@@ -164,7 +131,7 @@ export function AppDataProvider({ children }) {
         });
       } else {
         throw (
-          teamRes.reason || new Error("Failed to load team members from server")
+          new Error("Failed to load team members from server")
         );
       }
     } catch (err) {
@@ -202,9 +169,7 @@ export function AppDataProvider({ children }) {
       const list = await listUpcoming();
       if (currentAttempt !== programsAttempt.current) return;
       const data = Array.isArray(list) ? list : [];
-      if (data.length > 0) {
-        saveCache("lesuccess_cache_programs_v1", data);
-      }
+      saveCache("lesuccess_cache_programs_v1", data);
       setProgramsState({
         status: data.length === 0 ? "empty" : "success",
         data,
@@ -246,9 +211,7 @@ export function AppDataProvider({ children }) {
       if (currentAttempt !== testimonialsAttempt.current) return;
       const apiData = Array.isArray(res) ? res : res?.data;
       const data = Array.isArray(apiData) ? apiData : [];
-      if (data.length > 0) {
-        saveCache("lesuccess_cache_testimonials_v1", data);
-      }
+      saveCache("lesuccess_cache_testimonials_v1", data);
       setTestimonialsState({
         status: data.length === 0 ? "empty" : "success",
         data,
@@ -289,9 +252,7 @@ export function AppDataProvider({ children }) {
       const { data: resData } = await apiClient.get("/api/gallery/categories");
       if (currentAttempt !== galleryAttempt.current) return;
       const data = Array.isArray(resData?.data) ? resData.data : [];
-      if (data.length > 0) {
-        saveCache("lesuccess_cache_gallery_v1", data);
-      }
+      saveCache("lesuccess_cache_gallery_v1", data);
       setGalleryState({
         status: data.length === 0 ? "empty" : "success",
         data,
@@ -340,9 +301,7 @@ export function AppDataProvider({ children }) {
       const data = { images, reels };
       const hasData = images.length > 0 || reels.length > 0;
       
-      if (hasData) {
-        saveCache("lesuccess_cache_successstories_v1", data);
-      }
+      saveCache("lesuccess_cache_successstories_v1", data);
       setSuccessStoriesState({
         status: hasData ? "success" : "empty",
         data,
@@ -362,12 +321,17 @@ export function AppDataProvider({ children }) {
 
   // INITIAL LOAD
   useEffect(() => {
-    fetchCourses();
-    fetchTeam();
-    fetchPrograms();
-    fetchTestimonials();
-    fetchGallery();
-    fetchSuccessStories();
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      fetchCourses();
+      fetchTeam();
+      fetchPrograms();
+      fetchTestimonials();
+      fetchGallery();
+      fetchSuccessStories();
+    });
+    return () => { active = false; };
   }, [fetchCourses, fetchTeam, fetchPrograms, fetchTestimonials, fetchGallery, fetchSuccessStories]);
 
   const value = useMemo(() => ({

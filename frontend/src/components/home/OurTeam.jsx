@@ -27,10 +27,10 @@ const FeaturedTeamCard = ({ member }) => {
 
   return (
     <div className="group relative flex flex-col items-center transition-all duration-300 hover:-translate-y-2" data-cursor-text="Profile">
-      {/* Background Image Container with TeamBg.png */}
+      {/* Background Image Container with TeamBg.webp */}
       <div
         className="relative aspect-[383/400] w-full overflow-hidden rounded-3xl bg-cover bg-center bg-no-repeat shadow-[0_4px_20px_rgba(7,64,92,0.06)] border border-slate-200/90 transition-all duration-300 group-hover:shadow-[0_20px_40px_rgba(7,64,92,0.12)] group-hover:border-[#07405C]/35"
-        style={{ backgroundImage: "url('/home/TeamBg.png')" }}
+        style={{ backgroundImage: "url('/home/TeamBg.webp')" }}
       >
         <img
           src={imgSrc}

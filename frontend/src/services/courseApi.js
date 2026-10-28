@@ -1,9 +1,4 @@
 import apiClient from './apiClient.js'
-import {
-  isMockEnabled,
-  mockGetCourseBySlug,
-  mockGetCourses,
-} from '../mocks/mockGateway.js'
 
 /*
  * KEY CASING IS SETTLED — the snake_case fallbacks this file used to carry are
@@ -244,8 +239,8 @@ export async function getAll({ signal } = {}) {
     // Backend wraps in ApiResponse<T>; real list/page is in data.data
     return normalizeCourseList(data?.data ?? data)
   } catch (err) {
-    if (isMockEnabled()) {
-      return normalizeCourseList(await mockGetCourses())
+    if (import.meta.env.VITE_USE_MOCKS === 'true') {
+      return normalizeCourseList(await (await import('../mocks/mockGateway.js')).mockGetCourses())
     }
     throw err
   }
@@ -263,8 +258,8 @@ export async function getBySlug(slug, { signal } = {}) {
     })
     return normalizeCourseDetail(data?.data ?? data)
   } catch (err) {
-    if (isMockEnabled()) {
-      return normalizeCourseDetail(await mockGetCourseBySlug(slug))
+    if (import.meta.env.VITE_USE_MOCKS === 'true') {
+      return normalizeCourseDetail(await (await import('../mocks/mockGateway.js')).mockGetCourseBySlug(slug))
     }
     throw err
   }

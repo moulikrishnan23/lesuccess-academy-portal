@@ -1,5 +1,4 @@
 import apiClient from './apiClient.js'
-import { isMockEnabled, mockSubmitLead } from '../mocks/mockGateway.js'
 
 /**
  * Where a lead came from. Each form sends its own.
@@ -55,8 +54,8 @@ export async function submit(payload, { signal, live = false } = {}) {
    * mocks back on for the catalog (and their ?mockState= switches) while this
    * one form still hits the API.
    */
-  if (!live && isMockEnabled()) {
-    return mockSubmitLead(body)
+  if (!live && (import.meta.env.VITE_USE_MOCKS === 'true')) {
+    return (await import('../mocks/mockGateway.js')).mockSubmitLead(body)
   }
 
   const { data } = await apiClient.post('/api/leads', body, { signal })

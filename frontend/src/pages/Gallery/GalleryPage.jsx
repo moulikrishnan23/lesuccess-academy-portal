@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Layers,
 } from "lucide-react";
+import { useGalleryData } from "../../context/AppDataContext.jsx";
 import apiClient from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import ErrorState from "../../components/ui/ErrorState.jsx";
@@ -29,14 +30,8 @@ export default function GalleryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSlug = searchParams.get("folder") || searchParams.get("album");
 
-  const [categories, setCategories] = useState(() => {
-    try {
-      const cached = localStorage.getItem("lesuccess_cache_gallery_v1");
-      return cached ? normalizeList(JSON.parse(cached)) : [];
-    } catch {
-      return [];
-    }
-  });
+  const gallery = useGalleryData();
+  const categories = gallery.data;
   const [currentFolder, setCurrentFolder] = useState(null);
   const [parentFolder, setParentFolder] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([
@@ -44,8 +39,8 @@ export default function GalleryPage() {
   ]);
   const [subcategories, setSubcategories] = useState([]);
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [folderLoading, setLoading] = useState(true);
+  const [folderError, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
@@ -61,119 +56,65 @@ export default function GalleryPage() {
     [setSearchParams],
   );
 
-  // Sync state whenever URL search param changes
+  // Share root content; cancel folder requests when navigation makes them obsolete.
   useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+    const options = { signal: controller.signal };
     const loadData = async () => {
-      setLoading(true);
+      setCurrentFolder(null);
+      setParentFolder(null);
+      setBreadcrumbs([{ name: "Gallery", slug: null }]);
+      setSubcategories([]);
+      setImages([]);
+      setLightboxIndex(null);
       setError(null);
+      if (!activeSlug) { setLoading(false); return; }
+      setLoading(true);
       try {
-        if (!activeSlug) {
-          // Root level
-          try {
-            const { data } = await apiClient.get("/api/gallery/categories");
-            const catList = normalizeList(data);
-            setCategories(catList);
-            if (catList.length > 0) {
-              try {
-                localStorage.setItem(
-                  "lesuccess_cache_gallery_v1",
-                  JSON.stringify({ data: catList, savedAt: Date.now() }),
-                );
-              } catch {
-                // Ignore storage errors
-              }
-            }
-          } catch (fetchErr) {
-            console.warn(
-              "Failed to fetch gallery categories, checking cache:",
-              fetchErr,
-            );
-            const cachedStr = localStorage.getItem(
-              "lesuccess_cache_gallery_v1",
-            );
-            if (cachedStr) {
-              try {
-                const parsed = JSON.parse(cachedStr);
-                const cachedList = normalizeList(parsed);
-                if (cachedList.length > 0) {
-                  setCategories(cachedList);
-                } else {
-                  setError("Failed to load gallery categories");
-                }
-              } catch {
-                setError("Failed to load gallery categories");
-              }
-            } else {
-              setError("Failed to load gallery categories");
-            }
-          }
-          setCurrentFolder(null);
-          setParentFolder(null);
-          setBreadcrumbs([{ name: "Gallery", slug: null }]);
-          setSubcategories([]);
-          setImages([]);
-        } else {
-          // Folder/Subfolder level
-          const catRes = await apiClient.get(
-            `/api/gallery/categories/${activeSlug}`,
-          );
-          const cat = catRes?.data?.data;
-          if (!cat) {
-            navigateTo(null);
-            return;
-          }
-          setCurrentFolder(cat);
+        const catRes = await apiClient.get(
+          "/api/gallery/categories/" + encodeURIComponent(activeSlug), options,
+        );
+        if (!active) return;
+        const cat = catRes?.data?.data;
+        if (!cat) { navigateTo(null); return; }
+        setCurrentFolder(cat);
+        setBreadcrumbs([{ name: "Gallery", slug: null }, { name: cat.name, slug: cat.slug }]);
 
-          // Fetch parent if this is a subfolder
-          let parent = null;
-          if (cat.parentId) {
-            try {
-              const parentRes = await apiClient.get(
-                `/api/gallery/categories/${cat.parentId}`,
-              );
-              parent = parentRes?.data?.data || null;
-            } catch (pErr) {
-              console.warn("Could not fetch parent category:", pErr);
-            }
-          }
-          setParentFolder(parent);
-
-          // Set clean, deduplicated breadcrumbs
-          if (parent) {
-            setBreadcrumbs([
-              { name: "Gallery", slug: null },
-              { name: parent.name, slug: parent.slug },
-              { name: cat.name, slug: cat.slug },
-            ]);
-          } else {
-            setBreadcrumbs([
-              { name: "Gallery", slug: null },
-              { name: cat.name, slug: cat.slug },
-            ]);
-          }
-
-          // Fetch subcategories
-          const subRes = await apiClient.get(
-            `/api/gallery/categories/${cat.id}/subcategories`,
-          );
-          setSubcategories(normalizeList(subRes?.data));
-
-          // Fetch images
-          const imgRes = await apiClient.get(
-            `/api/gallery/categories/${cat.id}/images`,
-          );
-          setImages(normalizeList(imgRes?.data));
+        // Optional breadcrumb data must not hold up folder contents.
+        if (cat.parentId) {
+          apiClient.get("/api/gallery/categories/" + cat.parentId, options)
+            .then((res) => {
+              if (!active) return;
+              const parent = res?.data?.data;
+              if (!parent) return;
+              setParentFolder(parent);
+              setBreadcrumbs([
+                { name: "Gallery", slug: null },
+                { name: parent.name, slug: parent.slug },
+                { name: cat.name, slug: cat.slug },
+              ]);
+            }).catch(() => { /* Contents remain usable without a parent breadcrumb. */ });
         }
+        const [subRes, imgRes] = await Promise.all([
+          apiClient.get("/api/gallery/categories/" + cat.id + "/subcategories", options),
+          apiClient.get("/api/gallery/categories/" + cat.id + "/images", options),
+        ]);
+        if (!active) return;
+        setSubcategories(normalizeList(subRes?.data));
+        setImages(normalizeList(imgRes?.data));
       } catch (err) {
-        console.error("Failed to load gallery view:", err);
-        navigateTo(null);
+        if (active && !controller.signal.aborted) setError(err);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
-
-    loadData();
+    queueMicrotask(() => { if (active) loadData(); });
+    return () => { active = false; controller.abort(); };
   }, [activeSlug, navigateTo, retryCount]);
+
+  const loading = activeSlug ? folderLoading : gallery.status === "loading";
+  const error = activeSlug ? folderError : gallery.error;
 
   // Back button handler
   const handleBack = () => {
@@ -299,16 +240,16 @@ export default function GalleryPage() {
         {/* =====================================================
             LOADING / ERROR STATE
         ===================================================== */}
-        {loading && safeCategories.length === 0 ? (
+        {loading && (Boolean(activeSlug) || safeCategories.length === 0) ? (
           <div className="flex min-h-[40vh] items-center justify-center">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#07405C]" />
           </div>
-        ) : error && safeCategories.length === 0 ? (
+        ) : error && (Boolean(activeSlug) || safeCategories.length === 0) ? (
           <div className="max-w-md mx-auto py-12">
             <ErrorState
               title="Unable to load gallery"
               message="We're having trouble loading the gallery right now. Please check your connection and try again."
-              onRetry={() => setRetryCount((c) => c + 1)}
+              onRetry={() => activeSlug ? setRetryCount((c) => c + 1) : gallery.refetch()}
               retryLabel="Try Again"
             />
           </div>

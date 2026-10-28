@@ -1,5 +1,4 @@
 import apiClient from './apiClient.js'
-import { isMockEnabled, mockSendChatMessage } from '../mocks/mockGateway.js'
 
 /**
  * Keep only what the UI may use from a reply. `sources` is passed through as
@@ -27,8 +26,8 @@ export async function sendChatMessage({ sessionId, message }, { signal } = {}) {
   const body = { message }
   if (sessionId) body.sessionId = sessionId
 
-  if (isMockEnabled()) {
-    return normalizeReply(await mockSendChatMessage(body))
+  if (import.meta.env.VITE_USE_MOCKS === 'true') {
+    return normalizeReply(await (await import('../mocks/mockGateway.js')).mockSendChatMessage(body))
   }
 
   const { data } = await apiClient.post('/api/chat', body, { signal })

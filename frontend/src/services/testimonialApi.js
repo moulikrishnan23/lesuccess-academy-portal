@@ -1,5 +1,4 @@
 import apiClient from './apiClient.js'
-import { isMockEnabled, mockGetTestimonialsByCourse } from '../mocks/mockGateway.js'
 import { GOOGLE_REVIEWS } from '../data/googleReviews.js'
 
 /**
@@ -74,8 +73,8 @@ export async function getByCourse(courseId, { signal } = {}) {
     }
   }
 
-  if (isMockEnabled()) {
-    const mockList = await mockGetTestimonialsByCourse(courseId)
+  if (import.meta.env.VITE_USE_MOCKS === 'true') {
+    const mockList = await (await import('../mocks/mockGateway.js')).mockGetTestimonialsByCourse(courseId)
     if (Array.isArray(mockList) && mockList.length > 0) {
       return normalizeTestimonials(mockList)
     }
