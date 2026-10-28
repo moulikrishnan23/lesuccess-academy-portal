@@ -1,23 +1,17 @@
 import useDocumentMeta from "../../hooks/useDocumentMeta.js";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Users,
   Mail,
   ArrowRight,
-  X,
-  Clock,
-  Layers,
   Copy,
-  Check,
   Star,
 } from "lucide-react";
-import { FaLinkedinIn } from "react-icons/fa";
 import { useTeamData } from "../../context/AppDataContext.jsx";
 import { getImageUrl } from "../../utils/imageUtils.js";
 import ErrorState, { EmptyState } from "../../components/ui/ErrorState.jsx";
 import SpotlightCard from "../../components/ui/SpotlightCard.jsx";
-import Magnetic from "../../components/ui/Magnetic.jsx";
 
 function TeamSkeletonGrid() {
   return (
@@ -68,7 +62,7 @@ const getMemberCategory = (m) => {
   return raw;
 };
 
-const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
+const TeamMemberCard = ({ member, showCategoryBadge = true }) => {
   const [copied, setCopied] = useState(false);
   const imgSrc = member.imageUrl
     ? getImageUrl(member.imageUrl, "", { width: 800 })
@@ -116,20 +110,10 @@ const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
 
       {/* Actual card — with 3D Spotlight tilt */}
       <SpotlightCard
-        data-cursor-text="Profile"
         tilt={true}
         maxTilt={6}
         spotlightColor="rgba(7, 64, 92, 0.12)"
-        onClick={() => onSelect(member)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onSelect(member);
-          }
-        }}
-        className="group card-lift-3d relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition-all duration-300 hover:border-[#07405C]/35 hover:shadow-[0_24px_48px_rgba(7,64,92,0.18)] cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#DF1E26] p-0"
+        className="group card-lift-3d relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(7,64,92,0.06)] transition-all duration-300 hover:border-[#07405C]/35 hover:shadow-[0_24px_48px_rgba(7,64,92,0.18)] text-left p-0"
       >
         {/* Background Image Container (TeamBg.webp) with portrait aspect ratio so face is never cropped */}
         <div
@@ -203,24 +187,6 @@ export default function TeamPage() {
   useDocumentMeta({ title: "Our Team" });
   const { status, data: teamMembers, refetch } = useTeamData();
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [modalEmailCopied, setModalEmailCopied] = useState(false);
-
-  // Handle ESC key and scroll lock
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") setSelectedMember(null);
-    };
-    if (selectedMember) {
-      window.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
-    }
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
-    };
-  }, [selectedMember]);
-
   const sortTeamMembers = (list) => {
     return [...list].sort((a, b) => {
       const aFeatured = isFeaturedMember(a);
@@ -381,7 +347,7 @@ export default function TeamPage() {
                   <TeamMemberCard
                     key={member.id || member.name}
                     member={member}
-                    onSelect={setSelectedMember}
+
                     showCategoryBadge={false}
                   />
                 ))}
@@ -409,7 +375,7 @@ export default function TeamPage() {
                       <TeamMemberCard
                         key={member.id || member.name}
                         member={member}
-                        onSelect={setSelectedMember}
+
                         showCategoryBadge={true}
                       />
                     ))}
@@ -444,7 +410,7 @@ export default function TeamPage() {
                       <TeamMemberCard
                         key={member.id || member.name}
                         member={member}
-                        onSelect={setSelectedMember}
+
                         showCategoryBadge={true}
                       />
                     ))}
@@ -485,7 +451,7 @@ export default function TeamPage() {
                         <TeamMemberCard
                           key={member.id || member.name}
                           member={member}
-                          onSelect={setSelectedMember}
+
                           showCategoryBadge={true}
                         />
                       ))}
@@ -513,7 +479,7 @@ export default function TeamPage() {
                       <TeamMemberCard
                         key={member.id || member.name}
                         member={member}
-                        onSelect={setSelectedMember}
+
                         showCategoryBadge={false}
                       />
                     ))}
@@ -545,7 +511,7 @@ export default function TeamPage() {
                     <TeamMemberCard
                       key={member.id || member.name}
                       member={member}
-                      onSelect={setSelectedMember}
+
                       showCategoryBadge={true}
                     />
                   ))}
@@ -593,195 +559,6 @@ export default function TeamPage() {
         </div>
       </section>
 
-      {/* Interactive Member Details Modal */}
-      {selectedMember && (
-        <div
-          className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-sm animate-fadeIn pt-[calc(var(--offer-header-h,44px)+1rem)] pb-20 sm:pb-6"
-          onClick={() => setSelectedMember(null)}
-        >
-          <div
-            className="relative w-full max-w-3xl max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl transition-all"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedMember(null)}
-              aria-label="Close profile"
-              className="absolute right-5 top-5 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer z-10"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
-              {/* Member Photo */}
-              <div className="w-full md:w-56 shrink-0">
-                <div
-                  className="aspect-[3/4] w-full rounded-2xl overflow-hidden bg-cover bg-center border border-slate-200 shadow-md"
-                  style={{ backgroundImage: `url('/home/TeamBg.webp')` }}
-                >
-                  <img
-                    src={
-                      selectedMember.imageUrl
-                        ? getImageUrl(selectedMember.imageUrl, "", { width: 1000 })
-                        : selectedMember.image || "/home/team/dummy.png"
-                    }
-                    alt={selectedMember.name}
-                    className="h-full w-full object-cover object-top"
-                    onError={(e) => {
-                      e.currentTarget.src = "/home/team/dummy.png";
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Member Details */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#DF1E26]/10 px-3 py-1 text-xs font-bold text-[#DF1E26]">
-                    <Layers size={12} className="text-[#DF1E26]" />
-                    {getMemberCategory(selectedMember)}
-                  </span>
-                  {isFeaturedMember(selectedMember) && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 text-amber-950 px-2.5 py-0.5 text-xs font-bold shadow-xs">
-                      <Star size={11} fill="currentColor" />
-                      <span>Featured</span>
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-[#101010] tracking-tight break-words">
-                  {selectedMember.name}
-                </h3>
-                {Boolean(selectedMember.role || selectedMember.designation) && (
-                  <p className="text-base font-semibold text-[#DF1E26] mt-1 break-words">
-                    {selectedMember.role || selectedMember.designation}
-                  </p>
-                )}
-
-                {/* Experience */}
-                {Boolean(
-                  selectedMember.experience && selectedMember.experience.trim(),
-                ) && (
-                  <div className="mt-3 flex items-center gap-2 text-xs sm:text-sm text-slate-600 font-medium bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
-                    <Clock size={16} className="text-[#07405C] shrink-0" />
-                    <span>{selectedMember.experience}</span>
-                  </div>
-                )}
-
-                {/* Bio */}
-                {Boolean(selectedMember.bio && selectedMember.bio.trim()) && (
-                  <div className="mt-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                      About
-                    </h4>
-                    <p className="text-sm leading-relaxed text-slate-700">
-                      {selectedMember.bio}
-                    </p>
-                  </div>
-                )}
-
-                {/* Skills Tags */}
-                {Boolean(
-                  selectedMember.skills && selectedMember.skills.trim(),
-                ) && (
-                  <div className="mt-5">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                      Areas of Expertise
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedMember.skills
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean)
-                        .map((skill, i) => (
-                          <span
-                            key={i}
-                            className="rounded-lg bg-rose-50 border border-rose-100 px-2.5 py-1 text-xs font-medium text-[#DF1E26]"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Contact & Social */}
-                {Boolean(
-                  selectedMember.email || selectedMember.linkedinUrl,
-                ) && (
-                  <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center gap-3">
-                    {selectedMember.email && (
-                      <div className="flex flex-wrap items-center gap-2 max-w-full">
-                        <a
-                          href={`mailto:${selectedMember.email}`}
-                          title={`Send email to ${selectedMember.email}`}
-                          className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-3.5 sm:px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-[#024D72] max-w-full"
-                        >
-                          <Mail size={14} className="shrink-0" />
-                          <span className="truncate max-w-[190px] xs:max-w-xs">
-                            {selectedMember.email}
-                          </span>
-                        </a>
-                        <Magnetic strength={0.2}>
-                          <a
-                            href={`mailto:${selectedMember.email}`}
-                            title={`Send email to ${selectedMember.email}`}
-                            className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-3.5 sm:px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-[#024D72] max-w-full"
-                          >
-                            <Mail size={14} className="shrink-0" />
-                            <span className="truncate max-w-[190px] xs:max-w-xs">
-                              {selectedMember.email}
-                            </span>
-                          </a>
-                        </Magnetic>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (navigator.clipboard) {
-                              navigator.clipboard
-                                .writeText(selectedMember.email)
-                                .catch(() => {});
-                              setModalEmailCopied(true);
-                              setTimeout(
-                                () => setModalEmailCopied(false),
-                                2000,
-                              );
-                            }
-                          }}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer shrink-0"
-                          title="Copy email address"
-                        >
-                          {modalEmailCopied ? (
-                            <Check size={14} className="text-emerald-600" />
-                          ) : (
-                            <Copy size={14} />
-                          )}
-                          <span>
-                            {modalEmailCopied ? "Copied!" : "Copy Email"}
-                          </span>
-                        </button>
-                      </div>
-                    )}
-                    {selectedMember.linkedinUrl && (
-                      <Magnetic strength={0.2}>
-                        <a
-                          href={selectedMember.linkedinUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-                        >
-                          <FaLinkedinIn size={14} className="text-[#0A66C2]" />
-                          LinkedIn Profile
-                        </a>
-                      </Magnetic>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

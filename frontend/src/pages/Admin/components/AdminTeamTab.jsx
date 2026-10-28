@@ -1,5 +1,6 @@
+import ImageCropperModal from "./ImageCropperModal.jsx"
 import { useEffectEvent, useEffect, useState } from 'react'
-import { Plus, Edit2, Trash2, Users, Upload, X, Star, ChevronUp, ChevronDown } from 'lucide-react'
+import { Crop, Plus, Edit2, Trash2, Users, Upload, X, Star, ChevronUp, ChevronDown } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
 
@@ -36,6 +37,20 @@ export default function AdminTeamTab({ showAlert }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingMember, setEditingMember] = useState(null)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [cropSource, setCropSource] = useState('')
+  useEffect(() => () => { if (cropSource.startsWith('blob:')) URL.revokeObjectURL(cropSource) }, [cropSource])
+
+  const openExistingCrop = async () => {
+    try {
+      const response = await fetch(getImageUrl(form.imageUrl));
+      if (!response.ok) throw new Error('Image unavailable');
+      const blob = await response.blob();
+      setCropSource(URL.createObjectURL(blob));
+    } catch {
+      showAlert?.('Could not load this photo for cropping. Please upload the original image.', 'error');
+    }
+  }
+
 
   // Categories state
   const [categories, setCategories] = useState([])
@@ -236,6 +251,11 @@ export default function AdminTeamTab({ showAlert }) {
       return
     }
 
+    setCropSource(URL.createObjectURL(file))
+    e.target.value = ''
+  }
+
+  const handleApplyCrop = async (file) => {
     const formData = new FormData()
     formData.append('file', file)
     setUploadingImage(true)
@@ -247,13 +267,15 @@ export default function AdminTeamTab({ showAlert }) {
       const uploadedUrl = data?.data?.url || (typeof data?.data === 'string' ? data.data : '')
       if (uploadedUrl) {
         setForm((prev) => ({ ...prev, imageUrl: uploadedUrl }))
-        showAlert?.('Photo uploaded successfully')
+        setCropSource('')
+        showAlert?.('Cropped photo attached. Save the profile to keep the change.')
+      } else {
+        showAlert?.('Upload did not return an image URL. Please retry.', 'error')
       }
     } catch {
       showAlert?.('Failed to upload image', 'error')
     } finally {
       setUploadingImage(false)
-      e.target.value = ''
     }
   }
 
@@ -435,7 +457,7 @@ export default function AdminTeamTab({ showAlert }) {
                         </div>
                       </div>
 
-                      {/* Details Area — No Premature Cutoffs */}
+                      {/* Details Area â€” No Premature Cutoffs */}
                       <div className="p-4 flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex items-start justify-between gap-2">
@@ -984,6 +1006,7 @@ export default function AdminTeamTab({ showAlert }) {
                         <p className="text-[11px] text-emerald-600 font-medium mt-0.5">Photo attached</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
+                        <button type="button" onClick={openExistingCrop} disabled={uploadingImage} title="Crop / Adjust Image" className="rounded-xl border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-100"><Crop size={16} /></button>
                         <label className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer transition shadow-2xs">
                           <Upload size={13} />
                           <span>{uploadingImage ? 'Uploading...' : 'Replace'}</span>
@@ -1070,6 +1093,7 @@ export default function AdminTeamTab({ showAlert }) {
                 </button>
                 <button
                   type="submit"
+                  disabled={uploadingImage || Boolean(cropSource)}
                   className="rounded-xl bg-[#07405C] px-5 py-2 text-sm font-semibold text-white hover:bg-[#024D72] transition shadow-sm cursor-pointer"
                 >
                   {editingMember ? 'Update Profile' : 'Add Member'}
@@ -1079,6 +1103,17 @@ export default function AdminTeamTab({ showAlert }) {
           </div>
         </div>
       )}
+      {cropSource && <ImageCropperModal
+        key={cropSource}
+        isOpen={true}
+        variant="team"
+        imageSrc={cropSource}
+        speakerName={form.name || 'Team Member'}
+        programTitle={form.name || 'Team Member'}
+        uploading={uploadingImage}
+        onClose={() => { if (!uploadingImage) setCropSource('') }}
+        onApply={handleApplyCrop}
+      />}
     </div>
   )
 }

@@ -23,12 +23,15 @@ export default function ImageCropperModal({
   onClose,
   onApply,
   uploading = false,
+  variant = "program",
 }) {
+  const isTeam = variant === "team";
+  const minZoom = isTeam ? 0.1 : 1;
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [rotation, setRotation] = useState(0)
   const [flipH, setFlipH] = useState(false)
-  const [aspectRatio, setAspectRatio] = useState(4 / 3) // Standard 4:3 ratio matching public card
+  const [aspectRatio, setAspectRatio] = useState(isTeam ? 383 / 400 : 4 / 3) // Standard 4:3 ratio matching public card
   const [imageLoaded, setImageLoaded] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [imageDims, setImageDims] = useState({ width: 0, height: 0 })
@@ -137,11 +140,11 @@ export default function ImageCropperModal({
   const handleWheel = (e) => {
     e.preventDefault()
     const delta = e.deltaY * -0.0015
-    setZoom((prev) => Math.min(3.5, Math.max(1, +(prev + delta).toFixed(2))))
+    setZoom((prev) => Math.min(3.5, Math.max(minZoom, +(prev + delta).toFixed(2))))
   }
 
   // Viewport dimensions
-  const cropBoxHeight = 320
+  const cropBoxHeight = isTeam ? Math.min(280, (window.innerWidth - 140) / aspectRatio) : 320
   const cropBoxWidth = Math.round(cropBoxHeight * aspectRatio)
 
   // Calculate base display dimensions so image covers the crop box at zoom=1 without black letterbox bars
@@ -161,8 +164,10 @@ export default function ImageCropperModal({
   const generateCroppedBlob = async () => {
     if (!imageRef.current) return null
 
-    const outputWidth = 800
-    const outputHeight = Math.round(800 / aspectRatio)
+    const outputWidth = isTeam
+      ? Math.max(1, Math.floor(Math.min(800, imageDims.width * cropBoxWidth / (baseW * zoom), imageDims.height * cropBoxWidth / (baseH * zoom))))
+      : 800
+    const outputHeight = Math.max(1, Math.round(outputWidth / aspectRatio))
 
     const canvas = document.createElement('canvas')
     canvas.width = outputWidth
@@ -170,9 +175,11 @@ export default function ImageCropperModal({
     const ctx = canvas.getContext('2d')
     if (!ctx) return null
 
-    // Background fill to clean dark blue
-    ctx.fillStyle = '#01273C'
-    ctx.fillRect(0, 0, outputWidth, outputHeight)
+    // Keep alpha for Team portraits and out-of-bounds areas.
+    if (!isTeam) {
+      ctx.fillStyle = '#01273C'
+      ctx.fillRect(0, 0, outputWidth, outputHeight)
+    }
 
     const scaleFactor = outputWidth / cropBoxWidth
 
@@ -210,13 +217,13 @@ export default function ImageCropperModal({
             resolve(null)
             return
           }
-          const file = new File([blob], 'cropped-program-photo.jpg', {
-            type: 'image/jpeg',
+          const file = new File([blob], isTeam ? 'cropped-team-photo.png' : 'cropped-program-photo.jpg', {
+            type: isTeam ? 'image/png' : 'image/jpeg',
             lastModified: Date.now(),
           })
           resolve(file)
         },
-        'image/jpeg',
+        isTeam ? 'image/png' : 'image/jpeg',
         0.92
       )
     })
@@ -251,9 +258,9 @@ export default function ImageCropperModal({
               <Sliders size={18} />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Crop & Frame Event Photo</h3>
+              <h3 className="text-base font-bold text-slate-900">{isTeam ? "Crop & Frame Profile Photo" : "Crop & Frame Event Photo"}</h3>
               <p className="text-xs text-slate-500">
-                Adjust zoom and drag the photo to center the speaker. The 4:3 frame matches the public event card.
+                {isTeam ? "Zoom and drag to frame the profile. Empty areas stay transparent; the image is never stretched." : "Adjust zoom and drag the photo to center the speaker. The 4:3 frame matches the public event card."}
               </p>
             </div>
           </div>
@@ -274,11 +281,11 @@ export default function ImageCropperModal({
             {/* Aspect Ratio Selector Pills */}
             <div className="flex items-center gap-2 mb-3 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs text-xs font-semibold">
               <span className="text-slate-400 px-2 text-[11px] uppercase tracking-wider">Aspect Ratio:</span>
-              {[
+              {(isTeam ? [{ label: '383:400 (Team Profile)', ratio: 383 / 400 }] : [
                 { label: '4:3 (Card Standard)', ratio: 4 / 3 },
                 { label: '1:1 (Square)', ratio: 1 },
                 { label: '16:9 (Wide)', ratio: 16 / 9 },
-              ].map((item) => (
+              ]).map((item) => (
                 <button
                   key={item.label}
                   type="button"
@@ -328,10 +335,11 @@ export default function ImageCropperModal({
                   width: `${cropBoxWidth}px`,
                   height: `${cropBoxHeight}px`,
                   maxWidth: '100%',
+                  ...(isTeam ? { backgroundColor: '#f1f5f9', touchAction: 'none' } : {}),
                 }}
                 className="relative overflow-hidden rounded-xl bg-slate-950 border-2 border-white/70 shadow-2xl cursor-grab active:cursor-grabbing select-none"
               >
-                {/* Image Under Interactive Transform — Covers Box Without Letterbox Gaps */}
+                {/* Image Under Interactive Transform â€” Covers Box Without Letterbox Gaps */}
                 <img
                   ref={imageRef}
                   src={imageSrc}
@@ -370,7 +378,7 @@ export default function ImageCropperModal({
                 <div className="absolute bottom-2 inset-x-2 flex justify-center pointer-events-none">
                   <span className="inline-flex items-center gap-1.5 bg-black/75 backdrop-blur-md text-white text-[11px] font-semibold px-3 py-1 rounded-full border border-white/20 shadow-xs">
                     <Move size={12} />
-                    <span>Drag photo to center face • Scroll to zoom</span>
+                    <span>Drag photo to center face â€¢ Scroll to zoom</span>
                   </span>
                 </div>
               </div>
@@ -386,7 +394,7 @@ export default function ImageCropperModal({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setZoom((prev) => Math.max(1, +(prev - 0.2).toFixed(1)))}
+                  onClick={() => setZoom((prev) => Math.max(minZoom, +(prev - 0.2).toFixed(1)))}
                   className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer"
                   title="Zoom Out"
                 >
@@ -394,7 +402,7 @@ export default function ImageCropperModal({
                 </button>
                 <input
                   type="range"
-                  min="1"
+                  min={minZoom}
                   max="3"
                   step="0.05"
                   value={zoom}
@@ -454,7 +462,7 @@ export default function ImageCropperModal({
                 </h4>
               </div>
               <p className="text-[11px] text-slate-500 mb-3">
-                Real-time preview of how the framed photo will appear on the public event card.
+                {isTeam ? "Preview of the saved profile crop, including any empty space." : "Real-time preview of how the framed photo will appear on the public event card."}
               </p>
 
               {/* Card Container Mockup */}
@@ -462,16 +470,16 @@ export default function ImageCropperModal({
                 {/* Top Badges */}
                 <div className="flex items-center justify-between mb-3 text-[10px]">
                   <span className="rounded-full bg-[#DF1E26] text-white font-bold px-2.5 py-0.5 uppercase tracking-wide">
-                    Live Event
+                    {isTeam ? "Team Profile" : "Live Event"}
                   </span>
                   <span className="rounded-full bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 font-semibold">
-                    Online Meet
+                    {isTeam ? "Profile Photo" : "Online Meet"}
                   </span>
                 </div>
 
                 {/* Framed Image Container in 4:3 matching public card */}
                 <div
-                  style={{ aspectRatio: `${aspectRatio}` }}
+                  style={{ aspectRatio: `${aspectRatio}`, ...(isTeam ? { width: 220 * aspectRatio, height: 220, backgroundColor: "#f1f5f9" } : {}) }}
                   className="relative w-full max-h-56 rounded-xl overflow-hidden border border-white/30 bg-slate-950 shadow-md"
                 >
                   <div
@@ -503,12 +511,12 @@ export default function ImageCropperModal({
                   </div>
 
                   {/* Gradient Overlay & Speaker Name Tag */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-2.5 pt-5 pointer-events-none">
+                  {!isTeam && <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-2.5 pt-5 pointer-events-none">
                     <div className="text-xs font-bold text-white truncate">
                       {speakerName || 'Speaker Name'}
                     </div>
                     <div className="text-[10px] text-white/80">Keynote Speaker</div>
-                  </div>
+                  </div>}
                 </div>
 
                 {/* Program Title Hint */}
@@ -521,7 +529,7 @@ export default function ImageCropperModal({
               <div className="mt-3 rounded-xl bg-amber-50 border border-amber-200/80 p-3 text-[11px] text-amber-900 flex items-start gap-2">
                 <Sparkles size={14} className="text-amber-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong>Framing Tip:</strong> Center the speaker's eyes in the upper half of the frame so the bottom gradient tag sits neatly on their collar/chest.
+                  <strong>Framing Tip:</strong> {isTeam ? "Keep the face inside the frame. Zoom out to include more of the portrait; uncovered areas stay transparent." : "Center the speaker's eyes in the upper half of the frame so the bottom gradient tag sits neatly on their collar/chest."}
                 </span>
               </div>
             </div>
@@ -539,7 +547,7 @@ export default function ImageCropperModal({
               <button
                 type="button"
                 onClick={handleApplyClick}
-                disabled={uploading}
+                disabled={uploading || (isTeam && (!imageLoaded || loadError))}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#07405C] px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#024D72] transition cursor-pointer disabled:opacity-50"
               >
                 {uploading ? (
