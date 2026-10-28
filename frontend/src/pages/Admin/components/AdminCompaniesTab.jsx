@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffectEvent, useEffect, useState } from 'react'
 import { Plus, Edit2, Trash2, Building2, Upload, X, ChevronUp, ChevronDown } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
@@ -18,9 +18,7 @@ export default function AdminCompaniesTab({ showAlert }) {
     isActive: true,
   })
 
-  useEffect(() => {
-    fetchCompanies()
-  }, [])
+
 
   // Body scroll lock
   useEffect(() => {
@@ -32,8 +30,7 @@ export default function AdminCompaniesTab({ showAlert }) {
     }
   }, [isModalOpen])
 
-  const fetchCompanies = async () => {
-    setLoading(true)
+  const requestCompanies = async () => {
     try {
       const { data } = await apiClient.get('/api/admin/companies')
       setCompanies(data?.data || [])
@@ -42,13 +39,28 @@ export default function AdminCompaniesTab({ showAlert }) {
       try {
         const { data } = await apiClient.get('/api/companies')
         setCompanies(data?.data || [])
-      } catch (pubErr) {
+      } catch {
         showAlert?.('Failed to load companies', 'error')
       }
     } finally {
       setLoading(false)
     }
   }
+
+  const fetchCompanies = () => {
+    setLoading(true);
+    return requestCompanies();
+  };
+
+  const loadInitialData = useEffectEvent(() => {
+    requestCompanies();
+  });
+  useEffect(() => {
+    // Cancel a pending initial load if this tab unmounts (including Strict Mode replay).
+    let active = true;
+    queueMicrotask(() => { if (active) loadInitialData(); });
+    return () => { active = false; };
+  }, []);
 
   const openCreateModal = (row = 1) => {
     setEditingCompany(null)
@@ -103,7 +115,7 @@ export default function AdminCompaniesTab({ showAlert }) {
         setForm((prev) => ({ ...prev, logoUrl: uploadedUrl }))
         showAlert?.('Logo uploaded successfully')
       }
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to upload logo', 'error')
     } finally {
       setUploadingLogo(false)
@@ -149,7 +161,7 @@ export default function AdminCompaniesTab({ showAlert }) {
       await apiClient.delete(`/api/admin/companies/${c.id}`)
       showAlert?.('Company removed')
       fetchCompanies()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to delete company', 'error')
     }
   }
@@ -164,7 +176,7 @@ export default function AdminCompaniesTab({ showAlert }) {
       await apiClient.put(`/api/admin/companies/${c.id}/order?displayOrder=${targetOrder}`)
       showAlert?.('Company order updated successfully')
       fetchCompanies()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to update company order', 'error')
     }
   }

@@ -40,7 +40,9 @@ lesuccess:
 
   cors:
     allowed-origins:
-      - ${CORS_ALLOWED_ORIGIN:https://lesuccess.in}
+      - ${CORS_ALLOWED_ORIGIN:https://www.lesuccess.co.in}
+      - https://www.lesuccess.co.in
+      - https://lesuccess.in
     allowed-origin-patterns:
       - https://*.vercel.app
       - https://*.lesuccess.in

@@ -1,3 +1,4 @@
+import { OFFICIAL_PHONE } from "../../data/contactDetails.js";
 import { useState } from "react";
 import {
   MessageCircle,
@@ -23,7 +24,7 @@ export default function FloatingActionHub({ onOpenDemo }) {
   const { settings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
 
-  const phone = settings.phone_primary || "+91 80120 60000";
+  const phone = settings.phone_primary || OFFICIAL_PHONE;
   const WHATSAPP_LINK = getWhatsAppUrl(settings, "Hi LeSuccess Academy, I would like to know more about your courses and placement programs.");
   const PHONE_LINK = `tel:${phone.replace(/[^+\d]/g, "")}`;
 

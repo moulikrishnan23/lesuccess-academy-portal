@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ExternalLink, LogOut, X } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext.jsx'
+import { useAuth } from '../../hooks/useAuth.js'
 import AdminProgramsTab from '../Admin/components/AdminProgramsTab.jsx'
 
 export default function TrainerDashboard() {

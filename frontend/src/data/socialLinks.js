@@ -1,3 +1,4 @@
+import { OFFICIAL_WHATSAPP } from "./contactDetails.js";
 import {
   FaInstagram,
   FaLinkedinIn,
@@ -11,7 +12,7 @@ export const OFFICIAL_SOCIAL_URLS = {
   linkedin: "https://www.linkedin.com/company/lesuccess-in/",
   youtube: "https://youtube.com/@lesuccessacademy?si=8KpugpC3B5ULIXmh",
   facebook: "https://www.facebook.com/LeSuccess.in",
-  whatsapp: "https://wa.me/918012060000",
+  whatsapp: OFFICIAL_WHATSAPP,
 };
 
 export const SOCIAL_LINKS = [

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffectEvent, useState, useEffect, useRef } from 'react';
 import {
   Video,
   Upload,
@@ -7,14 +7,11 @@ import {
   Pause,
   Volume2,
   VolumeX,
-  CheckCircle2,
-  AlertCircle,
   RotateCcw,
   Eye,
   EyeOff,
   Save,
   Loader2,
-  Sparkles,
   Trash2,
 } from 'lucide-react';
 import apiClient from '../../../services/apiClient.js';
@@ -38,12 +35,9 @@ export default function AdminHeroVideoTab({ showAlert }) {
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
 
-  const fetchSettings = async () => {
-    setLoading(true);
+
+  const requestSettings = async () => {
     try {
       const { data } = await apiClient.get('/api/settings');
       const settings = data?.data || {};
@@ -54,12 +48,22 @@ export default function AdminHeroVideoTab({ showAlert }) {
       } else {
         setVideoEnabled(Boolean(settings.hero_video_url));
       }
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to load current Hero video settings', 'error');
     } finally {
       setLoading(false);
     }
   };
+
+  const loadInitialData = useEffectEvent(() => {
+    requestSettings();
+  });
+  useEffect(() => {
+    // Cancel a pending initial load if this tab unmounts (including Strict Mode replay).
+    let active = true;
+    queueMicrotask(() => { if (active) loadInitialData(); });
+    return () => { active = false; };
+  }, []);
 
   const handleDeleteVideo = async () => {
     if (!window.confirm('Are you sure you want to delete the current Hero video? This will remove the video and the public site will no longer display it.')) {

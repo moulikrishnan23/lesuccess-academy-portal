@@ -12,7 +12,7 @@
   place-items: center;
   overflow: hidden;
   padding: max(24px, env(safe-area-inset-top)) 24px max(56px, env(safe-area-inset-bottom));
-  background: var(--color-navy-900, #07405C);
+  background: #0B2A45;
   color: #fff;
   outline: none;
   overscroll-behavior: contain;
@@ -49,6 +49,10 @@
   line-height: 1.02;
   font-weight: 700;
   letter-spacing: -.03em;
+}
+.brand-splash-words > span {
+  display: block;
+  white-space: nowrap;
 }
 .brand-splash .lh-sw {
   --f: clamp(0, calc(var(--p, 0) * 3.4 - var(--i) * 0.9), 1);
@@ -112,4 +116,12 @@
 @media (prefers-reduced-motion: reduce) {
   .brand-splash-content, .brand-splash-logo, .brand-splash { transition-duration: .01ms; }
   .brand-splash .lh-sw { transform: none; }
+}
+
+@media (max-height: 600px) {
+  .brand-splash { padding-top: 16px; padding-bottom: 64px; }
+  .brand-splash-content { gap: clamp(8px, 2vh, 16px); }
+  .brand-splash-words { font-size: min(9vw, 16vh); }
+  .brand-splash-support { gap: 4px; }
+  .brand-splash-support p { font-size: clamp(12px, 3vh, 17px); }
 }

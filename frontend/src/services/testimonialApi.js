@@ -60,7 +60,7 @@ export async function getByCourse(courseId, { signal } = {}) {
     const { data } = await apiClient.get('/api/testimonials', { signal })
     const items = normalizeTestimonials(data?.data ?? data)
     if (items.length > 0) return items
-  } catch (err) {
+  } catch {
     // try fallback below
   }
 
@@ -69,7 +69,7 @@ export async function getByCourse(courseId, { signal } = {}) {
       const { data } = await apiClient.get(`/api/courses/${encodeURIComponent(courseId)}/testimonials`, { signal })
       const items = normalizeTestimonials(data?.data ?? data)
       if (items.length > 0) return items
-    } catch (err) {
+    } catch {
       // try fallback below
     }
   }

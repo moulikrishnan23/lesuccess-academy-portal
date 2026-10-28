@@ -1,3 +1,4 @@
+import useDocumentMeta from "./hooks/useDocumentMeta.js";
 import {
   useCallback,
   useEffect,
@@ -22,7 +23,6 @@ import useSiteSettings from "./hooks/useSiteSettings.js";
 import { AnimatePresence } from "framer-motion";
 import ScrollProgressBar from "./components/ui/ScrollProgressBar.jsx";
 import FloatingActionHub from "./components/ui/FloatingActionHub.jsx";
-import CustomCursor from "./components/ui/CustomCursor.jsx";
 
 import Home from "./pages/Home/HomePage.jsx";
 import CourseEnquiryModal from "./components/forms/CourseEnquiryModal.jsx";
@@ -52,6 +52,7 @@ const TrainerDashboard = lazy(
 );
 
 function HomeRoute({ initialEntry, onIntroComplete }) {
+  useDocumentMeta({ title: "Technology Training in Coimbatore" });
   const [showIntro, setShowIntro] = useState(() => {
     if (!initialEntry) return false;
     try { return sessionStorage.getItem("lesuccess_initial_entry_done") !== "true"; }
@@ -292,7 +293,6 @@ const AppContent = () => {
   return (
     <div className="min-h-screen bg-surface text-ink transition-colors duration-200">
       {/* Creative Agency Custom Cursor System */}
-      <CustomCursor />
 
       {/* Global Top Scroll Progress Bar */}
       <ScrollProgressBar />

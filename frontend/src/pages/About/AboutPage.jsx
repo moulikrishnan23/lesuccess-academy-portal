@@ -1,3 +1,4 @@
+import useDocumentMeta from "../../hooks/useDocumentMeta.js";
 import LeSuccessConnection from "../../components/ui/LeSuccessConnection.jsx";
 import "./about-pillar-cards.css";
 import { useState, useEffect, useRef } from "react";
@@ -159,6 +160,7 @@ const STEPS = [
 ];
 
 export default function AboutPage() {
+  useDocumentMeta({ title: "About Us" });
   const reduced = useReducedMotion();
   const statsRef = useRef(null);
   const [statsVisible, setStatsVisible] = useState(false);

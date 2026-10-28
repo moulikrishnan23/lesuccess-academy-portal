@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useEffectEvent, useState, useEffect } from 'react'
 import {
   CalendarCheck,
   GraduationCap,
   MessageSquare,
   Users,
   BookOpen,
-  Folder,
   Star,
   Building2,
   ArrowRight,
@@ -33,8 +32,7 @@ export default function AdminOverviewTab({ onNavigateTab, showAlert }) {
   })
   const [loading, setLoading] = useState(true)
 
-  const fetchSummary = async () => {
-    setLoading(true)
+  const requestSummary = async () => {
     try {
       const res = await apiClient.get('/api/admin/dashboard/summary')
       if (res?.data?.data) {
@@ -42,16 +40,29 @@ export default function AdminOverviewTab({ onNavigateTab, showAlert }) {
       } else if (res?.data) {
         setStats(res.data)
       }
-    } catch (err) {
+    } catch {
       if (showAlert) showAlert('Failed to load dashboard summary metrics', 'error')
     } finally {
       setLoading(false)
     }
   }
 
+  const fetchSummary = () => {
+    setLoading(true);
+    return requestSummary();
+  };
+
+  const loadInitialData = useEffectEvent(() => {
+    requestSummary();
+  });
   useEffect(() => {
-    fetchSummary()
-  }, [])
+    // Cancel a pending initial load if this tab unmounts (including Strict Mode replay).
+    let active = true;
+    queueMicrotask(() => { if (active) loadInitialData(); });
+    return () => { active = false; };
+  }, []);
+
+
 
   const statCards = [
     {

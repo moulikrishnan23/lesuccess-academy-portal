@@ -1,9 +1,11 @@
+import useDocumentMeta from "../../hooks/useDocumentMeta.js";
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, Lock, User, ShieldCheck } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext.jsx'
+import { useAuth } from '../../hooks/useAuth.js'
 
 export default function LoginPage() {
+  useDocumentMeta({ title: "Admin Login" });
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()

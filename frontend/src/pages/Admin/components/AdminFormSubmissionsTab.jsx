@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useEffectEvent, useState, useEffect, useMemo } from 'react'
 import {
   Search,
   Download,
@@ -16,7 +16,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
-import { useAuth } from '../../../context/AuthContext.jsx'
+import { useAuth } from '../../../hooks/useAuth.js'
 import useGrabScroll from '../../../hooks/useGrabScroll.js'
 
 const FORM_CONFIGS = {
@@ -236,8 +236,7 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
   const [deleteModalItem, setDeleteModalItem] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const fetchData = async () => {
-    setLoading(true)
+  const requestData = async () => {
     try {
       const params = {
         page,
@@ -273,14 +272,16 @@ export default function AdminFormSubmissionsTab({ formType = 'demo-bookings', sh
     }
   }
 
-  useEffect(() => {
-    setPage(0)
-    setSearch('')
-    setStatusFilter('ALL')
-  }, [formType])
+  const fetchData = () => {
+    setLoading(true);
+    return requestData();
+  };
 
+  const loadData = useEffectEvent(() => requestData())
   useEffect(() => {
-    fetchData()
+    let active = true;
+    queueMicrotask(() => { if (active) loadData(); });
+    return () => { active = false; };
   }, [formType, page, pageSize, statusFilter])
 
   // Body scroll lock when detail modal is open

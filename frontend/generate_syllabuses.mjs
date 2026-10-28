@@ -168,7 +168,7 @@ function buildPdfBinary(course) {
   ops.push('/F2 8 Tf');
   ops.push('0.5 0.5 0.5 rg');
   ops.push('40 16 Td');
-  ops.push('(Visit: www.lesuccess.in  |  Phone: +91 80120 60000  |  Email: info@lesuccess.in  |  Coimbatore, TN) Tj');
+  ops.push('(Visit: www.lesuccess.in  |  Phone: +91 81898 11000  |  Email: info@lesuccess.in  |  Coimbatore, TN) Tj');
   ops.push('ET');
 
   const contentStream = ops.join('\n') + '\n';

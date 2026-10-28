@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useAuth } from '../hooks/useAuth.js'
 
 /**
  * Ctrl+Shift+Alt+1 opens the admin area from anywhere on the site.

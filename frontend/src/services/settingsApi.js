@@ -1,3 +1,4 @@
+import { normalizeOfficialContactSettings } from "../data/contactDetails.js";
 import apiClient from './apiClient.js'
 import { isMockEnabled, mockGetSettings } from '../mocks/mockGateway.js'
 
@@ -29,7 +30,7 @@ import { isMockEnabled, mockGetSettings } from '../mocks/mockGateway.js'
  * there; anything that starts doing arithmetic on them must convert first.
  */
 export function normalizeSettings(raw) {
-  return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}
+  return raw && typeof raw === 'object' && !Array.isArray(raw) ? normalizeOfficialContactSettings(raw) : {}
 }
 
 export async function getAll({ signal } = {}) {

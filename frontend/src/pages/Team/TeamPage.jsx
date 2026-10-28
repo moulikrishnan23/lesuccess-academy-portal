@@ -1,3 +1,4 @@
+import useDocumentMeta from "../../hooks/useDocumentMeta.js";
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -199,6 +200,7 @@ const TeamMemberCard = ({ member, onSelect, showCategoryBadge = true }) => {
 };
 
 export default function TeamPage() {
+  useDocumentMeta({ title: "Our Team" });
   const { status, data: teamMembers, refetch } = useTeamData();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedMember, setSelectedMember] = useState(null);

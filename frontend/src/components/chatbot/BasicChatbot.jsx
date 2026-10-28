@@ -1,3 +1,4 @@
+import { OFFICIAL_PHONE } from "../../data/contactDetails.js";
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -117,7 +118,7 @@ const KNOWLEDGE_BASE = [
       'contact', 'call', 'phone', 'mobile', 'email', 'address', 'location',
       'reach', 'office', 'branch', 'map', 'where are you', 'locate',
     ],
-    response: "You can easily get in touch with LeSuccess Academy:\n\n📞 **Phone / WhatsApp:** +91 99622 28445\n✉️ **Email:** info@lesuccess.in\n📍 **Location:** Chennai, Tamil Nadu, India\n\nFeel free to visit our Contact page or submit a callback request!",
+    response: "You can easily get in touch with LeSuccess Academy:\n\n📞 **Phone / WhatsApp:** +91 99622 28445\n✉️ **Email:** info@lesuccess.in\n📍 **Location:** Coimbatore, Tamil Nadu, India\n\nFeel free to visit our Contact page or submit a callback request!",
     links: [
       { label: 'Go to Contact Page', url: '/contact' },
       { label: 'Book Callback', action: 'enquiry' },
@@ -383,7 +384,7 @@ export default function BasicChatbot({ onOpenEnquiry }) {
       const match = matchIntent(text)
       const contactResponse = match.id === 'contact'
         ? match.response
-          .replace('+91 99622 28445', formatPhone(settings.phone_primary || '+91 80120 60000'))
+          .replace('+91 99622 28445', formatPhone(settings.phone_primary || OFFICIAL_PHONE))
           .replace('info@lesuccess.in', settings.email_primary || 'contact@lesuccess.in')
         : match.response
       const botMsg = {

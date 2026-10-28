@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffectEvent, useState, useEffect } from 'react';
 import {
   Bot,
   Sparkles,
@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Save,
   Loader2,
-  ShieldAlert,
   Server,
   Cpu,
   HelpCircle,
@@ -23,12 +22,9 @@ export default function AdminChatbotTab({ showAlert }) {
   const [chatbotMode, setChatbotMode] = useState('NORMAL');
   const [chatbotEnabled, setChatbotEnabled] = useState(true);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
 
-  const fetchSettings = async () => {
-    setLoading(true);
+
+  const requestSettings = async () => {
     try {
       const { data } = await apiClient.get('/api/settings');
       const settings = data?.data || {};
@@ -39,12 +35,22 @@ export default function AdminChatbotTab({ showAlert }) {
       if (settings.chatbot_enabled !== undefined) {
         setChatbotEnabled(settings.chatbot_enabled !== 'false');
       }
-    } catch (_err) {
+    } catch {
       showAlert?.('Failed to load current Chatbot settings', 'error');
     } finally {
       setLoading(false);
     }
   };
+
+  const loadInitialData = useEffectEvent(() => {
+    requestSettings();
+  });
+  useEffect(() => {
+    // Cancel a pending initial load if this tab unmounts (including Strict Mode replay).
+    let active = true;
+    queueMicrotask(() => { if (active) loadInitialData(); });
+    return () => { active = false; };
+  }, []);
 
   const handleSaveSettings = async () => {
     setSaving(true);

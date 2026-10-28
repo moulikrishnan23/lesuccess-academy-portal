@@ -1,3 +1,4 @@
+import { OFFICIAL_PHONE } from "../../data/contactDetails.js";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
@@ -38,7 +39,7 @@ const WAVE = (
 export default function Footer() {
   const { settings } = useSiteSettings();
   const socialLinks = getSocialLinks(settings);
-  const phone = settings.phone_primary || "+91 80120 60000";
+  const phone = settings.phone_primary || OFFICIAL_PHONE;
   const trainingEmail = settings.email_training || "training@lesuccess.in";
   const footRef = useRef(null);
   const inView = useInView(footRef, { threshold: 0.1 });

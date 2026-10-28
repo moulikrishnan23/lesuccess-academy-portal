@@ -1,3 +1,4 @@
+import useDocumentMeta from "../../hooks/useDocumentMeta.js";
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { Trophy, ArrowRight, Maximize2 } from 'lucide-react'
@@ -11,6 +12,7 @@ import ImageLightboxModal from '../../components/common/ImageLightboxModal.jsx'
 import InitialReelExperience from '../../components/common/InitialReelExperience.jsx'
 
 export default function SuccessStoriesPage() {
+  useDocumentMeta({ title: "Success Stories" });
   const successStories = useSuccessStoriesData()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()

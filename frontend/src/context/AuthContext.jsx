@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import AuthContext from "./authContextValue.js"
+import { useState } from 'react'
 import apiClient from '../services/apiClient.js'
 
-const AuthContext = createContext(null)
+
 
 const TOKEN_KEY = 'lesuccess_auth_token'
 const USER_KEY = 'lesuccess_auth_user'
@@ -16,18 +17,6 @@ export function AuthProvider({ children }) {
       return null
     }
   })
-  const [loading, setLoading] = useState(true)
-
-  // Configure initial axios auth header if token exists
-  useEffect(() => {
-    if (token) {
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    } else {
-      delete apiClient.defaults.headers.common['Authorization']
-    }
-    setLoading(false)
-  }, [token])
-
   const login = async (usernameOrEmail, password) => {
     const { data } = await apiClient.post('/api/auth/login', {
       usernameOrEmail,
@@ -77,7 +66,7 @@ export function AuthProvider({ children }) {
     isAdmin: user?.role === 'ADMIN',
     isPrimaryAdmin,
     isTrainer: user?.role === 'TRAINER',
-    loading,
+    loading: false,
     login,
     logout,
   }
@@ -85,12 +74,5 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
 
 export default AuthContext

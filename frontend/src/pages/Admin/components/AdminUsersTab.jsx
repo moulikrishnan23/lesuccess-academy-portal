@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { Plus, Trash2, ShieldCheck, UserCheck, X, UserPlus, Key } from 'lucide-react'
+import { useEffectEvent, useEffect, useState } from 'react'
+import { Trash2, ShieldCheck, UserCheck, X, UserPlus, Key } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
-import { useAuth } from '../../../context/AuthContext.jsx'
+import { useAuth } from '../../../hooks/useAuth.js'
 
 export default function AdminUsersTab({ showAlert }) {
   const { user: currentUser } = useAuth()
@@ -17,9 +17,7 @@ export default function AdminUsersTab({ showAlert }) {
     role: 'TRAINER', // 'ADMIN' | 'TRAINER'
   })
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
+
 
   // Body scroll lock
   useEffect(() => {
@@ -31,17 +29,31 @@ export default function AdminUsersTab({ showAlert }) {
     }
   }, [isModalOpen])
 
-  const fetchUsers = async () => {
-    setLoading(true)
+  const requestUsers = async () => {
     try {
       const { data } = await apiClient.get('/api/admin/users')
       setUsers(data?.data || [])
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to load user accounts', 'error')
     } finally {
       setLoading(false)
     }
   }
+
+  const fetchUsers = () => {
+    setLoading(true);
+    return requestUsers();
+  };
+
+  const loadInitialData = useEffectEvent(() => {
+    requestUsers();
+  });
+  useEffect(() => {
+    // Cancel a pending initial load if this tab unmounts (including Strict Mode replay).
+    let active = true;
+    queueMicrotask(() => { if (active) loadInitialData(); });
+    return () => { active = false; };
+  }, []);
 
   const openCreateModal = (defaultRole = 'TRAINER') => {
     setForm({

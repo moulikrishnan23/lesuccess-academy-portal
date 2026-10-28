@@ -3,7 +3,10 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Local previews use the existing API proxy; deployment builds retain Render.
+  define: mode === "local-preview" ? { "import.meta.env.VITE_API_BASE_URL": JSON.stringify("") } : {},
+
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
@@ -80,4 +83,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

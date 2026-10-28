@@ -1,3 +1,4 @@
+import useDocumentMeta from "../../hooks/useDocumentMeta.js";
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,6 +25,7 @@ function normalizeList(val) {
 }
 
 export default function GalleryPage() {
+  useDocumentMeta({ title: "Gallery" });
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSlug = searchParams.get("folder") || searchParams.get("album");
 

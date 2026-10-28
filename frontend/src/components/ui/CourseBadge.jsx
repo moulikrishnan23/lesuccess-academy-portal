@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * CourseBadge renders a pill badge matching the reference visual design (media_1788696268608.png).

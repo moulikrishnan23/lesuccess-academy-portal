@@ -185,13 +185,13 @@ class SiteSettingServiceTest {
                     buildSetting(invocation.getArgument(0), "")));
             when(repository.findAll(any(Sort.class))).thenReturn(List.of());
 
-            service.updateContactSettings(Map.of("phone_primary", "+91 80120 60000"));
+            service.updateContactSettings(Map.of("phone_primary", "+91 81898 11000"));
 
             ArgumentCaptor<SiteSetting> saved = ArgumentCaptor.forClass(SiteSetting.class);
             verify(repository, atLeastOnce()).save(saved.capture());
             assertThat(saved.getAllValues()).anySatisfy(setting -> {
                 assertThat(setting.getKey()).isEqualTo("social_whatsapp");
-                assertThat(setting.getValue()).isEqualTo("https://wa.me/918012060000");
+                assertThat(setting.getValue()).isEqualTo("https://wa.me/918189811000");
             });
         }
     }

@@ -42,7 +42,7 @@ export default [
 
   // Playwright specs and config run in Node, not the browser.
   {
-    files: ["e2e/**/*.js", "playwright.config.js"],
+    files: ["e2e/**/*.js", "playwright.config.js", "*.mjs"],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
     },

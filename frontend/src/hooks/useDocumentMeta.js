@@ -17,7 +17,7 @@ export default function useDocumentMeta({ title, description }) {
     if (!title) return undefined
 
     const previousTitle = document.title
-    document.title = `${title} | ${SITE_NAME}`
+    document.title = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`
 
     return () => {
       document.title = previousTitle

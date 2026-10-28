@@ -1,11 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffectEvent, useEffect, useState, useRef } from 'react'
 import {
   Plus,
   Edit2,
   Trash2,
   BookOpen,
-  ExternalLink,
-  Check,
   X,
   Upload,
   Image as ImageIcon,
@@ -115,9 +113,7 @@ export default function AdminCoursesTab({ showAlert }) {
     }
   }, [isModalOpen])
 
-  useEffect(() => {
-    fetchCourses()
-  }, [])
+
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0]
@@ -145,7 +141,7 @@ export default function AdminCoursesTab({ showAlert }) {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
         uploadUrl = res?.data?.data?.url || res?.data?.url
-      } catch (err) {
+      } catch {
         // Fallback to gallery upload endpoint
         const res = await apiClient.post('/api/admin/gallery/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -156,7 +152,7 @@ export default function AdminCoursesTab({ showAlert }) {
         setForm((prev) => ({ ...prev, iconUrl: uploadUrl }))
         showAlert?.('Logo uploaded successfully')
       }
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to upload course logo', 'error')
     } finally {
       setUploadingLogo(false)
@@ -192,7 +188,7 @@ export default function AdminCoursesTab({ showAlert }) {
         setNewTool((prev) => ({ ...prev, iconUrl: url }))
         showAlert?.('Tool icon uploaded successfully')
       }
-    } catch (_err) {
+    } catch {
       showAlert?.('Failed to upload tool icon', 'error')
     } finally {
       setUploadingToolIcon(false)
@@ -200,8 +196,7 @@ export default function AdminCoursesTab({ showAlert }) {
     }
   }
 
-  const fetchCourses = async () => {
-    setLoading(true)
+  const requestCourses = async () => {
     try {
       const { data } = await apiClient.get('/api/admin/courses?size=200')
       let items = []
@@ -219,7 +214,7 @@ export default function AdminCoursesTab({ showAlert }) {
         const { data } = await apiClient.get('/api/courses')
         const items = Array.isArray(data?.data) ? data.data : []
         setCourses(items)
-      } catch (pubErr) {
+      } catch {
         showAlert?.('Failed to load courses', 'error')
         setCourses([])
       }
@@ -227,6 +222,21 @@ export default function AdminCoursesTab({ showAlert }) {
       setLoading(false)
     }
   }
+
+  const fetchCourses = () => {
+    setLoading(true);
+    return requestCourses();
+  };
+
+  const loadInitialData = useEffectEvent(() => {
+    requestCourses();
+  });
+  useEffect(() => {
+    // Cancel a pending initial load if this tab unmounts (including Strict Mode replay).
+    let active = true;
+    queueMicrotask(() => { if (active) loadInitialData(); });
+    return () => { active = false; };
+  }, []);
 
   const openCreateModal = () => {
     setEditingCourse(null)
@@ -428,7 +438,7 @@ export default function AdminCoursesTab({ showAlert }) {
       await apiClient.delete(`/api/admin/courses/${course.id}`)
       showAlert?.('Course deleted')
       fetchCourses()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to delete course', 'error')
     }
   }
@@ -443,7 +453,7 @@ export default function AdminCoursesTab({ showAlert }) {
       await apiClient.put(`/api/admin/courses/${course.id}/order?displayOrder=${targetOrder}`)
       showAlert?.('Course order updated successfully')
       fetchCourses()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to update course order', 'error')
     }
   }
@@ -651,7 +661,7 @@ export default function AdminCoursesTab({ showAlert }) {
               }`}
             >
               <BookOpen size={13} className="text-slate-500" />
-              Normal Courses ({courses.filter((c) => !Boolean(c.badge || c.badgeText || c.badgeLabel)).length})
+              Normal Courses ({courses.filter((c) => !(c.badge || c.badgeText || c.badgeLabel)).length})
             </button>
           </div>
 
@@ -691,7 +701,7 @@ export default function AdminCoursesTab({ showAlert }) {
         const batchCourses = filtered.filter(isBatchCourse)
         const normalCourses = filtered.filter((c) => !isBatchCourse(c))
 
-        const renderTable = (list, groupTitle, groupIcon, groupTheme) => {
+        const renderTable = (list, groupTitle) => {
           if (list.length === 0) {
             return (
               <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-xs text-slate-400">

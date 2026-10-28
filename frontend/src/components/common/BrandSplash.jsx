@@ -107,7 +107,7 @@ export default function BrandSplash({ onComplete }) {
       }}
     >
       <div className="brand-splash-content">
-        <h1 className="brand-splash-words" aria-label="Learn. Educate. Succeed."><StatementWords /></h1>
+        <h1 className="brand-splash-words" aria-label="Learn Educate Succeed"><StatementWords punctuation={false} /></h1>
         <div ref={progressBarRef} className="brand-splash-progress" role="progressbar" aria-label="Splash introduction" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
           <span />
         </div>

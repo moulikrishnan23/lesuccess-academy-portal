@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffectEvent, useState, useEffect } from 'react'
 import {
   Star,
   Plus,
@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Search,
   X,
-  MessageSquare,
   ChevronUp,
   ChevronDown,
 } from 'lucide-react'
@@ -34,8 +33,7 @@ export default function AdminReviewsTab({ showAlert }) {
     isActive: true,
   })
 
-  const fetchReviews = async () => {
-    setLoading(true)
+  const requestReviews = async () => {
     try {
       const res = await apiClient.get('/api/admin/testimonials')
       const data = res?.data?.data || res?.data
@@ -44,16 +42,29 @@ export default function AdminReviewsTab({ showAlert }) {
       } else {
         setReviews([])
       }
-    } catch (err) {
+    } catch {
       if (showAlert) showAlert('Failed to load testimonials', 'error')
     } finally {
       setLoading(false)
     }
   }
 
+  const fetchReviews = () => {
+    setLoading(true);
+    return requestReviews();
+  };
+
+  const loadInitialData = useEffectEvent(() => {
+    requestReviews();
+  });
   useEffect(() => {
-    fetchReviews()
-  }, [])
+    // Cancel a pending initial load if this tab unmounts (including Strict Mode replay).
+    let active = true;
+    queueMicrotask(() => { if (active) loadInitialData(); });
+    return () => { active = false; };
+  }, []);
+
+
 
   const openCreateModal = () => {
     setEditingReview(null)
@@ -127,7 +138,7 @@ export default function AdminReviewsTab({ showAlert }) {
       await apiClient.delete(`/api/admin/testimonials/${id}`)
       if (showAlert) showAlert('Review deleted successfully')
       fetchReviews()
-    } catch (err) {
+    } catch {
       if (showAlert) showAlert('Failed to delete review', 'error')
     }
   }
@@ -142,7 +153,7 @@ export default function AdminReviewsTab({ showAlert }) {
       await apiClient.put(`/api/admin/testimonials/${rev.id}/order?displayOrder=${targetOrder}`)
       if (showAlert) showAlert('Review order updated successfully')
       fetchReviews()
-    } catch (err) {
+    } catch {
       if (showAlert) showAlert('Failed to update review order', 'error')
     }
   }
@@ -162,7 +173,7 @@ export default function AdminReviewsTab({ showAlert }) {
       await apiClient.put(`/api/admin/testimonials/${review.id}`, updated)
       if (showAlert) showAlert(`Review marked as ${!review.isActive ? 'Active' : 'Inactive'}`)
       fetchReviews()
-    } catch (err) {
+    } catch {
       if (showAlert) showAlert('Failed to toggle review status', 'error')
     }
   }

@@ -1,3 +1,5 @@
+import useDocumentMeta from "../../hooks/useDocumentMeta.js";
+import { OFFICIAL_PHONE } from "../../data/contactDetails.js";
 import { useEffect, useRef, useState } from "react";
 import { Mail, Phone, MapPin, Send, ChevronDown } from "lucide-react";
 import useSiteSettings from "../../hooks/useSiteSettings.js";
@@ -21,11 +23,12 @@ const initialForm = {
 };
 
 export default function Contact() {
+  useDocumentMeta({ title: "Contact Us" });
   const { settings } = useSiteSettings();
   const socialLinks = getSocialLinks(settings);
   const contactEmail = settings.email_primary || "contact@lesuccess.in";
   const trainingEmail = settings.email_training || "training@lesuccess.in";
-  const primaryPhone = settings.phone_primary || "+91 80120 60000";
+  const primaryPhone = settings.phone_primary || OFFICIAL_PHONE;
   const [form, setForm] = useState(initialForm);
   const [clientErrors, setClientErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);

@@ -47,6 +47,12 @@ const apiClient = axios.create({
 })
 
 // Safe retry for idempotent GET requests on network failures / timeouts (e.g. backend spin-up)
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('lesuccess_auth_token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {

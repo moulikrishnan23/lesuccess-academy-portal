@@ -7,6 +7,7 @@ const STORAGE_KEY = 'lesuccess_connect_submitted';
 export default function ConnectWithUsPopupTrigger() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isManualOpen, setIsManualOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSuppressedByForm, setIsSuppressedByForm] = useState(false);
   const [isSubmittedThisSession, setIsSubmittedThisSession] = useState(() => {
@@ -63,6 +64,7 @@ export default function ConnectWithUsPopupTrigger() {
       // Manual click always allowed unless on contact page
       if (isContactPage) return;
       userDismissedRef.current = false;
+      setIsManualOpen(true);
       setIsOpen(true);
     };
 
@@ -79,6 +81,7 @@ export default function ConnectWithUsPopupTrigger() {
     if (isContactPage) return true;
 
     const selectors = [
+      ...(isManualOpen ? [] : ['.hero-stage', '.brand-splash']),
       '#demo-class',
       '#connect-with-us-section',
       '#course-enroll-section',
@@ -120,19 +123,19 @@ export default function ConnectWithUsPopupTrigger() {
     }
 
     return false;
-  }, [isContactPage]);
+  }, [isContactPage, isManualOpen]);
 
   // Evaluate competing form visibility on scroll, resize, route changes & DOM mutations
   useEffect(() => {
     if (isContactPage || isSubmittedThisSession) {
-      setIsSuppressedByForm(true);
       return undefined;
     }
 
     let ticking = false;
+    let frame = 0;
     const evaluateVisibility = () => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
+        frame = window.requestAnimationFrame(() => {
           const suppressed = checkCompetingForms();
           setIsSuppressedByForm(suppressed);
           ticking = false;
@@ -155,6 +158,7 @@ export default function ConnectWithUsPopupTrigger() {
       window.removeEventListener('scroll', evaluateVisibility);
       window.removeEventListener('resize', evaluateVisibility);
       observer.disconnect();
+      cancelAnimationFrame(frame);
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
@@ -208,6 +212,7 @@ export default function ConnectWithUsPopupTrigger() {
 
   // User manually closes Connect With Us popup by clicking 'X'
   const handleClose = () => {
+    setIsManualOpen(false);
     userDismissedRef.current = true;
     lastDismissedScrollRef.current = window.scrollY || window.pageYOffset || 0;
     setIsOpen(false);

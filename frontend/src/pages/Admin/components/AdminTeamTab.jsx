@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffectEvent, useEffect, useState } from 'react'
 import { Plus, Edit2, Trash2, Users, Upload, X, Star, ChevronUp, ChevronDown } from 'lucide-react'
 import apiClient from '../../../services/apiClient.js'
 import { getImageUrl } from '../../../utils/imageUtils.js'
@@ -54,10 +54,7 @@ export default function AdminTeamTab({ showAlert }) {
     isActive: true,
   })
 
-  useEffect(() => {
-    fetchMembers()
-    fetchCategories()
-  }, [])
+
 
   // Body scroll lock
   useEffect(() => {
@@ -97,7 +94,7 @@ export default function AdminTeamTab({ showAlert }) {
         }
       })
       setCategories(uniqueCats)
-    } catch (_err) {
+    } catch {
       setCategories([
         { id: 'mv', name: 'Management Visionaries' },
         { id: 'tv', name: 'Tech Visionaries' },
@@ -126,8 +123,7 @@ export default function AdminTeamTab({ showAlert }) {
     }
   }
 
-  const fetchMembers = async () => {
-    setLoading(true)
+  const requestMembers = async () => {
     try {
       const { data } = await apiClient.get('/api/admin/team-members')
       setMembers(data?.data || [])
@@ -136,13 +132,29 @@ export default function AdminTeamTab({ showAlert }) {
       try {
         const { data } = await apiClient.get('/api/team-members')
         setMembers(data?.data || [])
-      } catch (pubErr) {
+      } catch {
         showAlert?.('Failed to load team members', 'error')
       }
     } finally {
       setLoading(false)
     }
   }
+
+  const fetchMembers = () => {
+    setLoading(true);
+    return requestMembers();
+  };
+
+  const loadInitialData = useEffectEvent(() => {
+    requestMembers();
+    fetchCategories();
+  });
+  useEffect(() => {
+    // Cancel a pending initial load if this tab unmounts (including Strict Mode replay).
+    let active = true;
+    queueMicrotask(() => { if (active) loadInitialData(); });
+    return () => { active = false; };
+  }, []);
 
   const handleMove = async (m, direction) => {
     const currentIdx = members.findIndex((item) => item.id === m.id)
@@ -154,7 +166,7 @@ export default function AdminTeamTab({ showAlert }) {
       await apiClient.put(`/api/admin/team-members/${m.id}/order?displayOrder=${targetOrder}`)
       showAlert?.('Order updated successfully')
       fetchMembers()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to update order', 'error')
     }
   }
@@ -167,7 +179,7 @@ export default function AdminTeamTab({ showAlert }) {
       if (res?.data?.data) {
         nextOrder = res.data.data
       }
-    } catch (_e) {
+    } catch {
       const maxOrd = members.reduce((max, item) => Math.max(max, item.displayOrder || 0), 0)
       nextOrder = maxOrd + 1
     }
@@ -237,7 +249,7 @@ export default function AdminTeamTab({ showAlert }) {
         setForm((prev) => ({ ...prev, imageUrl: uploadedUrl }))
         showAlert?.('Photo uploaded successfully')
       }
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to upload image', 'error')
     } finally {
       setUploadingImage(false)
@@ -291,7 +303,7 @@ export default function AdminTeamTab({ showAlert }) {
       await apiClient.delete(`/api/admin/team-members/${m.id}`)
       showAlert?.('Team member removed')
       fetchMembers()
-    } catch (err) {
+    } catch {
       showAlert?.('Failed to delete member', 'error')
     }
   }
@@ -302,7 +314,6 @@ export default function AdminTeamTab({ showAlert }) {
   const isMemberFeatured = (m) => Boolean(m.featured || m.isFeatured)
 
   const featuredMembers = members.filter(isMemberFeatured)
-  const nonFeaturedMembers = members.filter((m) => !isMemberFeatured(m))
 
   const categoryFilteredMembers = selectedCategory === 'ALL'
     ? members
@@ -395,7 +406,6 @@ export default function AdminTeamTab({ showAlert }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {featuredMembers.map((m) => {
                   const globalIdx = members.findIndex((item) => item.id === m.id)
-                  const categoryName = formatCategoryName(m.category || m.department)
 
                   return (
                     <div

@@ -1,3 +1,4 @@
+import { OFFICIAL_PHONE } from "../../../data/contactDetails.js";
 import { useEffect, useRef, useState } from 'react'
 import { Check, LoaderCircle, Save } from 'lucide-react'
 import settingsApi from '../../../services/settingsApi.js'
@@ -9,7 +10,7 @@ const FIELDS = [
   { key: 'social_facebook', label: 'Facebook URL', type: 'url', placeholder: 'https://facebook.com/…' },
   { key: 'social_linkedin', label: 'LinkedIn URL', type: 'url', placeholder: 'https://linkedin.com/company/…' },
   { key: 'social_youtube', label: 'YouTube URL', type: 'url', placeholder: 'https://youtube.com/@…' },
-  { key: 'phone_primary', label: 'WhatsApp / primary phone', type: 'tel', placeholder: '+91 80120 60000' },
+  { key: 'phone_primary', label: 'WhatsApp / primary phone', type: 'tel', placeholder: OFFICIAL_PHONE },
   { key: 'email_primary', label: 'Contact email', type: 'email', placeholder: 'contact@example.com' },
   { key: 'email_training', label: 'Training email', type: 'email', placeholder: 'training@example.com' },
 ]
@@ -20,7 +21,7 @@ const defaults = {
   social_facebook: OFFICIAL_SOCIAL_URLS.facebook,
   social_linkedin: OFFICIAL_SOCIAL_URLS.linkedin,
   social_youtube: OFFICIAL_SOCIAL_URLS.youtube,
-  phone_primary: '+91 80120 60000',
+  phone_primary: OFFICIAL_PHONE,
   email_primary: 'contact@lesuccess.in',
   email_training: 'training@lesuccess.in',
 }
