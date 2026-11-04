@@ -1,0 +1,33 @@
+# Render's free tier sleeps after 15 minutes without traffic, and the first
+# visitor afterwards waits 1-2 minutes for it to boot. Pinging the health
+# endpoint every 5 minutes during peak hours keeps it awake while conserving
+# Render free instance hours (uses ~360 hours/month out of 750 free hours).
+#
+# GitHub cron runs on UTC:
+# 8:00 AM - 8:00 PM IST (UTC+5:30) corresponds to 02:30 UTC - 14:30 UTC.
+#
+# GitHub only runs scheduled workflows from the default branch (main), and may
+# start a run late under load. workflow_dispatch allows manual runs anytime.
+
+name: Keep backend warm
+
+on:
+  schedule:
+    # 02:30 UTC to 02:55 UTC (8:00 AM - 8:25 AM IST) every 5 minutes
+    - cron: "30-55/5 2 * * *"
+    # 03:00 UTC to 13:55 UTC (8:30 AM - 7:25 PM IST) every 5 minutes
+    - cron: "*/5 3-13 * * *"
+    # 14:00 UTC to 14:30 UTC (7:30 PM - 8:00 PM IST) every 5 minutes
+    - cron: "0-30/5 14 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping health endpoint
+        run: |
+          curl --silent --show-error --fail --max-time 180 \
+            --retry 2 --retry-delay 10 \
+            https://lesuccess-academy-portal.onrender.com/api/health
