@@ -42,7 +42,7 @@ export const API_BASE_URL = resolveApiBaseUrl()
  */
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 300000, // 300s (5 min) to allow Render Free Tier cold starts
+  timeout: 15000, // 15s timeout: fail fast so UI never hangs for 5 minutes
   headers: { 'Content-Type': 'application/json' },
 })
 

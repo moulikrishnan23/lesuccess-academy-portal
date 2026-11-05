@@ -10,6 +10,7 @@ import {
 import courseApi from "../services/courseApi.js";
 import apiClient from "../services/apiClient.js";
 import { listUpcoming } from "../services/upcomingProgramApi.js";
+import { loadSnapshot } from "../services/snapshotApi.js";
 
 const AppDataContext = createContext(null);
 const CoursesDataContext = createContext(null);
@@ -319,9 +320,35 @@ export function AppDataProvider({ children }) {
     }
   }, []);
 
-  // INITIAL LOAD
+  // INITIAL LOAD: Seed from static CDN snapshot immediately, then revalidate in background
   useEffect(() => {
     let active = true;
+
+    // 1. Immediately seed UI from static CDN snapshot if still loading or empty
+    loadSnapshot().then((snap) => {
+      if (!active || !snap) return;
+
+      if (Array.isArray(snap.courses) && snap.courses.length > 0) {
+        setCoursesState((prev) => (prev.data.length === 0 ? { status: "success", data: snap.courses, isCached: true, error: null } : prev));
+      }
+      if (Array.isArray(snap.team) && snap.team.length > 0) {
+        setTeamState((prev) => (prev.data.length === 0 ? { status: "success", data: snap.team, categories: ["Management Visionaries", "Tech Visionaries"], isCached: true, error: null } : prev));
+      }
+      if (Array.isArray(snap.programs) && snap.programs.length > 0) {
+        setProgramsState((prev) => (prev.data.length === 0 ? { status: "success", data: snap.programs, isCached: true, error: null } : prev));
+      }
+      if (Array.isArray(snap.testimonials) && snap.testimonials.length > 0) {
+        setTestimonialsState((prev) => (prev.data.length === 0 ? { status: "success", data: snap.testimonials, isCached: true, error: null } : prev));
+      }
+      if (Array.isArray(snap.gallery) && snap.gallery.length > 0) {
+        setGalleryState((prev) => (prev.data.length === 0 ? { status: "success", data: snap.gallery, isCached: true, error: null } : prev));
+      }
+      if (snap.successStories && (snap.successStories.images?.length > 0 || snap.successStories.reels?.length > 0)) {
+        setSuccessStoriesState((prev) => ((prev.data.images?.length === 0 && prev.data.reels?.length === 0) ? { status: "success", data: snap.successStories, isCached: true, error: null } : prev));
+      }
+    });
+
+    // 2. Revalidate from live backend in background
     queueMicrotask(() => {
       if (!active) return;
       fetchCourses();
@@ -331,6 +358,7 @@ export function AppDataProvider({ children }) {
       fetchGallery();
       fetchSuccessStories();
     });
+
     return () => { active = false; };
   }, [fetchCourses, fetchTeam, fetchPrograms, fetchTestimonials, fetchGallery, fetchSuccessStories]);
 
